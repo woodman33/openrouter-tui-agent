@@ -1,0 +1,102 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { Agent } from '../../agent/core.js';
+import type { Message } from '../../types/index.js';
+
+export interface AgentUIState {
+  messages: Message[];
+  streamingText: string;
+  isThinking: boolean;
+  isStreaming: boolean;
+  currentTools: string[];
+  error: Error | null;
+  totalTokens: number;
+  totalCost: number;
+  model: string;
+}
+
+export function useAgent(agent: Agent) {
+  const [state, setState] = useState<AgentUIState>({
+    messages: [],
+    streamingText: '',
+    isThinking: false,
+    isStreaming: false,
+    currentTools: [],
+    error: null,
+    totalTokens: 0,
+    totalCost: 0,
+    model: agent.getModel(),
+  });
+  const toolsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    const handlers = {
+      'thinking:start': () => {
+        toolsRef.current = [];
+        setState(s => ({
+          ...s, isThinking: true, isStreaming: true, streamingText: '',
+          currentTools: [], error: null,
+        }));
+      },
+      'stream:delta': (delta: string, accumulated: string) => {
+        setState(s => ({ ...s, streamingText: accumulated }));
+      },
+      'stream:end': (text: string) => {
+        setState(s => ({
+          ...s, isStreaming: false, isThinking: false, streamingText: '',
+          messages: [...s.messages, { role: 'assistant', content: text, timestamp: Date.now() }],
+        }));
+      },
+      'tool:call': (name: string) => {
+        toolsRef.current = [...toolsRef.current, name];
+        setState(s => ({ ...s, currentTools: [...toolsRef.current] }));
+      },
+      'tool:result': () => {
+        setState(s => ({ ...s }));
+      },
+      'error': (error: Error) => {
+        setState(s => ({ ...s, error, isThinking: false, isStreaming: false }));
+      },
+      'message:user': (message: Message) => {
+        setState(s => ({ ...s, messages: [...s.messages, message] }));
+      },
+      'cost:update': (cost: number, total: number) => {
+        setState(s => ({ ...s, totalCost: total }));
+      },
+      'model:switch': (model: string) => {
+        setState(s => ({ ...s, model }));
+      },
+      'thinking:end': () => {
+        setState(s => ({ ...s, isThinking: false }));
+      },
+    };
+
+    for (const [event, handler] of Object.entries(handlers)) {
+      agent.on(event as any, handler as any);
+    }
+    return () => {
+      for (const [event, handler] of Object.entries(handlers)) {
+        agent.off(event as any, handler as any);
+      }
+    };
+  }, [agent]);
+
+  const send = useCallback(async (text: string) => {
+    try {
+      return await agent.send(text);
+    } catch (e) {
+      // Error is already emitted via event
+      return null;
+    }
+  }, [agent]);
+
+  const clearHistory = useCallback(() => {
+    agent.clearHistory();
+    setState(s => ({ ...s, messages: [] }));
+  }, [agent]);
+
+  const switchModel = useCallback((model: string) => {
+    agent.setModel(model);
+  }, [agent]);
+
+  return { ...state, send, clearHistory, switchModel };
+}

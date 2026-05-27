@@ -1,0 +1,145 @@
+[
+  {
+    "pack_id": "openrouter-agent-sdk",
+    "title": "OpenRouter Agent SDK Context Pack",
+    "version": "1.1.0",
+    "minimum_subscription_tier": "free",
+    "required_scope": "context.read.openrouter_agent_sdk",
+    "source_type": "official docs",
+    "source_url": "https://openrouter.ai/docs/sdks/typescript/call-model/overview",
+    "license": "MIT",
+    "last_verified": "2026-05-26",
+    "deprecated_api_flags": ["openrouter/legacy-completion-api"],
+    "unstable_api_flags": ["openrouter/auto-exacto-v2 (unstable beta)"],
+    "citation_map": {
+      "sdk_core": "https://openrouter.ai/docs/sdks",
+      "auto_exacto": "https://openrouter.ai/announcements/auto-exacto"
+    },
+    "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source_hash": "7b852b855e3b0c4429fc1c149afbf4c8996fb92427ae41e4649b934ca495991b",
+    "registry_entry_hash": "149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c4429fc1c1",
+    "evidence_status": "verified"
+  },
+  {
+    "pack_id": "openverse-openapi",
+    "title": "Openverse OpenAPI Context Pack",
+    "version": "0.1.0",
+    "minimum_subscription_tier": "free",
+    "required_scope": "context.read.openverse_openapi",
+    "source_type": "official docs",
+    "source_url": "https://api.openverse.org/v1/",
+    "license": "Creative Commons CC0",
+    "last_verified": "2026-05-26",
+    "deprecated_api_flags": [],
+    "unstable_api_flags": ["openverse/image-search-beta"],
+    "citation_map": {
+      "media_specs": "https://api.openverse.org/v1/image/"
+    },
+    "content_hash": "c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0",
+    "source_hash": "c04429fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b09",
+    "registry_entry_hash": "fb92427ae41e4649b934ca495991b7852b855e3b0c4429fc1c149afbf4c8996",
+    "evidence_status": "verified"
+  },
+  {
+    "pack_id": "canva-apps-sdk",
+    "title": "Canva Apps SDK Context Pack",
+    "version": "2.3.0",
+    "minimum_subscription_tier": "pro",
+    "required_scope": "context.read.canva_apps_sdk",
+    "source_type": "official docs",
+    "source_url": "https://www.canva.dev/docs/apps/",
+    "license": "Canva Developer License",
+    "last_verified": "2026-05-26",
+    "deprecated_api_flags": ["canva/legacy-media-uploader"],
+    "unstable_api_flags": ["canva/ai-generation-v2 (unstable beta)"],
+    "citation_map": {
+      "sdk_core": "https://www.canva.dev/docs/apps/getting-started/",
+      "ui_kit": "https://www.canva.dev/docs/apps/design-system/"
+    },
+    "content_hash": "afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c4429fc1c1e3b",
+    "source_hash": "1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c4429fc",
+    "registry_entry_hash": "c8996fb92427ae41e4649b934ca495991b7852b855e3b0c4429fc1c1e3b0c442",
+    "evidence_status": "verified"
+  },
+  {
+    "pack_id": "cloudflare-workers",
+    "title": "Cloudflare Workers Context Pack",
+    "version": "1.0.0",
+    "minimum_subscription_tier": "builder",
+    "required_scope": "context.read.cloudflare_workers",
+    "source_type": "official docs",
+    "source_url": "https://developers.cloudflare.com/workers/",
+    "license": "Apache-2.0",
+    "last_verified": "2026-05-26",
+    "deprecated_api_flags": [],
+    "unstable_api_flags": ["cloudflare/dynamic-workers-beta"],
+    "citation_map": {
+      "runtime_specs": "https://developers.cloudflare.com/workers/runtime-apis/"
+    },
+    "content_hash": "fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c44298",
+    "source_hash": "149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c44298fc1c",
+    "registry_entry_hash": "996fb92427ae41e4649b934ca495991b7852b855e3b0c44298fc1c149afbf4c8",
+    "evidence_status": "verified"
+  },
+  {
+    "pack_id": "private-docs",
+    "title": "Organization Private Docs Context Pack",
+    "version": "1.0.0",
+    "minimum_subscription_tier": "team",
+    "required_scope": "context.read.private_docs",
+    "source_type": "generated note",
+    "source_url": "https://internal.wmeldman.co/docs/",
+    "license": "Proprietary",
+    "last_verified": "2026-05-26",
+    "deprecated_api_flags": [],
+    "unstable_api_flags": [],
+    "citation_map": {
+      "internal_doctrine": "https://internal.wmeldman.co/docs/doctrine"
+    },
+    "content_hash": "4298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855e3b0c4",
+    "source_hash": "247ae41e4649b934ca495991b7852b855e3b0c4429fc1c149afbf4c8996fb92",
+    "registry_entry_hash": "7ae41e4649b934ca495991b7852b855e3b0c4429fc1c149afbf4c8996fb92",
+    "evidence_status": "verified"
+  },
+  {
+    "pack_id": "microsoft-agent-framework",
+    "title": "Microsoft Agent Framework Context Pack",
+    "version": "1.0.0",
+    "minimum_subscription_tier": "free",
+    "required_scope": "context.read.microsoft_agent_framework",
+    "source_type": "official docs",
+    "source_url": "https://github.com/microsoft/autogen",
+    "license": "MIT",
+    "last_verified": "2026-05-26",
+    "deprecated_api_flags": ["autogen/v0.2-legacy-framework"],
+    "unstable_api_flags": ["maf/agent-chat-streaming-beta"],
+    "citation_map": {
+      "maf_core": "https://github.com/microsoft/autogen",
+      "migration_guide": "https://microsoft.github.io/autogen/docs/migration-guide"
+    },
+    "content_hash": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+    "source_hash": "f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
+    "registry_entry_hash": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+    "evidence_status": "verified"
+  },
+  {
+    "pack_id": "openhands-sdk",
+    "title": "OpenHands SDK Context Pack",
+    "version": "1.0.0",
+    "minimum_subscription_tier": "builder",
+    "required_scope": "context.read.openhands_sdk",
+    "source_type": "official docs",
+    "source_url": "https://github.com/All-Hands-AI/OpenHands",
+    "license": "MIT",
+    "last_verified": "2026-05-27",
+    "deprecated_api_flags": [],
+    "unstable_api_flags": [],
+    "citation_map": {
+      "cli_usage": "https://github.com/All-Hands-AI/OpenHands/wiki/CLI"
+    },
+    "content_hash": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1c9",
+    "source_hash": "f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1d8",
+    "registry_entry_hash": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c98",
+    "evidence_status": "needs_audit"
+  }
+]

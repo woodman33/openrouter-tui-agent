@@ -1,0 +1,84 @@
+{
+  "name": "openrouter-tui-agent",
+  "main": "src/companion/cloudflare-worker.ts",
+  "compatibility_date": "2025-10-08",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "MY_DURABLE_OBJECT",
+        "class_name": "MyDurableObject"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["MyDurableObject"]
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "OPENROUTER_TUI_AGENT_PAYLOAD_R2",
+      "bucket_name": "payload-cms-r2",
+      "preview_bucket_name": "payload-cms-r2-preview"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "OPENROUTER_TUI_AGENT_QUEUE",
+        "queue": "synthetic-trace-generation"
+      }
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "OPENROUTER-TUI-AGENT-D1",
+      "database_name": "openrouter-tui-agent-d1",
+      "database_id": "4bf52fae-2df3-4885-90d1-215b632587e8"
+    }
+  ],
+  "vectorize": [
+    {
+      "binding": "OPENROUTER_TUI_AGENT_VECTORIZE_INDEX",
+      "index_name": "autorag-autorag-system"
+    }
+  ],
+  "ai": {
+    "binding": "OPENROUTER_TUI_AGENT_WORKERS_AI"
+  },
+  "workflows": [
+    {
+      "binding": "OPENROUTER_TUI_AGENT_WORKFLOW",
+      "name": "workflows-hello-world",
+      "class_name": "HelloWorldWorkflow"
+    }
+  ],
+  "hyperdrive": [
+    {
+      "binding": "OPENROUTER_TUI_AGENT_HYPERDRIVE",
+      "id": "560f94e24cb445d9bff3ff33741526c9",
+      "localConnectionString": "postgresql://postgres:CHANGE_ME@localhost:5432/postgres"
+    }
+  ],
+  "vars": {
+    "OPENROUTER_TUI_AGENT_AISEARCH": "default",
+    "OPENROUTER_TUI_AGENT_AISEARCH_NOT_NAMESPACE": "autorag-system",
+    "OPENROUTER_TUI_AGENT_FLAGSHIP": "new-flag-app",
+    "OPENROUTER_TUI_AGENT_METADATA": "v1.0.0",
+    "OPENROUTER_TUI_AGENT_VPC_SERVICE": "vpc-service-1",
+    "OPENROUTER_TUI_AGENT_SECRET": "OPENROUTER_API_KEY",
+    "openrouter-tui-agent-dispatch-namespace": "my-dispatch-namespace",
+    "OPENROUTER-TUI-AGENT-DYNAMIC-WORKERS": "dynamic-workers-pool"
+  },
+  "services": [
+    {
+      "binding": "OPENROUTER_TUI_AGENT_SERVICE_BINDING",
+      "service": "openrouter-tui-agent"
+    }
+  ]
+}

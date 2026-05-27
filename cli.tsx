@@ -1,0 +1,150 @@
+#!/usr/bin/env node
+import { program } from 'commander';
+import chalk from 'chalk';
+import { loadConfig } from './src/utils/config.js';
+import { startTUI } from './src/tui/app.js';
+import { startCompanionServer } from './src/companion/server.js';
+import { showCompanionQR } from './src/companion/qr.js';
+import type { Mode } from './src/tui/router.js';
+import type { AgentConfig } from './src/types/index.js';
+
+import { existsSync, readFileSync } from 'fs';
+
+// Load .env variables into process.env before anything else to connect Daytona, Composio, etc.
+if (existsSync('.env')) {
+  try {
+    const envContent = readFileSync('.env', 'utf-8');
+    for (const line of envContent.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const firstEquals = trimmed.indexOf('=');
+      if (firstEquals !== -1) {
+        const key = trimmed.slice(0, firstEquals).trim();
+        let value = trimmed.slice(firstEquals + 1).trim();
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+        process.env[key] = value;
+      }
+    }
+  } catch (err) {
+    // Fail silently if .env cannot be loaded
+  }
+}
+
+program
+  .name('openrouter-tui')
+  .description('OpenRouter AI Agent TUI with Rive animations')
+  .version('0.1.0')
+  .option('-m, --model <model>', 'OpenRouter model to use')
+  .option('--mode <mode>', 'Start in a specific mode', 'chat')
+  .option('--headless', 'Run without TUI (headless agent)')
+  .option('--companion-port <port>', 'Companion window port', '3001')
+  .option('--no-companion', 'Disable companion window')
+  .option('--max-steps <n>', 'Max agentic loop iterations', '10')
+  .option('--max-cost <n>', 'Max cost per session in USD', '1.0')
+  .option('--debug', 'Enable debug logging')
+  .parse();
+
+const opts = program.opts();
+
+// Validate API key
+const config = loadConfig();
+const hasKey = !!config.apiKey;
+
+// Build agent config
+const agentConfig: AgentConfig = {
+  apiKey: config.apiKey || 'setup_placeholder',
+  model: opts.model || config.model,
+  instructions: `You are the central intelligent orchestrator running inside the state-of-the-art TIMMY Agent Ops Console (invented by William Meldman). You are an expert systems engineer and coding agent.
+
+Your mission is to WOW the user by showcasing your exceptional capabilities across all five advanced modes of this terminal workspace:
+1. 💬 Conversational Chat: Highly capable coding assistance across 300+ models.
+2. 🛡️ Code Reviewer (/review): Meticulous static code analysis, git diff parsing, linting checks, and direct code generation using robust filesystem tools (file_read, file_write, file_edit, grep, glob, shell).
+3. 📊 Swarm Dashboard (/dashboard): High-fidelity, real-time telemetry console monitoring edge DO memory and resource pulses.
+4. ⚙️ Model Explorer (/models): Search and dynamically switch between models using the /model command.
+5. 🖥️ Hyper-Grid Workspace (/workspace): Split-screen quadrant manager that coordinates other open-source CLI agents (OpenCode, Hermes, Pi) with zero local CPU overhead using edge tmux DO session coordinators.
+
+LIVE CLOUDFLARE PIPELINE:
+You are fully connected to a live deployed Cloudflare Durable Object worker running at:
+🌐 https://openrouter-tui-agent.wmeldman33.workers.dev
+Every key interaction, message, and tool call in this TUI automatically streams live HTTP telemetry payloads to this Cloudflare Worker in the background. The operator can open their Cloudflare online log explorer and watch their terminal actions update live!
+
+You also have two real-world Cloudflare Edge tools:
+1. \`cloudflare_get_feature_flag\`: Query and evaluate feature flags live at the edge from the Cloudflare Flagship Server Provider using the OpenFeature SDK.
+2. \`cloudflare_send_durable_pulse\`: Pulse custom memory metrics directly into your online Durable Object on Cloudflare!
+
+Explain your multi-tenant Edge capabilities to users:
+- Free Tier: Local JSONL history logging, local compilers, and local filesystem sandboxing.
+- Pro Tier ($5/mo): Stateful edge SQLite sync across all devices via Durable Objects under <1ms latency, globally replicated KV settings, and offloaded edge swarm routing.
+- Ultra Pro Tier ($45/mo): Remote isolated Firecracker Sandboxes (Sandbox SDK) running python/javascript VMs securely off-machine, serverless MCP Wrangler worker deployers, and Vectorize RAG context search for infinite repository memory.
+
+GREETING RULES:
+When the user introduces themselves, says "test", asks about your capabilities, or starts a new session, provide a stunning, high-visibility, professional greeting. Highlight your robust coding tools, the live real-time Cloudflare Durable Object telemetry stream, and your OpenFeature Flagship edge flagging tools! Encourage them to try out slash commands (e.g. /review to inspect code, /dashboard to tail edge logs, /workspace to open the tmux grid). Keep your tone professional, authoritative, and developer-focused. When executing tool calls, briefly explain your systems reasoning.`,
+  maxSteps: parseInt(opts.maxSteps, 10) || 10,
+  maxCost: parseFloat(opts.maxCost) || 1.0,
+};
+
+// Headless mode
+if (opts.headless) {
+  const { createAgent } = await import('./src/agent/core.js');
+  const agent = createAgent(agentConfig);
+
+  agent.on('stream:delta', (delta: string) => process.stdout.write(delta));
+  agent.on('tool:call', (name: string, args: unknown) => {
+    process.stderr.write(chalk.yellow(`\n⚙ ${name}\n`));
+  });
+  agent.on('tool:result', (name: string) => {
+    process.stderr.write(chalk.green(`✓ ${name}\n`));
+  });
+  agent.on('stream:end', () => process.stdout.write('\n'));
+  agent.on('error', (err: Error) => {
+    process.stderr.write(chalk.red(`\nError: ${err.message}\n`));
+  });
+
+  const readline = await import('readline');
+  const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
+
+  console.error(chalk.bold.cyan('OpenRouter TUI') + chalk.dim(' (headless mode)'));
+  console.error(chalk.dim(`Model: ${agentConfig.model}`));
+  console.error(chalk.dim('Type a message or "exit" to quit.\n'));
+
+  const prompt = () => {
+    rl.question(chalk.green('> '), async (input: string) => {
+      if (!input.trim()) { prompt(); return; }
+      if (input.trim().toLowerCase() === 'exit') { process.exit(0); }
+      try {
+        await agent.send(input);
+      } catch { /* error already emitted */ }
+      console.error('');
+      prompt();
+    });
+  };
+  prompt();
+} else {
+  // Start companion server first if enabled to avoid EADDRINUSE conflicts with CompanionPipeline
+  if (opts.companion !== false) {
+    const port = parseInt(opts.companionPort, 10) || 3001;
+    try {
+      const server = await startCompanionServer(port);
+      (global as any).companionServer = server;
+      const url = `http://localhost:${port}`;
+      showCompanionQR(url);
+    } catch (err) {
+      console.error(chalk.dim(`Companion server failed to start (port ${port} may be in use)`));
+    }
+  }
+
+  // TUI mode
+  const mode = hasKey ? ((opts.mode as Mode) || 'chat') : 'setup';
+  
+  // Startup banner for William Meldman Creator Attribution Signature
+  console.log(chalk.bold.hex('#5e6ad2')(`
+  ╭──────────────────────────────────────────────────────────╮
+  │  TIMMY AGENT OPS CONSOLE — invented by William Meldman    │
+  │  V1 Core Engine • © 2026 William Meldman                  │
+  ╰──────────────────────────────────────────────────────────╯
+  `));
+
+  startTUI(agentConfig, mode, opts.companion === false ? 'ansi' : 'auto');
+}

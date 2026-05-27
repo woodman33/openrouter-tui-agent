@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenRouter TUI — Systems Companion Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { 
+      height: 100%; 
+      background: #090b10; 
+      color: #e6edf3; 
+      font-family: 'Inter', -apple-system, sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #d2a8ff, #5e6ad2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #status {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: #8b949e;
+      border: 1px solid #30363d;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(22, 27, 34, 0.6);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 24px;
+      flex-grow: 1;
+      height: calc(100vh - 100px);
+      min-height: 0;
+    }
+
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .glass-card {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      border-color: #5e6ad280;
+      box-shadow: 0 8px 40px rgba(94, 106, 210, 0.1);
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      background: rgba(22, 27, 34, 0.8);
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #8b949e;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Rive core reactor styles */
+    #rive-container {
+      width: 100%;
+      height: 380px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #161b22 0%, #0d1117 100%);
+    }
+
+    #live-canvas, #image-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #image-canvas {
+      display: none;
+      position: absolute;
+      inset: 0;
+    }
+
+    #state-label {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 18px;
+      background: rgba(94, 106, 210, 0.1);
+      border: 1px solid #5e6ad2;
+      border-radius: 20px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: #5e6ad2;
+      font-weight: 800;
+      text-transform: uppercase;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    /* Media Visualizer styles */
+    #media-container {
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    .media-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #484f58;
+      font-size: 13px;
+      gap: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .media-placeholder svg {
+      width: 48px;
+      height: 48px;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    .media-render {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      animation: dropIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      background: #000;
+      padding: 8px;
+    }
+
+    @keyframes dropIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Terminal Console style */
+    #console-card {
+      flex-grow: 3;
+      min-height: 0;
+    }
+
+    #console-logs {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      background: #090b10;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    #console-logs::-webkit-scrollbar {
+      width: 8px;
+    }
+    #console-logs::-webkit-scrollbar-track {
+      background: #090b10;
+    }
+    #console-logs::-webkit-scrollbar-thumb {
+      background: #21262d;
+      border-radius: 4px;
+    }
+    #console-logs::-webkit-scrollbar-thumb:hover {
+      background: #30363d;
+    }
+
+    .log-msg {
+      border-left: 3px solid #30363d;
+      padding-left: 12px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-msg.user {
+      border-color: #5e6ad2;
+    }
+
+    .log-msg.system {
+      border-color: #d2a8ff;
+      background: rgba(210, 168, 255, 0.03);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .log-header {
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .log-header.user { color: #58a6ff; }
+    .log-header.assistant { color: #5e6ad2; }
+    .log-header.system { color: #d2a8ff; }
+
+    .log-time {
+      font-weight: 400;
+      color: #484f58;
+      font-size: 10px;
+    }
+
+    .log-content {
+      color: #c9d1d9;
+      white-space: pre-wrap;
+    }
+
+    .code-box {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      margin-top: 8px;
+      color: #3fb950;
+      overflow-x: auto;
+    }
+
+    /* Tmux Registry styles */
+    #tmux-card {
+      flex-grow: 2;
+      min-height: 0;
+    }
+
+    #tmux-grid-container {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      color: #8b949e;
+      padding: 10px 12px;
+      border-bottom: 2px solid #21262d;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #21262d;
+      color: #c9d1d9;
+    }
+
+    tr:hover td {
+      background: rgba(94, 106, 210, 0.02);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge.idle { background: rgba(56, 139, 253, 0.1); color: #58a6ff; border: 1px solid rgba(56, 139, 253, 0.2); }
+    .status-badge.indexing { background: rgba(210, 168, 255, 0.1); color: #d2a8ff; border: 1px solid rgba(210, 168, 255, 0.2); }
+    .status-badge.running { background: rgba(46, 160, 67, 0.1); color: #3fb950; border: 1px solid rgba(46, 160, 67, 0.2); }
+    .status-badge.building { background: rgba(218, 115, 0, 0.1); color: #da7300; border: 1px solid rgba(218, 115, 0, 0.2); }
+
+    .action-btn {
+      background: transparent;
+      border: 1px solid #f8514940;
+      color: #f85149;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: #f8514915;
+      border-color: #f85149;
+      box-shadow: 0 0 10px rgba(248, 81, 73, 0.15);
+    }
+
+    /* Creation Form style */
+    #tmux-creation-bar {
+      padding: 16px 20px;
+      border-top: 1px solid #30363d;
+      background: rgba(22, 27, 34, 0.8);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    #tmux-creation-bar input, #tmux-creation-bar select {
+      background: #090b10;
+      border: 1px solid #30363d;
+      color: #e6edf3;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border 0.2s ease;
+    }
+
+    #tmux-creation-bar input:focus, #tmux-creation-bar select:focus {
+      border-color: #5e6ad2;
+    }
+
+    #tmux-creation-bar input {
+      flex-grow: 1;
+    }
+
+    #tmux-creation-bar select {
+      width: 180px;
+    }
+
+    .create-btn {
+      background: #5e6ad2;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .create-btn:hover {
+      background: #6c7be6;
+      box-shadow: 0 0 15px rgba(94, 106, 210, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>OpenRouter TUI Systems Companion</h1>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <div id="status">CONNECTING TO AGENT PORT...</div>
+      <div id="clerk-auth-container" style="display: flex; align-items: center; gap: 12px;"></div>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Left Column: Core Reactor + Media Screen -->
+    <div class="left-col">
+      <div id="rive-card" class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2.5"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            AI Swarm Core Reactor
+          </div>
+        </div>
+        <div id="rive-container">
+          <canvas id="live-canvas"></canvas>
+          <div id="image-canvas"></div>
+          <div id="state-label">IDLE</div>
+        </div>
+      </div>
+
+      <div id="integrations-card" class="glass-card" style="margin-top: 15px; padding: 15px; display: flex; flex-direction: column;">
+        <div class="card-header" style="margin-bottom: 12px; border-bottom: 1px solid #21262d; padding-bottom: 6px;">
+          <div class="card-title" style="color: #a5d6ff; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a5d6ff" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
+            Edge Swarm Integrations Status
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-family: 'Fira Code', monospace;">
+            <span style="color: #8b949e;">Daytona Sandboxes</span>
+            <span id="integration-daytona" style="font-weight: bold; background: #21262d; padding: 3px 8px; border-radius: 4px; color: #8b949e;">CHECKING...</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-family: 'Fira Code', monospace;">
+            <span style="color: #8b949e;">Trigger.dev Workflows</span>
+            <span id="integration-trigger" style="font-weight: bold; background: #21262d; padding: 3px 8px; border-radius: 4px; color: #8b949e;">CHECKING...</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-family: 'Fira Code', monospace;">
+            <span style="color: #8b949e;">Composio Swarm Tools</span>
+            <span id="integration-composio" style="font-weight: bold; background: #21262d; padding: 3px 8px; border-radius: 4px; color: #8b949e;">CHECKING...</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-family: 'Fira Code', monospace;">
+            <span style="color: #8b949e;">Cloudflare Edge DO</span>
+            <span id="integration-cloudflare" style="font-weight: bold; background: #21262d; padding: 3px 8px; border-radius: 4px; color: #8b949e;">CHECKING...</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="media-container" class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d2a8ff" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Media Viewport Visualizer
+          </div>
+        </div>
+        <div id="media-viewport" style="flex-grow: 1; min-height: 0; position: relative;">
+          <div class="media-placeholder">
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+            <div>Drop media in TUI using '/render &lt;file&gt;'<br><span style="color:#8b949e; font-size:11px;">Renders high-res images and autoplaying videos live</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Live Console + Tmux Cluster Grid -->
+    <div class="right-col">
+      <div id="console-card" class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3fb950" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            Interactive Console Logs Sync
+          </div>
+        </div>
+        <div id="console-logs">
+          <div style="color: #8b949e; font-family: 'Fira Code', monospace; text-align: center; margin-top: 40px; font-size: 13px;">
+            Waiting for session data streams...
+          </div>
+        </div>
+      </div>
+
+      <div id="tmux-card" class="glass-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d29922" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="9" y1="12" x2="21" y2="12"/></svg>
+            Active Tmux Cluster Manager
+          </div>
+        </div>
+        <div id="tmux-grid-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Session Name</th>
+                <th>Model Allocation</th>
+                <th>State status</th>
+                <th>Mem Footprint</th>
+                <th>Session Cost</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tmux-tbody">
+              <tr>
+                <td colspan="7" style="text-align: center; color: #8b949e; padding: 20px;">No background session clusters active. Spawning standard templates...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Inline Form for creation -->
+        <div id="tmux-creation-bar">
+          <input type="text" id="new-tmux-name" placeholder="Name new terminal session (e.g. build-agent)...">
+          <select id="new-tmux-model">
+            <option value="qwen/qwen-2.5-coder-32b">qwen/qwen-2.5-coder-32b (Recommended)</option>
+            <option value="nousresearch/hermes-3-llama-3.1-405b">nousresearch/hermes-3-llama-3.1-405b</option>
+            <option value="inflection/pi-3">inflection/pi-3</option>
+            <option value="system/bash">Local bash CLI Shell</option>
+          </select>
+          <button class="create-btn" onclick="triggerAddPane()">+ Add Terminal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@rive-app/canvas@2.9.1/js/rive.js"></script>
+  <script>
+    const statusEl = document.getElementById('status');
+    const stateLabel = document.getElementById('state-label');
+    const container = document.getElementById('rive-container');
+    const liveCanvas = document.getElementById('live-canvas');
+    const imageCanvas = document.getElementById('image-canvas');
+    const mediaViewport = document.getElementById('media-viewport');
+    
+    const consoleLogs = document.getElementById('console-logs');
+    const tmuxTbody = document.getElementById('tmux-tbody');
+    const newTmuxName = document.getElementById('new-tmux-name');
+    const newTmuxModel = document.getElementById('new-tmux-model');
+
+    let rInstance = null;
+    let currentState = 'idle';
+    let wsConnection = null;
+
+    // Initialize local high-fidelity Rive runtime inside browser companion!
+    try {
+      rInstance = new rive.Rive({
+        src: 'https://cdn.rive.app/animations/vehicles.riv',
+        canvas: liveCanvas,
+        autoplay: true,
+        stateMachines: 'bumpy',
+        onLoad: () => {
+          rInstance.resizeDrawingSurfaceToCanvas();
+          try {
+            const inputs = rInstance.stateMachineInputs('bumpy');
+            const bumpInput = inputs.find(i => i.name === 'bump');
+            window.triggerBump = () => {
+              if (bumpInput) bumpInput.fire();
+            };
+          } catch (e) {
+            console.error("Local state machine inputs error:", e);
+          }
+        }
+      });
+    } catch (err) {
+      console.error("Local Rive failed to load:", err);
+    }
+
+    function setLocalRiveState(state) {
+      currentState = state.toLowerCase();
+      stateLabel.textContent = state;
+      const colorMap = {
+        IDLE: '#5e6ad2', THINKING: '#d29922', STREAMING: '#58a6ff',
+        TOOL_CALL: '#d2a8ff', ERROR: '#f85149', SUCCESS: '#3fb950',
+      };
+      const activeColor = colorMap[state] || '#5e6ad2';
+      stateLabel.style.borderColor = activeColor;
+      stateLabel.style.color = activeColor;
+      stateLabel.style.background = `${activeColor}10`;
+      container.style.boxShadow = `inset 0 0 60px ${activeColor}10, 0 0 40px ${activeColor}15`;
+
+      if (state === 'THINKING' || state === 'TOOL_CALL') {
+        if (window.triggerBump) window.triggerBump();
+      } else if (state === 'STREAMING') {
+        if (window.triggerBump) {
+          if (!window.bumpInterval) {
+            window.bumpInterval = setInterval(() => {
+              if (currentState === 'streaming' && window.triggerBump) {
+                window.triggerBump();
+              } else {
+                clearInterval(window.bumpInterval);
+                window.bumpInterval = null;
+              }
+            }, 600);
+          }
+        }
+      }
+    }
+
+    function connect() {
+      const ws = new WebSocket(`ws://${location.host}`);
+      wsConnection = ws;
+
+      ws.onopen = () => {
+        statusEl.textContent = 'CONNECTED TO ACTIVE TUI PIPELINE';
+        statusEl.style.color = '#3fb950';
+        statusEl.style.borderColor = '#3fb950';
+        
+        const helloPayload = { type: 'hello' };
+        if (window.Clerk && window.Clerk.user) {
+          helloPayload.clerkUserId = window.Clerk.user.id;
+        }
+        ws.send(JSON.stringify(helloPayload));
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          
+          if (msg.type === 'state' || msg.type === 'welcome') {
+            const state = (msg.state || 'idle').toUpperCase();
+            setLocalRiveState(state);
+          } else if (msg.type === 'frame') {
+            liveCanvas.style.display = 'none';
+            imageCanvas.style.display = 'block';
+            imageCanvas.innerHTML = `<img src="data:image/png;base64,${msg.data}" style="width:100%;height:100%;object-fit:contain;" />`;
+          } else if (msg.type === 'sync') {
+            renderConsoleLogs(msg.history || []);
+          } else if (msg.type === 'tmux') {
+            renderTmuxGrid(msg.data || []);
+          } else if (msg.type === 'media') {
+            renderMediaAsset(msg);
+          } else if (msg.type === 'integrations') {
+            renderIntegrations(msg.data);
+          }
+        } catch (e) {
+          console.error('Parse error:', e);
+        }
+      };
+
+      ws.onclose = () => {
+        statusEl.textContent = 'TUI DISCONNECTED. RECONNECTING...';
+        statusEl.style.color = '#f85149';
+        statusEl.style.borderColor = '#f85149';
+        liveCanvas.style.display = 'block';
+        imageCanvas.style.display = 'none';
+        setTimeout(connect, 2000);
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+    }
+
+    // Dynamic Render logs inside our custom Console card
+    function renderConsoleLogs(history) {
+      if (history.length === 0) {
+        consoleLogs.innerHTML = `
+          <div style="color: #484f58; font-family: 'Fira Code', monospace; text-align: center; margin-top: 40px;">
+            No message histories logged. Prompt the TUI in standard Chat panel.
+          </div>
+        `;
+        return;
+      }
+
+      consoleLogs.innerHTML = history.map(msg => {
+        const timeStr = new Date(msg.timestamp || Date.now()).toLocaleTimeString();
+        let formatted = msg.content || '';
+        
+        // Escape HTML
+        formatted = formatted
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+
+        // Highlight backticks
+        formatted = formatted.replace(/`(.*?)`/g, '<span style="color:#58a6ff; background:#161b22; padding:2px 6px; border-radius:4px;">$1</span>');
+
+        // Simple Markdown Code Block highlighting
+        formatted = formatted.replace(/```([\s\S]*?)```/g, '<div class="code-box">$1</div>');
+
+        // Bullet list points
+        formatted = formatted.replace(/^\s*-\s+(.*)$/gm, '<li style="margin-left: 12px; margin-top: 4px;">$1</li>');
+
+        let msgClass = msg.role === 'user' ? 'user' : 'assistant';
+        let displayRole = msg.role === 'user' ? '▶ You' : '◀ Assistant';
+
+        if (msg.content && msg.content.includes('[SYSTEM]')) {
+          msgClass = 'system';
+          displayRole = '⚙️ Telemetry System Logs';
+          formatted = formatted.replace('⚙️ **[SYSTEM]**', '').trim();
+        }
+
+        return `
+          <div class="log-msg ${msgClass}">
+            <div class="log-header ${msgClass}">
+              <span>${displayRole}</span>
+              <span class="log-time">${timeStr}</span>
+            </div>
+            <div class="log-content">${formatted}</div>
+          </div>
+        `;
+      }).join('');
+      
+      // Auto scroll
+      setTimeout(() => {
+        consoleLogs.scrollTop = consoleLogs.scrollHeight;
+      }, 50);
+    }
+
+    // Dynamic Render TMUX cluster grid registry
+    function renderTmuxGrid(sessions) {
+      if (sessions.length === 0) {
+        tmuxTbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; color: #8b949e; padding: 20px;">No background session clusters active. Spawning templates...</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tmuxTbody.innerHTML = sessions.map(s => {
+        let statusStyle = 'idle';
+        let displayStatus = 'IDLE';
+
+        if (s.name.includes('Hermes')) {
+          statusStyle = 'running';
+          displayStatus = 'TESTING';
+        } else if (s.name.includes('Pi')) {
+          statusStyle = 'indexing';
+          displayStatus = 'INDEXING';
+        } else if (s.name.includes('OpenCode')) {
+          statusStyle = 'idle';
+          displayStatus = 'LISTENING';
+        }
+
+        return `
+          <tr>
+            <td style="font-family: 'Fira Code', monospace; font-weight: 700; color: #58a6ff;">#${s.id}</td>
+            <td style="font-weight: 600; color: #e6edf3;">${s.name}</td>
+            <td style="font-family: 'Fira Code', monospace; font-size: 12px; color: #8b949e;">${s.model.split('/').pop()}</td>
+            <td><span class="status-badge ${statusStyle}">${displayStatus}</span></td>
+            <td style="color:#d2a8ff; font-family: 'Fira Code', monospace;">${s.memory || '14.2 MB'}</td>
+            <td style="color:#3fb950; font-family: 'Fira Code', monospace; font-weight:700;">$${(s.cost || 0.000).toFixed(4)}</td>
+            <td>
+              <button class="action-btn" onclick="triggerKillPane('${s.id}')">Kill Session</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Dynamic Render Media File
+    function renderMediaAsset(msg) {
+      const { mediaType, data, name } = msg;
+      
+      if (mediaType === 'image') {
+        mediaViewport.innerHTML = `
+          <img class="media-render" src="${data}" alt="${name}" />
+          <div style="position: absolute; bottom: 12px; left: 12px; padding: 4px 10px; background: rgba(0,0,0,0.6); color: #8b949e; border-radius:4px; font-size:11px; font-family:'Fira Code',monospace;">IMAGE: ${name}</div>
+        `;
+      } else if (mediaType === 'video') {
+        mediaViewport.innerHTML = `
+          <video class="media-render" src="${data}" autoplay loop controls muted></video>
+          <div style="position: absolute; bottom: 12px; left: 12px; padding: 4px 10px; background: rgba(0,0,0,0.6); color: #8b949e; border-radius:4px; font-size:11px; font-family:'Fira Code',monospace;">VIDEO: ${name}</div>
+        `;
+      }
+    }
+
+    // Dynamic Render Edge Swarm Integrations Status
+    function renderIntegrations(data) {
+      const daytonaEl = document.getElementById('integration-daytona');
+      const triggerEl = document.getElementById('integration-trigger');
+      const composioEl = document.getElementById('integration-composio');
+      const cfEl = document.getElementById('integration-cloudflare');
+
+      if (daytonaEl) {
+        if (data.daytona) {
+          daytonaEl.textContent = 'ACTIVE (Cloud)';
+          daytonaEl.style.color = '#3fb950';
+          daytonaEl.style.background = 'rgba(63,185,80,0.15)';
+        } else {
+          daytonaEl.textContent = 'LOCAL (Fallback)';
+          daytonaEl.style.color = '#d29922';
+          daytonaEl.style.background = 'rgba(210,153,34,0.15)';
+        }
+      }
+
+      if (triggerEl) {
+        if (data.trigger) {
+          triggerEl.textContent = 'ACTIVE (Cloud)';
+          triggerEl.style.color = '#3fb950';
+          triggerEl.style.background = 'rgba(63,185,80,0.15)';
+        } else {
+          triggerEl.textContent = 'MOCK (Local)';
+          triggerEl.style.color = '#d29922';
+          triggerEl.style.background = 'rgba(210,153,34,0.15)';
+        }
+      }
+
+      if (composioEl) {
+        if (data.composio) {
+          composioEl.textContent = 'ACTIVE (Cloud)';
+          composioEl.style.color = '#3fb950';
+          composioEl.style.background = 'rgba(63,185,80,0.15)';
+        } else {
+          composioEl.textContent = 'MOCK (Local)';
+          composioEl.style.color = '#d29922';
+          composioEl.style.background = 'rgba(210,153,34,0.15)';
+        }
+      }
+
+      if (cfEl) {
+        if (data.cloudflare) {
+          cfEl.textContent = 'ACTIVE (Edge DO)';
+          cfEl.style.color = '#3fb950';
+          cfEl.style.background = 'rgba(63,185,80,0.15)';
+        } else {
+          cfEl.textContent = 'LOCAL (Subprocess)';
+          cfEl.style.color = '#d2a8ff';
+          cfEl.style.background = 'rgba(210,168,255,0.15)';
+        }
+      }
+    }
+
+    // Browser to TUI commands dispatcher
+    function triggerAddPane() {
+      const name = newTmuxName.value.trim();
+      const model = newTmuxModel.value;
+
+      if (!name) {
+        alert('Please enter a session name!');
+        return;
+      }
+
+      if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+        wsConnection.send(JSON.stringify({
+          type: 'addTmuxSession',
+          name: name,
+          model: model
+        }));
+        newTmuxName.value = '';
+      }
+    }
+
+    function triggerKillPane(id) {
+      if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+        wsConnection.send(JSON.stringify({
+          type: 'killTmuxSession',
+          id: id
+        }));
+      }
+    }
+
+    async function initClerk() {
+      try {
+        const res = await fetch('/api/clerk-config');
+        const config = await res.json();
+        if (!config.publishableKey) {
+          console.warn("Clerk publishable key not configured on backend");
+          connect();
+          return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+        script.async = true;
+        script.crossOrigin = 'anonymous';
+        script.setAttribute('data-clerk-publishable-key', config.publishableKey);
+        script.onload = async () => {
+          try {
+            await window.Clerk.load();
+            updateClerkUI();
+          } catch (e) {
+            console.error("Error loading Clerk SDK instance:", e);
+          }
+          connect();
+        };
+        script.onerror = () => {
+          console.error("Clerk script load failed");
+          connect();
+        };
+        document.head.appendChild(script);
+      } catch (err) {
+        console.error("Failed to fetch Clerk config:", err);
+        connect();
+      }
+    }
+
+    function updateClerkUI() {
+      const Clerk = window.Clerk;
+      const container = document.getElementById('clerk-auth-container');
+      if (!container) return;
+      
+      if (!Clerk.user) {
+        container.innerHTML = `
+          <button id="clerk-signin-btn" class="create-btn" style="background:#21262d; border:1px solid #30363d; padding:6px 14px; font-size:12px; font-family:'Outfit',sans-serif;">Sign In</button>
+          <button id="clerk-signup-btn" class="create-btn" style="padding:6px 14px; font-size:12px; font-family:'Outfit',sans-serif;">Sign Up</button>
+        `;
+        document.getElementById('clerk-signin-btn').addEventListener('click', () => {
+          Clerk.openSignIn();
+        });
+        document.getElementById('clerk-signup-btn').addEventListener('click', () => {
+          Clerk.openSignUp();
+        });
+      } else {
+        container.innerHTML = `
+          <div id="clerk-user-button"></div>
+        `;
+        Clerk.mountUserButton(document.getElementById('clerk-user-button'), {
+          afterSignOutUrl: window.location.origin
+        });
+      }
+    }
+
+    initClerk();
+  </script>
+</body>
+</html>
