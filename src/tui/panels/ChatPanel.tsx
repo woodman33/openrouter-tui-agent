@@ -13,9 +13,10 @@ import { useEdgeHealth } from '../hooks/useEdgeHealth.js';
 interface ChatPanelProps {
   agent: Agent;
   setInspector: (data: any) => void;
+  focusArea: 'nav' | 'stage';
 }
 
-export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
+export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   const { rows: height, columns: width } = useWindowSize();
   const terminalHeight = height || 24;
   const terminalWidth = width || 80;
@@ -27,21 +28,15 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
 
   const [input, setInput] = useState('');
   const [cursorPos, setCursorPos] = useState(0);
-  const [optionsExpanded, setOptionsExpanded] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [activeSuggestIdx, setActiveSuggestIdx] = useState(0);
   const [userScrolledUp, setUserScrolledUp] = useState(false);
   const [activeCheckpointIdx, setActiveCheckpointIdx] = useState(0);
 
-  // Focus navigation mode: 0 = Input box, 1 = Action buttons
-  const [focusMode, setFocusMode] = useState<number>(0);
-  const [btnHighlightIdx, setBtnHighlightIdx] = useState<number>(0);
-
-  const actionButtons = [
-    { label: '[ Add Tool by URL ]', action: 'porter' },
-    { label: '[ Open Workspace ]', action: 'workspace' },
-    { label: '[ View Last Receipt ]', action: 'proof' }
-  ];
+  // Dynamic layout width computation
+  const leftPanelWidth = focusArea === 'stage'
+    ? terminalWidth
+    : Math.max(20, terminalWidth - 54);
 
   const updateInspectorData = () => {
     setInspector({
@@ -69,7 +64,7 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
     const lines: string[] = [];
     const checkpointsList: { checkpointIndex: number; lineIndex: number }[] = [];
     const messages = state.messages;
-    const leftPanelWidth = Math.max(20, terminalWidth - 54);
+    const textWidth = Math.max(16, leftPanelWidth - 6);
     
     let checkpointCount = 0;
     
@@ -87,36 +82,36 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
         lines.push(...msg.content.split('\n'));
         lines.push('');
       } else if (msg.role === 'assistant') {
-        lines.push(chalk.bold.hex('#a5d6ff')('◀ Assistant'));
-        const parsedMarkdown = renderMarkdown(msg.content, leftPanelWidth);
+        lines.push(chalk.bold.hex('#a98bff')('◀ TIMMY Agent'));
+        const parsedMarkdown = renderMarkdown(msg.content, textWidth);
         lines.push(...parsedMarkdown.split('\n'));
         lines.push('');
-        lines.push(chalk.hex('#3fb950')('☁️  [Saved to Cloudflare Durable Object SQLite Session #default-local-run]'));
+        lines.push(chalk.hex('#43d6a0')('☁️  [Saved to Cloudflare Durable Object SQLite Session #default-local-run]'));
         lines.push('');
       }
     }
 
     if (state.isStreaming) {
       if (state.currentTools.length > 0) {
-        lines.push(chalk.hex('#d2a8ff')(state.currentTools.map(t => `⚙ ${t}`).join('  ')));
+        lines.push(chalk.hex('#a98bff')(state.currentTools.map(t => `⚙ ${t}`).join('  ')));
         lines.push('');
       }
       if (state.streamingText) {
-        lines.push(chalk.bold.hex('#a5d6ff')('◀ Assistant'));
-        const parsedStream = renderMarkdown(state.streamingText, leftPanelWidth);
+        lines.push(chalk.bold.hex('#a98bff')('◀ TIMMY Agent'));
+        const parsedStream = renderMarkdown(state.streamingText, textWidth);
         lines.push(...parsedStream.split('\n'));
-        lines.push(chalk.hex('#8b949e')('▌'));
+        lines.push(chalk.hex('#8a8a94')('▌'));
       } else {
-        lines.push(chalk.hex(theme.accent)('◌ Thinking and invoking swarm orchestrator...'));
+        lines.push(chalk.hex('#a98bff')('◌ Thinking and invoking swarm orchestrator...'));
       }
     }
 
     if (state.error) {
-      lines.push(chalk.bold.hex('#f85149')(`✕ Error: ${state.error.message}`));
+      lines.push(chalk.bold.hex('#ff6b6b')(`✕ Error: ${state.error.message}`));
     }
 
     return { allLines: lines, checkpoints: checkpointsList };
-  }, [state.messages, state.isStreaming, state.streamingText, state.currentTools, state.error, terminalWidth]);
+  }, [state.messages, state.isStreaming, state.streamingText, state.currentTools, state.error, leftPanelWidth]);
 
   useEffect(() => {
     if (checkpoints.length > 0) {
@@ -131,33 +126,15 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
     }
   }, [state.isStreaming, state.isThinking]);
 
-  const leftPanelWidth = Math.max(20, terminalWidth - 54);
   const showAutocomplete = getAutocompleteEnabled() && input.startsWith('/') && !input.includes(' ');
   const matches = showAutocomplete
     ? SLASH_COMMANDS.filter(c => c.command.startsWith(input.split(' ')[0])).slice(0, 5)
     : [];
   const closestMatch = matches[activeSuggestIdx] || matches[0];
 
-  const hasPager = checkpoints.length > 0;
-  const panelHeaderHeight = 2;
-  
-  const showFullMascot = terminalHeight >= 30;
-  const showCompactMascot = terminalHeight < 30 && terminalHeight >= 22;
-  const mascotHeight = showFullMascot ? 14 : (showCompactMascot ? 1 : 0);
-  
-  const buttonsHeight = 4; // Title (1) + 3 menu items (3)
-  
-  const nonFlexibleHeight = 
-    mascotHeight
-    + panelHeaderHeight
-    + (hasPager ? 2 : 1)
-    + (showAutocomplete && matches.length > 0 ? 1 : 0)
-    + buttonsHeight
-    + 3 // Input prompt box
-    + 1; // Stage footer/padding
-  
-  const visibleHeight = Math.max(4, terminalHeight - nonFlexibleHeight - 6);
-  const inputTextWidth = Math.max(1, leftPanelWidth - 14);
+  // Maximize visible height for scrollable chat stage
+  const visibleHeight = Math.max(8, terminalHeight - 11);
+  const inputTextWidth = Math.max(1, leftPanelWidth - 18);
 
   (agent as any).autocompleteActive = showAutocomplete && matches.length > 0;
 
@@ -181,7 +158,7 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
   }, [allLines.length, visibleHeight, userScrolledUp]);
 
   useInput((char, key) => {
-    // Esc closes autocomplete/options
+    // Esc closes autocomplete
     if (key.escape) {
       if (showAutocomplete) {
         setInput('');
@@ -189,35 +166,30 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
       }
     }
 
-    // Key-navigable Action Buttons (focusMode === 1)
-    if (focusMode === 1) {
-      if (key.leftArrow) {
-        setBtnHighlightIdx(prev => Math.max(0, prev - 1));
-        return;
-      }
-      if (key.rightArrow) {
-        setBtnHighlightIdx(prev => Math.min(actionButtons.length - 1, prev + 1));
-        return;
-      }
-      if (key.downArrow || key.tab) {
-        setFocusMode(0);
-        return;
-      }
-      if (key.return) {
-        const btn = actionButtons[btnHighlightIdx];
-        if (btn.action === 'porter') {
-          agent.emit('mode:change' as any, 'porter');
-        } else if (btn.action === 'workspace') {
-          agent.emit('mode:change' as any, 'workspace');
-        } else if (btn.action === 'proof') {
-          agent.emit('mode:change' as any, 'proof');
+    // Unconditional scrolling routing
+    if (key.upArrow) {
+      setScrollOffset(prev => {
+        const next = Math.max(0, prev - 1);
+        setUserScrolledUp(true);
+        return next;
+      });
+      return;
+    }
+    if (key.downArrow) {
+      const totalLines = allLines.length;
+      const maxScroll = Math.max(0, totalLines - visibleHeight);
+      setScrollOffset(prev => {
+        const next = Math.min(maxScroll, prev + 1);
+        if (next >= maxScroll) {
+          setUserScrolledUp(false);
+        } else {
+          setUserScrolledUp(true);
         }
-        return;
-      }
+        return next;
+      });
       return;
     }
 
-    // Normal Input Mode (focusMode === 0)
     if (showAutocomplete && matches.length > 0) {
       if (key.rightArrow) {
         setActiveSuggestIdx(prev => (prev + 1) % matches.length);
@@ -231,36 +203,6 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
         setInput(closestMatch.command + ' ');
         setCursorPos(closestMatch.command.length + 1);
         setActiveSuggestIdx(0);
-        return;
-      }
-    } else {
-      // UpArrow at empty prompt shifts focus up to selectable buttons!
-      if (key.upArrow && !input) {
-        setFocusMode(1);
-        setBtnHighlightIdx(0);
-        return;
-      }
-
-      if (key.upArrow) {
-        setScrollOffset(prev => {
-          const next = Math.max(0, prev - 1);
-          setUserScrolledUp(true);
-          return next;
-        });
-        return;
-      }
-      if (key.downArrow) {
-        const totalLines = allLines.length;
-        const maxScroll = Math.max(0, totalLines - visibleHeight);
-        setScrollOffset(prev => {
-          const next = Math.min(maxScroll, prev + 1);
-          if (next >= maxScroll) {
-            setUserScrolledUp(false);
-          } else {
-            setUserScrolledUp(true);
-          }
-          return next;
-        });
         return;
       }
     }
@@ -294,64 +236,119 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
     }
   });
 
+  // Sleek visual scrollbar render calculations
+  const totalLines = allLines.length;
+  const maxScroll = Math.max(0, totalLines - visibleHeight);
+  
+  const renderScrollbar = () => {
+    if (totalLines <= visibleHeight) {
+      return (
+        <Box flexDirection="column" width={2} alignItems="center" paddingLeft={1}>
+          <Text color="#30363d">▲</Text>
+          {Array.from({ length: visibleHeight - 2 }).map((_, idx) => (
+            <Text key={idx} color="#1f1f26">│</Text>
+          ))}
+          <Text color="#30363d">▼</Text>
+        </Box>
+      );
+    }
+
+    const trackHeight = visibleHeight;
+    const scrollPct = scrollOffset / maxScroll;
+    // Calculate scroll slider handle position safely within vertical height
+    const handlePos = Math.round(scrollPct * (trackHeight - 3)) + 1;
+
+    const track = [];
+    for (let i = 0; i < trackHeight; i++) {
+      if (i === 0) track.push('▲');
+      else if (i === trackHeight - 1) track.push('▼');
+      else if (i === handlePos) track.push('█');
+      else track.push('░');
+    }
+
+    return (
+      <Box flexDirection="column" width={2} alignItems="center" paddingLeft={1}>
+        {track.map((char, idx) => (
+          <Text key={idx} color={char === '█' ? '#4f9cff' : '#1f1f26'}>{char}</Text>
+        ))}
+      </Box>
+    );
+  };
+
   return (
     <Box flexDirection="column" flexGrow={1} width={leftPanelWidth} paddingX={1}>
-      {/* Title */}
-      <Box height={1} justifyContent="space-between" width={leftPanelWidth - 2}>
-        <Box>
-          <Text bold color="#79c0ff">Chat Stage</Text>
-          <Text color={theme.textTertiary}>  </Text>
-          {state.isThinking || state.isStreaming ? <Spinner color="#79c0ff" label="working" /> : <SignalBars width={8} color="#79c0ff" active />}
+      
+      {/* 1. Instruction Highlight Card */}
+      <Box borderStyle="double" borderColor="#5e6ad2" paddingX={2} marginBottom={1} flexDirection="column" width={leftPanelWidth - 2} flexShrink={0}>
+        <Box justifyContent="space-between" width="100%">
+          <Text bold color="#a98bff">🧑‍✈️  TIMMY CHAT CONSOLE: Observability Hub | Intent OS</Text>
+          {state.isThinking || state.isStreaming ? <Spinner color="#a98bff" label="thinking" /> : <SignalBars width={8} color="#a98bff" active />}
+        </Box>
+        <Text color="#8a8a94" dimColor>
+          "Any tool can become a command. Any command can become governed work. Any governed work can become proof."
+        </Text>
+        <Box marginTop={1} justifyContent="space-between">
+          <Text color="#43d6a0" bold>• UP/DOWN: Scroll Chat History</Text>
+          <Text color="#4f9cff" bold>• ENTER: Submit Mission Prompt</Text>
+          <Text color="#a98bff" bold>• ESC: Nav Sidebar Toggle</Text>
+          <Text color="#f5b545" bold>• Ctrl+K: Command Palette</Text>
         </Box>
       </Box>
 
-      {/* Messages Scroll viewport */}
-      <Box flexDirection="column" height={visibleHeight} justifyContent="flex-start" overflowY="hidden" width={leftPanelWidth - 2}>
-        {checkpoints.length === 0 ? (
-          <Box flexGrow={1} flexDirection="column" paddingX={2} width={leftPanelWidth - 2}>
-            <Box justifyContent="center" marginBottom={1}>
-              <Text bold color={edgeColor}>☁️  TIMMY Swarm: Connected D1 Database (latency: {edgeValue})</Text>
-            </Box>
-            
-            <Box flexDirection="column" marginBottom={1}>
-              <Text bold color="#a5d6ff">⚡ VERIFIABLE COGNITIVE VALUE CHAIN:</Text>
-              <Text color="#79c0ff" bold>  URL ──&gt; Ingest ──&gt; Control ──&gt; Proof ──&gt; Reuse</Text>
-            </Box>
+      {/* 2. Messages Viewport with sleek Border and Scrollbar */}
+      <Box borderStyle="round" borderColor="#30363d" width={leftPanelWidth - 2} height={visibleHeight + 2} flexDirection="row" paddingX={1} flexShrink={1} flexGrow={1}>
+        
+        {/* Scrollable text region */}
+        <Box flexDirection="column" flexGrow={1} height={visibleHeight} justifyContent="flex-start" overflowY="hidden">
+          {checkpoints.length === 0 ? (
+            <Box flexGrow={1} flexDirection="column" paddingX={2} paddingY={1}>
+              <Box justifyContent="center" marginBottom={1}>
+                <Text bold color={edgeColor}>☁️  TIMMY Swarm: Connected Durable Object SQLite Session (latency: {edgeValue})</Text>
+              </Box>
+              
+              <Box flexDirection="column" marginBottom={1} borderStyle="single" borderColor="#30363d" paddingX={1}>
+                <Text bold color="#a98bff">⚡ VERIFIABLE COGNITIVE VALUE CHAIN:</Text>
+                <Text color="#4f9cff" bold>  Capability (URL) ──&gt; Control (Scan) ──&gt; Proof (Receipt) ──&gt; Reuse (CLI)</Text>
+              </Box>
 
-            <Box flexDirection="column" marginBottom={0}>
-              <Text color="#e6edf3"><Text bold color="#d2a8ff">🔧 MCPorter</Text> ─ Scans server URLs, compiles secure TS SDKs &amp; sandboxed CLIs.</Text>
+              <Box flexDirection="column" marginBottom={0}>
+                <Text color="#e6e6ea"><Text bold color="#43d6a0">🔧 MCPorter</Text> ─ Scans server URLs, compiles secure TS SDKs &amp; sandboxed CLIs.</Text>
+              </Box>
+              <Box flexDirection="column" marginBottom={0}>
+                <Text color="#e6e6ea"><Text bold color="#4f9cff">🖥️ cmux Pro</Text> ─ Multi-cell virtual terminal workspace launcher with clickable macOS panes.</Text>
+              </Box>
+              <Box flexDirection="column" marginBottom={0}>
+                <Text color="#e6e6ea"><Text bold color="#a98bff">🤖 OpenRouter</Text> ─ Multi-model routing, automatic fallback hierarchies, and spend budget meters.</Text>
+              </Box>
+              <Box flexDirection="column" marginBottom={0}>
+                <Text color="#e6e6ea"><Text bold color="#f5b545">⚙️ Pi Agent</Text> ─ Coordinates subagents/teams and synchronizes Durable Object KV contexts.</Text>
+              </Box>
+              <Box flexDirection="column" marginBottom={0}>
+                <Text color="#e6e6ea"><Text bold color="#ff6b6b">🛡️ Hermes</Text> ─ Deep architectural research planner, code safety reviewer, and compliance audits.</Text>
+              </Box>
             </Box>
-            <Box flexDirection="column" marginBottom={0}>
-              <Text color="#e6edf3"><Text bold color="#79c0ff">🖥️ cmux Pro</Text> ─ Multi-cell virtual terminal workspace launcher with clickable macOS panes.</Text>
-            </Box>
-            <Box flexDirection="column" marginBottom={0}>
-              <Text color="#e6edf3"><Text bold color="#3fb950">🤖 OpenRouter</Text> ─ Multi-model routing, automatic fallback hierarchies, and spend budget meters.</Text>
-            </Box>
-            <Box flexDirection="column" marginBottom={0}>
-              <Text color="#e6edf3"><Text bold color="#e3b341">⚙️ Pi Agent</Text> ─ Coordinates subagents/teams and synchronizes Durable Object KV contexts.</Text>
-            </Box>
-            <Box flexDirection="column" marginBottom={0}>
-              <Text color="#e6edf3"><Text bold color="#ff7b72">🛡️ Hermes</Text> ─ Deep architectural research planner, code safety reviewer, and compliance audits.</Text>
-            </Box>
-          </Box>
-        ) : (
-          visibleLines.map((line, i) => (
-            <Text key={i} wrap="wrap">{line}</Text>
-          ))
-        )}
+          ) : (
+            visibleLines.map((line, i) => (
+              <Text key={i} wrap="wrap">{line}</Text>
+            ))
+          )}
+        </Box>
+
+        {/* Dynamic visual scrollbar track */}
+        {renderScrollbar()}
       </Box>
 
-      {/* Autocomplete Suggestions */}
+      {/* 3. Autocomplete Suggestions */}
       {showAutocomplete && matches.length > 0 && (
-        <Box paddingX={1} minHeight={1} width={leftPanelWidth - 2} flexDirection="row" flexWrap="wrap" marginBottom={1}>
+        <Box paddingX={1} minHeight={1} width={leftPanelWidth - 2} flexDirection="row" flexWrap="wrap" marginBottom={1} flexShrink={0}>
           <Box marginRight={2}>
-            <Text color={theme.textTertiary}>Suggestions: </Text>
+            <Text color="#8a8a94">Suggestions: </Text>
           </Box>
           {matches.map((m, idx) => {
             const isCurrent = idx === activeSuggestIdx;
             return (
               <Box key={m.command} marginRight={4}>
-                <Text color={isCurrent ? '#58a6ff' : theme.textSecondary} bold={isCurrent}>
+                <Text color={isCurrent ? '#4f9cff' : '#8a8a94'} bold={isCurrent}>
                   {isCurrent ? `▶ ${m.command}` : m.command}
                 </Text>
               </Box>
@@ -360,46 +357,12 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
         </Box>
       )}
 
-      {/* TIMMY Quartermaster Guide Banner/Card */}
-      {showFullMascot ? (
-        <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginY={0} flexDirection="column" width={leftPanelWidth - 2} flexShrink={0}>
-          <Text bold color="#79c0ff">🧑‍✈️  TIMMY Quartermaster Mascot Guide</Text>
-          <Text color="#8b949e">
-            "Quartermaster ready, operator. Swarm telemetry JTI visa auth is fully secure. Input your prompt below, or use the Left Nav list to configure Swarm Blueprints and run evidence chambers."
-          </Text>
-        </Box>
-      ) : (
-        showCompactMascot && (
-          <Box paddingX={2} marginY={0} flexShrink={0}>
-            <Text color="#8b949e">🧑‍✈️ <Text bold color="#79c0ff">TIMMY:</Text> Swarm telemetry secure. Enter prompt below.</Text>
-          </Box>
-        )
-      )}
-
-      {/* Selectable Action Menu */}
-      <Box paddingX={2} marginY={0} flexDirection="column" width={leftPanelWidth - 2} flexShrink={0}>
-        <Text bold color="#d2a8ff">📱 Brief Action Menu:</Text>
-        <Box flexDirection="column" marginTop={0}>
-          {actionButtons.map((btn, idx) => {
-            const isButtonFocused = focusMode === 1 && idx === btnHighlightIdx;
-            return (
-              <Box key={btn.action}>
-                <Text bold={isButtonFocused} color={isButtonFocused ? '#d2a8ff' : '#8b949e'}>
-                  {isButtonFocused ? '▶ ' : '  '}
-                  {btn.label}
-                </Text>
-              </Box>
-            );
-          })}
-        </Box>
-      </Box>
-
-      {/* Input prompt box */}
-      <Box borderStyle="single" borderColor={focusMode === 0 ? "#5e6ad2" : "#30363d"} paddingX={1} width={leftPanelWidth - 2} flexShrink={0}>
-        <Text color={theme.textTertiary}>[ brief-chat ] </Text>
-        <Text color="#79c0ff">{state.isThinking ? '◌ ' : '▶ '} </Text>
-        <Text color={theme.textPrimary} wrap="truncate">{truncateVisible(input, inputTextWidth)}</Text>
-        <Text color="#8b949e">{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
+      {/* 4. Input prompt box */}
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} width={leftPanelWidth - 2} flexShrink={0} marginTop={1}>
+        <Text color="#8a8a94">[ brief-chat ] </Text>
+        <Text color="#4f9cff">{state.isThinking ? '◌ ' : '▶ '} </Text>
+        <Text color="#e6e6ea" wrap="truncate">{truncateVisible(input, inputTextWidth)}</Text>
+        <Text color="#a98bff">{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
       </Box>
     </Box>
   );

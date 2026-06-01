@@ -99,6 +99,8 @@ export function Layout({
   const headerLeft = ` TIMMY | Verifiable Agent Trust OS`;
   const headerRight = `[COST: $${totalCost.toFixed(4)}]`;
 
+  const isChatActiveAndFocused = mode === 'brief' && focusArea === 'stage';
+
   return (
     <Box flexDirection="column" width={terminalWidth} height={terminalHeight}>
       {/* Top Title Bar */}
@@ -120,42 +122,44 @@ export function Layout({
       <Box flexGrow={1} flexShrink={1} flexDirection="row">
         
         {/* 1. Left Column: Persistent VerticalNav (width 24) */}
-        <Box width={24} flexDirection="column" borderStyle="single" borderColor="#30363d" borderRight={true} borderLeft={false} borderTop={false} borderBottom={false} paddingX={1}>
-          <Box marginBottom={1} height={1}>
-            <Text bold color={focusArea === 'nav' ? '#d2a8ff' : '#8b949e'}>🧭 LEFT NAV DECK</Text>
-          </Box>
-          {navItems.map((item, idx) => {
-            const isFocused = focusedMode === item.mode && focusArea === 'nav';
-            const isActiveStage = mode === item.mode;
-            
-            let bullet = '  ';
-            if (isFocused) bullet = '▶ ';
-            else if (isActiveStage) bullet = '● ';
+        {!isChatActiveAndFocused && (
+          <Box width={24} flexDirection="column" borderStyle="single" borderColor="#30363d" borderRight={true} borderLeft={false} borderTop={false} borderBottom={false} paddingX={1}>
+            <Box marginBottom={1} height={1}>
+              <Text bold color={focusArea === 'nav' ? '#d2a8ff' : '#8b949e'}>🧭 LEFT NAV DECK</Text>
+            </Box>
+            {navItems.map((item, idx) => {
+              const isFocused = focusedMode === item.mode && focusArea === 'nav';
+              const isActiveStage = mode === item.mode;
+              
+              let bullet = '  ';
+              if (isFocused) bullet = '▶ ';
+              else if (isActiveStage) bullet = '● ';
 
-            let color = '#8b949e';
-            if (isFocused) color = '#ffffff';
-            else if (isActiveStage) color = modeColors[item.mode];
+              let color = '#8b949e';
+              if (isFocused) color = '#ffffff';
+              else if (isActiveStage) color = modeColors[item.mode];
 
-            return (
-              <Box key={item.mode} flexDirection="column" marginBottom={1}>
-                <Box>
-                  <Text bold={isFocused || isActiveStage} color={color}>
-                    {bullet}{item.label}
-                  </Text>
+              return (
+                <Box key={item.mode} flexDirection="column" marginBottom={1}>
+                  <Box>
+                    <Text bold={isFocused || isActiveStage} color={color}>
+                      {bullet}{item.label}
+                    </Text>
+                  </Box>
+                  <Box paddingLeft={2}>
+                    <Text dimColor color="#8b949e">{item.desc}</Text>
+                  </Box>
                 </Box>
-                <Box paddingLeft={2}>
-                  <Text dimColor color="#8b949e">{item.desc}</Text>
-                </Box>
-              </Box>
-            );
-          })}
-          <Box flexGrow={1} />
-          <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false}>
-            <Text color="#8b949e" dimColor>Tab / Shift+Tab</Text>
-            <Text color="#8b949e" dimColor>to move navigation.</Text>
-            <Text color="#8b949e" dimColor>Enter to select.</Text>
+              );
+            })}
+            <Box flexGrow={1} />
+            <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false}>
+              <Text color="#8b949e" dimColor>Tab / Shift+Tab</Text>
+              <Text color="#8b949e" dimColor>to move navigation.</Text>
+              <Text color="#8b949e" dimColor>Enter to select.</Text>
+            </Box>
           </Box>
-        </Box>
+        )}
 
         {/* 2. Center Column: Main Stage (flexGrow) */}
         <Box flexGrow={1} flexShrink={1} flexDirection="column" paddingX={1} paddingTop={1}>
@@ -163,53 +167,55 @@ export function Layout({
         </Box>
 
         {/* 3. Right Column: Persistent TrustInspector (width 28) */}
-        <Box width={28} flexDirection="column" borderStyle="single" borderColor="#30363d" borderLeft={true} borderRight={false} borderTop={false} borderBottom={false} paddingX={1}>
-          <Box marginBottom={1} height={1} justifyContent="space-between">
-            <Text bold color="#79c0ff">🛡️ TRUST INSPECTOR</Text>
-          </Box>
-          
-          <Box borderStyle="round" borderColor={modeColors[mode]} paddingX={1} flexDirection="column">
-            <Text bold color={modeColors[mode]} wrap="truncate">{activeInspector.title}</Text>
-            <Text color="#8b949e" dimColor wrap="truncate">{activeInspector.subtitle}</Text>
-          </Box>
+        {!isChatActiveAndFocused && (
+          <Box width={28} flexDirection="column" borderStyle="single" borderColor="#30363d" borderLeft={true} borderRight={false} borderTop={false} borderBottom={false} paddingX={1}>
+            <Box marginBottom={1} height={1} justifyContent="space-between">
+              <Text bold color="#79c0ff">🛡️ TRUST INSPECTOR</Text>
+            </Box>
+            
+            <Box borderStyle="round" borderColor={modeColors[mode]} paddingX={1} flexDirection="column">
+              <Text bold color={modeColors[mode]} wrap="truncate">{activeInspector.title}</Text>
+              <Text color="#8b949e" dimColor wrap="truncate">{activeInspector.subtitle}</Text>
+            </Box>
 
-          <Box marginTop={1} flexDirection="column">
-            <Box justifyContent="space-between">
-              <Text color="#8b949e">Class:</Text>
-              <Text bold color="#e6edf3">{activeInspector.type}</Text>
+            <Box marginTop={1} flexDirection="column">
+              <Box justifyContent="space-between">
+                <Text color="#8b949e">Class:</Text>
+                <Text bold color="#e6edf3">{activeInspector.type}</Text>
+              </Box>
+              <Box justifyContent="space-between">
+                <Text color="#8b949e">Status:</Text>
+                <Text bold color="#3fb950">[{activeInspector.status}]</Text>
+              </Box>
+              <Box justifyContent="space-between">
+                <Text color="#8b949e">Risk Level:</Text>
+                <Text bold color={activeInspector.risk === 'HIGH' ? '#f85149' : activeInspector.risk === 'MEDIUM' ? '#d29922' : '#3fb950'}>{activeInspector.risk}</Text>
+              </Box>
+              <Box justifyContent="space-between">
+                <Text color="#8b949e">Scope:</Text>
+                <Text color="#79c0ff" wrap="truncate">{activeInspector.scope}</Text>
+              </Box>
             </Box>
-            <Box justifyContent="space-between">
-              <Text color="#8b949e">Status:</Text>
-              <Text bold color="#3fb950">[{activeInspector.status}]</Text>
-            </Box>
-            <Box justifyContent="space-between">
-              <Text color="#8b949e">Risk Level:</Text>
-              <Text bold color={activeInspector.risk === 'HIGH' ? '#f85149' : activeInspector.risk === 'MEDIUM' ? '#d29922' : '#3fb950'}>{activeInspector.risk}</Text>
-            </Box>
-            <Box justifyContent="space-between">
-              <Text color="#8b949e">Scope:</Text>
-              <Text color="#79c0ff" wrap="truncate">{activeInspector.scope}</Text>
-            </Box>
-          </Box>
 
-          <Box height={1} marginY={1}>
-            <Text color="#30363d">──────────────────────────</Text>
-          </Box>
-
-          <Box flexDirection="column" flexGrow={1}>
-            <Box marginBottom={1}>
-              <Text bold color="#e6edf3">Authority Visas & Details:</Text>
+            <Box height={1} marginY={1}>
+              <Text color="#30363d">──────────────────────────</Text>
             </Box>
-            {activeInspector.details.map((detail: string, dIdx: number) => (
-              <Text key={dIdx} color="#c9d1d9" wrap="wrap">{detail}</Text>
-            ))}
-          </Box>
 
-          <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false}>
-            <Text color="#8b949e" dimColor>Esc: return to nav</Text>
-            <Text color="#8b949e" dimColor>Ctrl+G: release lock</Text>
+            <Box flexDirection="column" flexGrow={1}>
+              <Box marginBottom={1}>
+                <Text bold color="#e6edf3">Authority Visas & Details:</Text>
+              </Box>
+              {activeInspector.details.map((detail: string, dIdx: number) => (
+                <Text key={dIdx} color="#c9d1d9" wrap="wrap">{detail}</Text>
+              ))}
+            </Box>
+
+            <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false}>
+              <Text color="#8b949e" dimColor>Esc: return to nav</Text>
+              <Text color="#8b949e" dimColor>Ctrl+G: release lock</Text>
+            </Box>
           </Box>
-        </Box>
+        )}
       </Box>
 
       {/* Operator controls and Safety Global Bar */}

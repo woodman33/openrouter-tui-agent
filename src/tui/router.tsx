@@ -16,12 +16,13 @@ interface ModeRouterProps {
   mode: Mode;
   agent: Agent;
   setInspector: (data: any) => void;
+  focusArea: 'nav' | 'stage';
 }
 
-export function ModeRouter({ mode, agent, setInspector }: ModeRouterProps) {
+export function ModeRouter({ mode, agent, setInspector, focusArea }: ModeRouterProps) {
   switch (mode) {
     case 'brief':
-      return <ChatPanel agent={agent} setInspector={setInspector} />;
+      return <ChatPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
     case 'discovery':
       return <DashboardPanel agent={agent} setInspector={setInspector} />;
     case 'teams':
@@ -35,7 +36,7 @@ export function ModeRouter({ mode, agent, setInspector }: ModeRouterProps) {
     case 'options':
       return <OptionsPanel agent={agent} setInspector={setInspector} />;
     default:
-      return <ChatPanel agent={agent} setInspector={setInspector} />;
+      return <ChatPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
   }
 }
 

@@ -276,7 +276,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       focusArea={focusArea}
     >
       <Box flexGrow={1} flexShrink={1}>
-        <ModeRouter mode={mode} agent={agent} setInspector={setInspectorSafe} />
+        <ModeRouter mode={mode} agent={agent} setInspector={setInspectorSafe} focusArea={focusArea} />
 
         {/* Command Palette Overlay */}
         {commandPaletteOpen && (
