@@ -1,0 +1,2 @@
+# tmux-palette is vendored into the build context at build time, not committed.
+tmux-palette/

@@ -1,8 +1,10 @@
-# 🤖 OpenRouter TUI with Rive Animations
+# TIMMY TUI
 
-Welcome to **OpenRouter TUI**, a revolutionary, systems-thinking-driven terminal UI framework combining **OpenRouter's state-of-the-art AI Agent SDK** with interactive **Rive vector animations** and **Cloudflare's serverless edge capabilities**.
+TIMMY TUI is a terminal-first Agent Trust OS for governed AI agent execution, provider routing, verified context packs, AgentPass entitlements, and tamper-evident `.agentrun` receipts.
 
-This project provides an aesthetic, ultra-fluid, multi-mode terminal interface for interacting with over 300+ language models, utilizing capability-adaptive graphics pipelines to display real-time animations inline in standard terminals (Kitty, iTerm2, WezTerm) or fallback browser companion windows.
+OpenRouter is one supported model provider inside TIMMY, not the product itself. Trust the receipt, not the model.
+
+This project provides a multi-mode terminal interface for governed agent work, using local-first run receipts, provider routing, and optional edge audit trails. Rive-based visuals are future/experimental and are not part of the V1.5 launch surface.
 
 ---
 
@@ -24,7 +26,7 @@ The system is built on a highly modular, decoupled architecture consisting of fi
                                │  │      Cloudflare Agents SDK (Durable Objects)     │  │
                                │  │  - Holds active conversation SQLite state        │  │
                                │  │  - Manages multi-agent routing (Swarm)           │  │
-                               │  │  - Dispatches Rive triggers via WebSocket        │  │
+                               │  │  - Dispatches companion triggers via WebSocket    │  │
                                │  └──────┬──────────────────────┬─────────────┬──────┘  │
                                │         │                      │             │         │
                                │         ▼                      ▼             ▼         │
@@ -37,9 +39,9 @@ The system is built on a highly modular, decoupled architecture consisting of fi
 
 1. **Terminal Capability & Graphics Pipeline (`src/graphics/`)**
    - Automatically queries terminal support for advanced graphic protocols (Kitty, iTerm2, Sixel) at runtime.
-   - For high-end terminals (Kitty, WezTerm, iTerm2, Ghostty, Warp), it leverages a headless **Playwright browser rendering pipeline** to capture Rive state machine animations as PNG frames at 20fps and draw them directly inside the terminal cells.
-   - For standard terminals, it triggers a lightweight local WebSocket **Companion Web Server** that auto-opens a browser page beside your terminal containing the reactive Rive mascot, syncing animatic triggers seamlessly.
-   - For basic terminals, it falls back to a highly polished **custom ANSI-art rendering engine** mimicking Rive state-changes inside Ink borders.
+   - For high-end terminals (Kitty, WezTerm, iTerm2, Ghostty, Warp), it can use a headless **Playwright browser rendering pipeline** for future/experimental companion visuals.
+   - For standard terminals, it triggers a lightweight local WebSocket **Companion Web Server** that can sync future/experimental companion states beside your terminal.
+   - For basic terminals, it falls back to a custom ANSI-art rendering engine mirroring companion state changes inside Ink borders.
 
 2. **Agent Core Layer (`src/agent/`)**
    - Completely standalone and UI-agnostic core orchestrator using the latest `@openrouter/sdk` with item-based streaming (`getItemsStream`) allowing multi-turn conversations and automatic tool-execution.
@@ -51,7 +53,7 @@ The system is built on a highly modular, decoupled architecture consisting of fi
    - Structured around a single-layout multiplexer where users can instantly hot-swap between multiple built-in panels (Chat, Code Review, Multi-Agent Dashboard, Model Explorer) using simple keys.
 
 4. **Multi-Mode Plugin System (`src/modes/`)**
-   - General-purpose mode architecture where plugins register custom tool sets, TUI panels, hotkeys, and Rive state-mappings seamlessly.
+   - General-purpose mode architecture where plugins register custom tool sets, TUI panels, hotkeys, and companion state mappings.
 
 5. **Cloudflare Edge Layer (`docs/cloudflare-features.md`)**
    - Fully architected to offload heavy operations (like untrusted code execution, global state synchronization, and background worker logs) safely onto Cloudflare’s Edge network using **Sandbox SDK (Firecracker microVMs)**, **Durable Objects**, **Email Workers**, and **Pages Functions**.
@@ -61,7 +63,7 @@ The system is built on a highly modular, decoupled architecture consisting of fi
 ## 📂 Project Directory Structure
 
 ```
-openrouter-tui/
+timmy-tui/
 ├── cli.tsx                                 # TUI Interactive CLI Entry Point
 ├── headless.ts                             # Headless Agentic CLI Entry Point
 ├── package.json                            # Configuration & NPM Dependencies
@@ -94,10 +96,10 @@ openrouter-tui/
     │   ├── sixel-pipeline.ts               # Sixel bit-grid ANSI downsampler
     │   ├── companion-pipeline.ts           # WebSocket frame broad-caster
     │   ├── ansi-pipeline.ts                # Polish-character mascot state renderer
-    │   └── frame-extractor.ts              # Playwright Rive Canvas frame grabbing driver
+    │   └── frame-extractor.ts              # Playwright future/experimental companion frame driver
     ├── companion/
     │   ├── server.ts                       # Express WebSocket local sync broker
-    │   ├── sync.ts                         # WebSocket Rive State synchronization hook
+    │   ├── sync.ts                         # WebSocket companion state synchronization hook
     │   ├── qr.ts                           # Terminal QR generator for companion links
     │   └── client/
     │       └── index.html                  # Client companion web page containing fallback canvas
@@ -118,7 +120,7 @@ openrouter-tui/
         │   ├── GlowBorder.tsx              # Glowing box borders
         │   ├── ModelBadge.tsx              # Dynamic color provider models badge
         │   ├── ProgressBar.tsx             # Shimmer loading progress bar
-        │   ├── RiveMascotPanel.tsx         # Sidebar Rive/ASCII visual container
+        │   ├── RiveMascotPanel.tsx         # Sidebar future/experimental visual container
         │   └── TypewriterText.tsx          # Typewriter letter animator
         └── panels/
             └── ChatPanel.tsx               # Main chat messages & text input controller
@@ -137,8 +139,8 @@ Get your key at [openrouter.ai/settings/keys](https://openrouter.ai/settings/key
 
 Clone and install dependencies:
 ```bash
-git clone https://github.com/your-username/openrouter-tui.git
-cd openrouter-tui
+git clone https://github.com/your-username/timmy-tui.git
+cd timmy-tui
 npm install
 ```
 

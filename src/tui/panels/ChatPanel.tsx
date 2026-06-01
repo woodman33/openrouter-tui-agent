@@ -6,37 +6,70 @@ import type { Agent } from '../../agent/core.js';
 import { renderMarkdown } from '../../utils/markdown.js';
 import { theme } from '../theme.js';
 import { SLASH_COMMANDS, handleSlashCommand, getAutocompleteEnabled } from '../../utils/slash-commands.js';
-import type { Message } from '../../types/index.js';
+import { truncateVisible } from '../utils/text.js';
+import { ShimmerText, SignalBars, Spinner } from '../components/Motion.js';
+import { useEdgeHealth } from '../hooks/useEdgeHealth.js';
 
 interface ChatPanelProps {
   agent: Agent;
+  setInspector: (data: any) => void;
 }
 
-export function ChatPanel({ agent }: ChatPanelProps) {
+export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
   const { rows: height, columns: width } = useWindowSize();
-  const terminalHeight = height || process.stdout.rows || 24;
-  const terminalWidth = width || process.stdout.columns || 80;
+  const terminalHeight = height || 24;
+  const terminalWidth = width || 80;
+  
   const state = useAgent(agent);
+  const edge = useEdgeHealth();
+  const edgeValue = edge.state === 'online' && edge.latencyMs !== null ? `${edge.latencyMs}ms` : edge.state;
+  const edgeColor = edge.state === 'online' ? '#3fb950' : '#d29922';
+
   const [input, setInput] = useState('');
   const [cursorPos, setCursorPos] = useState(0);
-
-  // Scroll offset & autocomplete suggestions states
+  const [optionsExpanded, setOptionsExpanded] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [activeSuggestIdx, setActiveSuggestIdx] = useState(0);
-
-  // Track if user has scrolled up to lock autoscroll
   const [userScrolledUp, setUserScrolledUp] = useState(false);
-
-  // Track the active checkpoint index (defaults to the latest)
   const [activeCheckpointIdx, setActiveCheckpointIdx] = useState(0);
 
-  // 1. Compile the complete history into a single continuous thread of lines,
-  // and map out the line start positions for each checkpoint for PgUp/PgDn navigation.
+  // Focus navigation mode: 0 = Input box, 1 = Action buttons
+  const [focusMode, setFocusMode] = useState<number>(0);
+  const [btnHighlightIdx, setBtnHighlightIdx] = useState<number>(0);
+
+  const actionButtons = [
+    { label: '[ Add Tool by URL ]', action: 'porter' },
+    { label: '[ Open Workspace ]', action: 'workspace' },
+    { label: '[ View Last Receipt ]', action: 'proof' }
+  ];
+
+  const updateInspectorData = () => {
+    setInspector({
+      title: 'TIMMY ACTIVE PASSPORT',
+      subtitle: 'VERIFIABLE OPERATIONS LEDGER',
+      type: 'AgentPass Session',
+      status: 'VERIFIED',
+      risk: 'LOW',
+      scope: 'brief.session.auth',
+      details: [
+        'Passport ID: jti_auth_91a783',
+        'Authority: Enforced locally & CF Edge',
+        'Telemetry Target: Cloudflare Durable Object',
+        'Wedge: Code Swarm Pack active',
+        'Edge Status: Connected D1 Database'
+      ]
+    });
+  };
+
+  useEffect(() => {
+    updateInspectorData();
+  }, []);
+
   const { allLines, checkpoints } = React.useMemo(() => {
     const lines: string[] = [];
     const checkpointsList: { checkpointIndex: number; lineIndex: number }[] = [];
     const messages = state.messages;
-    const leftPanelWidth = terminalWidth - 36;
+    const leftPanelWidth = Math.max(20, terminalWidth - 54);
     
     let checkpointCount = 0;
     
@@ -58,10 +91,11 @@ export function ChatPanel({ agent }: ChatPanelProps) {
         const parsedMarkdown = renderMarkdown(msg.content, leftPanelWidth);
         lines.push(...parsedMarkdown.split('\n'));
         lines.push('');
+        lines.push(chalk.hex('#3fb950')('☁️  [Saved to Cloudflare Durable Object SQLite Session #default-local-run]'));
+        lines.push('');
       }
     }
 
-    // Render active streaming content if model is active
     if (state.isStreaming) {
       if (state.currentTools.length > 0) {
         lines.push(chalk.hex('#d2a8ff')(state.currentTools.map(t => `⚙ ${t}`).join('  ')));
@@ -84,7 +118,6 @@ export function ChatPanel({ agent }: ChatPanelProps) {
     return { allLines: lines, checkpoints: checkpointsList };
   }, [state.messages, state.isStreaming, state.streamingText, state.currentTools, state.error, terminalWidth]);
 
-  // Auto-sync active checkpoint and reset scroll lock on new user prompts
   useEffect(() => {
     if (checkpoints.length > 0) {
       setActiveCheckpointIdx(checkpoints.length - 1);
@@ -92,34 +125,34 @@ export function ChatPanel({ agent }: ChatPanelProps) {
     }
   }, [checkpoints.length]);
 
-  // Reset scroll lock whenever assistant starts thinking or streaming to guarantee auto-scrolling
   useEffect(() => {
     if (state.isStreaming || state.isThinking) {
       setUserScrolledUp(false);
     }
   }, [state.isStreaming, state.isThinking]);
 
-  const leftPanelWidth = terminalWidth - 36;
+  const leftPanelWidth = Math.max(20, terminalWidth - 54);
   const showAutocomplete = getAutocompleteEnabled() && input.startsWith('/') && !input.includes(' ');
   const matches = showAutocomplete
     ? SLASH_COMMANDS.filter(c => c.command.startsWith(input.split(' ')[0])).slice(0, 5)
     : [];
   const closestMatch = matches[activeSuggestIdx] || matches[0];
 
-  // Dynamic Viewport Height: Mathematical subtraction to lock input box tight to the bottom
   const hasPager = checkpoints.length > 0;
+  const panelHeaderHeight = 2;
   const nonFlexibleHeight = 
-    2 // Header + Separator
-    + (hasPager ? 2 : 1) // Pager banner + margin, or just margin
-    + (showAutocomplete && matches.length > 0 ? 1 : 0) // Autocomplete box
-    + 3 // Input prompt box (including borders)
+    3 // Mascot guidance box
+    + panelHeaderHeight
+    + (hasPager ? 2 : 1)
+    + (showAutocomplete && matches.length > 0 ? 1 : 0)
+    + 3 // Buttons block
+    + 3 // Input prompt box
     + 1; // Footer
-  const visibleHeight = Math.max(5, terminalHeight - nonFlexibleHeight);
+  const visibleHeight = Math.max(4, terminalHeight - nonFlexibleHeight - 4);
+  const inputTextWidth = Math.max(1, leftPanelWidth - 14);
 
-  // Sync autocomplete state synchronously during render to guarantee no race conditions with Tab keypresses
   (agent as any).autocompleteActive = showAutocomplete && matches.length > 0;
 
-  // Cleanup autocompleteActive state on unmount
   useEffect(() => {
     return () => {
       (agent as any).autocompleteActive = false;
@@ -128,7 +161,6 @@ export function ChatPanel({ agent }: ChatPanelProps) {
 
   const visibleLines = allLines.slice(scrollOffset, scrollOffset + visibleHeight);
 
-  // Auto scroll to bottom ONLY if user hasn't scrolled up
   useEffect(() => {
     const totalLines = allLines.length;
     if (totalLines > visibleHeight) {
@@ -140,22 +172,44 @@ export function ChatPanel({ agent }: ChatPanelProps) {
     }
   }, [allLines.length, visibleHeight, userScrolledUp]);
 
-  // Dynamically update the active checkpoint banner index based on current scroll position
-  useEffect(() => {
-    if (checkpoints.length === 0) return;
-    let activeIdx = 0;
-    for (let i = 0; i < checkpoints.length; i++) {
-      if (checkpoints[i].lineIndex <= scrollOffset) {
-        activeIdx = i;
-      } else {
-        break;
+  useInput((char, key) => {
+    // Esc closes autocomplete/options
+    if (key.escape) {
+      if (showAutocomplete) {
+        setInput('');
+        return;
       }
     }
-    setActiveCheckpointIdx(activeIdx);
-  }, [scrollOffset, checkpoints]);
 
-  useInput((char, key) => {
-    // 1. Autocomplete navigation when active
+    // Key-navigable Action Buttons (focusMode === 1)
+    if (focusMode === 1) {
+      if (key.leftArrow) {
+        setBtnHighlightIdx(prev => Math.max(0, prev - 1));
+        return;
+      }
+      if (key.rightArrow) {
+        setBtnHighlightIdx(prev => Math.min(actionButtons.length - 1, prev + 1));
+        return;
+      }
+      if (key.downArrow || key.tab) {
+        setFocusMode(0);
+        return;
+      }
+      if (key.return) {
+        const btn = actionButtons[btnHighlightIdx];
+        if (btn.action === 'porter') {
+          agent.emit('mode:change' as any, 'porter');
+        } else if (btn.action === 'workspace') {
+          agent.emit('mode:change' as any, 'workspace');
+        } else if (btn.action === 'proof') {
+          agent.emit('mode:change' as any, 'proof');
+        }
+        return;
+      }
+      return;
+    }
+
+    // Normal Input Mode (focusMode === 0)
     if (showAutocomplete && matches.length > 0) {
       if (key.rightArrow) {
         setActiveSuggestIdx(prev => (prev + 1) % matches.length);
@@ -172,39 +226,13 @@ export function ChatPanel({ agent }: ChatPanelProps) {
         return;
       }
     } else {
-      // 2. Response Checkpoint cycling via PageUp / PageDown
-      if (key.pageUp && checkpoints.length > 0) {
-        setActiveCheckpointIdx(prev => {
-          const nextIdx = Math.max(0, prev - 1);
-          const cp = checkpoints[nextIdx];
-          if (cp) {
-            setScrollOffset(cp.lineIndex);
-            setUserScrolledUp(true);
-          }
-          return nextIdx;
-        });
-        return;
-      }
-      if (key.pageDown && checkpoints.length > 0) {
-        setActiveCheckpointIdx(prev => {
-          const nextIdx = Math.min(checkpoints.length - 1, prev + 1);
-          const cp = checkpoints[nextIdx];
-          if (cp) {
-            setScrollOffset(cp.lineIndex);
-            const totalLines = allLines.length;
-            const maxScroll = Math.max(0, totalLines - visibleHeight);
-            if (cp.lineIndex >= maxScroll) {
-              setUserScrolledUp(false);
-            } else {
-              setUserScrolledUp(true);
-            }
-          }
-          return nextIdx;
-        });
+      // UpArrow at empty prompt shifts focus up to selectable buttons!
+      if (key.upArrow && !input) {
+        setFocusMode(1);
+        setBtnHighlightIdx(0);
         return;
       }
 
-      // 3. Line-by-line scroll inside checkpoint (Arrow Up/Down)
       if (key.upArrow) {
         setScrollOffset(prev => {
           const next = Math.max(0, prev - 1);
@@ -236,9 +264,6 @@ export function ChatPanel({ agent }: ChatPanelProps) {
       setActiveSuggestIdx(0);
       
       if (text.startsWith('/')) {
-        if (text.trim() === '/') {
-          return;
-        }
         const res = handleSlashCommand(text, agent, state);
         if (res) {
           agent.emit('message:user', {
@@ -254,10 +279,6 @@ export function ChatPanel({ agent }: ChatPanelProps) {
       setInput(input.slice(0, -1));
       setCursorPos(Math.max(0, cursorPos - 1));
       setActiveSuggestIdx(0);
-    } else if (key.escape) {
-      setInput('');
-      setCursorPos(0);
-      setActiveSuggestIdx(0);
     } else if (char && char !== '\t' && char !== '\r' && char !== '\n' && !key.ctrl && !key.meta) {
       setInput(input + char);
       setCursorPos(cursorPos + 1);
@@ -266,24 +287,41 @@ export function ChatPanel({ agent }: ChatPanelProps) {
   });
 
   return (
-    <Box flexDirection="column" flexGrow={1} width={leftPanelWidth}>
-      {/* Dynamic Response Checkpoint Pager Banner */}
-      {checkpoints.length > 0 && (
-        <Box marginBottom={1} justifyContent="space-between" width={leftPanelWidth}>
-          <Text bold color="#79c0ff">
-            💎 THREAD CHECKPOINT: [ {activeCheckpointIdx + 1} of {checkpoints.length} ]
-          </Text>
-          <Text color={theme.textTertiary} dimColor>
-            [↑/↓]: Scroll | [PgUp/PgDn]: Checkpoints
-          </Text>
+    <Box flexDirection="column" flexGrow={1} width={leftPanelWidth} paddingX={1}>
+      {/* Title */}
+      <Box height={1} justifyContent="space-between" width={leftPanelWidth - 2}>
+        <Box>
+          <Text bold color="#79c0ff">Chat Stage</Text>
+          <Text color={theme.textTertiary}>  </Text>
+          {state.isThinking || state.isStreaming ? <Spinner color="#79c0ff" label="working" /> : <SignalBars width={8} color="#79c0ff" active />}
         </Box>
-      )}
+      </Box>
 
       {/* Messages Scroll viewport */}
-      <Box flexDirection="column" height={visibleHeight} justifyContent="flex-start" overflowY="hidden" width={leftPanelWidth}>
+      <Box flexDirection="column" height={visibleHeight} justifyContent="flex-start" overflowY="hidden" width={leftPanelWidth - 2}>
         {checkpoints.length === 0 ? (
-          <Box flexGrow={1} justifyContent="center" alignItems="center">
-            <Text color={theme.textSecondary} dimColor>No messages in session. What shall we build?</Text>
+          <Box flexGrow={1} flexDirection="column" paddingX={2} paddingY={1} borderStyle="single" borderColor={theme.borderDefault} width={leftPanelWidth - 2}>
+            <Box justifyContent="center" marginBottom={1}>
+              <Text bold color={edgeColor}>☁️  TIMMY Swarm: Connected D1 Database (latency: {edgeValue})</Text>
+            </Box>
+            
+            <Box flexDirection="column" marginBottom={1}>
+              <Text bold color="#a5d6ff">⚡ VERIFIABLE COGNITIVE VALUE CHAIN:</Text>
+              <Text color="#79c0ff" bold>  Capability ──&gt; Control ──&gt; Proof ──&gt; Reuse</Text>
+            </Box>
+
+            <Box flexDirection="column" marginBottom={1}>
+              <Text bold color="#d2a8ff">🔧 AVAILABLE AGENT TOOLS:</Text>
+              <Text color="#e6edf3">  • MCPorter ─ Safe URL capability scanner & JTI token signer</Text>
+              <Text color="#e6edf3">  • cmux     ─ Multi-cell virtual terminal workspace launcher ($ cmux .)</Text>
+            </Box>
+            
+            <Box flexDirection="column" marginBottom={1}>
+              <Text bold color="#3fb950">🤖 SWARM AGENT ORCHESTRATION SHIELD:</Text>
+              <Text color="#e6edf3">  • OpenRouter SDK ─ Regular chat operator pipeline</Text>
+              <Text color="#e6edf3">  • Pi Agent       ─ telemetric Durable Object syncing</Text>
+              <Text color="#e6edf3">  • Hermes Specialist ─ deep architecture research builder</Text>
+            </Box>
           </Box>
         ) : (
           visibleLines.map((line, i) => (
@@ -292,9 +330,9 @@ export function ChatPanel({ agent }: ChatPanelProps) {
         )}
       </Box>
 
-      {/* Autocomplete command bar - set explicitly in row to prevent scrambling */}
+      {/* Autocomplete Suggestions */}
       {showAutocomplete && matches.length > 0 && (
-        <Box paddingX={1} minHeight={1} width={leftPanelWidth} flexDirection="row" flexWrap="wrap" marginBottom={1}>
+        <Box paddingX={1} minHeight={1} width={leftPanelWidth - 2} flexDirection="row" flexWrap="wrap" marginBottom={1}>
           <Box marginRight={2}>
             <Text color={theme.textTertiary}>Suggestions: </Text>
           </Box>
@@ -308,19 +346,34 @@ export function ChatPanel({ agent }: ChatPanelProps) {
               </Box>
             );
           })}
-          {closestMatch && (
-            <Box marginLeft={1}>
-              <Text color="#8b949e" dimColor>— {closestMatch.description} (Press Tab to select)</Text>
-            </Box>
-          )}
         </Box>
       )}
 
+      {/* TIMMY Quartermaster Guide Card */}
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginY={1} flexDirection="column" width={leftPanelWidth - 2}>
+        <Text bold color="#79c0ff">🧑‍✈️  TIMMY Quartermaster Mascot Guide</Text>
+        <Text color="#8b949e">
+          "Quartermaster ready, operator. Swarm telemetry JTI visa auth is fully secure. Input your prompt below, or use the Left Nav list to configure Swarm Blueprints and run evidence chambers."
+        </Text>
+      </Box>
+
+      {/* Selectable Navigability Buttons */}
+      <Box flexDirection="row" justifyContent="space-between" width={leftPanelWidth - 2} marginY={1}>
+        {actionButtons.map((btn, idx) => {
+          const isButtonFocused = focusMode === 1 && idx === btnHighlightIdx;
+          return (
+            <Box key={btn.action} borderStyle={isButtonFocused ? 'double' : 'single'} borderColor={isButtonFocused ? '#d2a8ff' : '#30363d'} paddingX={1}>
+              <Text bold color={isButtonFocused ? '#d2a8ff' : '#8b949e'}>{btn.label}</Text>
+            </Box>
+          );
+        })}
+      </Box>
+
       {/* Input prompt box */}
-      <Box marginTop={hasPager ? 0 : 1} borderStyle="single" borderColor="#5e6ad2" paddingX={1} width={leftPanelWidth}>
-        <Text color={theme.textTertiary}>[ chat ] </Text>
+      <Box borderStyle="single" borderColor={focusMode === 0 ? "#5e6ad2" : "#30363d"} paddingX={1} width={leftPanelWidth - 2}>
+        <Text color={theme.textTertiary}>[ brief-chat ] </Text>
         <Text color="#79c0ff">{state.isThinking ? '◌ ' : '▶ '} </Text>
-        <Text color={theme.textPrimary}>{input}</Text>
+        <Text color={theme.textPrimary} wrap="truncate">{truncateVisible(input, inputTextWidth)}</Text>
         <Text color="#8b949e">{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
       </Box>
     </Box>

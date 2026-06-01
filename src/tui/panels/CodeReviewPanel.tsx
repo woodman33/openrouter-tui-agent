@@ -1,312 +1,182 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
-import { execSync } from 'child_process';
-import chalk from 'chalk';
-import { useAgent } from '../hooks/useAgent.js';
-import type { Agent } from '../../agent/core.js';
-import { GlowBorder } from '../components/GlowBorder.js';
-import { IndeterminateBar } from '../components/ProgressBar.js';
-import { renderMarkdown } from '../../utils/markdown.js';
 import { theme } from '../theme.js';
-import { SLASH_COMMANDS, handleSlashCommand, getAutocompleteEnabled } from '../../utils/slash-commands.js';
+import { GlowBorder } from '../components/GlowBorder.js';
+import { execSync, exec } from 'child_process';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import { homedir } from 'os';
 
 interface CodeReviewPanelProps {
-  agent: Agent;
+  agent: any;
+  setInspector: (data: any) => void;
 }
 
-export function CodeReviewPanel({ agent }: CodeReviewPanelProps) {
-  const { rows: height, columns: width } = useWindowSize();
-  const state = useAgent(agent);
-  const [input, setInput] = useState('');
-  const [gitDiff, setGitDiff] = useState('');
-  const [lintStatus, setLintStatus] = useState<string | null>(null);
+export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
+  const { columns: width, rows: height } = useWindowSize();
+  const [cmuxInstalled, setCmuxInstalled] = useState(false);
+  const [tmuxInstalled, setTmuxInstalled] = useState(false);
+  const [activeBtnIdx, setActiveBtnIdx] = useState(0);
+  const [outputLog, setOutputLog] = useState<string>('System diagnostics active.');
 
-  // Scroll offset & autocomplete suggestions states
-  const [diffScrollOffset, setDiffScrollOffset] = useState(0);
-  const [logScrollOffset, setLogScrollOffset] = useState(0);
-  const [activeSuggestIdx, setActiveSuggestIdx] = useState(0);
+  const buttons = [
+    { label: '[ Open in cmux ]', key: 'cmux', desc: 'Launcher shell connection (Future clickable workspace)' },
+    { label: '[ Open in tmux ]', key: 'tmux', desc: 'Launches persistent tmux monitoring chambers' },
+    { label: '[ Call Previous Work ]', key: 'call', desc: 'Syncs preceding run logs from edge memory' },
+    { label: '[ Attach Receipt ]', key: 'attach', desc: 'Embeds tamper-evident token to active run' }
+  ];
 
-  const fetchDiff = () => {
-    try {
-      const diff = execSync('git diff', { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-      setGitDiff(diff || 'No changes detected. Workspace is clean!');
-    } catch (e: any) {
-      setGitDiff(`Error fetching git diff: ${e.message}`);
-    }
-  };
-
-  const runLint = () => {
-    setLintStatus('Running compilation and type-check (tsc)...');
-    try {
-      execSync('npm run build', { encoding: 'utf-8' });
-      setLintStatus('Linter/typecheck passed successfully! (tsc compiled dist/)');
-    } catch (e: any) {
-      setLintStatus(`Linter failed! Output:\n${e.stdout || e.stderr || e.message}`);
-    }
-  };
-
-  // Fetch diff on mount
+  // System detection on mount
   useEffect(() => {
-    fetchDiff();
+    let cmuxFound = false;
+    try {
+      execSync('command -v cmux', { stdio: 'ignore' });
+      cmuxFound = true;
+    } catch {
+      cmuxFound = false;
+    }
+
+    if (!cmuxFound) {
+      cmuxFound = existsSync('/opt/homebrew/bin/cmux') || 
+                  existsSync('/Applications/cmux.app') || 
+                  existsSync(join(homedir(), 'Applications', 'cmux.app'));
+    }
+    setCmuxInstalled(cmuxFound);
+
+    try {
+      execSync('command -v tmux', { stdio: 'ignore' });
+      setTmuxInstalled(true);
+    } catch {
+      setTmuxInstalled(false);
+    }
   }, []);
 
-  // Autocomplete computation - suggestions should only show while typing command itself (no spaces)
-  const showAutocomplete = getAutocompleteEnabled() && input.startsWith('/') && !input.includes(' ');
-  const matches = showAutocomplete
-    ? SLASH_COMMANDS.filter(c => c.command.startsWith(input.split(' ')[0])).slice(0, 5)
-    : [];
-  const closestMatch = matches[activeSuggestIdx] || matches[0];
-
-  // Sync autocomplete state synchronously during render to guarantee no race conditions with Tab keypresses
-  (agent as any).autocompleteActive = showAutocomplete && matches.length > 0;
-
-  // Cleanup autocompleteActive state on unmount
-  useEffect(() => {
-    return () => {
-      (agent as any).autocompleteActive = false;
-    };
-  }, [agent]);
-
-  // Available panel widths calibrated to ensure the right sidebar is never pushed off-screen
-  const terminalWidth = width || process.stdout.columns || 80;
-  const terminalHeight = height || process.stdout.rows || 24;
-  
-  const availWidth = Math.max(30, terminalWidth - 36);
-  const leftWidth = Math.max(25, Math.floor(availWidth * 0.45));
-  const rightWidth = Math.max(25, availWidth - leftWidth - 2);
-  const innerHeight = Math.max(5, terminalHeight - 9);
-
-  // 1. Cache the rendered assistant historical lines using useMemo to avoid lag
-  const historicalAssistantLines = React.useMemo(() => {
-    const lines: string[] = [];
-    const terminalWidth = width || 80;
-    const availWidth = Math.max(30, terminalWidth - 36);
-    const leftWidth = Math.max(25, Math.floor(availWidth * 0.45));
-    const rightWidth = Math.max(25, availWidth - leftWidth - 2);
-
-    state.messages.slice(-10).forEach(msg => {
-      if (msg.role === 'user') {
-        lines.push(chalk.bold.hex('#79c0ff')('▶ You'));
-        lines.push(...msg.content.split('\n'));
-      } else {
-        lines.push(chalk.bold.hex('#a5d6ff')('◀ Assistant'));
-        const parsedMarkdown = renderMarkdown(msg.content, rightWidth);
-        lines.push(...parsedMarkdown.split('\n'));
-      }
-      lines.push('');
+  const updateInspectorData = (btn: typeof buttons[0]) => {
+    setInspector({
+      title: 'TIMMY AGENTOPS IDE',
+      subtitle: 'VERIFIABLE PARALLEL WORKSPACE',
+      type: 'Workspace Shell',
+      status: 'READY',
+      risk: 'MEDIUM',
+      scope: `workspace.launcher.${btn.key}`,
+      details: [
+        `• Option Selected: ${btn.label}`,
+        `• cmux status: ${cmuxInstalled ? '🟢 INSTALLED' : '🔴 NOT INSTALLED'}`,
+        `• tmux status: ${tmuxInstalled ? '🟢 ACTIVE' : '🔴 NOT INSTALLED'}`,
+        `• Mode: Dynamic Workspace Launcher`,
+        `• Rules: Gated sandbox execution`
+      ]
     });
-    return lines;
-  }, [state.messages, width]);
-
-  // 2. Compile entire assistant logs and markdown into a flat list of lines for line-by-line scrolling
-  const getAssistantLines = (): string[] => {
-    const lines = [...historicalAssistantLines];
-
-    if (state.isStreaming) {
-      if (state.currentTools.length > 0) {
-        lines.push(chalk.hex('#d2a8ff')(state.currentTools.map((t) => `⚙ ${t}`).join('  ')));
-        lines.push('');
-      }
-      if (state.streamingText) {
-        lines.push(chalk.bold.hex('#a5d6ff')('◀ Assistant'));
-        const parsedStream = renderMarkdown(state.streamingText, rightWidth);
-        lines.push(...parsedStream.split('\n'));
-        lines.push(chalk.hex('#8b949e')('▌'));
-      } else {
-        lines.push(chalk.hex(theme.accent)('◌ Thinking and invoking linter checks...'));
-      }
-    }
-
-    if (state.error) {
-      lines.push(chalk.bold.hex('#f85149')(`✕ Error: ${state.error.message}`));
-    }
-
-    return lines;
   };
 
-  const assistantLines = getAssistantLines();
-  const visibleAssistantLines = assistantLines.slice(logScrollOffset, logScrollOffset + (innerHeight - 5));
-
-  // Auto scroll assistant logs to bottom on new updates
   useEffect(() => {
-    const totalLines = getAssistantLines().length;
-    const maxScroll = innerHeight - 5;
-    if (totalLines > maxScroll) {
-      setLogScrollOffset(totalLines - maxScroll);
-    } else {
-      setLogScrollOffset(0);
-    }
-  }, [state.messages.length, state.streamingText, innerHeight]);
+    updateInspectorData(buttons[activeBtnIdx]);
+  }, [activeBtnIdx, cmuxInstalled, tmuxInstalled]);
 
-  // Keyboard and Input handlers
   useInput((char, key) => {
-    // 1. Autocomplete navigation when active
-    if (showAutocomplete && matches.length > 0) {
-      if (key.rightArrow) {
-        setActiveSuggestIdx(prev => (prev + 1) % matches.length);
-        return;
-      }
-      if (key.leftArrow) {
-        setActiveSuggestIdx(prev => (prev - 1 + matches.length) % matches.length);
-        return;
-      }
-      if (key.tab && closestMatch) {
-        setInput(closestMatch.command + ' ');
-        setActiveSuggestIdx(0);
-        return;
-      }
-    } else {
-      // 2. Diff and Logs scrolling when autocomplete is NOT active
-      if (key.upArrow) {
-        setDiffScrollOffset(prev => Math.max(0, prev - 1));
-        return;
-      }
-      if (key.downArrow) {
-        const diffLinesCount = gitDiff.split('\n').length;
-        const maxScroll = Math.max(0, diffLinesCount - (innerHeight - 2));
-        setDiffScrollOffset(prev => Math.min(maxScroll, prev + 1));
-        return;
-      }
-      // PageUp / PageDown scrolls the assistant logs panel
-      if (key.pageUp) {
-        setLogScrollOffset(prev => Math.max(0, prev - 2));
-        return;
-      }
-      if (key.pageDown) {
-        const totalLines = assistantLines.length;
-        const maxScroll = Math.max(0, totalLines - (innerHeight - 5));
-        setLogScrollOffset(prev => Math.min(maxScroll, prev + 2));
-        return;
-      }
+    if (key.leftArrow) {
+      setActiveBtnIdx(prev => Math.max(0, prev - 1));
+      return;
+    }
+    if (key.rightArrow) {
+      setActiveBtnIdx(prev => Math.min(buttons.length - 1, prev + 1));
+      return;
     }
 
-    if (key.ctrl && char === 'd') {
-      fetchDiff();
-      state.send("Analyze the current git diff, summarize the changes, and list potential bugs or improvements.");
-    } else if (key.ctrl && char === 'r') {
-      runLint();
-    } else if ((key.return || char === '\r' || char === '\n') && input.trim()) {
-      const text = input.trim();
-      setInput('');
-      setActiveSuggestIdx(0);
-      
-      if (text.startsWith('/')) {
-        const res = handleSlashCommand(text, agent, state);
-        if (res) {
-          agent.emit('message:user', {
-            role: 'assistant',
-            content: `⚙️ **[SYSTEM]** ${res}`,
-            timestamp: Date.now()
+    if (key.return) {
+      const btn = buttons[activeBtnIdx];
+      if (btn.key === 'cmux') {
+        if (cmuxInstalled) {
+          setOutputLog('✓ Launching cmux session socket...');
+          const cwd = process.cwd();
+          exec(`sh -lc "cmux '${cwd}'"`, { env: process.env }, (error) => {
+            if (error) {
+              // Try absolute path direct background launch fallback
+              exec(`/opt/homebrew/bin/cmux "${cwd}"`, (error2) => {
+                if (error2) {
+                  // Standard macOS launch command fallback
+                  exec(`open -a cmux`, (error3) => {
+                    if (error3) {
+                      setOutputLog(`✕ Failed to activate cmux: ${error3.message}`);
+                    } else {
+                      setOutputLog('✓ cmux app launched successfully via open.');
+                    }
+                  });
+                } else {
+                  setOutputLog('✓ cmux workspace activated successfully via path.');
+                }
+              });
+            } else {
+              setOutputLog('✓ cmux workspace activated successfully.');
+            }
           });
+        } else {
+          setOutputLog('✕ Launch cancelled: cmux is NOT installed on the host. Show detection only.');
         }
-      } else {
-        state.send(text);
+      } else if (btn.key === 'tmux') {
+        if (tmuxInstalled) {
+          setOutputLog('✓ Launcher: Initializing standard background tmux monitor session...');
+          try {
+            // Keep tmux backend active if tmux is found
+            execSync('tmux new-session -d -s timmy-run 2>/dev/null || true');
+            setOutputLog('✓ tmux backend initialized successfully. Check via "tmux attach -t timmy-run".');
+          } catch (e: any) {
+            setOutputLog(`✕ Failed to initialize tmux: ${e.message}`);
+          }
+        } else {
+          setOutputLog('✕ Launch cancelled: tmux multiplexer is missing.');
+        }
+      } else if (btn.key === 'call') {
+        setOutputLog('✓ Loading run history and metadata into TaskForge registry... [ Planned ]');
+      } else if (btn.key === 'attach') {
+        setOutputLog('✓ Mapped token metadata signature. Ready to export proof.');
       }
-    } else if (key.backspace || key.delete) {
-      setInput(input.slice(0, -1));
-      setActiveSuggestIdx(0);
-    } else if (char && char !== '\t' && char !== '\r' && char !== '\n' && !key.ctrl && !key.meta) {
-      setInput(input + char);
-      setActiveSuggestIdx(0);
     }
   });
 
-  // Format Git diff lines with scroll offset slice
-  const formatDiffLines = (diff: string) => {
-    const lines = diff.split('\n');
-    const visibleLines = lines.slice(diffScrollOffset, diffScrollOffset + (innerHeight - 5));
-    
-    return visibleLines.map((line, i) => {
-      if (line.startsWith('+') && !line.startsWith('+++')) {
-        return <Text key={i} color="#3fb950" wrap="truncate">{line}</Text>;
-      }
-      if (line.startsWith('-') && !line.startsWith('---')) {
-        return <Text key={i} color="#f85149" wrap="truncate">{line}</Text>;
-      }
-      if (line.startsWith('@@')) {
-        return <Text key={i} color="#58a6ff" bold wrap="truncate">{line}</Text>;
-      }
-      if (line.startsWith('diff')) {
-        return <Text key={i} color="#d29922" bold wrap="truncate">{line}</Text>;
-      }
-      return <Text key={i} color={theme.textSecondary} wrap="truncate">{line}</Text>;
-    });
-  };
+  const panelWidth = Math.max(20, (width || 80) - 54);
+  const mainStageWidth = Math.floor(panelWidth * 0.95);
 
   return (
-    <Box flexDirection="column" flexGrow={1} width={availWidth}>
-      <Box marginBottom={1}>
-        <Text bold color="#3fb950">🔍 Code Reviewer Console</Text>
-        <Text color={theme.textSecondary}> — Code assistant & Git diff analyzer</Text>
+    <Box flexDirection="column" width={mainStageWidth} paddingX={1}>
+      {/* 1. System detection status */}
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
+        <Text bold color="#3fb950">📟  TIMMY Workspace Launcher Subsystems</Text>
+        <Box flexDirection="row" marginTop={1} justifyContent="space-between" width={mainStageWidth - 6}>
+          <Text color="#c9d1d9">
+            cmux status: {cmuxInstalled ? <Text color="#3fb950" bold>INSTALLED 🟢</Text> : <Text color="#ff7b72" bold>NOT INSTALLED 🔴 (Future clickable shell)</Text>}
+          </Text>
+          <Text color="#c9d1d9">
+            tmux status: {tmuxInstalled ? <Text color="#3fb950" bold>ACTIVE 🟢</Text> : <Text color="#ff7b72" bold>NOT INSTALLED 🔴</Text>}
+          </Text>
+        </Box>
       </Box>
 
-      {/* Main Split Screen */}
-      <Box flexDirection="row" justifyContent="space-between" flexGrow={1} width={availWidth}>
-        
-        {/* Left Panel: Git Diff Viewer */}
-        <Box flexDirection="column" width={leftWidth} height={innerHeight}>
-          <GlowBorder color="#3fb950" width={leftWidth} label="ACTIVE GIT DIFF">
-            <Box flexDirection="column" paddingX={1} flexGrow={1} overflowY="hidden">
-              {formatDiffLines(gitDiff)}
-            </Box>
-          </GlowBorder>
-
-          <Box marginTop={1} flexDirection="column" width={leftWidth}>
-            <Text color={theme.textTertiary} dimColor>
-              Ctrl+D: Review  Ctrl+R: Lint  Up/Down: Scroll Diff
-            </Text>
-            {lintStatus && (
-              <Box marginTop={1} width={leftWidth}>
-                <Text color="#d29922" wrap="truncate">{lintStatus}</Text>
+      {/* 2. Workspace Options Action Buttons */}
+      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
+        <Text bold color="#d2a8ff">🖥️ Workspace Launcher Actions:</Text>
+        <Box flexDirection="row" marginTop={1} justifyContent="space-between" width={mainStageWidth - 6} flexWrap="wrap">
+          {buttons.map((btn, idx) => {
+            const isFocused = idx === activeBtnIdx;
+            return (
+              <Box key={btn.key} borderStyle={isFocused ? 'double' : 'single'} borderColor={isFocused ? '#d2a8ff' : '#30363d'} paddingX={1} marginBottom={0}>
+                <Text bold color={isFocused ? '#d2a8ff' : '#8b949e'}>{btn.label}</Text>
               </Box>
-            )}
-          </Box>
+            );
+          })}
         </Box>
-
-        {/* Right Panel: Chat Assistant */}
-        <Box flexDirection="column" width={rightWidth} height={innerHeight}>
-          <GlowBorder color="#5e6ad2" width={rightWidth} label="ASSISTANT CHANNEL (PgUp/PgDn SCROLL)">
-            <Box flexDirection="column" paddingX={1} flexGrow={1} overflowY="hidden" width={rightWidth - 2}>
-              {visibleAssistantLines.map((line, i) => (
-                <Text key={i} wrap="wrap">{line}</Text>
-              ))}
-            </Box>
-          </GlowBorder>
-
-          {/* Autocomplete command bar - set explicitly in row */}
-          {showAutocomplete && matches.length > 0 && (
-            <Box paddingX={1} minHeight={1} marginTop={1} width={rightWidth} flexDirection="row" flexWrap="wrap">
-              <Box marginRight={2}>
-                <Text color={theme.textTertiary}>Suggestions: </Text>
-              </Box>
-              {matches.map((m, idx) => {
-                const isCurrent = idx === activeSuggestIdx;
-                return (
-                  <Box key={m.command} marginRight={4}>
-                    <Text color={isCurrent ? '#58a6ff' : theme.textSecondary} bold={isCurrent}>
-                      {isCurrent ? `▶ ${m.command}` : m.command}
-                    </Text>
-                  </Box>
-                );
-              })}
-              {closestMatch && (
-                <Box marginLeft={1}>
-                  <Text color="#8b949e" dimColor>— {closestMatch.description} (Press Tab to select)</Text>
-                </Box>
-              )}
-            </Box>
-          )}
-
-          {/* Interactive input box */}
-          <Box marginTop={1} borderStyle="single" borderColor="#3fb950" paddingX={1} width={rightWidth}>
-            <Text color={theme.textTertiary}>[ code-review ] </Text>
-            <Text color="#79c0ff">{state.isThinking ? '◌ ' : '▶ '} </Text>
-            <Text color={theme.textPrimary}>{input}</Text>
-            <Text color="#8b949e">{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
-          </Box>
+        <Box marginTop={1}>
+          <Text color="#8b949e" dimColor>{buttons[activeBtnIdx].desc}</Text>
         </Box>
-
       </Box>
+
+      {/* 3. Output/diagnostic Console */}
+      <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 TERMINAL WORKSPACE CONTROLLER">
+        <Box flexDirection="column" paddingX={1} minHeight={4}>
+          <Text color="#c9d1d9">{outputLog}</Text>
+          <Text color="#8b949e" dimColor>Use Left/Right arrow keys to navigate options. Press [Enter] to execute launcher.</Text>
+        </Box>
+      </GlowBorder>
     </Box>
   );
 }

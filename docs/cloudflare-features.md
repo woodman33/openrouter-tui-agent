@@ -1,15 +1,15 @@
 # Cloudflare Features Integration Architecture
 
-This document outlines the Systems Architecture for integrating the **Cloudflare Developer Platform** into the **OpenRouter TUI & Rive Animation Framework**. By combining local high-performance terminal rendering with Cloudflare's globally distributed serverless edge infrastructure, we elevate the TUI from a single-machine script to a highly collaborative, secure, and resilient edge-connected agent platform.
+This document outlines the systems architecture for integrating the **Cloudflare Developer Platform** into **TIMMY TUI**, a terminal-first Agent Trust OS. By combining local-first terminal workflows with Cloudflare's globally distributed serverless edge infrastructure, TIMMY can move from a single-machine cockpit to a collaborative, secure, and resilient edge-connected audit platform.
 
 ---
 
 ## 1. Executive Summary
 
-The OpenRouter TUI integrates with Cloudflare to achieve three primary goals:
+TIMMY TUI integrates with Cloudflare to achieve three primary goals:
 1. **Secure Execution Sandbox**: Enable the agent to run and test generated code in secure, isolated edge microVMs using the **Cloudflare Sandbox SDK**.
-2. **Stateful Edge Orchestration**: Sync conversation state, model configurations, and Rive triggers across multiple terminal clients using **Durable Objects** and the **Cloudflare Agents SDK**.
-3. **Advanced Tooling & Delivery**: Route agent workflows through **Workers AI** (for hybrid/fallback inference), **Email Workers** (for offline email-driven prompts), and **Pages + Page Functions** (for a securely hosted Rive companion window with middleware chaining).
+2. **Stateful Edge Orchestration**: Sync conversation state, model configurations, and future/experimental companion triggers across multiple terminal clients using **Durable Objects** and the **Cloudflare Agents SDK**.
+3. **Advanced Tooling & Delivery**: Route agent workflows through **Workers AI** (for hybrid/fallback inference), **Email Workers** (for offline email-driven prompts), and **Pages + Page Functions** (for securely hosted companion surfaces with middleware chaining).
 
 ```
  ┌────────────────────────────────────────────────────────┐
@@ -25,7 +25,7 @@ The OpenRouter TUI integrates with Cloudflare to achieve three primary goals:
  │  │      Cloudflare Agents SDK (Durable Objects)     │  │
  │  │  - Holds active conversation SQLite state        │  │
  │  │  - Manages multi-agent routing (Swarm)           │  │
- │  │  - Dispatches Rive triggers via WebSocket        │  │
+ │  │  - Dispatches companion triggers via WebSocket   │  │
  │  └──────┬──────────────────────┬─────────────┬──────┘  │
  │         │                      │             │         │
  │         ▼                      ▼             ▼         │
@@ -102,7 +102,7 @@ Instead of running the conversation loop strictly inside the local memory of the
 
 - **Benefits**:
   - **Session Persistence**: If your terminal crashes, closes, or loses connection, the agent state and history are safely preserved at the edge.
-  - **Shared Mascot State**: The Rive Companion Web Window connects directly to the exact same Durable Object over a WebSocket, receiving real-time state triggers (`thinking`, `talking`, `idle`, `success`, `error`) simultaneously with the TUI.
+  - **Shared Companion State**: A future/experimental companion window can connect directly to the exact same Durable Object over a WebSocket, receiving real-time state triggers (`thinking`, `talking`, `idle`, `success`, `error`) simultaneously with the TUI.
   - **Multi-Agent Swarm Orchestration**: The Agent DO acts as an orchestrator, spinning up and delegating tasks to sub-agents (e.g., Code Reviewer or Researcher) dynamically on-edge.
 
 - **Worker Agent Implementation**:
@@ -174,7 +174,7 @@ We expose a dedicated Cloudflare remote MCP server with two primary tools to bri
 ---
 
 ### 2.4 Cloudflare Email Workers (Offline Prompt Trigger)
-Users can converse with their OpenRouter TUI agents asynchronously by sending an email. Cloudflare Email Routing directs messages to an **Email Worker** which triggers the agent DO to run the query and email back the completed Markdown transcript.
+Users can converse with their TIMMY TUI agents asynchronously by sending an email. Cloudflare Email Routing directs messages to an **Email Worker** which triggers the agent DO to run the query and email back the completed Markdown transcript.
 
 - **Workflow**:
   1. User emails `agent-session-123@yourdomain.com`.
@@ -184,8 +184,8 @@ Users can converse with their OpenRouter TUI agents asynchronously by sending an
 
 ---
 
-### 2.5 Cloudflare Pages & Page Functions (Hosted Rive Companion)
-The **Rive Companion Web Window** is fully compiled and hosted on **Cloudflare Pages**. 
+### 2.5 Cloudflare Pages & Page Functions (Future/Experimental Companion)
+A future/experimental companion web window can be compiled and hosted on **Cloudflare Pages**.
 
 - **Page Functions (Edge Middleware)**:
   We use Page Functions as a secure routing and middleware gateway:
@@ -209,4 +209,4 @@ The **Rive Companion Web Window** is fully compiled and hosted on **Cloudflare P
 
 ## 4. Conclusion & Next Steps
 
-Integrating Cloudflare turns the OpenRouter TUI into a truly edge-native, stateful assistant platform. Local Rive terminal animations stay lightweight and responsive because heavy computation (untrusted code execution, persistent agent state tracking, multi-agent swarms, companion window sync) is securely offloaded to Cloudflare's high-speed global edge network.
+Integrating Cloudflare turns TIMMY TUI into an edge-native, stateful audit platform. Future/experimental companion visuals can stay lightweight because heavy computation (untrusted code execution, persistent agent state tracking, multi-agent swarms, companion window sync) is securely offloaded to Cloudflare's high-speed global edge network.

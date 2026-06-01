@@ -8,16 +8,22 @@ export function redactString(input: string): string {
   let redacted = input;
 
   // Redact OpenRouter API keys
-  redacted = redacted.replace(/sk-or-v1-[a-f0-9]+/gi, '[REDACTED_OPENROUTER_KEY]');
+  redacted = redacted.replace(/sk-or-v1-[a-zA-Z0-9]+/gi, '[REDACTED_OPENROUTER_KEY]');
 
   // Redact OpenAI style sk-* keys
-  redacted = redacted.replace(/sk-[a-zA-Z0-9]{20,}/gi, '[REDACTED_API_KEY]');
+  redacted = redacted.replace(/sk-[a-zA-Z0-9_-]{20,}/gi, '[REDACTED_API_KEY]');
+
+  // Redact Clerk, Stripe, Composio or other live/test keys: sk_test_, sk_live_, pk_test_, pk_live_
+  redacted = redacted.replace(/(?:sk|pk)_(?:test|live)_[a-zA-Z0-9]+/gi, '[REDACTED_KEY]');
+
+  // Redact general sk_ or pk_ keys with underscores
+  redacted = redacted.replace(/(?:sk|pk)_[a-zA-Z0-9_-]{12,}/gi, '[REDACTED_KEY]');
 
   // Redact Authorization headers or Bearer tokens
   redacted = redacted.replace(/Bearer\s+[a-zA-Z0-9\-._~+/]+=*/gi, 'Bearer [REDACTED_TOKEN]');
 
-  // Redact query parameters or config variables: password, token, secret, api_key
-  redacted = redacted.replace(/(?:password|token|secret|api_key|api-key|apikey)\s*=\s*['"]?[a-zA-Z0-9\-._~+/]+/gi, (match) => {
+  // Redact query parameters or config variables: password, token, secret, api_key, auth_key, access_token
+  redacted = redacted.replace(/(?:password|token|secret|api_key|api-key|apikey|auth_key|access_token)\s*=\s*['"]?[a-zA-Z0-9\-._~+/]+/gi, (match) => {
     const parts = match.split('=');
     return `${parts[0]}=[REDACTED_SENSITIVE_PARAM]`;
   });

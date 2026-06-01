@@ -1,7 +1,7 @@
 {
-  "name": "openrouter-tui",
+  "name": "timmy-tui",
   "version": "0.1.0",
-  "description": "OpenRouter AI Agent TUI with Rive animations",
+  "description": "TIMMY TUI, a terminal-first Agent Trust OS.",
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
@@ -22,6 +22,7 @@
     "docs:preview": "tsx scripts/timmy-docs.ts preview",
     "docs:verify": "tsx scripts/timmy-docs.ts verify",
     "timmy:test-run": "tsx scripts/timmy-test-run.ts",
+    "timmy:ui-smoke": "tsx scripts/timmy-ui-smoke.tsx",
     "timmy:receipt-index": "tsx scripts/timmy-receipt-index.ts",
     "timmy:snapshot": "tsx scripts/timmy-snapshot.ts",
     "timmy:generation:intent-pack": "tsx scripts/timmy-generation-intent-pack.ts",

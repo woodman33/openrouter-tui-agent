@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -nA30 \"defaultTools\" src/agent/tools.ts)"
+    ]
+  }
+}

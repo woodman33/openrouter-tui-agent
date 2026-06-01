@@ -1,0 +1,98 @@
+:root {
+  --bg-base: #06090e;
+  --surface: #0a0d14;
+  --surface-2: #121824;
+  --canvas: #040508;
+  --border: #1f2736;
+  --accent: #10b981;
+  --slate: #8892b0;
+  --ink: #e6f1ff;
+  --steel: #a8b2d1;
+
+  background-color: var(--bg-base);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-base);
+}
+
+#root {
+  height: 100%;
+}
+
+/* Premium card hover effects */
+.border-gradient {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.border-gradient:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* Micro-animations and pulsing dots */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.5;
+  }
+}
+
+.pulse-dot {
+  position: relative;
+}
+
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: inherit;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* CRT style terminal chamber scanlines */
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 20;
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Blinking terminal cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+  font-weight: bold;
+}

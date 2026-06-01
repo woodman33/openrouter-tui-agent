@@ -124,27 +124,40 @@ if (opts.headless) {
 } else {
   // Start companion server first if enabled to avoid EADDRINUSE conflicts with CompanionPipeline
   if (opts.companion !== false) {
-    const port = parseInt(opts.companionPort, 10) || 3001;
-    try {
-      const server = await startCompanionServer(port);
-      (global as any).companionServer = server;
-      const url = `http://localhost:${port}`;
-      showCompanionQR(url);
-    } catch (err) {
-      console.error(chalk.dim(`Companion server failed to start (port ${port} may be in use)`));
+    const preferredPort = parseInt(opts.companionPort, 10) || 3001;
+    const candidatePorts = [preferredPort, preferredPort + 1, preferredPort + 2, preferredPort + 3];
+    let companionStarted = false;
+
+    for (const port of candidatePorts) {
+      try {
+        const server = await startCompanionServer(port);
+        (global as any).companionServer = server;
+        const url = `http://localhost:${server.port}`;
+        if (port !== preferredPort) {
+          console.error(chalk.dim(`Companion port ${preferredPort} busy; using ${server.port}.`));
+        }
+        showCompanionQR(url);
+        companionStarted = true;
+        break;
+      } catch (err: any) {
+        if (err?.code !== 'EADDRINUSE' || port === candidatePorts[candidatePorts.length - 1]) {
+          console.error(chalk.dim(`Companion server failed to start (${err?.message || 'port unavailable'})`));
+        }
+      }
+    }
+
+    if (!companionStarted) {
+      console.error(chalk.dim('TIMMY TUI will continue without the browser companion.'));
     }
   }
 
-  // TUI mode
-  const mode = hasKey ? ((opts.mode as Mode) || 'chat') : 'setup';
-  
-  // Startup banner for William Meldman Creator Attribution Signature
-  console.log(chalk.bold.hex('#5e6ad2')(`
-  ╭──────────────────────────────────────────────────────────╮
-  │  TIMMY AGENT OPS CONSOLE — invented by William Meldman    │
-  │  V1 Core Engine • © 2026 William Meldman                  │
-  ╰──────────────────────────────────────────────────────────╯
-  `));
+  const mode = hasKey ? ((opts.mode as Mode) || 'brief') : 'brief';
+
+  // Set active TUI state to mute companion server terminal outputs
+  process.env.TIMMY_TUI_ACTIVE = 'true';
+
+  // Ensure standard terminal clear before starting TUI to avoid layout corruption
+  process.stdout.write('\x1Bc');
 
   startTUI(agentConfig, mode, opts.companion === false ? 'ansi' : 'auto');
 }

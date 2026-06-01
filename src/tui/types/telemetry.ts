@@ -23,6 +23,7 @@ export type TelemetryEventName =
   | "approval.required"
   | "approval.granted"
   | "command.finished"
+  | "run.created"
   | "receipt.generated"
   | "agent.intent"
   | "simulation.started"

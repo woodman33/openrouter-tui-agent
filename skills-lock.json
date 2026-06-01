@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "svix": {
+      "source": "membranedev/application-skills",
+      "sourceType": "github",
+      "skillPath": "skills/svix/SKILL.md",
+      "computedHash": "af3f9caa2e1b75a296ac97875ab4f6831eeb3a87c2625b09639f07c35b94ba6e"
+    }
+  }
+}

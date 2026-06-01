@@ -1,0 +1,25 @@
+{
+  "controls": [
+    {
+      "id": "timmy-doctor",
+      "title": "TIMMY Doctor",
+      "command": "npx tsx scripts/timmy-doctor.ts doctor; printf \"\\nDoctor complete.\\n\"; exec \"$SHELL\" -l",
+      "cwd": ".",
+      "height": 260
+    },
+    {
+      "id": "timmy-typecheck",
+      "title": "Typecheck",
+      "command": "npx tsc --noEmit; printf \"\\nTypecheck complete.\\n\"; exec \"$SHELL\" -l",
+      "cwd": ".",
+      "height": 260
+    },
+    {
+      "id": "timmy-edge-health",
+      "title": "Edge Health",
+      "command": "curl -sS https://openrouter-tui-agent.wmeldman33.workers.dev/health; printf \"\\n\"; exec \"$SHELL\" -l",
+      "cwd": ".",
+      "height": 220
+    }
+  ]
+}

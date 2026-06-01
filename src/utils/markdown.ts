@@ -1,7 +1,8 @@
 import chalk from 'chalk';
+import { truncateVisible, wrapVisible } from '../tui/utils/text.js';
 
 function wrapLine(line: string, wrapWidth: number): string[] {
-  if (line.length <= wrapWidth) {
+  if (wrapVisible(line, wrapWidth).length === 1) {
     return [line];
   }
 
@@ -19,23 +20,8 @@ function wrapLine(line: string, wrapWidth: number): string[] {
   }
 
   const wrapped: string[] = [];
-  const words = content.split(' ');
-  let current = '';
-
-  for (const word of words) {
-    const limit = Math.max(10, wrapWidth - prefix.length);
-    if (current.length === 0) {
-      current = word;
-    } else if (current.length + 1 + word.length <= limit) {
-      current += ' ' + word;
-    } else {
-      wrapped.push(current);
-      current = word;
-    }
-  }
-  if (current) {
-    wrapped.push(current);
-  }
+  const limit = Math.max(10, wrapWidth - prefix.length);
+  wrapped.push(...wrapVisible(content, limit));
 
   if (wrapped.length === 0) {
     return [line];
@@ -94,7 +80,7 @@ export function renderMarkdown(text: string, width: number = 80): string {
 
     if (rawInCode || inCode) {
       const contentWidth = boxWidth - 4;
-      const padded = line.padEnd(contentWidth, ' ').slice(0, contentWidth);
+      const padded = truncateVisible(line, contentWidth).padEnd(contentWidth, ' ');
       rendered.push(chalk.dim('│ ') + chalk.green(padded) + chalk.dim(' │'));
       continue;
     }
@@ -137,4 +123,3 @@ export function renderMarkdown(text: string, width: number = 80): string {
 
   return rendered.join('\n');
 }
-

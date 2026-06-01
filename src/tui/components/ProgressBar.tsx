@@ -12,8 +12,9 @@ interface ProgressBarProps {
 
 export function ProgressBar({ value, width = 30, label, showPercent = true, color = '#5e6ad2' }: ProgressBarProps) {
   const clamped = Math.max(0, Math.min(1, value));
-  const filled = Math.round(clamped * width);
-  const empty = width - filled;
+  const safeWidth = Math.max(1, Math.floor(width));
+  const filled = Math.round(clamped * safeWidth);
+  const empty = safeWidth - filled;
 
   const bar = chalk.hex(color)('█'.repeat(filled)) + chalk.gray('░'.repeat(empty));
   const pct = showPercent ? ` ${Math.round(clamped * 100)}%` : '';
@@ -27,19 +28,20 @@ export function ProgressBar({ value, width = 30, label, showPercent = true, colo
 }
 
 export function IndeterminateBar({ width = 30, label }: { width?: number; label?: string }) {
+  const safeWidth = Math.max(1, Math.floor(width));
   const [pos, setPos] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setPos(p => (p + 1) % width);
+      setPos(p => (p + 1) % safeWidth);
     }, 100);
     return () => clearInterval(interval);
-  }, [width]);
+  }, [safeWidth]);
 
-  const chars = '░'.repeat(width).split('');
-  const dotWidth = 4;
+  const chars = '░'.repeat(safeWidth).split('');
+  const dotWidth = Math.min(4, safeWidth);
   for (let i = 0; i < dotWidth; i++) {
-    const idx = (pos + i) % width;
+    const idx = (pos + i) % safeWidth;
     chars[idx] = '█';
   }
 

@@ -40,6 +40,9 @@ export type RunEvent = {
     | "build.finished"
     | "context.mutated"
     | "receipt.generated"
+    | "mode.change"
+    | "model.switch"
+    | "tui.heartbeat"
     | "command.finished"
     | "simulation.started"
     | "simulation.plan.created"
@@ -224,6 +227,12 @@ export class MyDurableObject extends DurableObject {
         timestamp: new Date().toISOString(),
         payload: { goal }
       };
+      console.log(JSON.stringify({
+        source: "timmy-edge",
+        route: "/runs/create",
+        runId,
+        eventType: event.type
+      }));
 
       this.ctx.storage.sql.exec(
         "INSERT INTO events (id, run_id, type, timestamp, payload_json) VALUES (?, ?, ?, ?, ?)",
@@ -250,6 +259,14 @@ export class MyDurableObject extends DurableObject {
 
       if (!event.id) event.id = `evt_${Math.random().toString(36).substring(2, 9)}`;
       if (!event.timestamp) event.timestamp = new Date().toISOString();
+      console.log(JSON.stringify({
+        source: "timmy-edge",
+        route: "/runs/:runId/event",
+        runId,
+        eventType: event.type,
+        sessionId: event.sessionId || null,
+        sessionName: event.sessionName || null
+      }));
 
       this.initSql();
       this.ctx.storage.sql.exec(
@@ -508,6 +525,63 @@ export class MyDurableObject extends DurableObject {
       });
     }
 
+    // GET /workflows?runId=:runId
+    if (method === "GET" && url.pathname === "/workflows") {
+      const runId = url.searchParams.get("runId") || "default-local-run";
+      const events = this.getEvents(runId);
+      const context = this.getContext(runId);
+      const lastOf = (types: string[]) => [...events].reverse().find((event) => types.includes(event.type));
+      const countOf = (types: string[]) => events.filter((event) => types.includes(event.type)).length;
+      const workflowLanes = [
+        {
+          id: "telemetry-ingest",
+          label: "Telemetry Ingest",
+          status: countOf(["tui.heartbeat", "mode.change", "model.switch", "agent.intent"]) > 0 ? "ACTIVE" : "WAITING",
+          count: countOf(["tui.heartbeat", "mode.change", "model.switch", "agent.intent"]),
+          lastEvent: lastOf(["tui.heartbeat", "mode.change", "model.switch", "agent.intent"])?.type || null
+        },
+        {
+          id: "workspace-evidence",
+          label: "Workspace Evidence",
+          status: countOf(["tmux.command.sent", "tmux.output.line", "command.finished"]) > 0 ? "ACTIVE" : "WAITING",
+          count: countOf(["tmux.command.sent", "tmux.output.line", "command.finished"]),
+          lastEvent: lastOf(["tmux.command.sent", "tmux.output.line", "command.finished"])?.type || null
+        },
+        {
+          id: "approval-gate",
+          label: "Approval Gate",
+          status: countOf(["approval.required", "approval.granted"]) > 0 ? "HOLDING" : "CLEAR",
+          count: countOf(["approval.required", "approval.granted"]),
+          lastEvent: lastOf(["approval.required", "approval.granted"])?.type || null
+        },
+        {
+          id: "receipt-assembly",
+          label: "Receipt Assembly",
+          status: events.length > 0 ? "READY" : "WAITING",
+          count: countOf(["receipt.generated", "run.created"]) + context.counters.commands + context.counters.outputLines,
+          lastEvent: lastOf(["receipt.generated", "run.created", "command.finished", "tmux.output.line"])?.type || null
+        }
+      ];
+
+      return new Response(JSON.stringify({
+        success: true,
+        runId,
+        workflowBindingAvailable: !!this.env.OPENROUTER_TUI_AGENT_WORKFLOW,
+        totalEvents: events.length,
+        phase: context.phase,
+        confidence: context.confidence,
+        counters: context.counters,
+        workflowLanes,
+        recentEvents: events.slice(-8).map((event) => ({
+          type: event.type,
+          sessionName: event.sessionName || null,
+          timestamp: event.timestamp
+        }))
+      }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
     // POST /telemetry compatibility endpoint
     if (method === "POST" && url.pathname === "/telemetry") {
       const body = await request.json() as any;
@@ -515,7 +589,7 @@ export class MyDurableObject extends DurableObject {
       const runId = legacyPayload.runId || "default-local-run";
       
       let eventType = "agent.intent";
-      if (body.event === "tmux:output") {
+      if (body.event === "tmux:output" || body.event === "tmux.output.line") {
         eventType = "tmux.output.line";
       } else if (
         body.event === "tmux.command.sent" ||
@@ -523,6 +597,9 @@ export class MyDurableObject extends DurableObject {
         body.event === "build.finished" ||
         body.event === "git.diff.detected" ||
         body.event === "run.created" ||
+        body.event === "mode.change" ||
+        body.event === "model.switch" ||
+        body.event === "tui.heartbeat" ||
         body.event === "command.finished" ||
         body.event === "simulation.started" ||
         body.event === "simulation.plan.created" ||
@@ -545,6 +622,15 @@ export class MyDurableObject extends DurableObject {
           ...legacyPayload
         }
       };
+      console.log(JSON.stringify({
+        source: "timmy-edge",
+        route: "/telemetry",
+        runId,
+        eventType,
+        originalEvent: body.event,
+        sessionId: event.sessionId || null,
+        sessionName: event.sessionName || null
+      }));
 
       // Recurse to /runs/:runId/event
       const localUrl = new URL(`/runs/${runId}/event`, request.url);

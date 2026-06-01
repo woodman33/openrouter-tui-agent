@@ -137,10 +137,10 @@ export function SetupPanel({ agent }: SetupPanelProps) {
             </Box>
             
             <Box flexDirection="row" alignItems="center">
-              <Text bold color="#d2a8ff">sk-or-v1- </Text>
+              <Text bold color="#d2a8ff">sk-or- </Text>
               <Box flexGrow={1} borderStyle="single" borderColor="#30363d" paddingX={1}>
                 <Text color={input ? "#e6edf3" : theme.textTertiary}>
-                  {input ? input : 'Paste your API key here (Ctrl+V / Cmd+V)...'}
+                  {input ? '•'.repeat(Math.min(input.length, 36)) : 'Paste your API key here (Ctrl+V / Cmd+V)...'}
                 </Text>
               </Box>
             </Box>

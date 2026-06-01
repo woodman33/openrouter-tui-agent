@@ -28,6 +28,7 @@ function getEventPriority(event: TelemetryEventName): TelemetryPriority {
     case 'command.finished':
     case 'approval.required':
     case 'approval.granted':
+    case 'run.created':
     case 'receipt.generated':
     case 'agent.intent':
     case 'simulation.started':
@@ -260,6 +261,8 @@ export function useTelemetryBridge({
       else if (legacyEvent === 'model:switch') canonicalEvent = 'model.switch';
       else if (legacyEvent === 'mode:change') canonicalEvent = 'mode.change';
       else if (legacyEvent === 'tmux.output.line') canonicalEvent = 'tmux.output.line';
+      else if (legacyEvent === 'run.created') canonicalEvent = 'run.created';
+      else if (legacyEvent === 'receipt.generated') canonicalEvent = 'receipt.generated';
 
       sendTelemetry(canonicalEvent, payload);
     };
@@ -305,6 +308,8 @@ export function useTelemetryBridge({
       'approval.required': (data: any) => handleEvent('approval.required', data),
       'approval.granted': (data: any) => handleEvent('approval.granted', data),
       'command.finished': (data: any) => handleEvent('command.finished', data),
+      'run.created': (data: any) => handleEvent('run.created', data),
+      'receipt.generated': (data: any) => handleEvent('receipt.generated', data),
       'simulation.started': (data: any) => handleEvent('simulation.started', data),
       'simulation.plan.created': (data: any) => handleEvent('simulation.plan.created', data),
       'simulation.score.created': (data: any) => handleEvent('simulation.score.created', data),

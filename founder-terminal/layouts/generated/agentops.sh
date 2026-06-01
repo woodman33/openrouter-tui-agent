@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # AGENTOPS ROOM LAYOUT SCRIPT — reproducible tmux workspace
-# Generated: 2026-05-27T09:16:27.595224
+# Generated: 2026-05-31T03:48:59.435503
 # © 2026 William Meldman. All Rights Reserved.
 # ==============================================================================
 

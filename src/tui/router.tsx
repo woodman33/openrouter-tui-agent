@@ -1,36 +1,41 @@
 import React from 'react';
 import { ChatPanel } from './panels/ChatPanel.js';
-import { CodeReviewPanel } from './panels/CodeReviewPanel.js';
 import { DashboardPanel } from './panels/DashboardPanel.js';
-import { ModelExplorerPanel } from './panels/ModelExplorerPanel.js';
-import { SetupPanel } from './panels/SetupPanel.js';
 import { WorkspacePanel } from './panels/WorkspacePanel.js';
+import { CodeReviewPanel } from './panels/CodeReviewPanel.js';
+import { ModelExplorerPanel } from './panels/ModelExplorerPanel.js';
+import { PorterPanel } from './panels/PorterPanel.js';
+import { OptionsPanel } from './panels/OptionsPanel.js';
 import type { Agent } from '../agent/core.js';
 
-export type Mode = 'chat' | 'code-review' | 'dashboard' | 'model-explorer' | 'setup' | 'workspace';
+export type Mode = 'brief' | 'discovery' | 'teams' | 'workspace' | 'proof' | 'porter' | 'options';
 
-export const MODES: Mode[] = ['chat', 'code-review', 'dashboard', 'model-explorer', 'workspace'];
+export const MODES: Mode[] = ['brief', 'discovery', 'teams', 'workspace', 'proof', 'porter', 'options'];
 
 interface ModeRouterProps {
   mode: Mode;
   agent: Agent;
+  setInspector: (data: any) => void;
 }
 
-export function ModeRouter({ mode, agent }: ModeRouterProps) {
+export function ModeRouter({ mode, agent, setInspector }: ModeRouterProps) {
   switch (mode) {
-    case 'chat':
-      return <ChatPanel agent={agent} />;
-    case 'code-review':
-      return <CodeReviewPanel agent={agent} />;
-    case 'dashboard':
-      return <DashboardPanel agent={agent} />;
-    case 'model-explorer':
-      return <ModelExplorerPanel agent={agent} />;
-    case 'setup':
-      return <SetupPanel agent={agent} />;
+    case 'brief':
+      return <ChatPanel agent={agent} setInspector={setInspector} />;
+    case 'discovery':
+      return <DashboardPanel agent={agent} setInspector={setInspector} />;
+    case 'teams':
+      return <WorkspacePanel agent={agent} setInspector={setInspector} />;
     case 'workspace':
-      return <WorkspacePanel agent={agent} />;
+      return <CodeReviewPanel agent={agent} setInspector={setInspector} />;
+    case 'proof':
+      return <ModelExplorerPanel agent={agent} setInspector={setInspector} />;
+    case 'porter':
+      return <PorterPanel agent={agent} setInspector={setInspector} />;
+    case 'options':
+      return <OptionsPanel agent={agent} setInspector={setInspector} />;
     default:
-      return <ChatPanel agent={agent} />;
+      return <ChatPanel agent={agent} setInspector={setInspector} />;
   }
 }
+

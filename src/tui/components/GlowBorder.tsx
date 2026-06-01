@@ -1,27 +1,42 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import chalk from 'chalk';
+import { truncateVisible } from '../utils/text.js';
 
 interface GlowBorderProps {
   children?: React.ReactNode;
   color?: string;
   width?: number;
+  height?: number;
   label?: string;
+  borderStyle?: "single" | "double" | "round" | "bold" | "singleDouble" | "doubleSingle" | "classic" | undefined;
 }
 
-export function GlowBorder({ children, color = '#5e6ad2', width = 40, label }: GlowBorderProps) {
-  const topBorder = `╭${'─'.repeat(width - 2)}╮`;
-  const bottomBorder = `╰${'─'.repeat(width - 2)}╯`;
-
-  const glowColor = chalk.hex(color);
-  const dimGlow = chalk.hex(color).dim;
-  const faintGlow = chalk.hex(color).dim.italic;
+export function GlowBorder({ children, color = '#5e6ad2', width = 40, height, label, borderStyle = 'round' }: GlowBorderProps) {
+  const safeWidth = Math.max(8, Math.floor(width));
+  const safeHeight = height ? Math.max(3, Math.floor(height)) : undefined;
+  const innerWidth = Math.max(4, safeWidth - 2);
+  const labelText = label ? truncateVisible(label, Math.max(1, innerWidth - 2)) : '';
 
   return (
-    <Box flexDirection="column" flexGrow={1}>
-      <Text>{dimGlow(topBorder.charAt(0))}{label ? glowColor(`─ ${label} `) : null}{dimGlow(topBorder.slice(label ? label.length + 4 : 1))}</Text>
-      {children}
-      <Text>{faintGlow(bottomBorder)}</Text>
+    <Box
+      flexDirection="column"
+      width={safeWidth}
+      height={safeHeight}
+      minHeight={safeHeight ? undefined : 3}
+      flexGrow={safeHeight ? 0 : 1}
+      flexShrink={1}
+      borderStyle={borderStyle}
+      borderColor={color}
+      overflowY="hidden"
+    >
+      {labelText && (
+        <Box width={innerWidth} paddingX={1} flexShrink={0}>
+          <Text color={color} bold wrap="truncate">{labelText}</Text>
+        </Box>
+      )}
+      <Box flexDirection="column" width={innerWidth} flexGrow={1} flexShrink={1} overflowY="hidden">
+        {children}
+      </Box>
     </Box>
   );
 }

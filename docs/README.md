@@ -1,6 +1,8 @@
-# TIMMY OpenRouter TUI Agent Docs
+# TIMMY Agent Trust OS Docs
 
-TIMMY is a terminal-first agent operations console for running OpenRouter-backed assistants, local and edge agent runners, run receipts, companion UI telemetry, and provider routing experiments without hiding the audit trail.
+TIMMY is a terminal-first Agent Trust OS for governed AI agent execution, provider routing, verified context packs, run receipts, companion telemetry, and local-first audit trails, with Cloudflare-hosted audit trails as the edge deployment path.
+
+TIMMY's commercial wedge is governed proof: every meaningful agent action can be tied to AgentPass scopes, risk classes, verified context packs, and tamper-evident `.agentrun` receipts. The product principle is simple: trust the receipt, not the model.
 
 This documentation set is structured for GitBook Git Sync. The repository root contains `.gitbook.yaml`, which points GitBook at this `docs/` directory and uses `README.md` plus `SUMMARY.md` as the published entrypoint and table of contents.
 

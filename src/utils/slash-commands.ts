@@ -16,27 +16,27 @@ export interface SlashCommand {
 export const SLASH_COMMANDS: SlashCommand[] = [
   {
     command: '/chat',
-    description: 'Switch to Chat Mode',
+    description: 'Switch to Chat',
     execute: (_, agent) => { agent.emit('mode:change', 'chat'); }
   },
   {
     command: '/review',
-    description: 'Switch to Code Review Mode',
+    description: 'Switch to Receipt Proof',
     execute: (_, agent) => { agent.emit('mode:change', 'code-review'); }
   },
   {
     command: '/dashboard',
-    description: 'Switch to Swarm Telemetry Dashboard',
+    description: 'Switch to Command Board',
     execute: (_, agent) => { agent.emit('mode:change', 'dashboard'); }
   },
   {
     command: '/models',
-    description: 'Switch to Model Explorer Panel',
+    description: 'Switch to Models',
     execute: (_, agent) => { agent.emit('mode:change', 'model-explorer'); }
   },
   {
     command: '/workspace',
-    description: 'Switch to Hyper-Grid Workspace',
+    description: 'Switch to Workspace IDE',
     execute: (_, agent) => { agent.emit('mode:change', 'workspace'); }
   },
   {
@@ -472,11 +472,11 @@ export default function DemoDashboard() {
       return `${boldCyan}💡 TIMMY CONSOLE SYSTEMS HELP DIRECTORY${reset}\n` +
              `-----------------------------------------------------\n` +
              `${boldYellow}🎛️  NAVIGATION MODES & INTERFACES${reset}\n` +
-             `  /chat         — Switch to Conversational Chat\n` +
-             `  /review       — Switch to Code Reviewer / Git Diff analyser\n` +
-             `  /dashboard    — Switch to Swarm Telemetry DO Dashboard\n` +
-             `  /models       — Switch to Model Explorer & selector\n` +
-             `  /workspace    — Switch to tmux multi-agent Hyper-Grid Workspace\n\n` +
+             `  /chat         — Switch to conversational Chat\n` +
+             `  /review       — Switch to Receipt Proof and Git diff review\n` +
+             `  /dashboard    — Switch to the Kanban Command Board\n` +
+             `  /models       — Switch to the OpenRouter model list\n` +
+             `  /workspace    — Switch to the tmux Workspace IDE\n\n` +
              `${boldGreen}☁️  CLOUDFLARE EDGE & CORE OPERATIONS${reset}\n` +
              `  /tmux <sub..> — Cluster control (toggle, list, add, kill)\n` +
              `  /subscribe    — Inspect premium Edge memory DO tiers\n` +
@@ -498,6 +498,40 @@ export default function DemoDashboard() {
              `  /exit         — Cleanly terminate terminal console session\n` +
              `-----------------------------------------------------\n` +
              `${dim}Tip: Press [Tab] / [Shift+Tab] to cycle navigation modes instantly!${reset}`;
+    }
+  },
+  {
+    command: '/history',
+    description: 'Query local agent execution run history (last, search)',
+    usage: '/history [last|search <query>]',
+    execute: (args) => {
+      const parts = args.trim().split(' ');
+      const sub = parts[0].toLowerCase();
+      if (sub === 'last') {
+        return '\x1b[1;33m[ PLANNED ]\x1b[0m Local execution history store is under development. No previous runs are loaded on the host terminal session.';
+      } else if (sub === 'search') {
+        const query = parts.slice(1).join(' ');
+        return `\x1b[1;33m[ PLANNED ]\x1b[0m Search indexer for query "${query}" planned (Requires persistent database integration).`;
+      } else {
+        return '\x1b[1;33m[ PLANNED ]\x1b[0m Local run history logs list planned. Currently, previous tmux run logs are not loaded.';
+      }
+    }
+  },
+  {
+    command: '/call',
+    description: 'Trigger run replay or verify tamper-evident receipts (run, receipt)',
+    usage: '/call <run <run_id>|receipt <hash>>',
+    execute: (args) => {
+      const parts = args.trim().split(' ');
+      const sub = parts[0].toLowerCase();
+      const value = parts[1] || '';
+      if (sub === 'run') {
+        return `\x1b[1;33m[ PLANNED ]\x1b[0m Run replay pipeline for ID "${value}" planned (Requires Docker or safe process sandbox).`;
+      } else if (sub === 'receipt') {
+        return `\x1b[1;33m[ PLANNED ]\x1b[0m Tamper-evident receipt verification for hash "${value}" planned (Requires Cloudflare sync integration).`;
+      } else {
+        return 'Usage: /call <run <run_id>|receipt <hash>>';
+      }
     }
   }
 ];

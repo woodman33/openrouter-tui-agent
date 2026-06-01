@@ -24,7 +24,8 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
   const app = express();
   const httpServer = createServer(app);
   const wss = new WebSocketServer({ server: httpServer });
-  wss.on('error', (err) => {
+  wss.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') return;
     logger.error('WebSocket server error:', err);
   });
   const clients = new Set<import('ws').WebSocket>();
@@ -39,6 +40,29 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
     res.json({
       publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || ""
     });
+  });
+
+  app.get('/api/cloudflare-workflows', async (req, res) => {
+    const endpoint = process.env.TIMMY_TELEMETRY_URL || 'http://127.0.0.1:8787';
+    const runId = typeof req.query.runId === 'string' && req.query.runId.trim()
+      ? req.query.runId.trim()
+      : 'default-local-run';
+
+    try {
+      const workflowRes = await fetch(`${endpoint.replace(/\/$/, '')}/workflows?runId=${encodeURIComponent(runId)}`);
+      const body = await workflowRes.text();
+      res
+        .status(workflowRes.status)
+        .type(workflowRes.headers.get('content-type') || 'application/json')
+        .send(body);
+    } catch (err: any) {
+      res.status(503).json({
+        success: false,
+        runId,
+        endpoint,
+        error: err?.message || 'Cloudflare workflow endpoint unavailable'
+      });
+    }
   });
 
   // Serve the built client (if using vite)
@@ -100,6 +124,10 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
           if (globalServer && globalServer.agent) {
             globalServer.agent.removeTmuxSession(msg.id);
           }
+        } else if (msg.type === 'switchPaneAgent') {
+          if (globalServer && globalServer.agent) {
+            globalServer.agent.switchPaneAgent(msg.id, msg.agentKey);
+          }
         }
       } catch { }
     });
@@ -108,6 +136,7 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
   await new Promise<void>((resolve, reject) => {
     const onError = (err: Error) => {
       cleanup();
+      wss.close();
       reject(err);
     };
     const onListening = () => {

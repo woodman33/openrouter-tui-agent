@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { render, useApp } from 'ink';
+import { render, useApp, useInput, Box, Text } from 'ink';
 import { createAgent } from '../agent/core.js';
 import type { AgentConfig } from '../types/index.js';
 import { Layout } from './layout.js';
 import { ModeRouter, MODES, type Mode } from './router.js';
 import { useTerminalCapabilities } from './hooks/useTerminalCapabilities.js';
 import { useGraphicsPipeline } from './hooks/useGraphicsPipeline.js';
-import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js';
 import { useAgent } from './hooks/useAgent.js';
 import { useTelemetryBridge } from './hooks/useTelemetryBridge.js';
 import { useCompanionSync } from './hooks/useCompanionSync.js';
@@ -18,9 +17,25 @@ interface AppProps {
   graphicsType?: string;
 }
 
-function App({ config, initialMode = 'chat', graphicsType = 'auto' }: AppProps) {
+function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps) {
   const { exit } = useApp();
-  const [mode, setMode] = useState<Mode>(initialMode);
+  
+  const mappedInitialMode = ((initialMode as string) === 'chat') ? 'brief' : initialMode;
+  const [mode, setMode] = useState<Mode>(mappedInitialMode);
+  
+  // V2.0 App Shell navigation and focus states
+  const [focusedMode, setFocusedMode] = useState<Mode>(mappedInitialMode);
+  const [focusArea, setFocusArea] = useState<'nav' | 'stage'>('nav');
+  const [inspectorData, setInspectorData] = useState<any>(null);
+  const setInspectorSafe = React.useCallback((data: any) => {
+    Promise.resolve().then(() => {
+      setInspectorData(data);
+    });
+  }, []);
+  
+  // Command Palette State
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [paletteIdx, setPaletteIdx] = useState(0);
 
   // Stateful Active Receipt and Snapshot Trackers
   const [activeRunId, setActiveRunId] = useState<string | undefined>(undefined);
@@ -98,10 +113,23 @@ function App({ config, initialMode = 'chat', graphicsType = 'auto' }: AppProps) 
     };
   }, [agent]);
 
+  // Emit run.created on mount
+  useEffect(() => {
+    const startupRunId = `run_${Math.random().toString(36).substring(2, 9)}`;
+    const receiptUrl = `https://openrouter-tui-agent.wmeldman33.workers.dev/runs/${startupRunId}/receipt`;
+    agent.emit('run.created' as any, {
+      runId: startupRunId,
+      receiptUrl,
+      source: 'timmy-tui-startup',
+      timestamp: Date.now()
+    });
+  }, [agent]);
+
   // Bind mode:change emitter events to TUI state router
   useEffect(() => {
     const handleModeChange = (nextMode: Mode) => {
       setMode(nextMode);
+      setFocusedMode(nextMode);
     };
     agent.on('mode:change' as any, handleModeChange);
     return () => {
@@ -109,7 +137,7 @@ function App({ config, initialMode = 'chat', graphicsType = 'auto' }: AppProps) 
     };
   }, [agent]);
 
-  // Derive Rive animations state triggers
+  // Derive animations state triggers
   const animState: 'idle' | 'thinking' | 'streaming' | 'tool_call' | 'error' | 'success' = agentState.isThinking
     ? (agentState.currentTools.length > 0 ? 'tool_call' : 'thinking')
     : agentState.isStreaming
@@ -124,44 +152,109 @@ function App({ config, initialMode = 'chat', graphicsType = 'auto' }: AppProps) 
     try {
       if (pipeline) pipeline.cleanup();
     } catch {
-      // Guard circular graphics reference warnings on termination
+      // Guard circular graphics reference warnings
     }
     exit();
   };
 
-  // Set up keyboard shortcuts
-  useKeyboardShortcuts({
-    onEscape: safeExit,
-    onCtrlC: safeExit,
-    onTab: (shift) => {
-      if (mode === 'setup') return; // prevent cycling during onboarding
-      if ((agent as any).autocompleteActive) {
-        return; // swallow tab and let the active panel handle autocompleting
+  const paletteItems = [
+    { label: 'Brief Screen (Intent)', action: () => { setMode('brief'); setFocusedMode('brief'); } },
+    { label: 'Discovery Screen (Capabilities)', action: () => { setMode('discovery'); setFocusedMode('discovery'); } },
+    { label: 'Teams Screen (Blueprints)', action: () => { setMode('teams'); setFocusedMode('teams'); } },
+    { label: 'Workspace Screen (Evidence)', action: () => { setMode('workspace'); setFocusedMode('workspace'); } },
+    { label: 'Proof Screen (Receipts)', action: () => { setMode('proof'); setFocusedMode('proof'); } },
+    { label: 'Porter Screen (URL Scan)', action: () => { setMode('porter'); setFocusedMode('porter'); } },
+    { label: 'Options Screen (Configuration)', action: () => { setMode('options'); setFocusedMode('options'); } },
+    { label: 'Exit Application', action: safeExit }
+  ];
+
+  // Core V2.0 keyboard inputs router hook
+  useInput((input, key) => {
+    // 1. Always exit cleanly on Ctrl+C
+    if (key.ctrl && input === 'c') {
+      safeExit();
+      return;
+    }
+
+    // 2. Interactive Command Palette (Ctrl+K)
+    if (key.ctrl && input === 'k') {
+      setCommandPaletteOpen(prev => !prev);
+      setPaletteIdx(0);
+      return;
+    }
+
+    if (commandPaletteOpen) {
+      if (key.escape) {
+        setCommandPaletteOpen(false);
+        return;
       }
-      const idx = MODES.indexOf(mode);
-      const nextIdx = shift
-        ? (idx - 1 + MODES.length) % MODES.length
-        : (idx + 1) % MODES.length;
-      setMode(MODES[nextIdx]);
-    },
-    onCtrlL: () => {
-      if (mode === 'setup') return;
-      agentState.clearHistory();
-    },
-    onCtrlM: () => {
-      if (mode === 'setup') return;
-      process.stdout.write('\x1b[2J\x1b[3J\x1b[H');
-      setMode('model-explorer');
-    },
-    onCtrlS: () => {
-      if (mode === 'setup') return;
-      setSnapshotStatus('pending');
-      agent.emit('snapshot:requested' as any, {
-        runId: activeRunId || 'default-run',
-        receiptUrl: activeReceiptUrl || 'none',
-        mode,
-        timestamp: Date.now()
-      });
+      if (key.upArrow) {
+        setPaletteIdx(prev => Math.max(0, prev - 1));
+        return;
+      }
+      if (key.downArrow) {
+        setPaletteIdx(prev => Math.min(paletteItems.length - 1, prev + 1));
+        return;
+      }
+      if (key.return) {
+        paletteItems[paletteIdx].action();
+        setCommandPaletteOpen(false);
+        return;
+      }
+      return;
+    }
+
+    // 3. Central release commands: Esc returns focus to Nav, Ctrl+G force-releases pane lock
+    if (key.escape) {
+      if (focusArea === 'stage') {
+        // Returns focus to navigation deck
+        setFocusArea('nav');
+        return;
+      }
+    }
+
+    if (key.ctrl && input === 'g') {
+      setFocusArea('nav');
+      return;
+    }
+
+    // 4. In Navigation Deck Area Focus (focusArea === 'nav')
+    if (focusArea === 'nav') {
+      const allowedModes = (agent as any).developerMode === true
+        ? MODES
+        : MODES.filter(m => m !== 'discovery' && m !== 'teams');
+
+      if (key.tab) {
+        const idx = allowedModes.indexOf(focusedMode);
+        let nextIdx;
+        if (key.shift) {
+          nextIdx = (idx - 1 + allowedModes.length) % allowedModes.length;
+        } else {
+          nextIdx = (idx + 1) % allowedModes.length;
+        }
+        setFocusedMode(allowedModes[nextIdx]);
+        return;
+      }
+
+      if (key.return || input === '\r' || input === '\n') {
+        setMode(focusedMode);
+        agent.emit('mode:change' as any, focusedMode);
+        setFocusArea('stage');
+        return;
+      }
+
+      if (key.upArrow) {
+        const idx = allowedModes.indexOf(focusedMode);
+        const nextIdx = (idx - 1 + allowedModes.length) % allowedModes.length;
+        setFocusedMode(allowedModes[nextIdx]);
+        return;
+      }
+      if (key.downArrow) {
+        const idx = allowedModes.indexOf(focusedMode);
+        const nextIdx = (idx + 1) % allowedModes.length;
+        setFocusedMode(allowedModes[nextIdx]);
+        return;
+      }
     }
   });
 
@@ -169,6 +262,7 @@ function App({ config, initialMode = 'chat', graphicsType = 'auto' }: AppProps) 
     <Layout
       agent={agent}
       mode={mode}
+      focusedMode={focusedMode}
       model={agentState.model}
       pipelineType={pipelineType}
       totalCost={agentState.totalCost}
@@ -178,8 +272,41 @@ function App({ config, initialMode = 'chat', graphicsType = 'auto' }: AppProps) 
       telemetryStatus={telemetryStatus}
       queuedTelemetryCount={queuedTelemetryCount}
       snapshotStatus={snapshotStatus}
+      inspectorData={inspectorData}
+      focusArea={focusArea}
     >
-      <ModeRouter mode={mode} agent={agent} />
+      <Box flexGrow={1} flexShrink={1}>
+        <ModeRouter mode={mode} agent={agent} setInspector={setInspectorSafe} />
+
+        {/* Command Palette Overlay */}
+        {commandPaletteOpen && (
+          <Box
+            position="absolute"
+            top={3}
+            left={25}
+            borderStyle="double"
+            borderColor="#d2a8ff"
+            paddingX={2}
+            flexDirection="column"
+            width={45}
+            height={paletteItems.length + 3}
+          >
+            <Text bold color="#d2a8ff">🏛️ TIMMY COMMAND PALETTE (Ctrl+K)</Text>
+            <Text color="#8b949e">─────────────────────────────────────────</Text>
+            {paletteItems.map((item, idx) => {
+              const isSelected = idx === paletteIdx;
+              return (
+                <Text key={idx} color={isSelected ? '#3fb950' : '#e6edf3'} bold={isSelected}>
+                  {isSelected ? '▶ ' : '  '}
+                  {item.label}
+                </Text>
+              );
+            })}
+            <Text color="#8b949e">─────────────────────────────────────────</Text>
+            <Text color="#8b949e" dimColor>Arrows to scroll | Enter to choose | Esc to exit</Text>
+          </Box>
+        )}
+      </Box>
     </Layout>
   );
 }
@@ -190,3 +317,4 @@ export function startTUI(config: AgentConfig, mode?: Mode, graphicsType = 'auto'
     debug: false,
   });
 }
+

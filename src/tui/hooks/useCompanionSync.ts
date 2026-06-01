@@ -67,4 +67,47 @@ export function useCompanionSync({
       agent.off('tmux:update' as any, syncTmuxToCompanion);
     };
   }, [agent]);
+
+  // Sync real-time agent events to companion live!
+  useEffect(() => {
+    const handleOutputLine = (data: any) => {
+      const globalServer = (global as any).companionServer;
+      if (globalServer && typeof globalServer.sendUpdate === 'function') {
+        globalServer.sendUpdate('tmux:line', data);
+      }
+    };
+
+    const handleCommandSent = (data: any) => {
+      const globalServer = (global as any).companionServer;
+      if (globalServer && typeof globalServer.sendUpdate === 'function') {
+        globalServer.sendUpdate('tmux:command', data);
+      }
+    };
+
+    const handleToolCall = (name: string, args: any) => {
+      const globalServer = (global as any).companionServer;
+      if (globalServer && typeof globalServer.sendUpdate === 'function') {
+        globalServer.sendUpdate('agent:tool', { name, args });
+      }
+    };
+
+    const handleStreamDelta = (delta: string, fullText: string) => {
+      const globalServer = (global as any).companionServer;
+      if (globalServer && typeof globalServer.sendUpdate === 'function') {
+        globalServer.sendUpdate('agent:delta', { delta, fullText });
+      }
+    };
+
+    agent.on('tmux.output.line' as any, handleOutputLine);
+    agent.on('tmux.command.sent' as any, handleCommandSent);
+    agent.on('tool:call' as any, handleToolCall);
+    agent.on('stream:delta' as any, handleStreamDelta);
+
+    return () => {
+      agent.off('tmux.output.line' as any, handleOutputLine);
+      agent.off('tmux.command.sent' as any, handleCommandSent);
+      agent.off('tool:call' as any, handleToolCall);
+      agent.off('stream:delta' as any, handleStreamDelta);
+    };
+  }, [agent]);
 }

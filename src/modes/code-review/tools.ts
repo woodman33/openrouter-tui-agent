@@ -3,10 +3,11 @@ import { z } from 'zod/v4';
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
+import { redactString } from '../../utils/redact.js';
 
 export const diffTool = tool({
   name: 'get_git_diff',
-  description: 'Get the current git diff',
+  description: 'Get the current git diff (excluding secrets, keys, and env files)',
   inputSchema: z.object({
     staged: z.boolean().optional().describe('Show only staged changes'),
   }),
@@ -15,9 +16,23 @@ export const diffTool = tool({
   }),
   execute: async ({ staged = false }: { staged?: boolean }) => {
     try {
-      const cmd = staged ? 'git diff --cached' : 'git diff';
+      const cmd = staged 
+        ? "git diff --cached -- . ':!.env*' ':!*.env*' ':!*env.example*' ':!*package-lock.json*' ':!*pnpm-lock.yaml*'" 
+        : "git diff -- . ':!.env*' ':!*.env*' ':!*env.example*' ':!*package-lock.json*' ':!*pnpm-lock.yaml*'";
       const diff = execSync(cmd, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-      return { diff: diff || 'No changes detected' };
+      
+      const cleanLines = diff.split('\n').filter(line => {
+        const lower = line.toLowerCase();
+        if (lower.includes('api_key') || lower.includes('secret') || lower.includes('token') || lower.includes('password') || lower.includes('pass') || lower.includes('clerk_') || lower.includes('stripe_')) {
+          return false;
+        }
+        if (/^[-+][A-Z_0-9]+=/.test(line)) {
+          return false;
+        }
+        return true;
+      });
+
+      return { diff: redactString(cleanLines.join('\n')) || 'No changes detected' };
     } catch (e: any) {
       return { diff: `Error: ${e.message}` };
     }
