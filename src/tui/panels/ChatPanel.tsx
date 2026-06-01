@@ -311,33 +311,19 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
             </Box>
 
             <Box flexDirection="column" marginBottom={0}>
-              <Text bold color="#d2a8ff">🔧 1. MCPorter Onboarding (MCP Server ──&gt; CLI)</Text>
-              <Text color="#e6edf3">  • Scope: porter.add, porter.inspect | Receipt: mcpServers, signedJti</Text>
-              <Text color="#8b949e">  • Role: Ingests server schema URLs, compiles secure TS SDKs, generates sandboxed CLIs.</Text>
+              <Text color="#e6edf3"><Text bold color="#d2a8ff">🔧 MCPorter</Text> ─ Scans server URLs, compiles secure TS SDKs &amp; sandboxed CLIs.</Text>
             </Box>
-
             <Box flexDirection="column" marginBottom={0}>
-              <Text bold color="#79c0ff">🖥️ 2. cmux Workspace Pro (Real Clickable Shell)</Text>
-              <Text color="#e6edf3">  • Scope: workspace.launcher.cmux | Receipt: activeWorkspaceCell</Text>
-              <Text color="#8b949e">  • Role: Multi-cell virtual terminal workspace launcher with clickable macOS panes.</Text>
+              <Text color="#e6edf3"><Text bold color="#79c0ff">🖥️ cmux Pro</Text> ─ Multi-cell virtual terminal workspace launcher with clickable macOS panes.</Text>
             </Box>
-
             <Box flexDirection="column" marginBottom={0}>
-              <Text bold color="#3fb950">🤖 3. OpenRouter SDK (Multi-Model Routing)</Text>
-              <Text color="#e6edf3">  • Scope: client.chat.pipeline | Receipt: modelSelection, spendBudget</Text>
-              <Text color="#8b949e">  • Role: Multi-model routing, automatic fallbacks, budget visibility, and cost metrics.</Text>
+              <Text color="#e6edf3"><Text bold color="#3fb950">🤖 OpenRouter</Text> ─ Multi-model routing, automatic fallback hierarchies, and spend budget meters.</Text>
             </Box>
-
             <Box flexDirection="column" marginBottom={0}>
-              <Text bold color="#e3b341">⚙️ 4. Pi Agent / CLI (Orchestrator Sync)</Text>
-              <Text color="#e6edf3">  • Scope: telemetry.pi.durable | Receipt: durableD1ContextTimeline</Text>
-              <Text color="#8b949e">  • Role: Coordinates subagents/teams, triggers programmable CLI hooks, syncs DO context.</Text>
+              <Text color="#e6edf3"><Text bold color="#e3b341">⚙️ Pi Agent</Text> ─ Coordinates subagents/teams and synchronizes Durable Object KV contexts.</Text>
             </Box>
-
             <Box flexDirection="column" marginBottom={0}>
-              <Text bold color="#ff7b72">🛡️ 5. Hermes Specialist (Planning & Review)</Text>
-              <Text color="#e6edf3">  • Scope: review.hermes.audit | Receipt: diagnosticCritiqueGrade</Text>
-              <Text color="#8b949e">  • Role: Deep architectural research planner, code safety reviewer, compliance audits.</Text>
+              <Text color="#e6edf3"><Text bold color="#ff7b72">🛡️ Hermes</Text> ─ Deep architectural research planner, code safety reviewer, and compliance audits.</Text>
             </Box>
           </Box>
         ) : (
@@ -374,16 +360,22 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
         </Text>
       </Box>
 
-      {/* Selectable Navigability Buttons */}
-      <Box flexDirection="row" justifyContent="space-between" width={leftPanelWidth - 2} marginY={1}>
-        {actionButtons.map((btn, idx) => {
-          const isButtonFocused = focusMode === 1 && idx === btnHighlightIdx;
-          return (
-            <Box key={btn.action} borderStyle={isButtonFocused ? 'double' : 'single'} borderColor={isButtonFocused ? '#d2a8ff' : '#30363d'} paddingX={1}>
-              <Text bold color={isButtonFocused ? '#d2a8ff' : '#8b949e'}>{btn.label}</Text>
-            </Box>
-          );
-        })}
+      {/* Selectable Navigability Card (Action Menu) */}
+      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginY={1} flexDirection="column" width={leftPanelWidth - 2}>
+        <Text bold color="#d2a8ff">📱 Brief Action Menu:</Text>
+        <Box flexDirection="column" marginTop={1}>
+          {actionButtons.map((btn, idx) => {
+            const isButtonFocused = focusMode === 1 && idx === btnHighlightIdx;
+            return (
+              <Box key={btn.action}>
+                <Text bold={isButtonFocused} color={isButtonFocused ? '#d2a8ff' : '#8b949e'}>
+                  {isButtonFocused ? '▶ ' : '  '}
+                  {btn.label}
+                </Text>
+              </Box>
+            );
+          })}
+        </Box>
       </Box>
 
       {/* Input prompt box */}
