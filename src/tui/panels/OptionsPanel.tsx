@@ -21,7 +21,8 @@ interface DropdownOption {
 }
 
 export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
-  const { columns: width } = useWindowSize();
+  const { columns: width, rows: height } = useWindowSize();
+  const terminalHeight = height || 24;
   const [cmuxInstalled, setCmuxInstalled] = useState(false);
   const [tmuxInstalled, setTmuxInstalled] = useState(false);
 
@@ -34,6 +35,9 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
     { key: 'pi', label: 'Pi Agent Sync', choices: ['Durable DO Active', 'Offline Cache'], current: 'Durable DO Active', desc: 'Coordinate subagent task routing and telemetry sync' },
     { key: 'hermes', label: 'Hermes Planner', choices: ['Deep Research', 'Disabled'], current: 'Deep Research', desc: 'Deep safety review audits and structural plans' },
     { key: 'mcporter', label: 'MCPorter Sandbox', choices: ['Gated Daytona VM', 'Local Dryrun'], current: 'Gated Daytona VM', desc: 'MCP servers isolation boundaries enforcement' },
+    { key: 'analyticsEngine', label: 'Analytics Engine', choices: ['Enabled (Pro)', 'Disabled'], current: 'Enabled (Pro)', desc: 'Push trace points to Cloudflare Workers Analytics Engine' },
+    { key: 'dispatchNamespace', label: 'Dispatch Namespace', choices: ['my-dispatch-namespace', 'production-pool', 'isolated-sandbox'], current: 'my-dispatch-namespace', desc: 'Configure Cloudflare workers dynamic routing namespace' },
+    { key: 'dynamicWorkers', label: 'Dynamic Workers', choices: ['dynamic-workers-pool', 'standard-workers-pool', 'enterprise-vm-pool'], current: 'dynamic-workers-pool', desc: 'Active dynamic serverless Firecracker sandboxed worker bindings' },
     { key: 'cmuxtmux', label: 'cmux/tmux Binaries', choices: ['Found paths', 'Default search'], current: 'Found paths', desc: 'Binaries connection path lookup strategy' },
     { key: 'proof', label: 'Proof Style', choices: ['Verifiable Receipt', 'Raw Telemetry Logs'], current: 'Verifiable Receipt', desc: 'Telemetry record structure layout format' },
     { key: 'devmode', label: 'Developer Mode', choices: ['Disabled', 'Enabled'], current: agent.developerMode ? 'Enabled' : 'Disabled', desc: 'Toggle Discovery and Teams screens in Left Nav' }
@@ -176,7 +180,9 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
                     {isSelected ? '▶ ' : '  '}
                     {opt.label}:
                   </Text>
-                  <Text color={isSelected ? '#ffffff' : '#8b949e'} dimColor={!isSelected}>   {opt.desc}</Text>
+                  {terminalHeight >= 32 && (
+                    <Text color={isSelected ? '#ffffff' : '#8b949e'} dimColor={!isSelected}>   {opt.desc}</Text>
+                  )}
                 </Box>
                 <Text bold color={isSelected ? '#d2a8ff' : '#79c0ff'}>
                   [{opt.current}]

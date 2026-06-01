@@ -21,6 +21,7 @@ export interface Env {
   CLERK_SECRET_KEY?: string;
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?: string;
   POSTHOG_KEY?: string;
+  TELEMETRY_ANALYTICS?: any;
 }
 
 export type RunEvent = {
@@ -279,6 +280,28 @@ export class MyDurableObject extends DurableObject {
         event.timestamp,
         JSON.stringify(event.payload || {})
       );
+
+      // Workers Analytics Engine Integration (Pro Feature)
+      if (this.env.TELEMETRY_ANALYTICS) {
+        try {
+          this.env.TELEMETRY_ANALYTICS.writeDataPoint({
+            'blobs': [
+              runId, 
+              event.type, 
+              event.sessionId || "none", 
+              event.sessionName || "none", 
+              "William Meldman"
+            ],
+            'doubles': [
+              event.payload?.cost || 0,
+              event.payload?.latency || 0
+            ],
+            'indexes': [runId]
+          });
+        } catch (e) {
+          // Silent catch
+        }
+      }
 
       // Mutate Context State Machine Rules
       const context = this.getContext(runId);

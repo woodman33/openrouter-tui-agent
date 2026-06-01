@@ -27,6 +27,12 @@
       "preview_bucket_name": "payload-cms-r2-preview"
     }
   ],
+  "analytics_engine_datasets": [
+    {
+      "binding": "TELEMETRY_ANALYTICS",
+      "dataset": "timmy-telemetry"
+    }
+  ],
   "queues": {
     "producers": [
       {
