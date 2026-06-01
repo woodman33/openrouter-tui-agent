@@ -9,7 +9,8 @@ interface PorterPanelProps {
 }
 
 export function PorterPanel({ agent, setInspector }: PorterPanelProps) {
-  const { columns: width } = useWindowSize();
+  const { columns: width, rows: height } = useWindowSize();
+  const terminalHeight = height || 24;
   const [inputCmd, setInputCmd] = useState('/porter add https://github.com/svix/svix-webhooks');
   const [activeChainStep, setActiveChainStep] = useState(1); // 0 = URL, 1 = Scan, 2 = CLI, 3 = Scope, 4 = Receipt
   const [outputLogs, setOutputLogs] = useState<string[]>([
@@ -150,10 +151,12 @@ export function PorterPanel({ agent, setInspector }: PorterPanelProps) {
 
   const chainLabels = ['URL', 'Scan', 'CLI', 'Scope', 'Receipt'];
 
+  const isSmallScreen = terminalHeight < 30;
+
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1}>
       {/* 1. Value Ingest Chain - Focal Point */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
         <Text bold color="#79c0ff">⚙️  TIMMY Verifiable Operations Ingest Chain</Text>
         <Box flexDirection="row" marginTop={1} justifyContent="center" width={mainStageWidth - 8}>
           {chainLabels.map((lbl, idx) => {
@@ -170,49 +173,61 @@ export function PorterPanel({ agent, setInspector }: PorterPanelProps) {
             );
           })}
         </Box>
-        <Box marginTop={1} justifyContent="center">
-          <Text color="#8b949e" dimColor>
-            Pipeline: MCP Server URL ──&gt; MCPorter Scan ──&gt; Generated CLI ──&gt; AgentPass Scope ──&gt; TIMMY Receipt
-          </Text>
-        </Box>
+        {!isSmallScreen && (
+          <Box marginTop={1} justifyContent="center">
+            <Text color="#8b949e" dimColor>
+              Pipeline: MCP Server URL ──&gt; MCPorter Scan ──&gt; Generated CLI ──&gt; AgentPass Scope ──&gt; TIMMY Receipt
+            </Text>
+          </Box>
+        )}
       </Box>
 
       {/* 2. Commands Reference */}
-      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
+      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
         <Box flexDirection="row" justifyContent="space-between" width={mainStageWidth - 8}>
           <Box flexDirection="column" width={Math.floor((mainStageWidth - 10) / 2)}>
             <Text bold color="#d2a8ff">📜 /porter Console Actions:</Text>
             <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter add &lt;url&gt;</Text>   — Ingest server descriptor</Text>
             <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter list</Text>           — List active capabilities</Text>
-            <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter inspect</Text>        — Inspect schema Zod parameters</Text>
-            <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter approve</Text>        — Enroll visa in AgentPass</Text>
-            <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter cli</Text>            — Validate local client hooks</Text>
+            {!isSmallScreen && (
+              <>
+                <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter inspect</Text>        — Inspect schema Zod parameters</Text>
+                <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter approve</Text>        — Enroll visa in AgentPass</Text>
+                <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter cli</Text>            — Validate local client hooks</Text>
+              </>
+            )}
           </Box>
           <Box flexDirection="column" width={Math.floor((mainStageWidth - 10) / 2)} paddingLeft={2}>
             <Text bold color="#3fb950">🛠️ Copyable CLI Tools ($ npx):</Text>
             <Text color="#e6edf3"> • <Text color="#a5d6ff" bold>$ npx mcporter list</Text></Text>
             <Text color="#e6edf3"> • <Text color="#a5d6ff" bold>$ npx mcporter emit-ts --mode client</Text></Text>
-            <Text color="#e6edf3"> • <Text color="#a5d6ff" bold>$ npx mcporter generate-cli --bundle</Text></Text>
-            <Text color="#8b949e" dimColor> Note: Do not execute unverified third-party scripts.</Text>
+            {!isSmallScreen && (
+              <>
+                <Text color="#e6edf3"> • <Text color="#a5d6ff" bold>$ npx mcporter generate-cli --bundle</Text></Text>
+                <Text color="#8b949e" dimColor> Note: Do not execute unverified third-party scripts.</Text>
+              </>
+            )}
           </Box>
         </Box>
       </Box>
 
       {/* 3. Active Scan Preview */}
-      <Box borderStyle="round" borderColor="#3fb950" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
-        <Text bold color="#3fb950">🔍 Highlighted Tool Sandbox Ingest Preview</Text>
-        <Box flexDirection="column" marginTop={1}>
-          <Text color="#e6edf3">Source URL: <Text color="#79c0ff" bold>https://github.com/svix/svix-webhooks</Text></Text>
-          <Text color="#e6edf3">Status: <Text color="#3fb950" bold>scanned / gated / ready for approval 🟢</Text></Text>
-          <Text color="#e6edf3">Generated capability: <Text color="#d2a8ff" bold>svix-webhooks</Text></Text>
-          <Text color="#8b949e" dimColor>Next action: Execute '/porter approve' or compile CLI via npx.</Text>
+      {!isSmallScreen && (
+        <Box borderStyle="round" borderColor="#3fb950" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+          <Text bold color="#3fb950">🔍 Highlighted Tool Sandbox Ingest Preview</Text>
+          <Box flexDirection="column" marginTop={1}>
+            <Text color="#e6edf3">Source URL: <Text color="#79c0ff" bold>https://github.com/svix/svix-webhooks</Text></Text>
+            <Text color="#e6edf3">Status: <Text color="#3fb950" bold>scanned / gated / ready for approval 🟢</Text></Text>
+            <Text color="#e6edf3">Generated capability: <Text color="#d2a8ff" bold>svix-webhooks</Text></Text>
+            <Text color="#8b949e" dimColor>Next action: Execute '/porter approve' or compile CLI via npx.</Text>
+          </Box>
         </Box>
-      </Box>
+      )}
 
       {/* 4. Output Logs Console */}
       <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 MCPORTER SHELL CONSOLE">
-        <Box flexDirection="column" paddingX={1} height={4} overflowY="hidden">
-          {outputLogs.slice(-4).map((log, idx) => (
+        <Box flexDirection="column" paddingX={1} height={isSmallScreen ? 3 : 4} overflowY="hidden">
+          {outputLogs.slice(isSmallScreen ? -3 : -4).map((log, idx) => (
             <Text key={idx} color={log.startsWith('✓') ? '#3fb950' : log.startsWith('$') ? '#79c0ff' : '#c9d1d9'} wrap="truncate">
               {log}
             </Text>
@@ -221,7 +236,7 @@ export function PorterPanel({ agent, setInspector }: PorterPanelProps) {
       </GlowBorder>
 
       {/* 5. Active CLI prompt */}
-      <Box borderStyle="single" borderColor={isProcessing ? "#d29922" : "#5e6ad2"} paddingX={1} marginTop={1} width={mainStageWidth - 2}>
+      <Box borderStyle="single" borderColor={isProcessing ? "#d29922" : "#5e6ad2"} paddingX={1} marginTop={0} width={mainStageWidth - 2} flexShrink={0}>
         <Text color="#8b949e">[ mcporter ] </Text>
         <Text color="#79c0ff">▶ </Text>
         <Text color="#ffffff">{inputCmd}</Text>

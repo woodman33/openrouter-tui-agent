@@ -140,15 +140,23 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
 
   const hasPager = checkpoints.length > 0;
   const panelHeaderHeight = 2;
+  
+  const showFullMascot = terminalHeight >= 30;
+  const showCompactMascot = terminalHeight < 30 && terminalHeight >= 22;
+  const mascotHeight = showFullMascot ? 14 : (showCompactMascot ? 1 : 0);
+  
+  const buttonsHeight = 4; // Title (1) + 3 menu items (3)
+  
   const nonFlexibleHeight = 
-    3 // Mascot guidance box
+    mascotHeight
     + panelHeaderHeight
     + (hasPager ? 2 : 1)
     + (showAutocomplete && matches.length > 0 ? 1 : 0)
-    + 3 // Buttons block
+    + buttonsHeight
     + 3 // Input prompt box
-    + 1; // Footer
-  const visibleHeight = Math.max(4, terminalHeight - nonFlexibleHeight - 4);
+    + 1; // Stage footer/padding
+  
+  const visibleHeight = Math.max(4, terminalHeight - nonFlexibleHeight - 6);
   const inputTextWidth = Math.max(1, leftPanelWidth - 14);
 
   (agent as any).autocompleteActive = showAutocomplete && matches.length > 0;
@@ -300,7 +308,7 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
       {/* Messages Scroll viewport */}
       <Box flexDirection="column" height={visibleHeight} justifyContent="flex-start" overflowY="hidden" width={leftPanelWidth - 2}>
         {checkpoints.length === 0 ? (
-          <Box flexGrow={1} flexDirection="column" paddingX={2} paddingY={1} borderStyle="single" borderColor={theme.borderDefault} width={leftPanelWidth - 2}>
+          <Box flexGrow={1} flexDirection="column" paddingX={2} width={leftPanelWidth - 2}>
             <Box justifyContent="center" marginBottom={1}>
               <Text bold color={edgeColor}>☁️  TIMMY Swarm: Connected D1 Database (latency: {edgeValue})</Text>
             </Box>
@@ -352,18 +360,26 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
         </Box>
       )}
 
-      {/* TIMMY Quartermaster Guide Card */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginY={1} flexDirection="column" width={leftPanelWidth - 2}>
-        <Text bold color="#79c0ff">🧑‍✈️  TIMMY Quartermaster Mascot Guide</Text>
-        <Text color="#8b949e">
-          "Quartermaster ready, operator. Swarm telemetry JTI visa auth is fully secure. Input your prompt below, or use the Left Nav list to configure Swarm Blueprints and run evidence chambers."
-        </Text>
-      </Box>
+      {/* TIMMY Quartermaster Guide Banner/Card */}
+      {showFullMascot ? (
+        <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginY={0} flexDirection="column" width={leftPanelWidth - 2} flexShrink={0}>
+          <Text bold color="#79c0ff">🧑‍✈️  TIMMY Quartermaster Mascot Guide</Text>
+          <Text color="#8b949e">
+            "Quartermaster ready, operator. Swarm telemetry JTI visa auth is fully secure. Input your prompt below, or use the Left Nav list to configure Swarm Blueprints and run evidence chambers."
+          </Text>
+        </Box>
+      ) : (
+        showCompactMascot && (
+          <Box paddingX={2} marginY={0} flexShrink={0}>
+            <Text color="#8b949e">🧑‍✈️ <Text bold color="#79c0ff">TIMMY:</Text> Swarm telemetry secure. Enter prompt below.</Text>
+          </Box>
+        )
+      )}
 
-      {/* Selectable Navigability Card (Action Menu) */}
-      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginY={1} flexDirection="column" width={leftPanelWidth - 2}>
+      {/* Selectable Action Menu */}
+      <Box paddingX={2} marginY={0} flexDirection="column" width={leftPanelWidth - 2} flexShrink={0}>
         <Text bold color="#d2a8ff">📱 Brief Action Menu:</Text>
-        <Box flexDirection="column" marginTop={1}>
+        <Box flexDirection="column" marginTop={0}>
           {actionButtons.map((btn, idx) => {
             const isButtonFocused = focusMode === 1 && idx === btnHighlightIdx;
             return (
@@ -379,7 +395,7 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
       </Box>
 
       {/* Input prompt box */}
-      <Box borderStyle="single" borderColor={focusMode === 0 ? "#5e6ad2" : "#30363d"} paddingX={1} width={leftPanelWidth - 2}>
+      <Box borderStyle="single" borderColor={focusMode === 0 ? "#5e6ad2" : "#30363d"} paddingX={1} width={leftPanelWidth - 2} flexShrink={0}>
         <Text color={theme.textTertiary}>[ brief-chat ] </Text>
         <Text color="#79c0ff">{state.isThinking ? '◌ ' : '▶ '} </Text>
         <Text color={theme.textPrimary} wrap="truncate">{truncateVisible(input, inputTextWidth)}</Text>
