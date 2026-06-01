@@ -307,20 +307,37 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
             
             <Box flexDirection="column" marginBottom={1}>
               <Text bold color="#a5d6ff">⚡ VERIFIABLE COGNITIVE VALUE CHAIN:</Text>
-              <Text color="#79c0ff" bold>  Capability ──&gt; Control ──&gt; Proof ──&gt; Reuse</Text>
+              <Text color="#79c0ff" bold>  URL ──&gt; Ingest ──&gt; Control ──&gt; Proof ──&gt; Reuse</Text>
             </Box>
 
-            <Box flexDirection="column" marginBottom={1}>
-              <Text bold color="#d2a8ff">🔧 AVAILABLE AGENT TOOLS:</Text>
-              <Text color="#e6edf3">  • MCPorter ─ Safe URL capability scanner & JTI token signer</Text>
-              <Text color="#e6edf3">  • cmux     ─ Multi-cell virtual terminal workspace launcher ($ cmux .)</Text>
+            <Box flexDirection="column" marginBottom={0}>
+              <Text bold color="#d2a8ff">🔧 1. MCPorter Onboarding (MCP Server ──&gt; CLI)</Text>
+              <Text color="#e6edf3">  • Scope: porter.add, porter.inspect | Receipt: mcpServers, signedJti</Text>
+              <Text color="#8b949e">  • Role: Ingests server schema URLs, compiles secure TS SDKs, generates sandboxed CLIs.</Text>
             </Box>
-            
-            <Box flexDirection="column" marginBottom={1}>
-              <Text bold color="#3fb950">🤖 SWARM AGENT ORCHESTRATION SHIELD:</Text>
-              <Text color="#e6edf3">  • OpenRouter SDK ─ Regular chat operator pipeline</Text>
-              <Text color="#e6edf3">  • Pi Agent       ─ telemetric Durable Object syncing</Text>
-              <Text color="#e6edf3">  • Hermes Specialist ─ deep architecture research builder</Text>
+
+            <Box flexDirection="column" marginBottom={0}>
+              <Text bold color="#79c0ff">🖥️ 2. cmux Workspace Pro (Real Clickable Shell)</Text>
+              <Text color="#e6edf3">  • Scope: workspace.launcher.cmux | Receipt: activeWorkspaceCell</Text>
+              <Text color="#8b949e">  • Role: Multi-cell virtual terminal workspace launcher with clickable macOS panes.</Text>
+            </Box>
+
+            <Box flexDirection="column" marginBottom={0}>
+              <Text bold color="#3fb950">🤖 3. OpenRouter SDK (Multi-Model Routing)</Text>
+              <Text color="#e6edf3">  • Scope: client.chat.pipeline | Receipt: modelSelection, spendBudget</Text>
+              <Text color="#8b949e">  • Role: Multi-model routing, automatic fallbacks, budget visibility, and cost metrics.</Text>
+            </Box>
+
+            <Box flexDirection="column" marginBottom={0}>
+              <Text bold color="#e3b341">⚙️ 4. Pi Agent / CLI (Orchestrator Sync)</Text>
+              <Text color="#e6edf3">  • Scope: telemetry.pi.durable | Receipt: durableD1ContextTimeline</Text>
+              <Text color="#8b949e">  • Role: Coordinates subagents/teams, triggers programmable CLI hooks, syncs DO context.</Text>
+            </Box>
+
+            <Box flexDirection="column" marginBottom={0}>
+              <Text bold color="#ff7b72">🛡️ 5. Hermes Specialist (Planning & Review)</Text>
+              <Text color="#e6edf3">  • Scope: review.hermes.audit | Receipt: diagnosticCritiqueGrade</Text>
+              <Text color="#8b949e">  • Role: Deep architectural research planner, code safety reviewer, compliance audits.</Text>
             </Box>
           </Box>
         ) : (

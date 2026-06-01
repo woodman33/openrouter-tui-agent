@@ -20,13 +20,14 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
   const [outputLog, setOutputLog] = useState<string>('System diagnostics active.');
 
   const buttons = [
-    { label: '[ Open in cmux ]', key: 'cmux', desc: 'Launcher shell connection (Future clickable workspace)' },
-    { label: '[ Open in tmux ]', key: 'tmux', desc: 'Launches persistent tmux monitoring chambers' },
-    { label: '[ Call Previous Work ]', key: 'call', desc: 'Syncs preceding run logs from edge memory' },
-    { label: '[ Attach Receipt ]', key: 'attach', desc: 'Embeds tamper-evident token to active run' }
+    { label: '[ Open in cmux ]', key: 'cmux', desc: 'Opens real clickable workspace shell in cmux app (Workspace Shell Pro)' },
+    { label: '[ Open in tmux ]', key: 'tmux', desc: 'Launches persistent tmux monitoring fallback chambers' },
+    { label: '[ Call Previous Work ]', key: 'call', desc: 'Syncs preceding run logs from edge memory [ PLANNED ]' },
+    { label: '[ Attach Receipt ]', key: 'attach', desc: 'Embeds tamper-evident token signature to active run' },
+    { label: '[ Open Browser Workspace ]', key: 'browser', desc: 'Launches Vite dynamic companion web client dashboard' }
   ];
 
-  // System detection on mount
+  // System detection on mount & re-entry
   useEffect(() => {
     let cmuxFound = false;
     try {
@@ -51,6 +52,11 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
     }
   }, []);
 
+  // Reset launcher states on re-entry/mount
+  useEffect(() => {
+    setOutputLog('System diagnostics active. Click or select actions below.');
+  }, []);
+
   const updateInspectorData = (btn: typeof buttons[0]) => {
     setInspector({
       title: 'TIMMY AGENTOPS IDE',
@@ -61,10 +67,10 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
       scope: `workspace.launcher.${btn.key}`,
       details: [
         `• Option Selected: ${btn.label}`,
-        `• cmux status: ${cmuxInstalled ? '🟢 INSTALLED' : '🔴 NOT INSTALLED'}`,
-        `• tmux status: ${tmuxInstalled ? '🟢 ACTIVE' : '🔴 NOT INSTALLED'}`,
-        `• Mode: Dynamic Workspace Launcher`,
-        `• Rules: Gated sandbox execution`
+        `• cmux status: ${cmuxInstalled ? '🟢 INSTALLED / READY' : '🔴 NOT DETECTED'}`,
+        `• tmux status: ${tmuxInstalled ? '🟢 ACTIVE / FALLBACK READY' : '🔴 NOT DETECTED'}`,
+        `• Primary Shell: cmux Workspace Pro`,
+        `• Fallback: Raw tmux multiplexer`
       ]
     });
   };
@@ -75,11 +81,19 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
 
   useInput((char, key) => {
     if (key.leftArrow) {
-      setActiveBtnIdx(prev => Math.max(0, prev - 1));
+      setActiveBtnIdx(prev => {
+        const next = Math.max(0, prev - 1);
+        setOutputLog(`Option selected: ${buttons[next].label}`);
+        return next;
+      });
       return;
     }
     if (key.rightArrow) {
-      setActiveBtnIdx(prev => Math.min(buttons.length - 1, prev + 1));
+      setActiveBtnIdx(prev => {
+        const next = Math.min(buttons.length - 1, prev + 1);
+        setOutputLog(`Option selected: ${buttons[next].label}`);
+        return next;
+      });
       return;
     }
 
@@ -87,7 +101,7 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
       const btn = buttons[activeBtnIdx];
       if (btn.key === 'cmux') {
         if (cmuxInstalled) {
-          setOutputLog('✓ Launching cmux session socket...');
+          setOutputLog('✓ Launching cmux clickable workspace session socket...');
           const cwd = process.cwd();
           exec(`sh -lc "cmux '${cwd}'"`, { env: process.env }, (error) => {
             if (error) {
@@ -97,13 +111,13 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
                   // Standard macOS launch command fallback
                   exec(`open -a cmux`, (error3) => {
                     if (error3) {
-                      setOutputLog(`✕ Failed to activate cmux: ${error3.message}`);
+                      setOutputLog(`✕ Failed: sh -lc "cmux '${cwd}'" failed. Error: ${error3.message}`);
                     } else {
-                      setOutputLog('✓ cmux app launched successfully via open.');
+                      setOutputLog('✓ cmux app launched successfully via open -a.');
                     }
                   });
                 } else {
-                  setOutputLog('✓ cmux workspace activated successfully via path.');
+                  setOutputLog('✓ cmux workspace activated successfully via absolute path.');
                 }
               });
             } else {
@@ -111,25 +125,33 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
             }
           });
         } else {
-          setOutputLog('✕ Launch cancelled: cmux is NOT installed on the host. Show detection only.');
+          setOutputLog('✕ Launch cancelled: cmux is NOT installed on the host. Please install it.');
         }
       } else if (btn.key === 'tmux') {
         if (tmuxInstalled) {
-          setOutputLog('✓ Launcher: Initializing standard background tmux monitor session...');
+          setOutputLog('✓ Launcher: Initializing background tmux monitor session...');
           try {
-            // Keep tmux backend active if tmux is found
             execSync('tmux new-session -d -s timmy-run 2>/dev/null || true');
-            setOutputLog('✓ tmux backend initialized successfully. Check via "tmux attach -t timmy-run".');
+            setOutputLog('✓ tmux backend fallback initialized. Check via "tmux attach -t timmy-run".');
           } catch (e: any) {
-            setOutputLog(`✕ Failed to initialize tmux: ${e.message}`);
+            setOutputLog(`✕ Failed to initialize tmux session: ${e.message}`);
           }
         } else {
           setOutputLog('✕ Launch cancelled: tmux multiplexer is missing.');
         }
       } else if (btn.key === 'call') {
-        setOutputLog('✓ Loading run history and metadata into TaskForge registry... [ Planned ]');
+        setOutputLog('✓ Loading run history and metadata into TaskForge registry... [ Planned / Paid Pro ]');
       } else if (btn.key === 'attach') {
         setOutputLog('✓ Mapped token metadata signature. Ready to export proof.');
+      } else if (btn.key === 'browser') {
+        setOutputLog('✓ Activating Vite companion browser dashboard client...');
+        exec('open http://localhost:5173', (err) => {
+          if (err) {
+            setOutputLog(`✕ Failed to launch companion browser client: ${err.message}`);
+          } else {
+            setOutputLog('✓ Companion dashboard launched in browser successfully!');
+          }
+        });
       }
     }
   });
@@ -142,12 +164,12 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
       {/* 1. System detection status */}
       <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
         <Text bold color="#3fb950">📟  TIMMY Workspace Launcher Subsystems</Text>
-        <Box flexDirection="row" marginTop={1} justifyContent="space-between" width={mainStageWidth - 6}>
+        <Box flexDirection="row" marginTop={1} justifyContent="space-between" width={mainStageWidth - 8}>
           <Text color="#c9d1d9">
-            cmux status: {cmuxInstalled ? <Text color="#3fb950" bold>INSTALLED 🟢</Text> : <Text color="#ff7b72" bold>NOT INSTALLED 🔴 (Future clickable shell)</Text>}
+            cmux: {cmuxInstalled ? <Text color="#3fb950" bold>INSTALLED / READY 🟢</Text> : <Text color="#ff7b72" bold>NOT INSTALLED 🔴</Text>}
           </Text>
           <Text color="#c9d1d9">
-            tmux status: {tmuxInstalled ? <Text color="#3fb950" bold>ACTIVE 🟢</Text> : <Text color="#ff7b72" bold>NOT INSTALLED 🔴</Text>}
+            tmux: {tmuxInstalled ? <Text color="#3fb950" bold>ACTIVE / FALLBACK READY 🟢</Text> : <Text color="#ff7b72" bold>NOT INSTALLED 🔴</Text>}
           </Text>
         </Box>
       </Box>
@@ -155,12 +177,12 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
       {/* 2. Workspace Options Action Buttons */}
       <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
         <Text bold color="#d2a8ff">🖥️ Workspace Launcher Actions:</Text>
-        <Box flexDirection="row" marginTop={1} justifyContent="space-between" width={mainStageWidth - 6} flexWrap="wrap">
+        <Box flexDirection="row" marginTop={1} justifyContent="space-between" width={mainStageWidth - 8} flexWrap="wrap">
           {buttons.map((btn, idx) => {
             const isFocused = idx === activeBtnIdx;
             return (
               <Box key={btn.key} borderStyle={isFocused ? 'double' : 'single'} borderColor={isFocused ? '#d2a8ff' : '#30363d'} paddingX={1} marginBottom={0}>
-                <Text bold color={isFocused ? '#d2a8ff' : '#8b949e'}>{btn.label}</Text>
+                <Text bold color={isFocused ? '#d2a8ff' : '#e6edf3'}>{btn.label}</Text>
               </Box>
             );
           })}
@@ -174,7 +196,8 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
       <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 TERMINAL WORKSPACE CONTROLLER">
         <Box flexDirection="column" paddingX={1} minHeight={4}>
           <Text color="#c9d1d9">{outputLog}</Text>
-          <Text color="#8b949e" dimColor>Use Left/Right arrow keys to navigate options. Press [Enter] to execute launcher.</Text>
+          <Text color="#8b949e" dimColor>Arrows navigate | Enter to execute launcher.</Text>
+          <Text color="#8b949e" dimColor>Note: cmux owns clickable panes/browser shell; raw tmux is fallback.</Text>
         </Box>
       </GlowBorder>
     </Box>

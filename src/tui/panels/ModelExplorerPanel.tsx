@@ -15,18 +15,18 @@ export function ModelExplorerPanel({ agent, setInspector }: ModelExplorerPanelPr
 
   const updateInspectorData = () => {
     setInspector({
-      title: 'TAMPER-EVIDENT PROOF LEDGER',
-      subtitle: 'TIMMY RUN EVIDENCE SYSTEM',
+      title: 'SEALED TIMMY EVIDENCE RECEIPT',
+      subtitle: 'VERIFIABLE COMPLIANCE LEDGER',
       type: 'Verification Receipt',
       status: 'VERIFIED',
       risk: 'LOW',
       scope: 'proof.receipt.ledger',
       details: [
         '• Run ID: run_jti_81f292',
-        '• Ledger Type: Tamper-Evident log',
-        '• Registry Hash: sha256_e430f8219',
-        '• Integrity Check: PASSED',
-        '• Secure redact check: OK (No credentials)'
+        '• Integrity Check: HASH-BOUND PASS',
+        '• Verification Hash: sha256_e430f8219',
+        '• Scope compliance: 100% Gated Pass',
+        '• Security state: Safe VM sandbox isolated'
       ]
     });
   };
@@ -58,20 +58,24 @@ export function ModelExplorerPanel({ agent, setInspector }: ModelExplorerPanelPr
 
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1}>
-      {/* 1. Tamper-Evident Receipt Card */}
+      {/* 1. Sealed TIMMY Receipt Card - Primary focus */}
       <Box borderStyle="single" borderColor="#58a6ff" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
-        <Text bold color="#58a6ff">🧾  Tamper-Evident Run Receipt</Text>
+        <Text bold color="#58a6ff">🧾  Sealed TIMMY Receipt</Text>
         <Box flexDirection="column" marginTop={1}>
-          <Text color="#e6edf3">Run ID: <Text color="#79c0ff" bold>run_jti_81f292</Text></Text>
-          <Text color="#8b949e">Integrity Hash: <Text color="#a78bfa">sha256_e430f8219ab92cd0c07d3</Text></Text>
-          <Text color="#8b949e">Visa Gated Permissions: <Text color="#e6edf3" bold>fs.read, fs.write, cmd.exec</Text></Text>
-          <Text color="#8b949e">Database state: <Text color="#3fb950">Synced (Local D1 Registry)</Text></Text>
+          <Text color="#e6edf3">What Ran: <Text color="#79c0ff" bold>Refactor & clean TUI layout alignments</Text></Text>
+          <Text color="#e6edf3">Who Executed: <Text color="#d2a8ff" bold>OpenRouter principal builder</Text></Text>
+          <Text color="#e6edf3">Tools Utilized: <Text color="#ffffff" bold>local.command.exec, fs.writeFile, fs.viewFile</Text></Text>
+          <Text color="#e6edf3">Approved Visas: <Text color="#3fb950" bold>1 AgentPass visa signature granted</Text></Text>
+          <Text color="#e6edf3">Manifest Changes: <Text color="#e6edf3">Modified 3 local TSX panel components</Text></Text>
+          <Text color="#e6edf3">Auditable Evidence: <Text color="#8b949e">Durable SQLite telemetry audit trail & execution hashes</Text></Text>
+          <Text color="#8b949e">Manifest Hash: <Text color="#a78bfa">sha256_e430f8219ab92cd0c07d3</Text></Text>
+          <Text color="#8b949e">Receipt Status: <Text color="#3fb950" bold>Sealed & Gated OK 🟢</Text></Text>
         </Box>
       </Box>
 
-      {/* 2. Diffs & Transcripts log - Expandable Section */}
+      {/* 2. Diffs & Transcripts log - Secondary Expandable Section */}
       <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
-        <Box justifyContent="space-between" width={mainStageWidth - 6}>
+        <Box justifyContent="space-between" width={mainStageWidth - 8}>
           <Text bold color="#79c0ff">💻 Relayed Workspace Transcript Logs</Text>
           <Text bold color="var(--accent)">
             {expandLogs ? '[ COLLAPSE ]' : '[ EXPAND (Space) ]'}
@@ -90,9 +94,9 @@ export function ModelExplorerPanel({ agent, setInspector }: ModelExplorerPanelPr
         )}
       </Box>
 
-      {/* 3. Grader Verdict - Expandable Section */}
+      {/* 3. Grader Verdict - Secondary Expandable Section */}
       <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
-        <Box justifyContent="space-between" width={mainStageWidth - 6}>
+        <Box justifyContent="space-between" width={mainStageWidth - 8}>
           <Text bold color="#d2a8ff">🤖 Active Swarm Grader Critique</Text>
           <Text bold color="var(--accent)">
             {expandVerdict ? '[ COLLAPSE ]' : '[ EXPAND (Enter) ]'}

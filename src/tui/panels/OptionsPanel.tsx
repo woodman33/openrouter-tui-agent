@@ -29,9 +29,14 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
     { key: 'theme', label: 'Theme Palette', choices: ['Timmy Amber', 'Cyberpunk Neo', 'Monochrome Matrix', 'Sunset Aurora'], current: 'Timmy Amber', desc: 'Global border color palette and accents' },
     { key: 'animation', label: 'Animation Mode', choices: ['Blinking Mascot', 'Pulse Glow', 'Disabled'], current: 'Blinking Mascot', desc: 'Visual motion and state indicators style' },
     { key: 'mascot', label: 'Mascot Persona', choices: ['Nerdy Quartermaster', 'Strict Auditor'], current: 'Nerdy Quartermaster', desc: 'TIMMY Quartermaster tone and voice' },
-    { key: 'proof', label: 'Proof Style', choices: ['Tamper-Evident Ledger', 'Raw Telemetry Logs'], current: 'Tamper-Evident Ledger', desc: 'Telemetry record structure layout format' },
     { key: 'density', label: 'Layout Density', choices: ['Spacious', 'Compact'], current: 'Spacious', desc: 'Whitespace padding and Stage grid ratios' },
-    { key: 'devmode', label: 'Developer Mode', choices: ['Disabled', 'Enabled'], current: agent.developerMode ? 'Enabled' : 'Disabled', desc: 'Toggle Discovery and Teams screens' }
+    { key: 'openrouter', label: 'OpenRouter SDK', choices: ['Active Pipeline', 'Mock Dry-run'], current: 'Active Pipeline', desc: 'Configure Multi-model routing & fallbacks' },
+    { key: 'pi', label: 'Pi Agent Sync', choices: ['Durable DO Active', 'Offline Cache'], current: 'Durable DO Active', desc: 'Coordinate subagent task routing and telemetry sync' },
+    { key: 'hermes', label: 'Hermes Planner', choices: ['Deep Research', 'Disabled'], current: 'Deep Research', desc: 'Deep safety review audits and structural plans' },
+    { key: 'mcporter', label: 'MCPorter Sandbox', choices: ['Gated Daytona VM', 'Local Dryrun'], current: 'Gated Daytona VM', desc: 'MCP servers isolation boundaries enforcement' },
+    { key: 'cmuxtmux', label: 'cmux/tmux Binaries', choices: ['Found paths', 'Default search'], current: 'Found paths', desc: 'Binaries connection path lookup strategy' },
+    { key: 'proof', label: 'Proof Style', choices: ['Verifiable Receipt', 'Raw Telemetry Logs'], current: 'Verifiable Receipt', desc: 'Telemetry record structure layout format' },
+    { key: 'devmode', label: 'Developer Mode', choices: ['Disabled', 'Enabled'], current: agent.developerMode ? 'Enabled' : 'Disabled', desc: 'Toggle Discovery and Teams screens in Left Nav' }
   ]);
 
   const [activeIdx, setActiveIdx] = useState(0);
@@ -186,7 +191,7 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
       {popoverOpen && (
         <Box 
           position="absolute"
-          top={3} 
+          top={1} 
           left={8} 
           borderStyle="double" 
           borderColor="#d2a8ff" 
@@ -207,7 +212,7 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
             );
           })}
           <Text color="#8b949e">──────────────────────────────</Text>
-          <Text color="#8b949e" dimColor>Arrows to select | Enter to apply | Esc to exit</Text>
+          <Text color="#8b949e" dimColor>Arrows select | Enter apply | Esc exit</Text>
         </Box>
       )}
 

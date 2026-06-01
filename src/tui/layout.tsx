@@ -6,6 +6,8 @@ import { theme } from './theme.js';
 import type { Agent } from '../agent/core.js';
 import type { Mode } from './router.js';
 import { truncateVisible } from './utils/text.js';
+import { usePulse } from './hooks/usePulse.js';
+
 
 export interface LayoutProps {
   agent: Agent;
@@ -45,6 +47,8 @@ export function Layout({
   const { columns: width, rows: height } = useWindowSize();
   const terminalWidth = width || process.stdout.columns || 80;
   const terminalHeight = height || process.stdout.rows || 24;
+  const pulseFrame = usePulse(600);
+
 
   const isDev = (_agent as any).developerMode === true;
   const navItems: { mode: Mode; label: string; desc: string }[] = [
@@ -221,13 +225,13 @@ export function Layout({
             </Text>
           </Box>
           <Box>
-            <Text bold color="#3fb950">AgentPass VERIFIED </Text>
+            <Text bold color={pulseFrame % 2 === 0 ? "#3fb950" : "#2ea043"}>AgentPass VERIFIED </Text>
             <Text color="#8b949e">| </Text>
-            <Text bold color="#79c0ff">Visa READY </Text>
+            <Text bold color={pulseFrame % 2 === 0 ? "#79c0ff" : "#58a6ff"}>Visa READY </Text>
             <Text color="#8b949e">| </Text>
-            <Text bold color="#d2a8ff">Stamp ARMED </Text>
+            <Text bold color={pulseFrame % 2 === 0 ? "#d2a8ff" : "#bc8cff"}>Stamp ARMED </Text>
             <Text color="#8b949e">| </Text>
-            <Text bold color="#58a6ff">Receipt READY </Text>
+            <Text bold color={pulseFrame % 2 === 0 ? "#58a6ff" : "#388bfd"}>Receipt READY </Text>
           </Box>
         </Box>
       </Box>
