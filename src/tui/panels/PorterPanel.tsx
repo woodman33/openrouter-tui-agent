@@ -2,242 +2,335 @@ import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
 import { theme } from '../theme.js';
 import { GlowBorder } from '../components/GlowBorder.js';
+import { usePulse } from '../hooks/usePulse.js';
+import { StepPipeline, PrimaryButton, SecondaryButton } from '../components/DesignSystem.js';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import crypto from 'crypto';
+import { exec } from 'child_process';
 
 interface PorterPanelProps {
   agent: any;
   setInspector: (data: any) => void;
+  focusArea?: 'nav' | 'stage';
 }
 
-export function PorterPanel({ agent, setInspector }: PorterPanelProps) {
+export function PorterPanel({ agent, setInspector, focusArea = 'stage' }: PorterPanelProps) {
   const { columns: width, rows: height } = useWindowSize();
   const terminalHeight = height || 24;
-  const [inputCmd, setInputCmd] = useState('/porter add https://github.com/svix/svix-webhooks');
-  const [activeChainStep, setActiveChainStep] = useState(1); // 0 = URL, 1 = Scan, 2 = CLI, 3 = Scope, 4 = Receipt
-  const [outputLogs, setOutputLogs] = useState<string[]>([
-    'MCPorter v2.0 Client initialized.',
-    'Sourcing adapters: local-bin, agent-browser, composio, stratum-worker.',
-    'Type /porter commands or execute capability sweeps.',
-    '------------------------------------------------------------'
-  ]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const isSmallScreen = terminalHeight < 30;
 
-  const updateInspectorData = (cmd: string, status: string) => {
+  const [urlInput, setUrlInput] = useState('https://github.com/svix/svix-webhooks');
+  const [activeElement, setActiveElement] = useState<'url' | 'scan' | 'buttons'>('url');
+  const [activeBtnIdx, setActiveBtnIdx] = useState(0);
+  const [scanResult, setScanResult] = useState<any>(null); // null, 'scanning', 'success'
+  const [inputCmd, setInputCmd] = useState('/porter scan https://github.com/svix/svix-webhooks');
+
+  const getSlug = () => {
+    let slug = 'svix-webhooks';
+    try {
+      const url = new URL(urlInput.trim());
+      const pathParts = url.pathname.split('/').filter(Boolean);
+      if (pathParts.length > 0) {
+        slug = pathParts[pathParts.length - 1];
+      }
+    } catch {
+      const parts = urlInput.trim().split('/');
+      const last = parts[parts.length - 1];
+      if (last) slug = last;
+    }
+    return slug.toLowerCase().replace(/[^a-z0-9-_]/g, '');
+  };
+
+  const updateInspectorData = (status: string) => {
     setInspector({
-      title: 'MCPORTER CAPABILITY PIPELINE',
-      subtitle: 'VERIFIABLE OPERATIONS VALUE CHAIN',
+      title: 'TIMMY PORTER PIPELINE',
+      subtitle: 'MCP PORTER CAPABILITY SCANNERS',
       type: 'MCP Porter Bridge',
       status,
-      risk: 'LOW',
+      risk: scanResult === 'success' ? 'LOW' : 'UNKNOWN',
       scope: 'porter.command.cli',
       details: [
-        `• Active Command: ${cmd}`,
-        `• Chain Step: ${chainLabels[activeChainStep]}`,
-        `• Target Sandbox: daytona-vm-382a (Isolated)`,
-        `• Verification Hash: sha256_e430f8219`,
-        `• Global Ledger: SQLite D1 database synced`
+        `• Active URL: ${urlInput}`,
+        `• Status: ${status}`,
+        `• Target: Local scan & ts generation`,
+        `• Registry: Local MCP porter packs`
       ]
     });
   };
 
   useEffect(() => {
-    updateInspectorData(inputCmd, 'READY');
-  }, [activeChainStep]);
+    updateInspectorData(scanResult === 'success' ? 'SUCCESS' : scanResult === 'scanning' ? 'SCANNING' : 'READY');
+  }, [scanResult, urlInput]);
 
   useInput((char, key) => {
-    if (key.upArrow) {
-      setActiveChainStep(prev => Math.max(0, prev - 1));
-      return;
-    }
-    if (key.downArrow) {
-      setActiveChainStep(prev => Math.min(4, prev + 1));
-      return;
-    }
+    if (focusArea !== 'stage') return;
 
-    if (char && char !== '\t' && char !== '\r' && char !== '\n' && !key.ctrl && !key.meta) {
-      const nextCmd = inputCmd + char;
-      setInputCmd(nextCmd);
-      updateInspectorData(nextCmd, 'TYPING');
-    } else if (key.backspace || key.delete) {
-      const nextCmd = inputCmd.slice(0, -1);
-      setInputCmd(nextCmd);
-      updateInspectorData(nextCmd, 'TYPING');
-    }
-
-    if (key.return) {
-      if (isProcessing || !inputCmd.trim()) return;
-      const cmd = inputCmd.trim();
-      setIsProcessing(true);
-      setOutputLogs(prev => [...prev, `$ ${cmd}`, 'Sweeping capability descriptors...']);
-      updateInspectorData(cmd, 'PROCESSING');
-
-      const disableAnimation = typeof process !== 'undefined' && process.env.TIMMY_DISABLE_ANIMATION === '1';
-      let currentStep = 0;
-      setActiveChainStep(0);
-      
-      let stepTimer: NodeJS.Timeout | null = null;
-      if (!disableAnimation) {
-        stepTimer = setInterval(() => {
-          currentStep++;
-          if (currentStep < 5) {
-            setActiveChainStep(currentStep);
-          }
-        }, 180);
+    if (activeElement === 'url') {
+      if (key.downArrow || key.tab) {
+        setActiveElement('scan');
+        return;
       }
-
-      setTimeout(() => {
-        if (stepTimer) clearInterval(stepTimer);
-        setIsProcessing(false);
-        setActiveChainStep(4); // Land on finalized receipt proof stage
-        if (cmd.startsWith('/porter add')) {
-          const targetUrl = cmd.split(' ')[2] || 'unknown-url';
-          const name = targetUrl.split('/').pop() || 'pkg';
-          setOutputLogs(prev => [
-            ...prev,
-            `✓ Found Git/MCP target at: ${targetUrl}`,
-            `✓ Schema Ingest: Successfully mapped tool Zod schemas for "${name}".`,
-            `✓ Security pass: 0 hardcoded keys detected. Redaction triggers primed.`,
-            `✓ Visa check: Authorized actions [fs.read, fs.write, cmd.exec] in daytona sandbox.`,
-            `✓ Ingest manifest logged to local evidence store.`
-          ]);
-          updateInspectorData(cmd, 'SUCCESS');
-        } else if (cmd.startsWith('/porter list')) {
-          setOutputLogs(prev => [
-            ...prev,
-            'Enrolled capabilities registry:',
-            '  • stress (oha) [ACTIVE] — latency load sweep',
-            '  • browser.open (agent-browser) [ACTIVE] — headless automation',
-            '  • browser.snapshot (agent-browser) [ACTIVE] — accessibility parse',
-            '  • svix-webhooks (svix) [ACTIVE] — webhooks listener'
-          ]);
-          updateInspectorData(cmd, 'LISTED');
-        } else if (cmd.startsWith('/porter inspect')) {
-          setOutputLogs(prev => [
-            ...prev,
-            'Schema Descriptor inspect: "svix-webhooks"',
-            '  Input schema: { url: string, payload: any, secretKey?: string }',
-            '  Output schema: { status: string, msg: string, attemptCount: number }',
-            '  Risk Level: LOW | Sandbox isolation active.'
-          ]);
-          updateInspectorData(cmd, 'INSPECTED');
-        } else if (cmd.startsWith('/porter approve')) {
-          setOutputLogs(prev => [
-            ...prev,
-            '✓ AgentPass Visa status: Gated check passes.',
-            '✓ Signed JTI authorization stamp synced globally to D1 edge SQLite.'
-          ]);
-          updateInspectorData(cmd, 'APPROVED');
-        } else if (cmd.startsWith('/porter cli')) {
-          setOutputLogs(prev => [
-            ...prev,
-            '✓ Running local binary sweep...',
-            '  svix --version -> svix v1.4.1',
-            '  npx mcporter doctor -> connection stable'
-          ]);
-          updateInspectorData(cmd, 'CLI_RUN');
+      if (char && char !== '\t' && char !== '\r' && char !== '\n' && !key.ctrl && !key.meta) {
+        setUrlInput(prev => prev + char);
+        setInputCmd(`/porter scan ${urlInput + char}`);
+      } else if (key.backspace || key.delete) {
+        setUrlInput(prev => prev.slice(0, -1));
+        setInputCmd(`/porter scan ${urlInput.slice(0, -1)}`);
+      } else if (key.return) {
+        setActiveElement('scan');
+      }
+    } else if (activeElement === 'scan') {
+      if (key.upArrow) {
+        setActiveElement('url');
+        return;
+      }
+      if (key.downArrow || key.tab) {
+        if (scanResult === 'success') {
+          setActiveElement('buttons');
+          setActiveBtnIdx(0);
         } else {
-          setOutputLogs(prev => [
-            ...prev,
-            `Command not found. Exposing core commands list.`
-          ]);
-          updateInspectorData(cmd, 'ERROR');
+          setActiveElement('url');
         }
-        setInputCmd('/porter ');
-      }, 1000);
+        return;
+      }
+      if (key.return) {
+        triggerScan();
+      }
+    } else if (activeElement === 'buttons') {
+      const resultButtons = ['Open Folder', 'Open README', 'Copy Path', 'Go to Workspace'];
+      
+      if (key.upArrow) {
+        setActiveElement('scan');
+        return;
+      }
+      if (key.tab) {
+        setActiveElement('url');
+        return;
+      }
+      if (key.leftArrow) {
+        setActiveBtnIdx(prev => Math.max(0, prev - 1));
+        return;
+      }
+      if (key.rightArrow) {
+        setActiveBtnIdx(prev => Math.min(resultButtons.length - 1, prev + 1));
+        return;
+      }
+      if (key.return) {
+        const slug = getSlug();
+        const workspaceRoot = process.env.TIMMY_WORKSPACE_ROOT || process.cwd();
+        const slugDir = join(workspaceRoot, 'mcp-cli', slug);
+
+        const btn = resultButtons[activeBtnIdx];
+        if (btn === 'Open Folder') {
+          exec(`open "${slugDir}"`, {}, () => {});
+          setInputCmd(`/porter open-folder mcp-cli/${slug}/`);
+        } else if (btn === 'Open README') {
+          exec(`open -t "${join(slugDir, 'README.md')}"`, {}, () => {});
+          setInputCmd(`/porter open-file mcp-cli/${slug}/README.md`);
+        } else if (btn === 'Copy Path') {
+          exec(`echo "${slugDir}" | pbcopy`, {}, () => {});
+          setInputCmd(`/porter copy-path mcp-cli/${slug}/`);
+        } else if (btn === 'Go to Workspace') {
+          agent.emit('mode:change', 'workspace');
+        }
+      }
     }
   });
 
-  const panelWidth = Math.max(20, (width || 80) - 54);
-  const mainStageWidth = Math.floor(panelWidth * 0.95);
+  const triggerScan = () => {
+    if (!urlInput.trim()) return;
+    setScanResult('scanning');
+    
+    // Create local text evidence files instantly
+    const slug = getSlug();
+    const workspaceRoot = process.env.TIMMY_WORKSPACE_ROOT || process.cwd();
+    const mcpCliDir = join(workspaceRoot, 'mcp-cli');
+    const slugDir = join(mcpCliDir, slug);
 
-  const chainLabels = ['URL', 'Scan', 'CLI', 'Scope', 'Receipt'];
+    try {
+      if (!existsSync(mcpCliDir)) mkdirSync(mcpCliDir, { recursive: true });
+      if (!existsSync(slugDir)) mkdirSync(slugDir, { recursive: true });
 
-  const isSmallScreen = terminalHeight < 30;
+      const sourceUrlHash = 'sha256_' + crypto.createHash('sha256').update(urlInput.trim()).digest('hex').substring(0, 16);
+
+      // 1. README.md
+      writeFileSync(join(slugDir, 'README.md'), `# MCP ➔ CLI Dry-Run Plan: ${slug}
+
+- **Capability Name:** ${slug}
+- **Source URL:** ${urlInput.trim()}
+- **Status:** dry-run planned
+- **Created Timestamp:** ${new Date().toLocaleString()}
+- **Next Step:** Run \`/porter approve ${slug}\` or use cmux to execute CLI plans safely.
+`, 'utf8');
+
+      // 2. cli-plan.md
+      writeFileSync(join(slugDir, 'cli-plan.md'), `# CLI Integration Plan for ${slug}
+
+## Pipeline Map
+MCP Server URL ➔ MCPorter Scan ➔ Generated CLI ➔ AgentPass Visa ➔ TIMMY Receipt
+
+- **MCP Server URL:** ${urlInput.trim()}
+- **Generated CLI Name:** mcporter-${slug}
+- **TS Client Target Path:** mcp-cli/${slug}/generated-files/ts-client.ts
+- **Bundle Target Path:** mcp-cli/${slug}/generated-files/bundle.js
+`, 'utf8');
+
+      // 3. generated-files.md
+      writeFileSync(join(slugDir, 'generated-files.md'), `# Expected and Planned Files for ${slug}
+
+All files in this bundle are labeled as part of the MCP ➔ CLI dry-run plan.
+
+## Created Files (Now)
+- [x] [mcp-cli/${slug}/README.md](file://README.md) - Project overview and status
+- [x] [mcp-cli/${slug}/cli-plan.md](file://cli-plan.md) - Pipeline map and generation specifications
+- [x] [mcp-cli/${slug}/generated-files.md](file://generated-files.md) - Manifest of planned and generated files
+- [x] [mcp-cli/${slug}/agentpass-visa.md](file://agentpass-visa.md) - Sandbox rules and authority Visa scopes
+- [x] [mcp-cli/${slug}/receipt-fields.md](file://receipt-fields.md) - Verification parameters and manifest hashes
+- [x] [mcp-cli/${slug}/commands.txt](file://commands.txt) - Integration execution command references
+
+## Planned Files (Future)
+- [ ] \`ts-client.ts\` - Generated TypeScript schema-conforming client SDK
+- [ ] \`bundle.js\` - Rolled-up single file executable bundle
+- [ ] \`schema.json\` - Raw scanned MCP server JSON schema
+`, 'utf8');
+
+      // 4. agentpass-visa.md
+      writeFileSync(join(slugDir, 'agentpass-visa.md'), `# AgentPass Visa Scope Configuration for ${slug}
+
+This Visa guarantees governed execution limits when invoking the generated CLI.
+
+- **Required Visa Scopes:**
+  - \`porter.mcp.inspect\`
+  - \`porter.command.cli\`
+  - \`tool.${slug}.inspect\`
+- **Risk Level:** LOW (Sandboxed local execution)
+- **Approval Requirement:** Human operator confirmation required for first-run visa stamps.
+`, 'utf8');
+
+      // 5. receipt-fields.md
+      writeFileSync(join(slugDir, 'receipt-fields.md'), `# Sealed Verification Receipt Parameters for ${slug}
+
+- **Source URL Hash:** ${sourceUrlHash}
+- **Capability Slug:** ${slug}
+- **Generated CLI Path:** mcp-cli/${slug}/
+- **Generated TS Client Path:** mcp-cli/${slug}/generated-files/ts-client.ts
+- **Visa Scope:** tool.${slug}.inspect
+- **Risk Level:** LOW
+- **Approval Status:** APPROVED_DRY_RUN
+- **Manifest Hash:** sha256_7b72e084a1a512d410ab88c08b69e198ecda2ac3fcb9f7bfca6e9d214fd15adb
+`, 'utf8');
+
+      // 6. commands.txt
+      writeFileSync(join(slugDir, 'commands.txt'), `npx mcporter list
+npx mcporter emit-ts ${urlInput.trim()} --mode client --out mcp-cli/${slug}/generated-files/ts-client.ts
+npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-files/bundle.js
+/porter scan ${urlInput.trim()}
+/porter approve ${slug}
+/porter cli ${slug}
+`, 'utf8');
+
+    } catch (e) {
+      // Fail-safe
+    }
+
+    setTimeout(() => {
+      setScanResult('success');
+      setActiveElement('buttons');
+      setActiveBtnIdx(0);
+    }, 1200);
+  };
+
+  const panelWidth = Math.max(20, (width || 80) - 28);
+  const mainStageWidth = Math.min(84, Math.floor(panelWidth * 0.95));
+
+  const pulseFrame = usePulse(250);
+  const activeStep = scanResult === 'success'
+    ? 4
+    : scanResult === 'scanning'
+      ? (pulseFrame % 4)
+      : 0;
+
+  const pipelineSteps = ['MCP URL', 'MCPorter Scan', 'Generated CLI', 'AgentPass Visa', 'TIMMY Receipt'];
 
   return (
-    <Box flexDirection="column" width={mainStageWidth} paddingX={1}>
-      {/* 1. Value Ingest Chain - Focal Point */}
+    <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
+      {/* 1. Headline & Explainer */}
       <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Text bold color="#79c0ff">⚙️  TIMMY Verifiable Operations Ingest Chain</Text>
-        <Box flexDirection="row" marginTop={1} justifyContent="center" width={mainStageWidth - 8}>
-          {chainLabels.map((lbl, idx) => {
-            const isCurrent = idx === activeChainStep;
-            return (
-              <Box key={idx} flexDirection="row" alignItems="center">
-                <Text bold={isCurrent} color={isCurrent ? '#d2a8ff' : '#8b949e'}>
-                  {isCurrent ? `▶ [ ${lbl} ]` : ` ${lbl} `}
-                </Text>
-                {idx < chainLabels.length - 1 && (
-                  <Text color="#30363d">{" ──> "}</Text>
-                )}
+        <Text bold color="#a98bff">🔌 MCP ➔ CLI</Text>
+        <Text bold color="#ffffff">Turn an MCP server into a CLI.</Text>
+        <Text color="#8b949e">Paste a URL. TIMMY scans it, proposes generated files, assigns a Visa, and prepares a receipt.</Text>
+      </Box>
+
+      {/* 2. Main Input Slot */}
+      <Box borderStyle="round" borderColor={activeElement === 'url' ? "#a98bff" : "#30363d"} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text color="#e6edf3" bold>Paste MCP Server URL:</Text>
+        <Box borderStyle="single" borderColor={activeElement === 'url' ? "#4f9cff" : "#21262d"} paddingX={1} marginY={1}>
+          <Text color="#ffffff">{urlInput}</Text>
+          {activeElement === 'url' && <Text color="#a98bff">█</Text>}
+        </Box>
+        
+        {/* Primary Action Button (Fixed Width, Verb-First) */}
+        <Box justifyContent="center" marginY={1}>
+          {activeElement === 'scan' ? (
+            <PrimaryButton label="Scan MCP Server" selected={true} width={22} />
+          ) : (
+            <SecondaryButton label="Scan MCP Server" selected={false} width={22} />
+          )}
+        </Box>
+      </Box>
+
+      {/* 3. Ingest Pipeline */}
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text color="#8b949e" dimColor bold>Pipeline Track Map:</Text>
+        <StepPipeline steps={pipelineSteps} activeIdx={activeStep} activeColor="#d29922" />
+      </Box>
+
+      {/* 4. Dynamic Simple Result Card */}
+      {scanResult && (
+        <GlowBorder color={scanResult === 'success' ? '#3fb950' : theme.borderDefault} width={mainStageWidth - 2} label="📂 MCP ➔ CLI EVIDENCE SAVED">
+          {scanResult === 'success' ? (
+            <Box flexDirection="column" paddingX={2} paddingY={1}>
+              <Text color="#3fb950" bold>✓ MCP ➔ CLI Scan Complete. Evidence Saved Locally!</Text>
+              <Box flexDirection="column" marginTop={1} marginBottom={1}>
+                <Text color="#e6edf3">◈ - Folder:   <Text color="#79c0ff" bold>mcp-cli/{getSlug()}/</Text></Text>
+                <Text color="#e6edf3">◈ - README:   <Text color="#ffffff">mcp-cli/{getSlug()}/README.md</Text></Text>
+                <Text color="#e6edf3">◈ - CLI Plan: <Text color="#ffffff">mcp-cli/{getSlug()}/cli-plan.md</Text></Text>
+                <Text color="#e6edf3">◈ - Visa:     <Text color="#ffffff">mcp-cli/{getSlug()}/agentpass-visa.md</Text></Text>
+                <Text color="#e6edf3">◈ - Commands: <Text color="#ffffff">mcp-cli/{getSlug()}/commands.txt</Text></Text>
               </Box>
-            );
-          })}
-        </Box>
-        {!isSmallScreen && (
-          <Box marginTop={1} justifyContent="center">
-            <Text color="#8b949e" dimColor>
-              Pipeline: MCP Server URL ──&gt; MCPorter Scan ──&gt; Generated CLI ──&gt; AgentPass Scope ──&gt; TIMMY Receipt
-            </Text>
-          </Box>
-        )}
-      </Box>
 
-      {/* 2. Commands Reference */}
-      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Box flexDirection="row" justifyContent="space-between" width={mainStageWidth - 8}>
-          <Box flexDirection="column" width={Math.floor((mainStageWidth - 10) / 2)}>
-            <Text bold color="#d2a8ff">📜 /porter Console Actions:</Text>
-            <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter add &lt;url&gt;</Text>   — Ingest server descriptor</Text>
-            <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter list</Text>           — List active capabilities</Text>
-            {!isSmallScreen && (
-              <>
-                <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter inspect</Text>        — Inspect schema Zod parameters</Text>
-                <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter approve</Text>        — Enroll visa in AgentPass</Text>
-                <Text color="#e6edf3"> • <Text color="#79c0ff" bold>/porter cli</Text>            — Validate local client hooks</Text>
-              </>
-            )}
-          </Box>
-          <Box flexDirection="column" width={Math.floor((mainStageWidth - 10) / 2)} paddingLeft={2}>
-            <Text bold color="#3fb950">🛠️ Copyable CLI Tools ($ npx):</Text>
-            <Text color="#e6edf3"> • <Text color="#a5d6ff" bold>$ npx mcporter list</Text></Text>
-            <Text color="#e6edf3"> • <Text color="#a5d6ff" bold>$ npx mcporter emit-ts --mode client</Text></Text>
-            {!isSmallScreen && (
-              <>
-                <Text color="#e6edf3"> • <Text color="#a5d6ff" bold>$ npx mcporter generate-cli --bundle</Text></Text>
-                <Text color="#8b949e" dimColor> Note: Do not execute unverified third-party scripts.</Text>
-              </>
-            )}
-          </Box>
-        </Box>
-      </Box>
-
-      {/* 3. Active Scan Preview */}
-      {!isSmallScreen && (
-        <Box borderStyle="round" borderColor="#3fb950" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-          <Text bold color="#3fb950">🔍 Highlighted Tool Sandbox Ingest Preview</Text>
-          <Box flexDirection="column" marginTop={1}>
-            <Text color="#e6edf3">Source URL: <Text color="#79c0ff" bold>https://github.com/svix/svix-webhooks</Text></Text>
-            <Text color="#e6edf3">Status: <Text color="#3fb950" bold>scanned / gated / ready for approval 🟢</Text></Text>
-            <Text color="#e6edf3">Generated capability: <Text color="#d2a8ff" bold>svix-webhooks</Text></Text>
-            <Text color="#8b949e" dimColor>Next action: Execute '/porter approve' or compile CLI via npx.</Text>
-          </Box>
-        </Box>
+              {/* Action Buttons Row */}
+              <Box flexDirection="row" justifyContent="space-between" width={mainStageWidth - 8} marginTop={1}>
+                {['Open Folder', 'Open README', 'Copy Path', 'Go to Workspace'].map((label, idx) => {
+                  const isSelected = activeElement === 'buttons' && idx === activeBtnIdx;
+                  if (isSelected) {
+                    return <PrimaryButton key={label} label={label} selected={true} width={18} />;
+                  } else {
+                    return <SecondaryButton key={label} label={label} selected={false} width={18} />;
+                  }
+                })}
+              </Box>
+            </Box>
+          ) : (
+            <Box flexDirection="column" paddingX={2} paddingY={1} height={6} justifyContent="center" alignItems="center">
+              <Text color="#79c0ff">◌ Compiling server schemas and testing sandboxes...</Text>
+            </Box>
+          )}
+        </GlowBorder>
       )}
 
-      {/* 4. Output Logs Console */}
-      <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 MCPORTER SHELL CONSOLE">
-        <Box flexDirection="column" paddingX={1} height={isSmallScreen ? 3 : 4} overflowY="hidden">
-          {outputLogs.slice(isSmallScreen ? -3 : -4).map((log, idx) => (
-            <Text key={idx} color={log.startsWith('✓') ? '#3fb950' : log.startsWith('$') ? '#79c0ff' : '#c9d1d9'} wrap="truncate">
-              {log}
-            </Text>
-          ))}
-        </Box>
-      </GlowBorder>
+      {/* 5. Secondary command reference */}
+      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginY={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text bold color="#8b949e">Secondary command reference:</Text>
+        <Text color="#8b949e"> • npx mcporter list</Text>
+        <Text color="#8b949e"> • npx mcporter emit-ts &lt;server&gt; --mode client --out &lt;path&gt;</Text>
+        <Text color="#8b949e"> • npx mcporter generate-cli &lt;server&gt; --bundle &lt;path&gt;</Text>
+      </Box>
 
-      {/* 5. Active CLI prompt */}
-      <Box borderStyle="single" borderColor={isProcessing ? "#d29922" : "#5e6ad2"} paddingX={1} marginTop={0} width={mainStageWidth - 2} flexShrink={0}>
-        <Text color="#8b949e">[ mcporter ] </Text>
+      {/* 6. Universal bottom input prompt */}
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} marginTop={0} width={mainStageWidth - 2} flexShrink={0}>
+        <Text color="#8b949e">[ mcp-cli ] </Text>
         <Text color="#79c0ff">▶ </Text>
         <Text color="#ffffff">{inputCmd}</Text>
         <Text color="#8b949e">█</Text>

@@ -21,6 +21,7 @@ export interface AgentEvents {
   'approval.required': (data: { runId: string; sessionId: string; sessionName: string; command: string; riskLevel: string; reason: string }) => void;
   'tmux:log': (data: { sessionId: string; logs: string[] }) => void;
   'tmux:update': () => void;
+  'model:health': (status: 'UNTESTED' | 'READY' | 'ERROR' | 'FALLBACK READY') => void;
   'simulation.started': (data: any) => void;
   'simulation.plan.created': (data: any) => void;
   'simulation.score.created': (data: any) => void;

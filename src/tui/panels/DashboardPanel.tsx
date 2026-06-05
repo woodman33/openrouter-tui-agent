@@ -156,7 +156,7 @@ export function DashboardPanel({ agent: _agent, setInspector }: DashboardPanelPr
       tier: 'Standard',
       description: 'Tamper-evident operational receipt manifest system.',
       details: [
-        '• Cryptographic manifest signature',
+        '• Verifiable manifest stamp',
         '• Synced to edge Embassy ledger',
         '• Secure exportable receipt logs',
         '• Verified visa trace indices'

@@ -120,7 +120,7 @@ PYTHONPATH=src .venv/bin/python -m founder_terminal.cli governed-demo
 
 ## 🧾 Tamper-Evident .agentrun Receipt Schema
 
-The `.agentrun/manifest.json` receipt provides enterprise-grade observability and auditability. It is **tamper-evident** and **hash-bound** (not cryptographically signed, as V1.5 relies on deterministic SHA-256 hashes of payloads and credentials):
+The `.agentrun/manifest.json` receipt provides enterprise-grade observability and auditability. It is **tamper-evident** and **hash-bound** (verifiably sealed, as V1.5 relies on deterministic SHA-256 hashes of payloads and credentials):
 
 ```json
 {

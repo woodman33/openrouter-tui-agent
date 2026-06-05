@@ -1,0 +1,19 @@
+{
+  "name": "auth-md",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter shared build && concurrently --names agent-provider,agent-service --prefix-colors blue,magenta \"pnpm --filter agent-providers dev\" \"pnpm --filter agent-services dev\"",
+    "dev:provider": "pnpm --filter agent-providers dev",
+    "dev:service": "pnpm --filter agent-services dev",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r build",
+    "format": "prettier --write --ignore-path=.gitignore --ignore-path=.prettierignore .",
+    "format:check": "prettier --check --ignore-path=.gitignore --ignore-path=.prettierignore ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "prettier": "^3.3.3"
+  },
+  "packageManager": "pnpm@8.15.8"
+}

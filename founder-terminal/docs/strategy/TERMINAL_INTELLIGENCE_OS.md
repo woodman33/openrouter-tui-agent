@@ -5,7 +5,7 @@ Welcome to the strategic blueprint of **TIMMY: The Terminal Intelligence Operati
 ## 🎯 The Core Thesis
 * **TIMMY is not a terminal emulator.** Terminal emulators render character grids.
 * **TIMMY is a governed terminal intelligence control plane.**
-* The product unifies specialized agent execution, Model Context Protocol (MCP) tool calls, versioned context packs, cost-sensitive budget routing, real-time human approvals, and cryptographic audit receipts.
+* The product unifies specialized agent execution, Model Context Protocol (MCP) tool calls, versioned context packs, cost-sensitive budget routing, real-time human approvals, and verifiable audit receipts.
 * **Category Phrase**: *Terminal Intelligence OS*
 * **Operational Tagline**: *Trust the receipt, not the model.*
 

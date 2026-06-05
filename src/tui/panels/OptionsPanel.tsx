@@ -10,6 +10,7 @@ import { homedir } from 'os';
 interface OptionsPanelProps {
   agent: any;
   setInspector: (data: any) => void;
+  focusArea?: 'nav' | 'stage';
 }
 
 interface DropdownOption {
@@ -20,34 +21,15 @@ interface DropdownOption {
   desc: string;
 }
 
-export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
+export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: OptionsPanelProps) {
   const { columns: width, rows: height } = useWindowSize();
   const terminalHeight = height || 24;
+  const isSmallScreen = terminalHeight < 30;
   const [cmuxInstalled, setCmuxInstalled] = useState(false);
   const [tmuxInstalled, setTmuxInstalled] = useState(false);
+  const [inputCmd, setInputCmd] = useState('/options toggle animations');
 
-  const [options, setOptions] = useState<DropdownOption[]>([
-    { key: 'theme', label: 'Theme Palette', choices: ['Timmy Amber', 'Cyberpunk Neo', 'Monochrome Matrix', 'Sunset Aurora'], current: 'Timmy Amber', desc: 'Global border color palette and accents' },
-    { key: 'animation', label: 'Animation Mode', choices: ['Blinking Mascot', 'Pulse Glow', 'Disabled'], current: 'Blinking Mascot', desc: 'Visual motion and state indicators style' },
-    { key: 'mascot', label: 'Mascot Persona', choices: ['Nerdy Quartermaster', 'Strict Auditor'], current: 'Nerdy Quartermaster', desc: 'TIMMY Quartermaster tone and voice' },
-    { key: 'density', label: 'Layout Density', choices: ['Spacious', 'Compact'], current: 'Spacious', desc: 'Whitespace padding and Stage grid ratios' },
-    { key: 'openrouter', label: 'OpenRouter SDK', choices: ['Active Pipeline', 'Mock Dry-run'], current: 'Active Pipeline', desc: 'Configure Multi-model routing & fallbacks' },
-    { key: 'pi', label: 'Pi Agent Sync', choices: ['Durable DO Active', 'Offline Cache'], current: 'Durable DO Active', desc: 'Coordinate subagent task routing and telemetry sync' },
-    { key: 'hermes', label: 'Hermes Planner', choices: ['Deep Research', 'Disabled'], current: 'Deep Research', desc: 'Deep safety review audits and structural plans' },
-    { key: 'mcporter', label: 'MCPorter Sandbox', choices: ['Gated Daytona VM', 'Local Dryrun'], current: 'Gated Daytona VM', desc: 'MCP servers isolation boundaries enforcement' },
-    { key: 'analyticsEngine', label: 'Analytics Engine', choices: ['Enabled (Pro)', 'Disabled'], current: 'Enabled (Pro)', desc: 'Push trace points to Cloudflare Workers Analytics Engine' },
-    { key: 'dispatchNamespace', label: 'Dispatch Namespace', choices: ['my-dispatch-namespace', 'production-pool', 'isolated-sandbox'], current: 'my-dispatch-namespace', desc: 'Configure Cloudflare workers dynamic routing namespace' },
-    { key: 'dynamicWorkers', label: 'Dynamic Workers', choices: ['dynamic-workers-pool', 'standard-workers-pool', 'enterprise-vm-pool'], current: 'dynamic-workers-pool', desc: 'Active dynamic serverless Firecracker sandboxed worker bindings' },
-    { key: 'cmuxtmux', label: 'cmux/tmux Binaries', choices: ['Found paths', 'Default search'], current: 'Found paths', desc: 'Binaries connection path lookup strategy' },
-    { key: 'proof', label: 'Proof Style', choices: ['Verifiable Receipt', 'Raw Telemetry Logs'], current: 'Verifiable Receipt', desc: 'Telemetry record structure layout format' },
-    { key: 'devmode', label: 'Developer Mode', choices: ['Disabled', 'Enabled'], current: agent.developerMode ? 'Enabled' : 'Disabled', desc: 'Toggle Discovery and Teams screens in Left Nav' }
-  ]);
-
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [popoverChoiceIdx, setPopoverChoiceIdx] = useState(0);
-
-  // System detection on mount
+  // Detect binaries
   useEffect(() => {
     let cmuxFound = false;
     try {
@@ -72,7 +54,29 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
     }
   }, []);
 
+  const [options, setOptions] = useState<DropdownOption[]>([]);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  // Initialize and keep options in sync
+  useEffect(() => {
+    const cmuxStatus = cmuxInstalled ? 'detected' : 'missing';
+    const tmuxStatus = tmuxInstalled ? 'detected' : 'missing';
+
+    setOptions([
+      { key: 'animations', label: 'Animations', choices: ['ON', 'OFF'], current: process.env.TIMMY_DISABLE_ANIMATION === '1' ? 'OFF' : 'ON', desc: 'Visual motion and state indicators style' },
+      { key: 'devmode', label: 'Developer Mode', choices: ['ON', 'OFF'], current: agent.developerMode ? 'ON' : 'OFF', desc: 'Toggle Discovery, Teams, and Logs in Left Nav' },
+      { key: 'autohide', label: 'Sidebar Auto-hide', choices: ['ON', 'OFF'], current: agent.sidebarAutoHide ? 'ON' : 'OFF', desc: 'Auto hide left navigation column when workspace is active' },
+      { key: 'autoopen', label: 'Browser Auto-open', choices: ['ON', 'OFF'], current: agent.browserAutoOpen ? 'ON' : 'OFF', desc: 'Automatically open browser companion' },
+      { key: 'theme', label: 'Theme', choices: ['Timmy Amber', 'Timmy Blue', 'Timmy Green'], current: process.env.TIMMY_THEME === 'blue' ? 'Timmy Blue' : (process.env.TIMMY_THEME === 'green' ? 'Timmy Green' : 'Timmy Amber'), desc: 'Global border color palette and accents' },
+      { key: 'model', label: 'OpenRouter Model', choices: [agent.model], current: agent.model, desc: 'Active model for cognitive workflows' },
+      { key: 'cmuxPath', label: 'cmux Path', choices: [cmuxStatus], current: cmuxStatus, desc: 'Path to native cmux desktop companion' },
+      { key: 'tmuxPath', label: 'tmux Path', choices: [tmuxStatus], current: tmuxStatus, desc: 'Path to local tmux binary' },
+      { key: 'logs', label: 'Logs', choices: ['ON', 'OFF'], current: agent.logsEnabled !== false ? 'ON' : 'OFF', desc: 'Toggle write logs utility' }
+    ]);
+  }, [cmuxInstalled, tmuxInstalled, agent.model, agent.developerMode, agent.sidebarAutoHide, agent.browserAutoOpen, agent.logsEnabled]);
+
   const updateInspectorData = (opt: DropdownOption, status: string) => {
+    if (!opt) return;
     setInspector({
       title: `Setting: ${opt.label.toUpperCase()}`,
       subtitle: 'TIMMY TUI CONFIGURATION UTILITY',
@@ -91,57 +95,16 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
   };
 
   useEffect(() => {
-    updateInspectorData(options[activeIdx], 'READY');
-  }, [activeIdx, cmuxInstalled, tmuxInstalled]);
+    if (options.length > 0 && options[activeIdx]) {
+      updateInspectorData(options[activeIdx], 'READY');
+      setInputCmd(`/options toggle ${options[activeIdx].key}`);
+    }
+  }, [activeIdx]);
 
   useInput((char, key) => {
-    if (popoverOpen) {
-      if (key.upArrow) {
-        setPopoverChoiceIdx(prev => Math.max(0, prev - 1));
-        return;
-      }
-      if (key.downArrow) {
-        const activeOpt = options[activeIdx];
-        setPopoverChoiceIdx(prev => Math.min(activeOpt.choices.length - 1, prev + 1));
-        return;
-      }
-      if (key.escape) {
-        setPopoverOpen(false);
-        updateInspectorData(options[activeIdx], 'READY');
-        return;
-      }
-      if (key.return) {
-        const activeOpt = options[activeIdx];
-        const nextChoice = activeOpt.choices[popoverChoiceIdx];
-        
-        // Apply choices
-        if (activeOpt.key === 'devmode') {
-          agent.developerMode = nextChoice === 'Enabled';
-        } else if (activeOpt.key === 'theme') {
-          if (nextChoice === 'Cyberpunk Neo') {
-            process.env.TIMMY_THEME = 'cyberpunk';
-          } else if (nextChoice === 'Monochrome Matrix') {
-            process.env.TIMMY_THEME = 'matrix';
-          } else if (nextChoice === 'Sunset Aurora') {
-            process.env.TIMMY_THEME = 'sunset';
-          } else {
-            process.env.TIMMY_THEME = 'amber';
-          }
-        }
-
-        setOptions(prev => prev.map((o, idx) => {
-          if (idx === activeIdx) {
-            const updated = { ...o, current: nextChoice };
-            updateInspectorData(updated, 'SAVED');
-            return updated;
-          }
-          return o;
-        }));
-
-        setPopoverOpen(false);
-      }
-      return;
-    }
+    if (focusArea !== 'stage') return;
+    if (options.length === 0) return;
+    const activeOpt = options[activeIdx];
 
     if (key.upArrow) {
       setActiveIdx(prev => Math.max(0, prev - 1));
@@ -152,25 +115,81 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
       return;
     }
 
-    if (key.return) {
-      const activeOpt = options[activeIdx];
+    const isSpace = char === ' ';
+    const isEnter = key.return;
+    const isLeft = key.leftArrow;
+    const isRight = key.rightArrow;
+
+    if (isSpace || isEnter || isLeft || isRight) {
+      if (activeOpt.choices.length <= 1) return; // Read-only
+
       const currentIdx = activeOpt.choices.indexOf(activeOpt.current);
-      setPopoverChoiceIdx(currentIdx !== -1 ? currentIdx : 0);
-      setPopoverOpen(true);
-      updateInspectorData(activeOpt, 'SELECTING');
+      let nextIdx = currentIdx;
+
+      const isBinary = activeOpt.choices.length === 2;
+
+      if (isSpace) {
+        if (!isBinary) return; // Space only toggles binary options
+        nextIdx = (currentIdx + 1) % activeOpt.choices.length;
+      } else if (isEnter) {
+        nextIdx = (currentIdx + 1) % activeOpt.choices.length;
+      } else if (isLeft) {
+        nextIdx = (currentIdx - 1 + activeOpt.choices.length) % activeOpt.choices.length;
+      } else if (isRight) {
+        nextIdx = (currentIdx + 1) % activeOpt.choices.length;
+      }
+
+      const nextChoice = activeOpt.choices[nextIdx];
+
+      // Apply runtime changes instantly
+      if (activeOpt.key === 'animations') {
+        process.env.TIMMY_DISABLE_ANIMATION = nextChoice === 'OFF' ? '1' : '0';
+      } else if (activeOpt.key === 'devmode') {
+        agent.developerMode = nextChoice === 'ON';
+      } else if (activeOpt.key === 'theme') {
+        if (nextChoice === 'Timmy Blue') {
+          process.env.TIMMY_THEME = 'blue';
+        } else if (nextChoice === 'Timmy Green') {
+          process.env.TIMMY_THEME = 'green';
+        } else {
+          process.env.TIMMY_THEME = 'amber';
+        }
+      } else if (activeOpt.key === 'autohide') {
+        agent.sidebarAutoHide = nextChoice === 'ON';
+      } else if (activeOpt.key === 'autoopen') {
+        agent.browserAutoOpen = nextChoice === 'ON';
+      } else if (activeOpt.key === 'logs') {
+        agent.logsEnabled = nextChoice === 'ON';
+      }
+
+      setOptions(prev => prev.map((o, idx) => {
+        if (idx === activeIdx) {
+          const updated = { ...o, current: nextChoice };
+          updateInspectorData(updated, 'SAVED');
+          return updated;
+        }
+        return o;
+      }));
+
+      setInputCmd(`/options toggle ${activeOpt.key} to ${nextChoice}`);
     }
   });
 
-  const panelWidth = Math.max(20, (width || 80) - 54);
-  const mainStageWidth = Math.floor(panelWidth * 0.95);
-
-  const activeOpt = options[activeIdx];
+  // Strict cap on main stage width to prevent stretching awkwardly in wide screens
+  const panelWidth = Math.max(20, (width || 80) - 28);
+  const mainStageWidth = Math.min(84, Math.floor(panelWidth * 0.95));
 
   return (
-    <Box flexDirection="column" width={mainStageWidth} paddingX={1}>
+    <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
+      {/* Header Banner */}
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text bold color="#a98bff">⚙️  TIMMY Settings & Options</Text>
+        <Text color="#8b949e">Change simple local settings. Runtime secrets and bindings are untouched.</Text>
+      </Box>
+
       {/* Dynamic Settings List */}
       <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 COMPACT CONFIGURATION DECK">
-        <Box flexDirection="column" paddingX={1} flexGrow={1}>
+        <Box flexDirection="column" paddingX={1} flexGrow={1} marginY={1}>
           {options.map((opt, idx) => {
             const isSelected = idx === activeIdx;
             return (
@@ -178,7 +197,7 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
                 <Box flexDirection="row">
                   <Text color={isSelected ? '#d2a8ff' : '#8b949e'} bold={isSelected}>
                     {isSelected ? '▶ ' : '  '}
-                    {opt.label}:
+                    {opt.label.padEnd(20)}:
                   </Text>
                   {terminalHeight >= 32 && (
                     <Text color={isSelected ? '#ffffff' : '#8b949e'} dimColor={!isSelected}>   {opt.desc}</Text>
@@ -193,39 +212,43 @@ export function OptionsPanel({ agent, setInspector }: OptionsPanelProps) {
         </Box>
       </GlowBorder>
 
-      {/* Popover Selection Box */}
-      {popoverOpen && (
-        <Box 
-          position="absolute"
-          top={1} 
-          left={8} 
-          borderStyle="double" 
-          borderColor="#d2a8ff" 
-          paddingX={2} 
-          flexDirection="column" 
-          width={Math.max(30, Math.floor(mainStageWidth * 0.7))}
-          height={Math.max(6, activeOpt.choices.length + 3)}
-        >
-          <Text bold color="#d2a8ff">🏛️ SELECT: {activeOpt.label.toUpperCase()}</Text>
-          <Text color="#8b949e">──────────────────────────────</Text>
-          {activeOpt.choices.map((choice, cIdx) => {
-            const isChoiceSelected = cIdx === popoverChoiceIdx;
-            return (
-              <Text key={choice} color={isChoiceSelected ? '#3fb950' : '#e6edf3'} bold={isChoiceSelected}>
-                {isChoiceSelected ? '▶ ' : '  '}
-                {choice}
-              </Text>
-            );
-          })}
-          <Text color="#8b949e">──────────────────────────────</Text>
-          <Text color="#8b949e" dimColor>Arrows select | Enter apply | Esc exit</Text>
+      {/* Auth & Authority Panel */}
+      <Box borderStyle="single" borderColor="#d2a8ff" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text bold color="#d2a8ff">🛡️  Auth & Authority</Text>
+        <Box flexDirection="column" marginTop={1}>
+          <Box justifyContent="space-between" width={mainStageWidth - 8}>
+            <Text color="#8b949e"> • Human Auth:</Text>
+            <Text bold color="#e6edf3">Local (future SSO/SSO)</Text>
+          </Box>
+          <Box justifyContent="space-between" width={mainStageWidth - 8}>
+            <Text color="#8b949e"> • AgentPass:</Text>
+            <Text bold color="#3fb950">Active</Text>
+          </Box>
+          <Box justifyContent="space-between" width={mainStageWidth - 8}>
+            <Text color="#8b949e"> • Passports:</Text>
+            <Text bold color="#79c0ff">Enabled</Text>
+          </Box>
+          <Box justifyContent="space-between" width={mainStageWidth - 8}>
+            <Text color="#8b949e"> • Visas:</Text>
+            <Text bold color="#79c0ff">Enabled</Text>
+          </Box>
+          <Box justifyContent="space-between" width={mainStageWidth - 8}>
+            <Text color="#8b949e"> • Stamps:</Text>
+            <Text bold color="#79c0ff">Enabled</Text>
+          </Box>
+          <Box justifyContent="space-between" width={mainStageWidth - 8}>
+            <Text color="#8b949e"> • Receipts:</Text>
+            <Text bold color="#3fb950">Local</Text>
+          </Box>
         </Box>
-      )}
+      </Box>
 
-      {/* Subsystem status tagger */}
-      <Box marginTop={1} borderStyle="single" borderColor="#30363d" paddingX={2} width={mainStageWidth - 2} flexDirection="row" justifyContent="space-between">
-        <Text color="#8b949e">cmux status: {cmuxInstalled ? <Text color="#3fb950" bold>FOUND</Text> : <Text color="#8b949e" dimColor>MISSING</Text>}</Text>
-        <Text color="#8b949e">tmux status: {tmuxInstalled ? <Text color="#3fb950" bold>FOUND</Text> : <Text color="#8b949e" dimColor>MISSING</Text>}</Text>
+      {/* Active configuration prompt box - Universal bottom input */}
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} marginTop={isSmallScreen ? 0 : 1} width={mainStageWidth - 2} flexShrink={0}>
+        <Text color="#8b949e">[ options ] </Text>
+        <Text color="#79c0ff">▶ </Text>
+        <Text color="#ffffff">{inputCmd}</Text>
+        <Text color="#8b949e">█</Text>
       </Box>
     </Box>
   );

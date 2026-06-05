@@ -521,9 +521,9 @@ def taskforge_preview_pi_route(console: Console):
         "[bold cyan]🚀 TIMMY V1.5.2 Pi / TaskForge Orchestration Route[/bold cyan]\n\n"
         "1. [bold yellow]Objective Reception:[/bold yellow] Pi planner receives user request.\n"
         "2. [bold yellow]LaunchPlan Compilation:[/bold yellow] TaskForge creates repeatable workspace blueprint.\n"
-        "3. [bold yellow]AgentPass Validation:[/bold yellow] Verifies signature, visa, subscription, scopes, and budget limit.\n"
+        "3. [bold yellow]AgentPass Validation:[/bold yellow] Verifies passport, visa, subscription, scopes, and budget limit.\n"
         "4. [bold yellow]Governed Sandbox Execution:[/bold yellow] Executes target tasks on sandboxed runner.\n"
-        "5. [bold yellow].agentrun Receipt Logged:[/bold yellow] Formulates canonical audit receipt with cryptohashes.\n"
+        "5. [bold yellow].agentrun Receipt Logged:[/bold yellow] Formulates canonical audit receipt with verifiable hashes.\n"
         "6. [bold yellow]Recontextualization Loop:[/bold yellow] Analyzer parses receipts and injects updated recommendations.\n",
         title="[bold green]Pi Router Orchestration Path[/bold green]"
     ))

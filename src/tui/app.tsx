@@ -11,6 +11,8 @@ import { useTelemetryBridge } from './hooks/useTelemetryBridge.js';
 import { useCompanionSync } from './hooks/useCompanionSync.js';
 import { useModeAgentConfig } from './hooks/useModeAgentConfig.js';
 
+import { agentLogger, tuiLogger } from '../utils/logger.js';
+
 interface AppProps {
   config: AgentConfig;
   initialMode?: Mode;
@@ -79,23 +81,27 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   // Listener to dynamic agent state modifications
   useEffect(() => {
     const handleRunCreated = (data: any) => {
+      agentLogger.info(`run.created: ${JSON.stringify(data)}`);
       if (data && data.runId) {
         setActiveRunId(data.runId);
         setActiveReceiptUrl(`https://openrouter-tui-agent.wmeldman33.workers.dev/runs/${data.runId}/receipt`);
       }
     };
     const handleReceiptGenerated = (data: any) => {
+      agentLogger.info(`receipt.generated: ${JSON.stringify(data)}`);
       if (data && data.receiptUrl) {
         setActiveReceiptUrl(data.receiptUrl);
       }
     };
     const handleTelemetryRun = (data: any) => {
+      agentLogger.info(`telemetry:run: ${JSON.stringify(data)}`);
       if (data && data.runId) {
         setActiveRunId(data.runId);
         if (data.receiptUrl) setActiveReceiptUrl(data.receiptUrl);
       }
     };
     const handleSnapshotCreated = () => {
+      agentLogger.info('snapshot:created event processed');
       setSnapshotStatus('created');
       setTimeout(() => setSnapshotStatus('idle'), 2500);
     };
@@ -157,14 +163,20 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
     exit();
   };
 
+  const isDev = (agent as any).developerMode === true;
+
   const paletteItems = [
-    { label: 'Brief Screen (Intent)', action: () => { setMode('brief'); setFocusedMode('brief'); } },
-    { label: 'Discovery Screen (Capabilities)', action: () => { setMode('discovery'); setFocusedMode('discovery'); } },
-    { label: 'Teams Screen (Blueprints)', action: () => { setMode('teams'); setFocusedMode('teams'); } },
-    { label: 'Workspace Screen (Evidence)', action: () => { setMode('workspace'); setFocusedMode('workspace'); } },
-    { label: 'Proof Screen (Receipts)', action: () => { setMode('proof'); setFocusedMode('proof'); } },
-    { label: 'Porter Screen (URL Scan)', action: () => { setMode('porter'); setFocusedMode('porter'); } },
-    { label: 'Options Screen (Configuration)', action: () => { setMode('options'); setFocusedMode('options'); } },
+    { label: 'Main Chat Screen', action: () => { setMode('brief'); setFocusedMode('brief'); } },
+    { label: 'MCP ➔ CLI Screen', action: () => { setMode('porter'); setFocusedMode('porter'); } },
+    { label: 'Workspace Screen', action: () => { setMode('workspace'); setFocusedMode('workspace'); } },
+    { label: 'Proof Screen', action: () => { setMode('proof'); setFocusedMode('proof'); } },
+    { label: 'Options Screen', action: () => { setMode('options'); setFocusedMode('options'); } },
+    ...(isDev ? [
+      { label: 'Local Files Browser', action: () => { setMode('files'); setFocusedMode('files'); } },
+      { label: 'Discovery Screen', action: () => { setMode('discovery'); setFocusedMode('discovery'); } },
+      { label: 'Teams Screen', action: () => { setMode('teams'); setFocusedMode('teams'); } },
+      { label: 'Logs Monitor', action: () => { setMode('logs'); setFocusedMode('logs'); } }
+    ] : []),
     { label: 'Exit Application', action: safeExit }
   ];
 
@@ -172,14 +184,25 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   useInput((input, key) => {
     // 1. Always exit cleanly on Ctrl+C
     if (key.ctrl && input === 'c') {
+      tuiLogger.info('Ctrl+C captured. Clean exit.');
       safeExit();
       return;
     }
 
     // 2. Interactive Command Palette (Ctrl+K)
     if (key.ctrl && input === 'k') {
+      tuiLogger.info('Ctrl+K captured. Toggle Command Palette.');
       setCommandPaletteOpen(prev => !prev);
       setPaletteIdx(0);
+      return;
+    }
+
+    // 2b. Logs Monitor Shortcut (Ctrl+L)
+    if (key.ctrl && input === 'l') {
+      tuiLogger.info('Ctrl+L captured. Switch to Logs Monitor.');
+      setMode('logs');
+      setFocusedMode('logs');
+      setFocusArea('stage');
       return;
     }
 
@@ -220,9 +243,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
 
     // 4. In Navigation Deck Area Focus (focusArea === 'nav')
     if (focusArea === 'nav') {
-      const allowedModes = (agent as any).developerMode === true
-        ? MODES
-        : MODES.filter(m => m !== 'discovery' && m !== 'teams');
+      const allowedModes: Mode[] = ['brief', 'porter', 'workspace', 'options'];
 
       if (key.tab) {
         const idx = allowedModes.indexOf(focusedMode);

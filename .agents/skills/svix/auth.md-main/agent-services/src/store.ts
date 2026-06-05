@@ -1,0 +1,507 @@
+import { createHash, randomBytes, randomInt, randomUUID } from "node:crypto";
+import { config } from "./config.js";
+
+export type User = {
+  id: string;
+  email: string;
+  email_verified: boolean;
+  phone_number?: string;
+  phone_number_verified?: boolean;
+  name?: string;
+};
+
+export type CredentialType = "access_token" | "api_key";
+
+export type Credential = {
+  token: string;
+  type: CredentialType;
+  user_id?: string;
+  scope: string[];
+  issued_at: Date;
+  expires_at?: Date;
+  revoked: boolean;
+  source: "identity_assertion" | "anonymous" | "email_verification";
+  iss?: string;
+  sub?: string;
+  aud?: string;
+  registration_id?: string;
+};
+
+export type Delegation = {
+  iss: string;
+  sub: string;
+  user_id: string;
+  first_seen: Date;
+  last_seen: Date;
+};
+
+export type RegistrationKind = "anonymous" | "email_verification";
+
+export type Registration = {
+  id: string;
+  kind: RegistrationKind;
+  user_id?: string;
+  // Anonymous registrations get a credential at registration time. Email-
+  // verification registrations get one only on /complete.
+  credential_token?: string;
+  // The credential type the agent asked for at registration time. Persisted
+  // for email_verification so /complete can mint the right type.
+  requested_credential_type: CredentialType;
+  // Hash of the agent-side claim_token returned at /agent-auth.
+  claim_token_hash: string;
+  // The user-facing ceremony email is keyed by the claim_view_token. For
+  // anonymous, it's set at /agent-auth/claim. For email_verification, it's
+  // set at /agent-auth itself.
+  claim_view_token_hash?: string;
+  claim_view_expires_at?: Date;
+  // For email_verification, captured at /agent-auth. For anonymous, captured
+  // at /agent-auth/claim.
+  claim_email?: string;
+  // Identifies the current (or last) claim attempt. Rotates each time a fresh
+  // attempt is initiated — including same-email retries after a prior
+  // attempt expired.
+  claim_attempt_id?: string;
+  // Stamped when /generate-otp first mints an OTP for this registration.
+  otp_hash?: string;
+  otp_expires_at?: Date;
+  otp_generated_at?: Date;
+  status: "unclaimed" | "pending_claim" | "claimed" | "expired";
+  created_at: Date;
+  expires_at: Date;
+  claimed_at?: Date;
+};
+
+export const users = new Map<string, User>();
+export const credentials = new Map<string, Credential>();
+export const delegations = new Map<string, Delegation>();
+export const registrations = new Map<string, Registration>();
+export const seenJtis = new Map<string, number>();
+
+const seeded: User[] = [
+  {
+    id: "user_alice",
+    email: "alice@service.example.com",
+    email_verified: true,
+    name: "Alice",
+  },
+  {
+    id: "user_bob",
+    email: "bob@service.example.com",
+    email_verified: true,
+    name: "Bob",
+  },
+];
+for (const u of seeded) users.set(u.id, u);
+
+export function findUserByEmail(email: string): User | undefined {
+  const needle = email.toLowerCase();
+  for (const u of users.values()) {
+    if (u.email_verified && u.email.toLowerCase() === needle) return u;
+  }
+  return undefined;
+}
+
+export function findUserByPhone(phone: string): User | undefined {
+  for (const u of users.values()) {
+    if (u.phone_number_verified && u.phone_number === phone) return u;
+  }
+  return undefined;
+}
+
+export function createUser(input: Omit<User, "id">): User {
+  const user: User = { ...input, id: `user_${randomUUID()}` };
+  users.set(user.id, user);
+  return user;
+}
+
+export function delegationKey(iss: string, sub: string): string {
+  return `${iss} ${sub}`;
+}
+
+export function findDelegation(
+  iss: string,
+  sub: string,
+): Delegation | undefined {
+  return delegations.get(delegationKey(iss, sub));
+}
+
+export function upsertDelegation(
+  iss: string,
+  sub: string,
+  userId: string,
+): Delegation {
+  const key = delegationKey(iss, sub);
+  const now = new Date();
+  const existing = delegations.get(key);
+  if (existing) {
+    existing.last_seen = now;
+    return existing;
+  }
+  const d: Delegation = {
+    iss,
+    sub,
+    user_id: userId,
+    first_seen: now,
+    last_seen: now,
+  };
+  delegations.set(key, d);
+  return d;
+}
+
+function randomToken(prefix: string, bytes = 24): string {
+  return `${prefix}${randomBytes(bytes).toString("base64url")}`;
+}
+
+export function issueAccessToken(input: {
+  userId: string;
+  scope: string[];
+  source: "identity_assertion" | "email_verification";
+  iss?: string;
+  sub?: string;
+  aud?: string;
+  registrationId?: string;
+}): Credential {
+  const now = new Date();
+  const token = randomToken("at_");
+  const cred: Credential = {
+    token,
+    type: "access_token",
+    user_id: input.userId,
+    scope: input.scope,
+    issued_at: now,
+    expires_at: new Date(now.getTime() + config.accessTokenTtlSeconds * 1000),
+    revoked: false,
+    source: input.source,
+    iss: input.iss,
+    sub: input.sub,
+    aud: input.aud,
+    registration_id: input.registrationId,
+  };
+  credentials.set(token, cred);
+  return cred;
+}
+
+export type IssueApiKeyInput =
+  | {
+      source: "anonymous";
+      scope: string[];
+      registrationId: string;
+    }
+  | {
+      source: "email_verification";
+      scope: string[];
+      userId: string;
+      registrationId: string;
+    }
+  | {
+      source: "identity_assertion";
+      scope: string[];
+      userId: string;
+      iss: string;
+      sub: string;
+      aud: string;
+    };
+
+export function issueApiKey(input: IssueApiKeyInput): Credential {
+  const token = randomToken("sk_test_", 20);
+  const base = {
+    token,
+    type: "api_key" as const,
+    scope: input.scope,
+    issued_at: new Date(),
+    revoked: false,
+    source: input.source,
+  };
+  let cred: Credential;
+  if (input.source === "anonymous") {
+    cred = { ...base, registration_id: input.registrationId };
+  } else if (input.source === "email_verification") {
+    cred = {
+      ...base,
+      user_id: input.userId,
+      registration_id: input.registrationId,
+    };
+  } else {
+    cred = {
+      ...base,
+      user_id: input.userId,
+      iss: input.iss,
+      sub: input.sub,
+      aud: input.aud,
+    };
+  }
+  credentials.set(token, cred);
+  return cred;
+}
+
+export function findCredential(token: string): Credential | undefined {
+  const c = credentials.get(token);
+  if (!c) return undefined;
+  if (c.revoked) return undefined;
+  if (c.expires_at && c.expires_at.getTime() < Date.now()) return undefined;
+  return c;
+}
+
+export function revokeForDelegation(
+  iss: string,
+  sub: string,
+  aud: string,
+): number {
+  let count = 0;
+  for (const c of credentials.values()) {
+    if (!c.revoked && c.iss === iss && c.sub === sub && c.aud === aud) {
+      c.revoked = true;
+      count += 1;
+    }
+  }
+  return count;
+}
+
+export function recordJti(jti: string, expSeconds: number): "ok" | "replay" {
+  sweepJtis();
+  if (seenJtis.has(jti)) return "replay";
+  seenJtis.set(jti, expSeconds + config.clockSkewSeconds);
+  return "ok";
+}
+
+function sweepJtis(): void {
+  const nowSec = Math.floor(Date.now() / 1000);
+  for (const [jti, exp] of seenJtis) {
+    if (exp < nowSec) seenJtis.delete(jti);
+  }
+}
+
+export function sha256Hex(input: string): string {
+  return createHash("sha256").update(input).digest("hex");
+}
+
+export function createAnonymousRegistration(input: {
+  requestedCredentialType: CredentialType;
+}): {
+  registration: Registration;
+  credential: Credential;
+  claimTokenPlaintext: string;
+} {
+  const now = new Date();
+  const registrationId = `reg_${randomBytes(16).toString("base64url")}`;
+
+  // No user is created up front — an unclaimed agent has a credential but
+  // no bound identity. The registration is linked to a user on claim.
+  const credential =
+    input.requestedCredentialType === "api_key"
+      ? issueApiKey({
+          scope: config.preClaimScopes,
+          source: "anonymous",
+          registrationId,
+        })
+      : (() => {
+          // Spec: anonymous only supports api_key. Caller should have
+          // rejected before reaching here.
+          throw new Error(
+            "anonymous registration only supports api_key credentials",
+          );
+        })();
+
+  const claimTokenPlaintext = `clm_${randomBytes(19).toString("base64url")}`;
+
+  const registration: Registration = {
+    id: registrationId,
+    kind: "anonymous",
+    credential_token: credential.token,
+    requested_credential_type: input.requestedCredentialType,
+    claim_token_hash: sha256Hex(claimTokenPlaintext),
+    status: "unclaimed",
+    created_at: now,
+    expires_at: new Date(now.getTime() + config.anonymousTtlSeconds * 1000),
+  };
+
+  registrations.set(registration.id, registration);
+
+  return { registration, credential, claimTokenPlaintext };
+}
+
+export function createEmailVerificationRegistration(input: {
+  email: string;
+  requestedCredentialType: CredentialType;
+}): {
+  registration: Registration;
+  claimTokenPlaintext: string;
+  claimViewTokenPlaintext: string;
+} {
+  const now = new Date();
+  const registrationId = `reg_${randomBytes(16).toString("base64url")}`;
+
+  const claimTokenPlaintext = `clm_${randomBytes(19).toString("base64url")}`;
+  const claimViewTokenPlaintext = `cvt_${randomBytes(24).toString("base64url")}`;
+
+  // Email-verification registrations bundle the claim attempt: the email
+  // ceremony starts here, so the agent can poll /complete directly.
+  const registration: Registration = {
+    id: registrationId,
+    kind: "email_verification",
+    requested_credential_type: input.requestedCredentialType,
+    claim_token_hash: sha256Hex(claimTokenPlaintext),
+    claim_view_token_hash: sha256Hex(claimViewTokenPlaintext),
+    claim_view_expires_at: new Date(
+      now.getTime() + config.claimViewTokenTtlSeconds * 1000,
+    ),
+    claim_email: input.email,
+    claim_attempt_id: `cla_${randomBytes(16).toString("base64url")}`,
+    status: "pending_claim",
+    created_at: now,
+    expires_at: new Date(now.getTime() + config.anonymousTtlSeconds * 1000),
+  };
+
+  registrations.set(registration.id, registration);
+
+  return { registration, claimTokenPlaintext, claimViewTokenPlaintext };
+}
+
+export function findRegistrationByClaimHash(
+  hash: string,
+): Registration | undefined {
+  for (const r of registrations.values()) {
+    if (r.claim_token_hash === hash) return r;
+  }
+  return undefined;
+}
+
+export function findRegistrationByClaimViewHash(
+  hash: string,
+): Registration | undefined {
+  for (const r of registrations.values()) {
+    if (r.claim_view_token_hash === hash) return r;
+  }
+  return undefined;
+}
+
+export function recordAnonymousClaimAttempt(
+  registration: Registration,
+  email: string,
+): string {
+  const now = new Date();
+  const plaintext = `cvt_${randomBytes(24).toString("base64url")}`;
+  registration.status = "pending_claim";
+  registration.claim_email = email;
+  registration.claim_attempt_id = `cla_${randomBytes(16).toString("base64url")}`;
+  registration.claim_view_token_hash = sha256Hex(plaintext);
+  registration.claim_view_expires_at = new Date(
+    now.getTime() + config.claimViewTokenTtlSeconds * 1000,
+  );
+  return plaintext;
+}
+
+// Mints a fresh OTP and overwrites any prior one. Refreshing the claim-view
+// page reissues a code; the previous code is no longer accepted.
+export function generateOtpForRegistration(registration: Registration): {
+  otp: string;
+  expiresAt: Date;
+} {
+  const now = new Date();
+  const otp = String(randomInt(0, 1_000_000)).padStart(6, "0");
+  registration.otp_hash = sha256Hex(otp);
+  registration.otp_generated_at = now;
+  registration.otp_expires_at = new Date(
+    now.getTime() + config.otpTtlSeconds * 1000,
+  );
+  return { otp, expiresAt: registration.otp_expires_at };
+}
+
+export type CompleteClaimResult =
+  | { ok: true; registration: Registration; credential?: Credential }
+  | {
+      ok: false;
+      error:
+        | "otp_invalid"
+        | "otp_expired"
+        | "otp_not_generated"
+        | "previously_claimed"
+        | "claim_expired";
+    };
+
+export function completeClaim(
+  registration: Registration,
+  otp: string,
+): CompleteClaimResult {
+  if (registration.status === "claimed") {
+    return { ok: false, error: "previously_claimed" };
+  }
+  if (registration.expires_at.getTime() < Date.now()) {
+    return { ok: false, error: "claim_expired" };
+  }
+  if (!registration.otp_hash || !registration.otp_expires_at) {
+    return { ok: false, error: "otp_not_generated" };
+  }
+  if (registration.otp_expires_at.getTime() < Date.now()) {
+    return { ok: false, error: "otp_expired" };
+  }
+  if (sha256Hex(otp) !== registration.otp_hash) {
+    return { ok: false, error: "otp_invalid" };
+  }
+
+  if (registration.kind === "anonymous") {
+    return completeAnonymousClaim(registration);
+  }
+  return completeEmailVerificationClaim(registration);
+}
+
+function completeAnonymousClaim(
+  registration: Registration,
+): CompleteClaimResult {
+  const email = registration.claim_email!;
+  let user = findUserByEmail(email);
+  if (!user) {
+    user = createUser({ email, email_verified: true });
+  }
+  registration.status = "claimed";
+  registration.user_id = user.id;
+  registration.claimed_at = new Date();
+  registration.otp_hash = undefined;
+  registration.otp_expires_at = undefined;
+  registration.claim_view_token_hash = undefined;
+  registration.claim_view_expires_at = undefined;
+  // In-place scope upgrade on the existing API key.
+  const cred = registration.credential_token
+    ? credentials.get(registration.credential_token)
+    : undefined;
+  if (cred) {
+    cred.user_id = user.id;
+    cred.scope = config.postClaimScopes;
+  }
+  return { ok: true, registration, credential: cred };
+}
+
+function completeEmailVerificationClaim(
+  registration: Registration,
+): CompleteClaimResult {
+  const email = registration.claim_email!;
+  let user = findUserByEmail(email);
+  if (!user) {
+    user = createUser({ email, email_verified: true });
+  }
+  registration.status = "claimed";
+  registration.user_id = user.id;
+  registration.claimed_at = new Date();
+  registration.otp_hash = undefined;
+  registration.otp_expires_at = undefined;
+  registration.claim_view_token_hash = undefined;
+  registration.claim_view_expires_at = undefined;
+
+  const scope = config.postClaimScopes;
+  const credential =
+    registration.requested_credential_type === "api_key"
+      ? issueApiKey({
+          source: "email_verification",
+          scope,
+          userId: user.id,
+          registrationId: registration.id,
+        })
+      : issueAccessToken({
+          source: "email_verification",
+          scope,
+          userId: user.id,
+          registrationId: registration.id,
+        });
+  registration.credential_token = credential.token;
+  return { ok: true, registration, credential };
+}

@@ -248,7 +248,7 @@ function Brief({ onRunStarted, messages, setMessages, setActivePage }: BriefProp
       { who: "research", txt: "Scanning workspace code repositories and validating architecture DOCTRINE rules..." },
       { who: "codegen", txt: "Applying non-destructive modifications inside compiler-isolated local workspace..." },
       { who: "verify", txt: "Zero compilation errors found. 47 tests passed cleanly. Syncing proof receipts." },
-      { who: "lead", txt: "Run completed successfully! Sealed cryptographic proof ledger exported to Proof panel." }
+      { who: "lead", txt: "Run completed successfully! Sealed verifiable proof ledger exported to Proof panel." }
     ];
 
     steps.forEach((s, i) => {
@@ -603,7 +603,7 @@ function Workspace() {
   );
 }
 
-/* ---------- 5. PROOF VIEW (THE CRYPTOGRAPHIC EVIDENCE PANEL) ---------- */
+/* ---------- 5. PROOF VIEW (THE VERIFIABLE EVIDENCE PANEL) ---------- */
 interface ProofProps {
   vmLogs: VMLogRow[];
   logScrollOffset: number;
@@ -667,10 +667,10 @@ function Proof({ vmLogs, logScrollOffset, scrollLogsUp, scrollLogsDown }: ProofP
 
       {/* Right column: Sealed receipt, verdict, and strategy suggestions */}
       <div className="flex flex-col gap-4 overflow-y-auto pr-1">
-        {/* Cryptographic Sealed Receipt */}
+        {/* Verifiable Sealed Receipt */}
         <Card>
           <div className="flex items-center justify-between pb-2 mb-2.5" style={{ borderBottom: "1px solid var(--border)" }}>
-            <span className="text-xs uppercase font-bold text-sky-400 font-mono">🧾 Sealed Cryptographic Receipt</span>
+            <span className="text-xs uppercase font-bold text-sky-400 font-mono">🧾 Sealed TIMMY Receipt</span>
             <span className="text-[9px] uppercase font-bold text-emerald-400 bg-emerald-950/20 px-1.5 py-0.5 rounded font-mono">sealed & locked</span>
           </div>
           <div className="space-y-2 text-xs font-mono">
@@ -740,7 +740,7 @@ function Porter({ onWebhookInstalled }: PorterProps) {
   const [packs, setPacks] = useState([
     { id: "stratum", name: "Cloudflare Stratum Pack", desc: "Syncs run manifests, KV keys, and Durables to Cloudflare edge meshes.", status: "installed" },
     { id: "daytona", name: "Daytona VM Sandbox Pack", desc: "Configures local Docker isolations so agents run code safely.", status: "available" },
-    { id: "svix", name: "Svix Webhooks Bridge", desc: "Real-time cryptographic payload broadcasts for completed runs.", status: "available" }
+    { id: "svix", name: "Svix Webhooks Bridge", desc: "Real-time secure payload broadcasts for completed runs.", status: "available" }
   ]);
   const [installingId, setInstallingId] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -924,7 +924,7 @@ function Options({ webhookEnabled, onToggleWebhook, developerMode, onToggleDevel
         <div className="flex items-center justify-between py-2.5 text-sm">
           <div>
             <span style={{ color: "var(--steel)" }}>Svix Webhooks Bridge</span>
-            <div className="text-[10px] text-gray-500">Relay all cryptographic proofs to webhook endpoints.</div>
+            <div className="text-[10px] text-gray-500">Relay all verifiable proofs to webhook endpoints.</div>
           </div>
           <button
             onClick={onToggleWebhook}

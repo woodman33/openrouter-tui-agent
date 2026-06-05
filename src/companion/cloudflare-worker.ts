@@ -857,7 +857,7 @@ export class MyDurableObject extends DurableObject {
           pageContent = `
             <section class="hero">
               <h1>TIMMY launch-grade Trust Layer</h1>
-              <p>Execute, govern, and audit autonomous AI agent swarms in complete, cryptographically verified sandboxes.</p>
+              <p>Execute, govern, and audit autonomous AI agent swarms in complete, verifiably secure sandboxes.</p>
               <div style="display: flex; gap: 1.5rem; justify-content: center;">
                 <a href="/pricing?clerk_user_id=${clerkUserId}" class="btn">View Pricing Entitlements</a>
                 <a href="/account?clerk_user_id=${clerkUserId}" class="btn" style="background-color: var(--panel); border: 1px solid var(--border);">Manage Account</a>
@@ -871,11 +871,11 @@ export class MyDurableObject extends DurableObject {
               </div>
               <div style="background: var(--panel); border: 1px solid var(--border); padding: 2rem; border-radius: 12px;">
                 <h3>🔐 AgentPass Entitlements</h3>
-                <p style="color: var(--text-muted);">Ensure compliance with cryptographic claims, scope limits, and multi-tier budget controls.</p>
+                <p style="color: var(--text-muted);">Ensure compliance with verifiable claims, scope limits, and multi-tier budget controls.</p>
               </div>
               <div style="background: var(--panel); border: 1px solid var(--border); padding: 2rem; border-radius: 12px;">
                 <h3>📦 .agentrun Receipts</h3>
-                <p style="color: var(--text-muted);">Every run is indexed, cryptographically hashed, and compiled into offline-ready transportable receipt logs.</p>
+                <p style="color: var(--text-muted);">Every run is indexed, securely hashed, and compiled into offline-ready transportable receipt logs.</p>
               </div>
             </div>
           `;
@@ -1064,7 +1064,7 @@ export class MyDurableObject extends DurableObject {
               <div style="display: flex; flex-direction: column; gap: 2rem;">
                 <div style="background: var(--panel); border: 1px solid var(--border); padding: 2rem; border-radius: 12px;">
                   <h3 style="margin-top:0;">🛡️ Active Entitlements & Scopes</h3>
-                  <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Your subscription grants these cryptographic AgentPass claims visa for governed runner executions:</p>
+                  <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Your subscription grants these verifiable AgentPass claims visa for governed runner executions:</p>
                   
                   <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                     ${scopes.map(s => `<span style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-family: monospace;">${s}</span>`).join('')}

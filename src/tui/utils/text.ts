@@ -64,6 +64,37 @@ export function truncateVisible(value: string, maxWidth: number, suffix = '...')
   return output + suffix;
 }
 
+export function scrollVisibleLeft(value: string, maxWidth: number, prefix = '...'): string {
+  const clean = stripTerminalCodes(value);
+  if (maxWidth <= 0) return '';
+  
+  const totalWidth = visibleWidth(clean);
+  if (totalWidth <= maxWidth) return clean;
+
+  const prefixWidth = visibleWidth(prefix);
+  if (maxWidth <= prefixWidth) {
+    return prefix.slice(prefix.length - maxWidth);
+  }
+
+  const targetWidth = maxWidth - prefixWidth;
+  let output = '';
+  let width = 0;
+
+  const chars = Array.from(clean);
+  for (let i = chars.length - 1; i >= 0; i--) {
+    const char = chars[i];
+    const charW = charWidth(char);
+    if (width + charW > targetWidth) {
+      break;
+    }
+    output = char + output;
+    width += charW;
+  }
+
+  return prefix + output;
+}
+
+
 function pushWrappedWord(lines: string[], word: string, width: number): void {
   let current = '';
   let currentWidth = 0;

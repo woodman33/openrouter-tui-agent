@@ -20,7 +20,7 @@ def print_governed_orchestration_diagram():
    [bold yellow]│ TIMMY Governed Runner │[/bold yellow]  (Operator cockpit cockpit panel & doctrine validation)
    [bold yellow]└───────────┬───────────┘[/bold yellow]
                │
-               ▼  [dim]Submits token signature & tool call payload parameters[/dim]
+               ▼  [dim]Submits token passport & tool call payload parameters[/dim]
    [bold green]┌───────────┴───────────┐[/bold green]
    [bold green]│  AgentPass Shim Gate  │[/bold green]  (Scopes evaluation, risk ceiling & cost budgeting)
    [bold green]└───────────┬───────────┘[/bold green]

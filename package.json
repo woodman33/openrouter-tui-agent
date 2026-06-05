@@ -10,6 +10,9 @@
   },
   "scripts": {
     "start": "tsx cli.tsx",
+    "timmy": "tsx src/cli.ts",
+    "timmy:doctor": "tsx src/cli.ts doctor",
+    "timmy:setup": "tsx src/cli.ts setup",
     "start:headless": "tsx headless.ts",
     "dev": "tsx watch cli.tsx",
     "build": "tsc",
@@ -24,6 +27,7 @@
     "timmy:test-run": "tsx scripts/timmy-test-run.ts",
     "timmy:ui-smoke": "tsx scripts/timmy-ui-smoke.tsx",
     "timmy:receipt-index": "tsx scripts/timmy-receipt-index.ts",
+    "timmy:agent-proof-verify": "tsx scripts/timmy-agent-proof-verify.ts",
     "timmy:snapshot": "tsx scripts/timmy-snapshot.ts",
     "timmy:generation:intent-pack": "tsx scripts/timmy-generation-intent-pack.ts",
     "timmy:simulate:single": "tsx scripts/timmy-simulate-single.ts"

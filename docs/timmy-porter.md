@@ -23,7 +23,7 @@ TIMMY Porter automates the path from third-party raw potential to structured gov
 3. Run Workspace Chamber (Executes commands in isolated sandbox)
      │
      ▼
-4. .agentrun Receipt Stamp (Cryptographic verification record)
+4. .agentrun Receipt Stamp (Verifiable verification record)
      │
      ▼
 5. .pi Pack Export (Reusable context registry packaging)
@@ -43,7 +43,7 @@ TIMMY Porter automates the path from third-party raw potential to structured gov
 * **Relationship**: Porter assigns a **Risk Class** (Low, Medium, High) to each ingested capability. High-risk actions automatically demand explicit AgentPass scopes or temporary visas from the operator before execution.
 
 ### 4. Receipts (.agentrun)
-* **Relationship**: Ingested tools map their success signatures directly to `.agentrun` receipt proof schema templates, ensuring every executed action generates an immutable telemetry record.
+* **Relationship**: Ingested tools map their success markers directly to `.agentrun` receipt proof schema templates, ensuring every executed action generates a verifiable telemetry record.
 
 ---
 

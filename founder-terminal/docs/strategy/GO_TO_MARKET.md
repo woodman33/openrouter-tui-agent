@@ -25,5 +25,5 @@ Instead of a generic TUI extension store, TIMMY monetizes the actual bottleneck 
 Our strategic roadmap leverages high-performance hardware (DGX Sparks + NAS) as the **Context Refinery**:
 1. **DGX Sparks**: Continuously scrape docs, parse OpenAPI specifications, create MCP tool bindings, and execute automated citation audits and LLM benchmarks against each pack.
 2. **NAS Storage**: Persist raw source snapshots, pack histories, and Vectorize semantic embeddings.
-3. **Cloudflare Gateway**: Expose and distribute future signed context pack registry indexes to local TIMMY clients gated by AgentPass entitlements.
+3. **Cloudflare Gateway**: Expose and distribute future verifiable context pack registry indexes to local TIMMY clients gated by AgentPass entitlements.
 4. **TIMMY (Local Trust Layer)**: Gathers context packs locally, verifies their hashes and freshness, gates execution, and exports replayable `.agentrun` proof packages. Cloudflare Durable Objects and WebSocket Hibernation belong in future scope until built.

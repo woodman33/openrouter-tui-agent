@@ -8,8 +8,8 @@ This document outlines the strict guidelines to refactor the **TIMMY TUI** (Ink-
 * **Spacious Chat Interface**: The TUI must focus on direct human-to-agent dialogue (`Brief` screen). 
 * **Zero Padded Waste**: Strip down large margins, empty boxes, and giant settings blocks.
 * **Streamlined Sidebar Nav**: Navigation deck should be strictly pruned.
-  * Default Navigation: `Brief`, `Porter`, `Workspace`, `Proof`, `Options`
-  * Hide or Demote `Discovery` & `Teams` under a **Developer Mode** toggle in the Options screen.
+  * Default Navigation: `Brief`, `Files`, `Porter`, `Workspace`, `Proof`, `Options`
+  * Discovery, Teams, and Logs are Developer Mode utilities accessible via a toggle in the Options screen.
 
 ---
 
@@ -43,7 +43,7 @@ This document outlines the strict guidelines to refactor the **TIMMY TUI** (Ink-
 * **Subsystem Detection**: If `cmux` is not found, display a simple `cmux: NOT INSTALLED` detection status (do not require it for app startup, do not fake live sockets). If `tmux` exists, use standard TMUX launcher.
 
 ### D. Proof Panel (`ModelExplorerPanel.tsx`)
-* **Lead with Receipt**: Highlight the core cryptographic receipt block.
+* **Lead with Receipt**: Highlight the core verifiable receipt card.
 * **Expandable Evidence**: Place raw file diffs and logs behind space-bar interactive collapsible segments.
 * **Tamper-Evident Language**: Use only verified tamper-evident and hash-bound language (remove mock keywords like "immutable/signed/cryptographic" unless backed by actual variables).
 

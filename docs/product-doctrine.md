@@ -24,12 +24,12 @@ Our core guiding principle dictates:
 * **Platform Mapping**: **MCP tools** represent raw capability. We translate these actions through **MCPorter** (TIMMY Porter), which acts as our high-performance MCP-to-CLI adapter bridge.
 
 ### 2. Control (Governed Intent)
-* **Definition**: Establishing strict rules, signature checks, and execution policies on what capabilities can execute.
-* **Platform Mapping**: **AgentPass** acts as our core cryptographic control layer, verifying JTI tokens and enforcing security boundaries. The **TaskForge** orchestrator runtime governs team and orchestrator planning configurations.
+* **Definition**: Establishing strict rules, policy checks, and execution policies on what capabilities can execute.
+* **Platform Mapping**: **AgentPass** acts as our core verifiable control layer, verifying JTI tokens and enforcing security boundaries. The **TaskForge** orchestrator runtime governs team and orchestrator planning configurations.
 
 ### 3. Proof (Evidentiary Capture)
-* **Definition**: Tamper-evident, cryptographically signed records demonstrating exactly what took place inside the execution sandbox.
-* **Platform Mapping**: **RMUX Evidence** operates as our workspace flight recorder, capturing screenshots and transaction traces. These are recorded immutably on the **.agentrun** receipt/proof ledger, backed by **Cloudflare** as our hosted receipt and context ground layer database.
+* **Definition**: Tamper-evident, hash-bound records demonstrating exactly what took place inside the execution sandbox.
+* **Platform Mapping**: **RMUX Evidence** operates as our workspace flight recorder, capturing screenshots and transaction traces. These are recorded as verifiable records on the **.agentrun** receipt/proof ledger, backed by **Cloudflare** as our hosted receipt and context ground layer database.
 
 ### 4. Reuse (Encapsulated Swarms)
 * **Definition**: Re-packaging verified, graded, and proven swarm configurations into modular bundles that can be redeployed instantly.

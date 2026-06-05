@@ -23,9 +23,9 @@ The ultimate governing brain, client interface, and orchestration standard for a
 | :--- | :--- | :--- |
 | **TIMMY TUI** | Client Terminal | The local-first React Ink terminal console dashboard (this dashboard) offering Spatial grid control and edge command syncs. |
 | **TIMMY .pi Workspaces** | Virtual Sandboxes | Saved adaptive agent organizations packaged in lightweight `.pi` container specs for execution. |
-| **AgentPass** | Security & Identity | Persistent agent cryptographic identity verifiers, authorizing API interactions and system access policies. |
+| **AgentPass** | Security & Identity | Persistent agent verifiable identity markers, authorizing API interactions and system access policies. |
 | **AgentVisa** | Access Control | Temporary task permission slips granted for individual command execution windows. |
-| **AgentStamp** | Proof of Execution | The tamper-evident cryptographic mark stamped on every external tool-call outcome. |
+| **AgentStamp** | Proof of Execution | The tamper-evident verifiable mark stamped on every external tool-call outcome. |
 | **.agentrun Receipts** | Proof Ledger | Tamper-evident, Cloudflare D1-backed ledger record confirming the complete trace of a run execution. |
 | **TaskForge** | Planning Layer | The swarm team orchestrator planning layer designed to balance management and build agent ratios. |
 | **TIMMY Porter** (MCPorter Bridge) | Protocol Adapter | The high-performance translation layer converting between Model Context Protocol (MCP) and Command Line Interface (CLI) standards. |

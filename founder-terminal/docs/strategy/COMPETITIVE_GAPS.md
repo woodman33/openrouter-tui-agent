@@ -40,8 +40,8 @@ This document tracks the top 10 competitive gaps in the modern terminal/AI devel
 
 ### 5. Enterprise Terminal Governance
 * **Gap ID**: `GAP-005`
-* **Description**: Enterprise compliance requires signed, replayable transaction trails for AI mutations.
-* **TIMMY Response**: Cryptographic transportable audit bundles (`.agentrun` folder packages).
+* **Description**: Enterprise compliance requires verifiable, replayable transaction trails for AI mutations.
+* **TIMMY Response**: Verifiable transportable audit bundles (`.agentrun` folder packages).
 * **Current Status**: Local exporter complete.
 * **Ship Stage**: enterprise
 * **Evidence Status**: verified

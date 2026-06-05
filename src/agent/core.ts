@@ -9,6 +9,8 @@ import { ConversationManager } from './conversation.js';
 import { defaultTools } from './tools.js';
 import { execSync, execFileSync } from 'child_process';
 import { classifyCommand } from '../utils/safety.js';
+import fs from 'fs';
+import path from 'path';
 
 class TmuxManager {
   private pollInterval: NodeJS.Timeout | null = null;
@@ -73,7 +75,7 @@ class TmuxManager {
         `printf '\\033[38;5;81m============================================================\\n\\033[0m'`,
         `printf '\\033[38;5;81m[TIMMY Core]\\033[0m Cloudflare Durable Storage: SUCCESS (D1/R2)\\n'`,
         `printf '\\033[38;5;121m[AgentPass]\\033[0m Delivering session passport (JTI: ${jti})\\n'`,
-        `printf '\\033[38;5;121m[AgentPass]\\033[0m Visa signature: ${visa} | scope: agent.run.governed: VERIFIED\\n'`,
+        `printf '\\033[38;5;121m[AgentPass]\\033[0m Visa stamp: ${visa} | scope: agent.run.governed: VERIFIED\\n'`,
         `printf '\\033[38;5;215m[Receipt]\\033[0m Shipped local-first proof bundle: ${hash}\\n'`,
         `printf '\\033[38;5;81m============================================================\\n\\033[0m'`,
         'export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"'
@@ -296,6 +298,7 @@ export class Agent extends EventEmitter<AgentEvents> {
 
   public currentRunId = 'default-local-run';
   public lastBlockedCommands: Map<string, string> = new Map();
+  public modelHealthStatus: 'UNTESTED' | 'READY' | 'ERROR' | 'FALLBACK READY' = 'UNTESTED';
 
   // Persistent workspace chamber contexts (logs)
   public workspaceContexts: Record<string, string[]> = {
@@ -325,7 +328,7 @@ export class Agent extends EventEmitter<AgentEvents> {
     '👑 [pi-swarm] AgentPass passport claim verified: jti_auth_91a783',
     '⚡ [openrouter] anthropic/claude-3-5-sonnet -> 1.5k context tokens synced.',
     '☁️ [sqlite-d1] Push evidence transaction completed -> CF Durable Object database.',
-    '🔐 [EMBASSY] Cryptographic manifest seal armed: sha256_82f1a8c9b20d3f82',
+    '🔐 [EMBASSY] Tamper-evident manifest seal armed: sha256_82f1a8c9b20d3f82',
     '✓ ALL AGENT CHECKS PASSED. CONFORMANCE: 100%'
   ];
 
@@ -458,7 +461,95 @@ export class Agent extends EventEmitter<AgentEvents> {
 
   setModel(model: string): void {
     this.config.model = model;
+    this.modelHealthStatus = 'UNTESTED';
+    this.logModelEvent('model.selected', { model });
     this.emit('model:switch', model);
+    this.emit('model:health', 'UNTESTED');
+  }
+
+  public logModelEvent(event: string, data: any) {
+    try {
+      const logDir = path.join(process.cwd(), 'logs');
+      if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+      }
+      const logPath = path.join(logDir, 'agent-events.log');
+      const sanitizedData = { ...data };
+      if (sanitizedData.apiKey) delete sanitizedData.apiKey;
+      if (sanitizedData.Authorization) delete sanitizedData.Authorization;
+      if (sanitizedData.env) delete sanitizedData.env;
+      
+      const logLine = JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event,
+        ...sanitizedData
+      }) + '\n';
+      fs.appendFileSync(logPath, logLine);
+    } catch {}
+  }
+
+  async testModelHealth(modelId: string): Promise<{
+    ok: boolean;
+    error?: string;
+    provider?: string;
+    latency?: number;
+  }> {
+    const apiKey = this.config.apiKey;
+    if (!apiKey) {
+      return { ok: false, error: 'API key is missing' };
+    }
+    const start = Date.now();
+    try {
+      this.logModelEvent('model.test.started', { modelId });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://github.com/woodman33/openrouter-tui',
+          'X-Title': 'TIMMYTUI'
+        },
+        body: JSON.stringify({
+          model: modelId,
+          messages: [{ role: 'user', content: 'Reply OK.' }],
+          max_tokens: 5
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      const latency = Date.now() - start;
+      if (!response.ok) {
+        let errMsg = `HTTP ${response.status}`;
+        try {
+          const errData = await response.json();
+          if (errData && errData.error && errData.error.message) {
+            errMsg = errData.error.message;
+          }
+        } catch {}
+        this.modelHealthStatus = 'ERROR';
+        this.emit('model:health', 'ERROR');
+        this.logModelEvent('model.test.failed', { modelId, error: errMsg });
+        return { ok: false, error: errMsg, latency };
+      }
+
+      const resData = await response.json();
+      const provider = resData?.provider || 'unknown';
+      this.modelHealthStatus = 'READY';
+      this.emit('model:health', 'READY');
+      this.logModelEvent('model.test.succeeded', { modelId, latency, provider });
+      return { ok: true, provider, latency };
+    } catch (e: any) {
+      const latency = Date.now() - start;
+      const errMsg = e.name === 'AbortError' ? 'Request timed out after 8 seconds' : e.message;
+      this.modelHealthStatus = 'ERROR';
+      this.emit('model:health', 'ERROR');
+      this.logModelEvent('model.test.failed', { modelId, error: errMsg });
+      return { ok: false, error: errMsg, latency };
+    }
   }
 
   getHistory(): Message[] {
@@ -486,88 +577,146 @@ export class Agent extends EventEmitter<AgentEvents> {
     this.emit('message:user', userMessage);
     this.emit('thinking:start');
 
+    const FALLBACK_ORDER = [
+      'anthropic/claude-opus-4.7',
+      'google/gemini-3.5-flash',
+      'openai/gpt-5.5',
+      'minimax/minimax-m3'
+    ];
+
     try {
       const history = this.conversation.getHistory().map(m => ({
         role: m.role as 'user' | 'assistant' | 'system',
         content: m.content,
       }));
 
-      const result = this.client.callModel({
-        model: this.config.model,
-        instructions: this.config.instructions,
-        input: history as any,
-        tools: this.tools.length > 0 ? this.tools : undefined,
-        stopWhen: [
-          stepCountIs(this.config.maxSteps || 10),
-          maxCost(this.config.maxCost || 1),
-        ],
-        ...(this.config.temperature !== undefined ? { temperature: this.config.temperature } : {}),
-        ...(this.config.maxOutputTokens ? { maxOutputTokens: this.config.maxOutputTokens } : {}),
-      });
+      const runCompletionWithModel = async (modelId: string, isFallback = false) => {
+        const result = this.client.callModel({
+          model: modelId,
+          instructions: this.config.instructions,
+          input: history as any,
+          tools: this.tools.length > 0 ? this.tools : undefined,
+          stopWhen: [
+            stepCountIs(this.config.maxSteps || 10),
+            maxCost(this.config.maxCost || 1),
+          ],
+          ...(this.config.temperature !== undefined ? { temperature: this.config.temperature } : {}),
+          ...(this.config.maxOutputTokens ? { maxOutputTokens: this.config.maxOutputTokens } : {}),
+        });
 
-      this.emit('stream:start');
-      let fullText = '';
-      const textByItem = new Map<string, number>();
-      const callNames = new Map<string, string>();
+        this.emit('stream:start');
+        let fullText = '';
+        const textByItem = new Map<string, number>();
+        const callNames = new Map<string, string>();
 
-      for await (const item of result.getItemsStream() as AsyncIterable<StreamableOutputItem>) {
-        this.emit('item:update', item);
+        for await (const item of result.getItemsStream() as AsyncIterable<StreamableOutputItem>) {
+          this.emit('item:update', item);
 
-        if (item.type === 'message') {
-          const text = (item as any).content
-            ?.filter((c: any) => 'text' in c)
-            .map((c: any) => c.text)
-            .join('') ?? '';
-          const prev = textByItem.get((item as any).id || '') ?? 0;
-          if (text.length > prev) {
-            const delta = text.slice(prev);
-            fullText += delta;
-            this.emit('stream:delta', delta, fullText);
-            textByItem.set((item as any).id || '', text.length);
+          if (item.type === 'message') {
+            const text = (item as any).content
+              ?.filter((c: any) => 'text' in c)
+              .map((c: any) => c.text)
+              .join('') ?? '';
+            const prev = textByItem.get((item as any).id || '') ?? 0;
+            if (text.length > prev) {
+              const delta = text.slice(prev);
+              fullText += delta;
+              this.emit('stream:delta', delta, fullText);
+              textByItem.set((item as any).id || '', text.length);
+            }
+          } else if (item.type === 'function_call') {
+            callNames.set((item as any).callId || '', (item as any).name || '');
+            if ((item as any).status === 'completed') {
+              let args = {};
+              try {
+                args = JSON.parse((item as any).arguments || '{}');
+              } catch { }
+              this.emit('tool:call', (item as any).name || '', args);
+            }
+          } else if (item.type === 'function_call_output') {
+            const out = typeof (item as any).output === 'string' ? (item as any).output : JSON.stringify((item as any).output);
+            this.emit('tool:result', callNames.get((item as any).callId || '') || 'unknown', out);
+          } else if (item.type === 'reasoning') {
+            const text = (item as any).summary?.map((s: any) => s.text).join('') ?? '';
+            if (text) this.emit('reasoning:update', text);
           }
-        } else if (item.type === 'function_call') {
-          callNames.set((item as any).callId || '', (item as any).name || '');
-          if ((item as any).status === 'completed') {
-            let args = {};
-            try {
-              args = JSON.parse((item as any).arguments || '{}');
-            } catch { }
-            this.emit('tool:call', (item as any).name || '', args);
-          }
-        } else if (item.type === 'function_call_output') {
-          const out = typeof (item as any).output === 'string' ? (item as any).output : JSON.stringify((item as any).output);
-          this.emit('tool:result', callNames.get((item as any).callId || '') || 'unknown', out);
-        } else if (item.type === 'reasoning') {
-          const text = (item as any).summary?.map((s: any) => s.text).join('') ?? '';
-          if (text) this.emit('reasoning:update', text);
         }
-      }
 
-      let usage: any = undefined;
+        let usage: any = undefined;
+        try {
+          const response = await result.getResponse();
+          usage = (response as any).usage;
+          if (!fullText && (response as any).outputText) {
+            fullText = (response as any).outputText;
+          }
+        } catch { }
+
+        if (usage) {
+          const inTokens = usage.inputTokens ?? usage.promptTokens ?? 0;
+          const outTokens = usage.outputTokens ?? usage.completionTokens ?? 0;
+          const cost = (inTokens + outTokens) * 0.00001;
+          this.emit('cost:update', cost, cost);
+        }
+
+        this.modelHealthStatus = isFallback ? 'FALLBACK READY' : 'READY';
+        this.emit('model:health', this.modelHealthStatus);
+        return { fullText, actualModel: modelId };
+      };
+
+      let activeModel = this.config.model;
+      let executionResult: { fullText: string; actualModel: string };
+
       try {
-        const response = await result.getResponse();
-        usage = (response as any).usage;
-        if (!fullText && (response as any).outputText) {
-          fullText = (response as any).outputText;
+        executionResult = await runCompletionWithModel(activeModel, false);
+      } catch (err: any) {
+        this.modelHealthStatus = 'ERROR';
+        this.emit('model:health', 'ERROR');
+        const sanitizedErr = err.message || 'Unknown provider error';
+        this.logModelEvent('openrouter.request.failed', { model: activeModel, error: sanitizedErr });
+
+        let fallbackModel = '';
+        for (const candidate of FALLBACK_ORDER) {
+          if (candidate !== activeModel) {
+            fallbackModel = candidate;
+            break;
+          }
         }
-      } catch {
-        // ignore getResponse errors
+
+        if (fallbackModel) {
+          this.logModelEvent('model.fallback.used', { selectedModel: activeModel, fallbackModel });
+          
+          try {
+            executionResult = await runCompletionWithModel(fallbackModel, true);
+            
+            this.emit('message:user', {
+              role: 'assistant',
+              content: `⚙️ **[SYSTEM]** Selected model \`${activeModel}\` failed (Reason: ${sanitizedErr}).\nRetried and succeeded with fallback model \`${fallbackModel}\`.`,
+              timestamp: Date.now()
+            });
+
+            this.config.model = fallbackModel;
+            this.emit('model:switch', fallbackModel);
+          } catch (fallbackErr: any) {
+            const finalErr = `OpenRouter request failed for ${activeModel}.\nReason: ${sanitizedErr}.\nNext: choose another model or run /model fallback.\n\nFallback failed for ${fallbackModel} too: ${fallbackErr.message}`;
+            const error = new Error(finalErr);
+            this.emit('error', error);
+            throw error;
+          }
+        } else {
+          const finalErr = `OpenRouter request failed for ${activeModel}.\nReason: ${sanitizedErr}.\nNext: choose another model or run /model fallback.`;
+          const error = new Error(finalErr);
+          this.emit('error', error);
+          throw error;
+        }
       }
 
-      if (usage) {
-        const inTokens = usage.inputTokens ?? usage.promptTokens ?? 0;
-        const outTokens = usage.outputTokens ?? usage.completionTokens ?? 0;
-        const cost = (inTokens + outTokens) * 0.00001;
-        this.emit('cost:update', cost, cost);
-      }
+      this.emit('stream:end', executionResult.fullText);
 
-      this.emit('stream:end', fullText);
-
-      const assistantMessage: Message = { role: 'assistant', content: fullText, timestamp: Date.now() };
+      const assistantMessage: Message = { role: 'assistant', content: executionResult.fullText, timestamp: Date.now() };
       this.conversation.appendMessage(assistantMessage);
       this.emit('message:assistant', assistantMessage);
 
-      return fullText;
+      return executionResult.fullText;
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       this.emit('error', error);

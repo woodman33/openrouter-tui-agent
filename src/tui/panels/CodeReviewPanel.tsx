@@ -1,33 +1,93 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import chalk from 'chalk';
 import { theme } from '../theme.js';
-import { GlowBorder } from '../components/GlowBorder.js';
 import { execSync, exec } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import http from 'http';
+import { PrimaryButton, SecondaryButton, WarningButton } from '../components/DesignSystem.js';
 
 interface CodeReviewPanelProps {
   agent: any;
   setInspector: (data: any) => void;
+  focusArea?: 'nav' | 'stage';
 }
 
-export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
+function checkUrlHealth(url: string, timeoutMs = 600): Promise<boolean> {
+  return new Promise((resolve) => {
+    try {
+      const parsedUrl = new URL(url);
+      const req = http.request(
+        {
+          method: 'HEAD',
+          hostname: parsedUrl.hostname,
+          port: parsedUrl.port ? parseInt(parsedUrl.port, 10) : 80,
+          path: parsedUrl.pathname,
+          timeout: timeoutMs,
+        },
+        (res) => {
+          resolve(res.statusCode ? res.statusCode >= 200 && res.statusCode < 400 : false);
+        }
+      );
+      req.on('error', () => resolve(false));
+      req.on('timeout', () => {
+        req.destroy();
+        resolve(false);
+      });
+      req.end();
+    } catch {
+      resolve(false);
+    }
+  });
+}
+
+export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: CodeReviewPanelProps) {
   const { columns: width, rows: height } = useWindowSize();
+  const terminalHeight = height || 24;
+  const isSmallScreen = terminalHeight < 36;
+
+  // Binary detection & health states
   const [cmuxInstalled, setCmuxInstalled] = useState(false);
   const [tmuxInstalled, setTmuxInstalled] = useState(false);
+  const [browserRunning, setBrowserRunning] = useState<boolean | null>(null);
+
+  // Fallback states
+  const [isTmuxExpanded, setIsTmuxExpanded] = useState(false);
+  const [tmuxSessionExists, setTmuxSessionExists] = useState(false);
+  const [tmuxLastOutput, setTmuxLastOutput] = useState<string>('No recent activity.');
+
+  // Workspace Launcher active selection
   const [activeBtnIdx, setActiveBtnIdx] = useState(0);
-  const [outputLog, setOutputLog] = useState<string>('System diagnostics active.');
+  const [outputLog, setOutputLog] = useState<string>('Select an action to launch work surface.');
+  const [inputCmd, setInputCmd] = useState('/workspace launch cmux');
+
+  const companionPort = (global as any).companionServer?.port || 3001;
+  const companionUrl = `http://localhost:${companionPort}`;
 
   const buttons = [
-    { label: '[ Open in cmux ]', key: 'cmux', desc: 'Opens real clickable workspace shell in cmux app (Workspace Shell Pro)' },
-    { label: '[ Open in tmux ]', key: 'tmux', desc: 'Launches persistent tmux monitoring fallback chambers' },
-    { label: '[ Call Previous Work ]', key: 'call', desc: 'Syncs preceding run logs from edge memory [ PLANNED ]' },
-    { label: '[ Attach Receipt ]', key: 'attach', desc: 'Embeds tamper-evident token signature to active run' },
-    { label: '[ Open Browser Workspace ]', key: 'browser', desc: 'Launches Vite dynamic companion web client dashboard' }
+    { label: 'Open cmux Workspace', key: 'cmux', desc: 'Visual local shell' },
+    { label: 'Open Browser Companion', key: 'browser', desc: 'Browser mirror surface' },
+    { label: 'Open Local Files', key: 'files', desc: 'Workspace root explorer' },
+    { label: 'View Logs', key: 'logs', desc: 'Bounded event logs' },
+    { label: 'Show tmux Fallback', key: 'tmux', desc: 'Persistent run fallback' }
   ];
 
-  // System detection on mount & re-entry
+  const checkTmuxSession = () => {
+    if (!tmuxInstalled) return;
+    try {
+      execSync('tmux has-session -t timmy-run 2>/dev/null');
+      setTmuxSessionExists(true);
+      const lastLine = execSync('tmux capture-pane -t timmy-run -p | tail -n 5 | grep -v "^$" | tail -n 1 2>/dev/null').toString().trim();
+      if (lastLine) setTmuxLastOutput(lastLine);
+    } catch {
+      setTmuxSessionExists(false);
+      setTmuxLastOutput('No active session.');
+    }
+  };
+
+  // Detect binaries and setup
   useEffect(() => {
     let cmuxFound = false;
     try {
@@ -36,7 +96,6 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
     } catch {
       cmuxFound = false;
     }
-
     if (!cmuxFound) {
       cmuxFound = existsSync('/opt/homebrew/bin/cmux') || 
                   existsSync('/Applications/cmux.app') || 
@@ -50,156 +109,278 @@ export function CodeReviewPanel({ agent, setInspector }: CodeReviewPanelProps) {
     } catch {
       setTmuxInstalled(false);
     }
+
+    checkUrlHealth(companionUrl).then(healthy => {
+      setBrowserRunning(healthy);
+    });
   }, []);
 
-  // Reset launcher states on re-entry/mount
   useEffect(() => {
-    setOutputLog('System diagnostics active. Click or select actions below.');
-  }, []);
+    checkTmuxSession();
+  }, [tmuxInstalled]);
 
-  const updateInspectorData = (btn: typeof buttons[0]) => {
+  // Dynamic next step state / inspector
+  const updateInspectorData = () => {
+    const btn = buttons[activeBtnIdx] || buttons[0];
     setInspector({
-      title: 'TIMMY AGENTOPS IDE',
-      subtitle: 'VERIFIABLE PARALLEL WORKSPACE',
+      title: 'TIMMY WORKSPACE OPERATOR',
+      subtitle: 'VERIFIABLE PARALLEL LAUNCHER',
       type: 'Workspace Shell',
       status: 'READY',
-      risk: 'MEDIUM',
+      risk: 'LOW',
       scope: `workspace.launcher.${btn.key}`,
       details: [
-        `• Option Selected: ${btn.label}`,
-        `• cmux status: ${cmuxInstalled ? '🟢 INSTALLED / READY' : '🔴 NOT DETECTED'}`,
-        `• tmux status: ${tmuxInstalled ? '🟢 ACTIVE / FALLBACK READY' : '🔴 NOT DETECTED'}`,
-        `• Primary Shell: cmux Workspace Pro`,
-        `• Fallback: Raw tmux multiplexer`
+        `• Selected Launcher: ${btn.label}`,
+        `• cmux status: ${cmuxInstalled ? 'READY' : 'MISSING'}`,
+        `• tmux status: ${tmuxInstalled ? 'READY' : 'MISSING'}`,
+        `• Companion: ${browserRunning ? 'RUNNING' : 'NOT RUNNING'}`
       ]
     });
   };
 
   useEffect(() => {
-    updateInspectorData(buttons[activeBtnIdx]);
-  }, [activeBtnIdx, cmuxInstalled, tmuxInstalled]);
+    updateInspectorData();
+  }, [activeBtnIdx, cmuxInstalled, tmuxInstalled, browserRunning]);
 
+  // Main input cmd sync
+  useEffect(() => {
+    if (buttons[activeBtnIdx]) {
+      const btn = buttons[activeBtnIdx];
+      if (btn.key === 'files') {
+        setInputCmd('/files');
+      } else if (btn.key === 'logs') {
+        setInputCmd('/logs');
+      } else if (btn.key === 'tmux') {
+        setInputCmd('/workspace tmux');
+      } else if (btn.key === 'browser') {
+        setInputCmd('/workspace browser');
+      } else {
+        setInputCmd(`/workspace launch ${btn.key}`);
+      }
+    }
+  }, [activeBtnIdx]);
+
+  const copyTmuxCommand = () => {
+    try {
+      execSync('echo "tmux attach -t timmy-run" | pbcopy');
+      setOutputLog('✓ Attach command copied to clipboard: tmux attach -t timmy-run');
+    } catch {
+      setOutputLog('✕ Clipboard copy failed.');
+    }
+  };
+
+  const killTmuxSession = () => {
+    try {
+      execSync('tmux kill-session -t timmy-run 2>/dev/null');
+      checkTmuxSession();
+      setOutputLog('✓ Active tmux fallback session killed successfully.');
+    } catch (e: any) {
+      setOutputLog(`✕ Kill command failed: ${e.message}`);
+    }
+  };
+
+  // Key navigation engine
   useInput((char, key) => {
-    if (key.leftArrow) {
-      setActiveBtnIdx(prev => {
-        const next = Math.max(0, prev - 1);
-        setOutputLog(`Option selected: ${buttons[next].label}`);
-        return next;
-      });
+    if (focusArea !== 'stage') return;
+
+    if (key.leftArrow || key.upArrow) {
+      setActiveBtnIdx(prev => Math.max(0, prev - 1));
       return;
     }
-    if (key.rightArrow) {
-      setActiveBtnIdx(prev => {
-        const next = Math.min(buttons.length - 1, prev + 1);
-        setOutputLog(`Option selected: ${buttons[next].label}`);
-        return next;
-      });
+    if (key.rightArrow || key.downArrow || key.tab) {
+      setActiveBtnIdx(prev => Math.min(4, prev + 1));
       return;
     }
 
     if (key.return) {
-      const btn = buttons[activeBtnIdx];
-      if (btn.key === 'cmux') {
+      const keyStr = buttons[activeBtnIdx]?.key;
+      if (!keyStr) return;
+
+      if (keyStr === 'cmux') {
         if (cmuxInstalled) {
-          setOutputLog('✓ Launching cmux clickable workspace session socket...');
-          const cwd = process.cwd();
-          exec(`sh -lc "cmux '${cwd}'"`, { env: process.env }, (error) => {
-            if (error) {
-              // Try absolute path direct background launch fallback
-              exec(`/opt/homebrew/bin/cmux "${cwd}"`, (error2) => {
-                if (error2) {
-                  // Standard macOS launch command fallback
-                  exec(`open -a cmux`, (error3) => {
-                    if (error3) {
-                      setOutputLog(`✕ Failed: sh -lc "cmux '${cwd}'" failed. Error: ${error3.message}`);
-                    } else {
-                      setOutputLog('✓ cmux app launched successfully via open -a.');
-                    }
-                  });
-                } else {
-                  setOutputLog('✓ cmux workspace activated successfully via absolute path.');
-                }
-              });
-            } else {
-              setOutputLog('✓ cmux workspace activated successfully.');
-            }
-          });
+          setOutputLog(`✓ cmux opened at: ${process.cwd()}`);
+          exec(`cmux "${process.cwd()}"`, {});
         } else {
-          setOutputLog('✕ Launch cancelled: cmux is NOT installed on the host. Please install it.');
+          setOutputLog('✕ Launch cancelled: cmux path is missing.');
         }
-      } else if (btn.key === 'tmux') {
-        if (tmuxInstalled) {
-          setOutputLog('✓ Launcher: Initializing background tmux monitor session...');
-          try {
-            execSync('tmux new-session -d -s timmy-run 2>/dev/null || true');
-            setOutputLog('✓ tmux backend fallback initialized. Check via "tmux attach -t timmy-run".');
-          } catch (e: any) {
-            setOutputLog(`✕ Failed to initialize tmux session: ${e.message}`);
-          }
-        } else {
-          setOutputLog('✕ Launch cancelled: tmux multiplexer is missing.');
-        }
-      } else if (btn.key === 'call') {
-        setOutputLog('✓ Loading run history and metadata into TaskForge registry... [ Planned / Paid Pro ]');
-      } else if (btn.key === 'attach') {
-        setOutputLog('✓ Mapped token metadata signature. Ready to export proof.');
-      } else if (btn.key === 'browser') {
-        setOutputLog('✓ Activating Vite companion browser dashboard client...');
-        exec('open http://localhost:5173', (err) => {
-          if (err) {
-            setOutputLog(`✕ Failed to launch companion browser client: ${err.message}`);
+      } else if (keyStr === 'browser') {
+        checkUrlHealth(companionUrl).then(healthy => {
+          setBrowserRunning(healthy);
+          if (healthy) {
+            setOutputLog('✓ Port active. Launching companion interface in browser...');
+            exec(`open ${companionUrl}`, {});
           } else {
-            setOutputLog('✓ Companion dashboard launched in browser successfully!');
+            setOutputLog('✕ Browser companion is not running. Start it first, then retry.');
           }
         });
+      } else if (keyStr === 'files') {
+        agent.emit('mode:change', 'files');
+      } else if (keyStr === 'logs') {
+        agent.emit('mode:change', 'logs');
+      } else if (keyStr === 'tmux') {
+        setIsTmuxExpanded(prev => !prev);
+        if (!tmuxSessionExists && tmuxInstalled) {
+          setOutputLog('✓ Initializing background tmux session...');
+          try {
+            execSync('tmux new-session -d -s timmy-run 2>/dev/null || true', { stdio: 'ignore' });
+            checkTmuxSession();
+            setOutputLog('✓ tmux fallback initialized. Details expanded below.');
+          } catch (e: any) {
+            setOutputLog(`✕ Failed to initialize tmux: ${e.message}`);
+          }
+        } else {
+          setOutputLog('✓ Toggled tmux fallback details card view.');
+        }
       }
+    }
+
+    if (char.toLowerCase() === 'c' && tmuxSessionExists) {
+      copyTmuxCommand();
+    } else if (char.toLowerCase() === 'k' && tmuxSessionExists) {
+      killTmuxSession();
     }
   });
 
-  const panelWidth = Math.max(20, (width || 80) - 54);
-  const mainStageWidth = Math.floor(panelWidth * 0.95);
+  const panelWidth = Math.max(20, (width || 80) - 28);
+  const mainStageWidth = Math.min(84, Math.floor(panelWidth * 0.95));
+
+  const renderRow = (idx: number) => {
+    const isSelected = idx === activeBtnIdx;
+    const btn = buttons[idx];
+    const marker = isSelected ? '▶ ' : '  ';
+    
+    let labelColor = '#ffffff';
+    if (isSelected) {
+      labelColor = '#3fb950';
+    } else {
+      if (btn.key === 'cmux') labelColor = '#a98bff';
+      else if (btn.key === 'browser') labelColor = '#58a6ff';
+      else if (btn.key === 'files') labelColor = '#d2a8ff';
+      else if (btn.key === 'logs') labelColor = '#3fb950';
+      else if (btn.key === 'tmux') labelColor = '#d29922';
+    }
+
+    let statusText = 'READY';
+    let statusColor = '#3fb950';
+    if (btn.key === 'cmux') {
+      statusText = cmuxInstalled ? 'READY' : 'MISSING';
+      statusColor = cmuxInstalled ? '#3fb950' : '#ff7b72';
+    } else if (btn.key === 'browser') {
+      statusText = browserRunning ? 'RUNNING' : 'NOT RUNNING';
+      statusColor = browserRunning ? '#3fb950' : '#d29922';
+    } else if (btn.key === 'tmux') {
+      statusText = tmuxInstalled ? 'READY' : 'MISSING';
+      statusColor = tmuxInstalled ? '#3fb950' : '#ff7b72';
+    }
+
+    const prefixStr = isSelected ? '┃ ' : '│ ';
+    const prefixColor = isSelected ? '#3fb950' : '#484f58';
+    
+    return (
+      <Box key={btn.key} flexDirection="row" marginBottom={1}>
+        <Box width={3} flexShrink={0}>
+          <Text color={prefixColor}>{prefixStr}</Text>
+        </Box>
+        <Box width={26} flexShrink={0}>
+          <Text bold={isSelected} color={labelColor}>{marker}{btn.label}</Text>
+        </Box>
+        <Box width={16} flexShrink={0}>
+          <Text bold color={statusColor}>{`[ ${statusText} ]`}</Text>
+        </Box>
+        <Box flexGrow={1} flexShrink={1}>
+          <Text color={isSelected ? '#ffffff' : '#8b949e'}>{btn.desc}</Text>
+        </Box>
+      </Box>
+    );
+  };
+
+  const activeBtn = buttons[activeBtnIdx] || buttons[0];
+  let detailedExplain = '';
+  let detailedAction = `[Enter] ${activeBtn.label}`;
+  
+  if (activeBtn.key === 'cmux') {
+    detailedExplain = 'Opens a clickable local workspace at the current TIMMY root.';
+  } else if (activeBtn.key === 'browser') {
+    detailedExplain = 'Opens the Browser Companion. It mirrors chat, logs, workspace status, and receipts.';
+  } else if (activeBtn.key === 'files') {
+    detailedExplain = 'Opens the safe Workspace Root browser.';
+  } else if (activeBtn.key === 'logs') {
+    detailedExplain = 'Opens bounded local logs without corrupting the terminal.';
+  } else if (activeBtn.key === 'tmux') {
+    detailedExplain = 'tmux keeps a recoverable terminal session alive. It may not open a visual UI.';
+  }
 
   return (
-    <Box flexDirection="column" width={mainStageWidth} paddingX={1}>
-      {/* 1. System detection status */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
-        <Text bold color="#3fb950">📟  TIMMY Workspace Launcher Subsystems</Text>
-        <Box flexDirection="row" marginTop={1} justifyContent="space-between" width={mainStageWidth - 8}>
-          <Text color="#c9d1d9">
-            cmux: {cmuxInstalled ? <Text color="#3fb950" bold>INSTALLED / READY 🟢</Text> : <Text color="#ff7b72" bold>NOT INSTALLED 🔴</Text>}
-          </Text>
-          <Text color="#c9d1d9">
-            tmux: {tmuxInstalled ? <Text color="#3fb950" bold>ACTIVE / FALLBACK READY 🟢</Text> : <Text color="#ff7b72" bold>NOT INSTALLED 🔴</Text>}
-          </Text>
-        </Box>
+    <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
+      
+      {/* 1. Header Explainer */}
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text bold color="#a98bff">TIMMY Workspace</Text>
+        <Text color="#8b949e">Choose where work happens. cmux is visual. Browser mirrors TIMMY. tmux is fallback persistence.</Text>
       </Box>
 
-      {/* 2. Workspace Options Action Buttons */}
-      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
-        <Text bold color="#d2a8ff">🖥️ Workspace Launcher Actions:</Text>
-        <Box flexDirection="row" marginTop={1} justifyContent="space-between" width={mainStageWidth - 8} flexWrap="wrap">
-          {buttons.map((btn, idx) => {
-            const isFocused = idx === activeBtnIdx;
-            return (
-              <Box key={btn.key} borderStyle={isFocused ? 'double' : 'single'} borderColor={isFocused ? '#d2a8ff' : '#30363d'} paddingX={1} marginBottom={0}>
-                <Text bold color={isFocused ? '#d2a8ff' : '#e6edf3'}>{btn.label}</Text>
+      {/* 2. Main Command List */}
+      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2}>
+        {buttons.map((_, idx) => renderRow(idx))}
+      </Box>
+
+      {/* 3. Detail Panel */}
+      <Box borderStyle="round" borderColor={focusArea === 'stage' ? "#3fb950" : "#30363d"} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2}>
+        <Text bold color="#a98bff">Selected:</Text>
+        <Text bold color="#ffffff">{activeBtn.label}</Text>
+        
+        <Box marginTop={1} flexDirection="column">
+          <Text bold color="#8b949e">What it does:</Text>
+          <Text color="#e6edf3">{detailedExplain}</Text>
+        </Box>
+
+        {activeBtn.key === 'cmux' && (
+          <Box marginTop={1} flexDirection="column">
+            <Text bold color="#8b949e">Path:</Text>
+            <Text color="#79c0ff">{process.cwd()}</Text>
+          </Box>
+        )}
+
+        {activeBtn.key === 'tmux' && (
+          <Box marginTop={1} flexDirection="column">
+            <Text bold color="#8b949e">Attach command:</Text>
+            <Text color="#79c0ff" bold>tmux attach -t timmy-run</Text>
+            {isTmuxExpanded && tmuxInstalled && (
+              <Box flexDirection="column" borderStyle="single" borderColor="#d29922" paddingX={2} marginY={1}>
+                <Text color="#e6edf3"> • Session Name  : <Text color="#ffffff" bold>timmy-run</Text></Text>
+                <Text color="#e6edf3"> • Status        : {tmuxSessionExists ? <Text color="#3fb950" bold>READY</Text> : <Text color="#8b949e">STANDBY</Text>}</Text>
+                <Text color="#e6edf3"> • Last Output   : <Text color="#8b949e" italic wrap="truncate">"{tmuxLastOutput}"</Text></Text>
               </Box>
-            );
-          })}
-        </Box>
-        <Box marginTop={1}>
-          <Text color="#8b949e" dimColor>{buttons[activeBtnIdx].desc}</Text>
+            )}
+          </Box>
+        )}
+
+        <Box marginTop={1} flexDirection="row" justifyContent="flex-start">
+          <Text bold color="#3fb950">{detailedAction} </Text>
+          {activeBtn.key === 'tmux' && tmuxSessionExists && (
+            <Text color="#8b949e"> | Press [C] to Copy Attach Command | Press [K] to Kill Session</Text>
+          )}
         </Box>
       </Box>
 
-      {/* 3. Output/diagnostic Console */}
-      <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 TERMINAL WORKSPACE CONTROLLER">
-        <Box flexDirection="column" paddingX={1} minHeight={4}>
-          <Text color="#c9d1d9">{outputLog}</Text>
-          <Text color="#8b949e" dimColor>Arrows navigate | Enter to execute launcher.</Text>
-          <Text color="#8b949e" dimColor>Note: cmux owns clickable panes/browser shell; raw tmux is fallback.</Text>
-        </Box>
-      </GlowBorder>
+      {/* 4. Gated OpenHands Status Pill */}
+      <Box paddingX={2} marginBottom={isSmallScreen ? 0 : 1} width={mainStageWidth - 2} flexShrink={0}>
+        <Text color="#8b949e" dimColor>OpenHands Runner: not configured</Text>
+      </Box>
+
+      {/* 5. Diagnostics Log verifier */}
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} width={mainStageWidth - 2} flexShrink={0} marginBottom={isSmallScreen ? 0 : 1}>
+        <Text color="#c9d1d9">{outputLog}</Text>
+        <Text color="#8b949e" dimColor>Press arrows / Tab to navigate. Enter selects surface.</Text>
+      </Box>
+
+      {/* 6. Universal bottom input prompt */}
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} width={mainStageWidth - 2} flexShrink={0}>
+        <Text color="#8b949e">[ workspace ] </Text>
+        <Text color="#79c0ff">▶ </Text>
+        <Text color="#ffffff">{inputCmd}</Text>
+        <Text color="#8a8a94">█</Text>
+      </Box>
     </Box>
   );
 }
