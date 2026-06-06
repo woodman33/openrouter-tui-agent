@@ -26,16 +26,16 @@ This checklist summarizes the metadata, gallery assets, and preparation tasks re
    * **Copy**: *Trust the receipt, not the model.*
 2. **Slide 2 — Main Chat & Model Selection**
    * **Visual**: Terminal screenshot of the main conversation panel, highlighting the OpenRouter model rail badge.
-   * **Copy**: *Real-time streaming chat across dozens of leading models with hotkey model-swapping.*
+   * **Copy**: *Choose the model before the run with the OpenRouter model rail.*
 3. **Slide 3 — MCP → CLI Evidence Scans**
    * **Visual**: Screenshot showing an MCP server URL resolving into a local, inspectable bash execution bundle.
-   * **Copy**: *Inspect and run agent tools locally before giving filesystem permissions.*
+   * **Copy**: *Turn an MCP server URL into a local CLI evidence bundle.*
 4. **Slide 4 — Workspace Management**
-   * **Visual**: Grid view showing side-by-side terminal splits in `cmux`.
-   * **Copy**: *Run, monitor, and sandbox agent directories locally.*
+   * **Visual**: Workspace view showing cmux launch and local files.
+   * **Copy**: *Open the workspace in cmux and keep the work surface reviewable.*
 5. **Slide 5 — Browser Companion Mirroring**
-   * **Visual**: Side-by-side view showing the terminal console on the left and the synced web browser companion window on the right.
-   * **Copy**: *Live session mirroring with local history storage.*
+   * **Visual**: Browser Companion view showing chat, logs, workspace status, and receipts.
+   * **Copy**: *Mirror the session in the browser.*
 6. **Slide 6 — Verifiable Session Proofs**
    * **Visual**: Executing `/agent-proof` command in terminal, showing the output receipt with a manifest hash.
    * **Copy**: *Creates a sealed TIMMY receipt containing a manifest hash for tamper-evident run validation.*
