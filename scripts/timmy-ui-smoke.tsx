@@ -11,6 +11,8 @@ const SIZES: Array<[number, number]> = [
   [120, 36],
   [140, 40],
   [160, 48],
+  [164, 54],
+  [171, 55],
 ];
 
 function assert(condition: boolean, message: string): void {
@@ -31,7 +33,7 @@ function validateRenderedBox(output: string, maxWidth: number, label: string): v
 }
 
 assert(
-  MODES.join('>') === 'brief>discovery>teams>workspace>proof>porter>options',
+  MODES.join('>') === 'brief>files>porter>workspace>proof>options>discovery>teams>logs',
   `unexpected launch mode order: ${MODES.join('>')}`
 );
 
@@ -102,4 +104,4 @@ for (const [columns, rows] of SIZES) {
   validateRenderedBox(rmuxOutput, panelWidth, `${columns}x${rows} rmux status`);
 }
 
-console.log('OK TIMMY TUI smoke: animated launch screens, four-panel board, RMUX status, and width budgets passed for 80x24, 100x30, 120x36, 140x40, 160x48.');
+console.log('OK TIMMY TUI smoke: animated launch screens, four-panel board, RMUX status, and width budgets passed for 80x24, 100x30, 120x36, 140x40, 160x48, 164x54, 171x55.');

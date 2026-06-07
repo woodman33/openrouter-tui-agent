@@ -6,6 +6,7 @@ import { execSync } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { truncateVisible } from '../utils/text.js';
 
 interface OptionsPanelProps {
   agent: any;
@@ -192,20 +193,48 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
         <Box flexDirection="column" paddingX={1} flexGrow={1} marginY={1}>
           {options.map((opt, idx) => {
             const isSelected = idx === activeIdx;
+            const rowWidth = mainStageWidth - 8;
+            const col3Width = 12;
+            const showDesc = rowWidth > 45;
+            const col1Width = showDesc ? 22 : Math.max(10, rowWidth - col3Width - 2);
+            const col2Width = showDesc ? (rowWidth - col1Width - col3Width) : 0;
+
+            // Make sure binary toggles only show ON/OFF and path detection only shows DETECTED/MISSING
+            let displayValue = opt.current;
+            if (opt.key === 'cmuxPath' || opt.key === 'tmuxPath') {
+              displayValue = opt.current.toUpperCase(); // DETECTED or MISSING
+            }
+            const valText = `[${displayValue}]`;
+            
+            const truncatedLabel = truncateVisible(opt.label, col1Width - 3);
+            const labelStr = (isSelected ? '▶ ' : '  ') + truncatedLabel + ':';
+            const truncatedDesc = showDesc ? truncateVisible(opt.desc, col2Width - 1) : '';
+            const truncatedValText = truncateVisible(valText, col3Width - 1);
+
             return (
-              <Box key={opt.key} justifyContent="space-between" width={mainStageWidth - 8} marginY={0}>
-                <Box flexDirection="row">
+              <Box key={opt.key} flexDirection="row" width={rowWidth} marginY={0}>
+                {/* Column 1: Label */}
+                <Box width={col1Width} flexShrink={0}>
                   <Text color={isSelected ? '#d2a8ff' : '#8b949e'} bold={isSelected}>
-                    {isSelected ? '▶ ' : '  '}
-                    {opt.label.padEnd(20)}:
+                    {labelStr}
                   </Text>
-                  {terminalHeight >= 32 && (
-                    <Text color={isSelected ? '#ffffff' : '#8b949e'} dimColor={!isSelected}>   {opt.desc}</Text>
-                  )}
                 </Box>
-                <Text bold color={isSelected ? '#d2a8ff' : '#79c0ff'}>
-                  [{opt.current}]
-                </Text>
+                
+                {/* Column 2: Description */}
+                {showDesc && (
+                  <Box width={col2Width} flexGrow={1} flexShrink={1}>
+                    <Text color={isSelected ? '#ffffff' : '#8b949e'} dimColor={!isSelected}>
+                      {truncatedDesc}
+                    </Text>
+                  </Box>
+                )}
+
+                {/* Column 3: Value/Status (Right-aligned) */}
+                <Box width={col3Width} justifyContent="flex-end" flexShrink={0}>
+                  <Text bold color={isSelected ? '#d2a8ff' : '#79c0ff'}>
+                    {truncatedValText}
+                  </Text>
+                </Box>
               </Box>
             );
           })}

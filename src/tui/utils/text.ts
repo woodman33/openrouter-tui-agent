@@ -159,3 +159,77 @@ export function wrapVisible(value: string, width: number): string[] {
   if (current.trimEnd()) lines.push(current.trimEnd());
   return lines.length > 0 ? lines : [''];
 }
+
+/**
+ * Truncates model name prioritizing the actual model name suffix if it contains a slash,
+ * or truncates from the end for normal text like descriptions.
+ */
+export function truncateMiddleOrEnd(value: string, max: number, isDescription = false): string {
+  const clean = stripTerminalCodes(value);
+  if (clean.length <= max) return clean;
+  if (max <= 3) return '...'.slice(0, max);
+
+  if (isDescription) {
+    return clean.slice(0, max - 3) + '...';
+  }
+
+  // If it's a model ID (contains slash, like provider/model)
+  if (clean.includes('/')) {
+    const parts = clean.split('/');
+    const provider = parts[0];
+    const model = parts.slice(1).join('/');
+
+    // If model name itself is short enough, we can show "prov.../model"
+    const remainingForProvider = max - model.length - 4; // for ".../"
+    if (remainingForProvider >= 1) {
+      return provider.slice(0, remainingForProvider) + '.../' + model;
+    }
+    
+    // Otherwise, if the model itself is too long, we can truncate the model portion or provider portion
+    const prefix = provider + '/';
+    const prefixLen = prefix.length;
+    if (max > prefixLen + 6) {
+      const remainingModelLen = max - prefixLen - 3;
+      const keepStart = Math.ceil(remainingModelLen / 2);
+      const keepEnd = Math.floor(remainingModelLen / 2);
+      return prefix + model.slice(0, keepStart) + '...' + model.slice(model.length - keepEnd);
+    }
+  }
+
+  // Default end truncation
+  return clean.slice(0, max - 3) + '...';
+}
+
+/**
+ * Splits model name from any description marketing blurbs
+ */
+export function splitModelNameAndBlurb(name: string, fallbackDesc?: string): { cleanName: string; cleanDesc: string } {
+  const splitters = [' is ', ' - ', ' : ', ' — '];
+  for (const splitter of splitters) {
+    const index = name.indexOf(splitter);
+    if (index !== -1) {
+      const cleanName = name.slice(0, index).trim();
+      const cleanDesc = name.slice(index + splitter.length).trim();
+      return { cleanName, cleanDesc };
+    }
+  }
+  return { cleanName: name, cleanDesc: fallbackDesc || '' };
+}
+
+/**
+ * Maps model state to high-contrast colors
+ */
+export function getModelColors(isSelected: boolean, isActive: boolean, isUnavailable = false): { nameColor: string; descColor: string } {
+  if (isUnavailable) {
+    return { nameColor: '#8a8a94', descColor: '#8a8a94' };
+  }
+  if (isSelected) {
+    return { nameColor: '#fec240', descColor: '#e6edf3' }; // Bright yellow / light gray
+  }
+  if (isActive) {
+    return { nameColor: '#33d6ff', descColor: '#8b949e' }; // Bright cyan / dim gray
+  }
+  return { nameColor: '#ffffff', descColor: '#8b949e' }; // Bright white / dim gray
+}
+
+
