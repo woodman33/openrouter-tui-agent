@@ -9,18 +9,12 @@
 * [Modal, Mux, and Replay Pipeline](modal-mux-replay-pipeline.md)
 * [RMUX Workspace Evidence](rmux-workspace-evidence.md)
 * [Receipts and Replay](receipts-and-replay.md)
-* [Commercial Wedge](commercial-wedge.md)
 * [Cloudflare Deployment](cloudflare-deployment.md)
 * [Security and Secrets](security-and-secrets.md)
-* [Existing Cloudflare Features](cloudflare-features.md)
 * [Existing Stripe Provisioning](stripe-provisioning.md)
-* [Existing Sandbox Comparisons](sandbox-comparisons.md)
-* [Brand Architecture](brand-architecture.md)
-* [Product Doctrine](product-doctrine.md)
 * [TIMMY Porter](timmy-porter.md)
 * [TIMMY Workspace Root](timmy-workspace-root.md)
 * [Auth Doctrine](auth.md)
 * [TIMMY Setup & Installation](setup.md)
-* [herdr Integration Blueprint](herdr-integration-plan.md)
 
 

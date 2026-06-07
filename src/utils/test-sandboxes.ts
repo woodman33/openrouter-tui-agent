@@ -221,12 +221,12 @@ For building the **highest quality TUI multi-agent framework ever made**, we mus
 3. Serve the **Rive Companion Web Window** on Cloudflare Pages, establishing live WebSockets to the Durable Object for instantaneous zero-copy mascot animation.
 `.trim();
 
-  const docsDir = join(process.cwd(), "docs");
-  if (!existsSync(docsDir)) {
-    mkdirSync(docsDir, { recursive: true });
+  const outputDir = join(process.cwd(), ".timmy");
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true });
   }
 
-  const outputPath = join(docsDir, "sandbox-comparisons.md");
+  const outputPath = join(outputDir, "sandbox-comparisons.md");
   writeFileSync(outputPath, markdownReport);
   console.log(chalk.green(`\n✓ Comparison report successfully compiled and saved to ${outputPath}\n`));
 }

@@ -1,6 +1,6 @@
 # Cloudflare Deployment
 
-Cloudflare support is preserved in `wrangler.jsonc`, `src/companion/cloudflare-worker.ts`, and the existing `docs/cloudflare-features.md` page.
+Cloudflare support is preserved in `wrangler.jsonc` and `src/companion/cloudflare-worker.ts`.
 
 ## Commands
 
