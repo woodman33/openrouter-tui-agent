@@ -1,0 +1,171 @@
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { canonicalize, computeReceiptHash, Receipt } from '../src/receipt/schema.js';
+
+describe('TIMMY Receipt System', () => {
+  describe('Canonicalization & Hashing', () => {
+    it('should sort keys recursively in canonicalize', () => {
+      const objA = { z: 1, a: { y: 2, b: 3 } };
+      const objB = { a: { b: 3, y: 2 }, z: 1 };
+      
+      expect(canonicalize(objA)).toBe(canonicalize(objB));
+      expect(canonicalize(objA)).toContain('"a":{"b":3,"y":2}');
+    });
+
+    it('should compute deterministic hashes', () => {
+      const receiptA: Omit<Receipt, 'receipt_sha256'> = {
+        schema_version: '0.1.0',
+        run_id: 'run_test_1',
+        type: 'demo',
+        task: 'test run',
+        created_at: '2026-06-07T00:00:00.000Z',
+        cwd: '/test/dir',
+        platform: 'darwin',
+        node_version: 'v20.0.0',
+        package: { name: 'timmy-tui', version: '0.1.0' },
+        status: 'completed',
+        artifacts: []
+      };
+
+      const receiptB: Omit<Receipt, 'receipt_sha256'> = {
+        package: { version: '0.1.0', name: 'timmy-tui' },
+        status: 'completed',
+        artifacts: [],
+        created_at: '2026-06-07T00:00:00.000Z',
+        cwd: '/test/dir',
+        platform: 'darwin',
+        node_version: 'v20.0.0',
+        schema_version: '0.1.0',
+        run_id: 'run_test_1',
+        type: 'demo',
+        task: 'test run'
+      };
+
+      const hashA = computeReceiptHash(receiptA);
+      const hashB = computeReceiptHash(receiptB);
+      expect(hashA).toBe(hashB);
+      expect(hashA).toHaveLength(64); // 64 hex characters (SHA-256)
+    });
+
+    it('should result in different hashes for different values', () => {
+      const receiptA: Omit<Receipt, 'receipt_sha256'> = {
+        schema_version: '0.1.0',
+        run_id: 'run_test_1',
+        type: 'demo',
+        task: 'test run',
+        created_at: '2026-06-07T00:00:00.000Z',
+        cwd: '/test/dir',
+        platform: 'darwin',
+        node_version: 'v20.0.0',
+        package: { name: 'timmy-tui', version: '0.1.0' },
+        status: 'completed',
+        artifacts: []
+      };
+
+      const receiptB = { ...receiptA, task: 'different task' };
+      expect(computeReceiptHash(receiptA)).not.toBe(computeReceiptHash(receiptB));
+    });
+  });
+
+  describe('CLI Commands Integration', () => {
+    const tempTestDir = path.join(process.cwd(), 'tmp_test_outputs');
+
+    beforeAll(() => {
+      if (fs.existsSync(tempTestDir)) {
+        fs.rmSync(tempTestDir, { recursive: true, force: true });
+      }
+    });
+
+    afterAll(() => {
+      if (fs.existsSync(tempTestDir)) {
+        fs.rmSync(tempTestDir, { recursive: true, force: true });
+      }
+    });
+
+    it('should print help information with timmy help', () => {
+      const output = execSync('npx tsx timmy.ts help', { encoding: 'utf8' });
+      expect(output).toContain('TIMMY AgentOps');
+      expect(output).toContain('Usage: timmy <command>');
+      expect(output).toContain('demo');
+      expect(output).toContain('proof');
+    });
+
+    it('should print version information with timmy version', () => {
+      const output = execSync('npx tsx timmy.ts version', { encoding: 'utf8' });
+      expect(output).toContain('timmy-tui v0.1.0');
+    });
+
+    it('should execute demo command and write demo-receipt.json', () => {
+      const output = execSync(`npx tsx timmy.ts demo --out ${tempTestDir}`, { encoding: 'utf8' });
+      expect(output).toContain('TIMMY AgentOps Demo');
+      expect(output).toContain('✓ Created');
+      expect(output).toContain('✓ Generated receipt hash');
+
+      const receiptPath = path.join(tempTestDir, 'receipts', 'demo-receipt.json');
+      expect(fs.existsSync(receiptPath)).toBe(true);
+
+      const receipt: Receipt = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
+      expect(receipt.schema_version).toBe('0.1.0');
+      expect(receipt.type).toBe('demo');
+      expect(receipt.status).toBe('completed');
+      expect(receipt.receipt_sha256).toHaveLength(64);
+    });
+
+    it('should execute proof command and write manifest, receipt, and replay files', () => {
+      const taskDescription = 'create a hello world Cloudflare Worker';
+      const output = execSync(`npx tsx timmy.ts proof "${taskDescription}" --out ${tempTestDir}`, { encoding: 'utf8' });
+      expect(output).toContain('TIMMY Proof Run');
+      expect(output).toContain('✓ Run created');
+      expect(output).toContain('✓ Receipt generated');
+      expect(output).toContain('✓ Replay markdown generated');
+      expect(output).toContain('✓ Manifest hash sealed');
+
+      // Find the generated run folder
+      const runsDir = path.join(tempTestDir, 'runs');
+      expect(fs.existsSync(runsDir)).toBe(true);
+      const runFolders = fs.readdirSync(runsDir);
+      expect(runFolders.length).toBe(1);
+
+      const runFolder = path.join(runsDir, runFolders[0]);
+      const manifestPath = path.join(runFolder, 'manifest.json');
+      const receiptPath = path.join(runFolder, 'receipt.json');
+      const replayPath = path.join(runFolder, 'replay.md');
+
+      expect(fs.existsSync(manifestPath)).toBe(true);
+      expect(fs.existsSync(receiptPath)).toBe(true);
+      expect(fs.existsSync(replayPath)).toBe(true);
+
+      const receipt: Receipt = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
+      expect(receipt.schema_version).toBe('0.1.0');
+      expect(receipt.type).toBe('proof');
+      expect(receipt.task).toBe(taskDescription);
+      expect(receipt.status).toBe('completed');
+      expect(receipt.artifacts[0].path).toContain('replay.md');
+
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      expect(manifest.run_id).toBe(receipt.run_id);
+      expect(manifest.task).toBe(taskDescription);
+      expect(manifest.receipt_hash).toBe(receipt.receipt_sha256);
+
+      const replay = fs.readFileSync(replayPath, 'utf8');
+      expect(replay).toContain(`# Replay: ${taskDescription}`);
+    });
+
+    it('should support --json flag on demo command', () => {
+      const output = execSync(`npx tsx timmy.ts demo --json --out ${tempTestDir}`, { encoding: 'utf8' });
+      const receipt = JSON.parse(output);
+      expect(receipt.schema_version).toBe('0.1.0');
+      expect(receipt.type).toBe('demo');
+    });
+
+    it('should support --json flag on proof command', () => {
+      const output = execSync(`npx tsx timmy.ts proof "json task" --json --out ${tempTestDir}`, { encoding: 'utf8' });
+      const receipt = JSON.parse(output);
+      expect(receipt.schema_version).toBe('0.1.0');
+      expect(receipt.type).toBe('proof');
+      expect(receipt.task).toBe('json task');
+    });
+  });
+});
