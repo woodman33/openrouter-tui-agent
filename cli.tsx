@@ -39,7 +39,7 @@ if (existsSync('.env')) {
 
 program
   .name('openrouter-tui')
-  .description('OpenRouter AI Agent TUI with Rive animations')
+  .description('TIMMY TUI, a terminal-first Agent Trust OS.')
   .version('0.1.0')
   .option('-m, --model <model>', 'OpenRouter model to use')
   .option('--mode <mode>', 'Start in a specific mode', 'chat')
