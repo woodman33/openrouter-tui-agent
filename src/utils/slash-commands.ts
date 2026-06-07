@@ -543,7 +543,7 @@ export default function DemoDashboard() {
              `  /snapshot     — Capture CDP active accessibility elements\n` +
              `  /click <ref>  — Interact with page element via numeric CDP ref\n` +
              `  /screenshot   — Stream browser viewport frame to local desktop\n` +
-             `  /render <file>— Push images, videos or Rive frames to companion\n` +
+             `  /render <file>— Push images, videos or media frames to companion\n` +
              `  /stress <url> — Perform high-concurrency Rust oha stress tests\n` +
              `  /qr <url>     — Generate glowing terminal QR code\n\n` +
              `${boldCyan}⚙️  CONSOLE SETTINGS & LIFE CYCLE${reset}\n` +
