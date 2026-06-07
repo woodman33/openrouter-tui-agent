@@ -6,7 +6,7 @@ import type { Agent } from '../../agent/core.js';
 import { renderMarkdown } from '../../utils/markdown.js';
 import { theme } from '../theme.js';
 import { SLASH_COMMANDS, handleSlashCommand, getAutocompleteEnabled } from '../../utils/slash-commands.js';
-import { truncateVisible, scrollVisibleLeft } from '../utils/text.js';
+import { truncateVisible, scrollVisibleLeft, truncateMiddleOrEnd, splitModelNameAndBlurb, getModelColors } from '../utils/text.js';
 import { Spinner } from '../components/Motion.js';
 import { useEdgeHealth } from '../hooks/useEdgeHealth.js';
 import { PrimaryButton, SecondaryButton } from '../components/DesignSystem.js';
@@ -66,7 +66,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   }, []);
 
   const stageWidth = focusArea === 'stage' ? terminalWidth : terminalWidth - 24;
-  const railWidth = 32;
+  const railWidth = Math.min(48, Math.max(32, Math.floor(stageWidth * 0.32)));
   const chatWidth = Math.max(30, stageWidth - railWidth - 2);
 
   const isCompact = terminalHeight < 36;
@@ -549,20 +549,27 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
               if (isSelected) marker = '▶ ';
               else if (isActive) marker = '● ';
 
-              let textColor = '#8a8a94';
-              if (isSelected) textColor = '#ffffff';
-              else if (isActive) textColor = '#5e6ad2';
+              const { cleanName, cleanDesc } = splitModelNameAndBlurb(m.name || m.id, m.description);
+              const { nameColor, descColor } = getModelColors(isSelected, isActive);
+              
+              const usableWidth = railWidth - 4;
+              const nameText = truncateMiddleOrEnd(cleanName, usableWidth - 2);
+              const descText = cleanDesc ? truncateMiddleOrEnd(cleanDesc, usableWidth - 2, true) : '';
+
+              const showDescription = !isCompact || isSelected || isActive;
 
               return (
                 <Box key={m.id} flexDirection="column" marginBottom={1}>
                   <Box>
-                    <Text bold={isSelected || isActive} color={textColor} wrap="truncate">
-                      {marker}{m.name || m.id}
+                    <Text bold={isSelected || isActive} color={nameColor}>
+                      {marker}{nameText}
                     </Text>
                   </Box>
-                  <Box paddingLeft={2}>
-                    <Text dimColor color="#8b949e" wrap="truncate">{m.description}</Text>
-                  </Box>
+                  {showDescription && descText && (
+                    <Box paddingLeft={2}>
+                      <Text color={descColor}>{descText}</Text>
+                    </Box>
+                  )}
                 </Box>
               );
             })

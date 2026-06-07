@@ -10,6 +10,7 @@
 * [RMUX Workspace Evidence](rmux-workspace-evidence.md)
 * [Receipts and Replay](receipts-and-replay.md)
 * [Cloudflare Deployment](cloudflare-deployment.md)
+* [Cloudflare Platform Fit](cloudflare-fit.md)
 * [Security and Secrets](security-and-secrets.md)
 * [Existing Stripe Provisioning](stripe-provisioning.md)
 * [TIMMY Porter](timmy-porter.md)

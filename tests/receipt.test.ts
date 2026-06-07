@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { canonicalize, computeReceiptHash, Receipt } from '../src/receipt/schema.js';
+import { truncateMiddleOrEnd, splitModelNameAndBlurb, getModelColors } from '../src/tui/utils/text.js';
+
 
 describe('TIMMY Receipt System', () => {
   describe('Canonicalization & Hashing', () => {
@@ -166,6 +168,47 @@ describe('TIMMY Receipt System', () => {
       expect(receipt.schema_version).toBe('0.1.0');
       expect(receipt.type).toBe('proof');
       expect(receipt.task).toBe('json task');
+    });
+  });
+
+  describe('TUI Model Rail Utilities', () => {
+    it('should preserve full model name when width allows', () => {
+      const name = 'Claude 3.5 Sonnet';
+      expect(truncateMiddleOrEnd(name, 30)).toBe(name);
+    });
+
+    it('should truncate model names preserving model portion in provider/model format', () => {
+      const id = 'google/gemini-3.5-flash-instruct';
+      const truncated = truncateMiddleOrEnd(id, 25);
+      expect(truncated).toContain('google/');
+      expect(truncated.length).toBeLessThanOrEqual(25);
+    });
+
+    it('should truncate descriptions at the end', () => {
+      const desc = 'high-performance general reasoning and code assistance model';
+      const truncated = truncateMiddleOrEnd(desc, 20, true);
+      expect(truncated).toBe('high-performance ...');
+    });
+
+    it('should split marketing blurbs correctly', () => {
+      const rawName = 'Claude Opus 4.8 is Anthropic\'s most powerful model';
+      const result = splitModelNameAndBlurb(rawName);
+      expect(result.cleanName).toBe('Claude Opus 4.8');
+      expect(result.cleanDesc).toBe('Anthropic\'s most powerful model');
+    });
+
+    it('should return correct high-contrast colors based on model states', () => {
+      const disabled = getModelColors(false, false, true);
+      expect(disabled.nameColor).toBe('#8a8a94');
+
+      const selected = getModelColors(true, false, false);
+      expect(selected.nameColor).toBe('#fec240'); // Bright yellow
+
+      const active = getModelColors(false, true, false);
+      expect(active.nameColor).toBe('#33d6ff'); // Bright cyan
+
+      const normal = getModelColors(false, false, false);
+      expect(normal.nameColor).toBe('#ffffff'); // Bright white
     });
   });
 });
