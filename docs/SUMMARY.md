@@ -21,8 +21,6 @@
 * [TIMMY Workspace Root](timmy-workspace-root.md)
 * [Auth Doctrine](auth.md)
 * [TIMMY Setup & Installation](setup.md)
-* [GTM & Payments FAQ](gtm-and-monetization-faq.md)
 * [herdr Integration Blueprint](herdr-integration-plan.md)
-* [TIMMY V2.1 - Production-Demo Ready](TIMMY_V2_1_PRODUCTION_DEMO.md)
 
 
