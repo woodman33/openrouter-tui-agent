@@ -12,6 +12,7 @@ export interface AgentUIState {
   totalTokens: number;
   totalCost: number;
   model: string;
+  modelHealthStatus: 'UNTESTED' | 'READY' | 'ERROR' | 'FALLBACK READY';
 }
 
 export function useAgent(agent: Agent) {
@@ -25,6 +26,7 @@ export function useAgent(agent: Agent) {
     totalTokens: 0,
     totalCost: 0,
     model: agent.getModel(),
+    modelHealthStatus: (agent as any).modelHealthStatus || 'UNTESTED',
   });
   const toolsRef = useRef<string[]>([]);
 
@@ -63,7 +65,10 @@ export function useAgent(agent: Agent) {
         setState(s => ({ ...s, totalCost: total }));
       },
       'model:switch': (model: string) => {
-        setState(s => ({ ...s, model }));
+        setState(s => ({ ...s, model, modelHealthStatus: (agent as any).modelHealthStatus }));
+      },
+      'model:health': (status: 'UNTESTED' | 'READY' | 'ERROR' | 'FALLBACK READY') => {
+        setState(s => ({ ...s, modelHealthStatus: status }));
       },
       'thinking:end': () => {
         setState(s => ({ ...s, isThinking: false }));

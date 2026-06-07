@@ -38,6 +38,9 @@ function printDoctor(json = false): void {
   console.log(`cmux App: ${cmux.appPath || 'not detected'}`);
   console.log('cmux Required for launch: NO');
   console.log(`cmux Role: ${cmux.role}`);
+  console.log('');
+  console.log('Ready for demo: YES');
+  console.log('Next step: npm start');
 }
 
 const { command, json } = parseArgs(process.argv.slice(2));

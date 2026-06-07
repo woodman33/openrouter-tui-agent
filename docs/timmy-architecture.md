@@ -20,4 +20,4 @@ The TIMMY scripts under `scripts/` create run receipt sessions, replay command e
 
 ## Edge Integration
 
-`wrangler.jsonc`, `src/companion/cloudflare-worker.ts`, and `docs/cloudflare-features.md` describe the Cloudflare Worker, Durable Object, D1, R2, Vectorize, Workers AI, queue, and Hyperdrive bindings. The repo keeps these definitions as source, with local-only passwords redacted.
+`wrangler.jsonc` and `src/companion/cloudflare-worker.ts` describe the Cloudflare Worker, Durable Object, D1, R2, Vectorize, Workers AI, queue, and Hyperdrive bindings. The repo keeps these definitions as source, with local-only passwords redacted.

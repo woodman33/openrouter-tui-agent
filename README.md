@@ -1,201 +1,172 @@
-# TIMMY TUI
+# TIMMY AgentOps
 
-TIMMY TUI is a terminal-first Agent Trust OS for governed AI agent execution, provider routing, verified context packs, AgentPass entitlements, and tamper-evident `.agentrun` receipts.
+Open-source local receipt and replay layer for AI agent work.
 
-OpenRouter is one supported model provider inside TIMMY, not the product itself. Trust the receipt, not the model.
+AI agents can edit files, run commands, call models, and change infrastructure. TIMMY creates local receipts so developers can see what happened, when it happened, and what artifacts were produced.
 
-This project provides a multi-mode terminal interface for governed agent work, using local-first run receipts, provider routing, and optional edge audit trails. Rive-based visuals are future/experimental and are not part of the V1.5 launch surface.
+## Installation
 
----
-
-## 🏛️ Systems Architecture
-
-The system is built on a highly modular, decoupled architecture consisting of five independent layers:
-
-```
-                               ┌────────────────────────────────────────────────────────┐
-                               │                    React Ink TUI                       │
-                               │      (Local Desktop Terminal - Kitty/iTerm2/Sixel)     │
-                               └──────────────────────────┬─────────────────────────────┘
-                                                          │ WebSocket / HTTPS
-                                                          ▼
-                               ┌────────────────────────────────────────────────────────┐
-                               │            Cloudflare Workers Edge Gateway             │
-                               ├────────────────────────────────────────────────────────┤
-                               │  ┌──────────────────────────────────────────────────┐  │
-                               │  │      Cloudflare Agents SDK (Durable Objects)     │  │
-                               │  │  - Holds active conversation SQLite state        │  │
-                               │  │  - Manages multi-agent routing (Swarm)           │  │
-                               │  │  - Dispatches companion triggers via WebSocket    │  │
-                               │  └──────┬──────────────────────┬─────────────┬──────┘  │
-                               │         │                      │             │         │
-                               │         ▼                      ▼             ▼         │
-                               │  ┌──────────────┐        ┌──────────┐  ┌────────────┐  │
-                               │  │ Sandbox SDK  │        │    D1    │  │ Workers AI │  │
-                               │  │ (Firecracker)│        │ (SQLite) │  │ (Fallback) │  │
-                               │  └──────────────┘        └──────────┘  └────────────┘  │
-                               └────────────────────────────────────────────────────────┘
-```
-
-1. **Terminal Capability & Graphics Pipeline (`src/graphics/`)**
-   - Automatically queries terminal support for advanced graphic protocols (Kitty, iTerm2, Sixel) at runtime.
-   - For high-end terminals (Kitty, WezTerm, iTerm2, Ghostty, Warp), it can use a headless **Playwright browser rendering pipeline** for future/experimental companion visuals.
-   - For standard terminals, it triggers a lightweight local WebSocket **Companion Web Server** that can sync future/experimental companion states beside your terminal.
-   - For basic terminals, it falls back to a custom ANSI-art rendering engine mirroring companion state changes inside Ink borders.
-
-2. **Agent Core Layer (`src/agent/`)**
-   - Completely standalone and UI-agnostic core orchestrator using the latest `@openrouter/sdk` with item-based streaming (`getItemsStream`) allowing multi-turn conversations and automatic tool-execution.
-   - Implements a local **JSONL-based session persistence manager** with append-only logs for reliable state restoration.
-   - Integrates **Agent Swarm multi-agent routing** that uses a lightweight classifier agent to direct complex user prompts to specialized sub-agents (Chat, Code Reviewer, Researcher, Generator) utilizing different models on-the-fly.
-
-3. **TUI Layout & React Layer (`src/tui/`)**
-   - Designed using Awwwards-inspired UI design principles: dark GitHub-sleek theme backgrounds, 4px grid alignments, custom glowing borders, gradient progress bars, and typewriter-text effects.
-   - Structured around a single-layout multiplexer where users can instantly hot-swap between multiple built-in panels (Chat, Code Review, Multi-Agent Dashboard, Model Explorer) using simple keys.
-
-4. **Multi-Mode Plugin System (`src/modes/`)**
-   - General-purpose mode architecture where plugins register custom tool sets, TUI panels, hotkeys, and companion state mappings.
-
-5. **Cloudflare Edge Layer (`docs/cloudflare-features.md`)**
-   - Fully architected to offload heavy operations (like untrusted code execution, global state synchronization, and background worker logs) safely onto Cloudflare’s Edge network using **Sandbox SDK (Firecracker microVMs)**, **Durable Objects**, **Email Workers**, and **Pages Functions**.
-
----
-
-## 📂 Project Directory Structure
-
-```
-timmy-tui/
-├── cli.tsx                                 # TUI Interactive CLI Entry Point
-├── headless.ts                             # Headless Agentic CLI Entry Point
-├── package.json                            # Configuration & NPM Dependencies
-├── tsconfig.json                           # TypeScript Compiler Options
-├── agent.config.json                       # Global Agent settings overrides
-├── bin/
-│   └── openrouter-tui.js                   # Executable Binary script wrapper
-├── docs/
-│   └── cloudflare-features.md              # Detailed Cloudflare Systems Architecture
-└── src/
-    ├── types/
-    │   └── index.ts                        # Shared TypeScript Interface declarations
-    ├── utils/
-    │   ├── ansi.ts                         # Custom ANSI escape codes & Color Gradient utilities
-    │   ├── config.ts                       # Layered Configuration controller (Store / Env)
-    │   ├── logger.ts                       # Debug logger console recorder
-    │   └── markdown.ts                     # High-performance terminal markdown parser
-    ├── agent/
-    │   ├── events.ts                       # Typed EventEmitter3 AgentEvents
-    │   ├── openrouter-client.ts            # Client initializer with dynamic model-fetch cache
-    │   ├── tools.ts                        # Built-in SDK tools (Time, Calc, System, Env)
-    │   ├── conversation.ts                 # JSONL-based history append recorder
-    │   ├── core.ts                         # Main Agent class running OpenRouter loops
-    │   └── multi-agent.ts                  # Swarm Orchestrator and classification router
-    ├── graphics/
-    │   ├── pipeline.ts                     # Base abstract GraphicsPipeline class
-    │   ├── capabilities.ts                 # Terminal feature OSC & escape prober
-    │   ├── kitty-pipeline.ts               # Kitty Graphics chunked Base64 PNG encoder
-    │   ├── iterm2-pipeline.ts              # iTerm2 Inline File image protocol overlay
-    │   ├── sixel-pipeline.ts               # Sixel bit-grid ANSI downsampler
-    │   ├── companion-pipeline.ts           # WebSocket frame broad-caster
-    │   ├── ansi-pipeline.ts                # Polish-character mascot state renderer
-    │   └── frame-extractor.ts              # Playwright future/experimental companion frame driver
-    ├── companion/
-    │   ├── server.ts                       # Express WebSocket local sync broker
-    │   ├── sync.ts                         # WebSocket companion state synchronization hook
-    │   ├── qr.ts                           # Terminal QR generator for companion links
-    │   └── client/
-    │       └── index.html                  # Client companion web page containing fallback canvas
-    ├── modes/
-    │   ├── index.ts                        # Mode registrars and layouts
-    │   ├── chat/                           # Conversational plugin mode
-    │   │   ├── mode.ts
-    │   │   └── tools.ts
-    │   └── code-review/                    # Dynamic code git review mode
-    │       ├── mode.ts
-    │       └── tools.ts
-    └── tui/
-        ├── app.tsx                         # Root Ink Application container
-        ├── layout.tsx                      # Header / Footer / Panel grid framework
-        ├── router.tsx                      # Active mode component multiplexer
-        ├── theme.ts                        # Sleek dark color palette overrides
-        ├── components/
-        │   ├── GlowBorder.tsx              # Glowing box borders
-        │   ├── ModelBadge.tsx              # Dynamic color provider models badge
-        │   ├── ProgressBar.tsx             # Shimmer loading progress bar
-        │   ├── RiveMascotPanel.tsx         # Sidebar future/experimental visual container
-        │   └── TypewriterText.tsx          # Typewriter letter animator
-        └── panels/
-            └── ChatPanel.tsx               # Main chat messages & text input controller
-```
-
----
-
-## 🚀 Getting Started
-
-### 1. Prerequisites
-Ensure you have **Node.js 18+** installed. You will also need an **OpenRouter API Key**.
-
-Get your key at [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys).
-
-### 2. Installation
-
-Clone and install dependencies:
+Install globally:
 ```bash
-git clone https://github.com/your-username/timmy-tui.git
-cd timmy-tui
+npm install -g timmy-tui
+```
+
+Or run directly using `npx`:
+```bash
+npx timmy-tui demo
+```
+
+## CLI Usage
+
+### A. Run Demo
+```bash
+timmy demo
+```
+Generates a verifiable local receipt file at `.timmy/receipts/demo-receipt.json`.
+
+### B. Record a Task Proof Stub
+```bash
+timmy proof "create a hello world Cloudflare Worker"
+```
+Generates a proof run folder under `.timmy/runs/run_<timestamp>/` containing `manifest.json`, `receipt.json`, and `replay.md`.
+
+---
+
+## 🎬 1. Demo
+* **Product Hunt Launch Video**: `[Insert Launch Video Embed Link / Demo Video Path Here]`
+* **Product Hunt Gallery Hero**: `[Insert Product Hunt Gallery Image Placeholder Here]`
+
+---
+
+## 🛠️ 2. What Works Today
+* **Local Verifiable Receipts**: Generates run manifestations using a tamper-evident, hash-bound `.agentrun` format.
+* **Deterministic Key-Sorted Hashing**: Manifests are hashed recursively by sorting JSON keys.
+* **Main Chat with OpenRouter Model Rail**: Real-time streaming conversation, hotkey swapping, and dynamic model fetching.
+* **MCP → CLI Evidence Bundle Generation**: Converts MCP tool calls into local inspectable bash scripts and environment setups.
+* **cmux Workspace Launch**: Seamless workspace isolation with multiplexer controls (`cmux` window layout).
+* **Browser Companion Chat Mirror**: Live state mirroring on local WebSocket web client (`localhost:3001`).
+* **Bounded Logs**: Strict console append logs verifying state changes without bloating directory index files.
+* **Setup/Help/Doctor Commands**: Pre-flight CLI checkups and environment verifiers.
+
+---
+
+## 🚀 3. Quickstart
+
+To run the console locally:
+
+```bash
+# 1. Install dependencies
 npm install
-```
 
-### 3. Configuration
-Set your OpenRouter API Key in your shell or write it to a `.env` file in the project root:
+# 2. Setup your local configuration
+cp .env.example .env
 
-```bash
-# Set in shell
-export OPENROUTER_API_KEY=sk-or-v1-your-api-key-here
+# 3. Add your OPENROUTER_API_KEY to the .env file
+# OPENROUTER_API_KEY=sk-or-v1-...
 
-# Or create .env
-echo "OPENROUTER_API_KEY=sk-or-v1-your-api-key-here" > .env
-```
+# 4. Run system diagnostic check
+npm run timmy -- doctor
 
-### 4. Build
-Compile the TypeScript source:
-```bash
-npm run build
-```
-
----
-
-## 🎮 Usage & Entry Points
-
-### Interactive TUI Mode
-The primary interactive interface. It auto-detects your terminal capabilities, spins up the best graphics pipeline, and starts in Chat mode.
-
-```bash
-# Start TUI directly
+# 5. Start the TUI
 npm start
-
-# Start TUI in a specific mode (chat, code-review, dashboard, model-explorer)
-npm start -- --mode code-review
-
-# Start TUI with a specific model
-npm start -- --model anthropic/claude-3.5-sonnet
-
-# Launch with custom companion port
-npm start -- --companion-port 8080
 ```
-
-### Headless Mode
-A simplified, non-interactive shell interface that logs events to stderr and agent output directly to stdout.
-
-```bash
-npm run start:headless
-```
-
-### Hotkeys within the TUI
-- `Esc` — Safely cleans up the graphics pipelines and exits the program.
-- `Tab` — Rotates through available modes (Chat, Code Review, Dashboard, Model Explorer).
-- `Ctrl + L` — Clears the current conversation history.
-- `Ctrl + M` — Invokes the model-explorer panel to search and select active models.
 
 ---
 
-## 🛡️ License
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 🧬 4. First Proof
+
+Generate your first verifiable session validation proof manifest:
+
+```bash
+npm run timmy -- agent-proof "Validate workspace integrity"
+```
+
+This runs the core telemetry auditor and writes a local **sealed TIMMY receipt** in the active session database containing a **manifest hash** and session timestamp.
+
+---
+
+## 📂 5. First MCP → CLI Scan
+
+Inspect and scan an external MCP server to compile an evidence bundle:
+1. Navigate to the **Code Review / Workspace panel** within the TUI interface.
+2. Paste an MCP server URL directly into the `MCP → CLI` scanner prompt.
+3. Review and generate the local executable code execution package before giving the agent file system permissions.
+
+---
+
+## 🏆 6. Product Hunt Demo Flow
+
+Follow this end-to-end path to demonstrate TIMMYTUI's full trust loop:
+
+```
+[Main Chat with Model Rail] ──► [Scan MCP -> CLI URL] ──► [Launch Isolated cmux Workspace]
+                                                                        │
+[Session Verifiable Proof] ◄── [Mirror on Browser Companion] ◄──────────┘
+```
+
+---
+
+## 🧾 7. Why Receipts Matter for AI Agents
+
+AI agents are capable of mutating files, executing terminal commands, and calling API endpoints. Without a structured log of actions, debugging becomes difficult and security boundaries become opaque. 
+
+TIMMY solves this by acting as a **flight recorder** for agent execution. Every step, tool-use outcome, and generated artifact is registered into a local, key-sorted manifest receipt sealed with a deterministic SHA-256 hash. If any file or log is tampered with, the receipt validation seal breaks.
+
+---
+
+## 📄 8. Example Receipt Output
+
+Here is a typical `receipt.json` generated by TIMMY:
+
+```json
+{
+  "schema_version": "0.1.0",
+  "run_id": "run_proof_1717750800000",
+  "type": "proof",
+  "task": "create a hello world Cloudflare Worker",
+  "created_at": "2026-06-07T09:49:22.000Z",
+  "cwd": "/Users/williammeldman/Desktop/openrouter-tui",
+  "platform": "darwin",
+  "node_version": "v20.10.0",
+  "package": {
+    "name": "timmy-tui",
+    "version": "0.1.0"
+  },
+  "status": "completed",
+  "artifacts": [
+    {
+      "path": ".timmy/runs/run_proof_1717750800000/replay.md",
+      "sha256": "5c9b83b63297a7a2bc4175bded918cd928c388a212b47bbbc28acb82f039a4c"
+    }
+  ],
+  "receipt_sha256": "4adaec82308cc7e5bded918cd928c388a212b47bbbc28acb82f039a4cae4fb8a"
+}
+```
+
+---
+
+## 🗺️ 9. Roadmap
+
+Refer to [ROADMAP.md](file:///Users/williammeldman/Desktop/openrouter-tui/ROADMAP.md) for full development milestones.
+
+---
+
+## 🤝 10. Contributing
+
+We welcome early open-source contributors! Refer to [CONTRIBUTING.md](file:///Users/williammeldman/Desktop/openrouter-tui/CONTRIBUTING.md) for local environment setup, style policies, and PR review gates.
+
+---
+
+## 🛡️ 11. Security Note
+
+- Do **not** pass secret credentials inside raw task strings, as prompts are stored in plaintext.
+- Dangerous command mutations are not run in the local proof stubs of version `v0.1`.
+- Refer to [SECURITY.md](file:///Users/williammeldman/Desktop/openrouter-tui/SECURITY.md) for reporting guidelines.
+
+---
+
+## 🔒 12. OpenSSF / Trust Notes
+
+- **Provenanced Releases**: Published directly from GitHub Actions with npm trusted publishing provenance.
+- **Zero Telemetry**: TIMMY does **not** call home or track developer behavior. All receipts remain strictly local-first.
+- **Local Authorities**: No secret collection or analytics tracking is coded into any execution loop.

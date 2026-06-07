@@ -6,13 +6,27 @@
   "main": "dist/cli.js",
   "bin": {
     "openrouter-tui": "dist/cli.js",
-    "timmy": "dist/timmy.js"
+    "timmy": "dist/timmy.js",
+    "timmy-tui": "dist/timmy.js",
+    "timmy-agentops": "dist/timmy.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md"
+  ],
   "scripts": {
     "start": "tsx cli.tsx",
+    "timmy": "tsx src/cli.ts",
+    "timmy:doctor": "tsx src/cli.ts doctor",
+    "timmy:setup": "tsx src/cli.ts setup",
     "start:headless": "tsx headless.ts",
     "dev": "tsx watch cli.tsx",
     "build": "tsc",
+    "test": "vitest run",
     "companion:dev": "vite",
     "companion:build": "vite build",
     "cf:dev": "npx wrangler dev src/companion/cloudflare-worker.ts",
@@ -24,10 +38,34 @@
     "timmy:test-run": "tsx scripts/timmy-test-run.ts",
     "timmy:ui-smoke": "tsx scripts/timmy-ui-smoke.tsx",
     "timmy:receipt-index": "tsx scripts/timmy-receipt-index.ts",
+    "timmy:agent-proof-verify": "tsx scripts/timmy-agent-proof-verify.ts",
     "timmy:snapshot": "tsx scripts/timmy-snapshot.ts",
     "timmy:generation:intent-pack": "tsx scripts/timmy-generation-intent-pack.ts",
-    "timmy:simulate:single": "tsx scripts/timmy-simulate-single.ts"
+    "timmy:simulate:single": "tsx scripts/timmy-simulate-single.ts",
+    "prepublishOnly": "npm run build && npm test"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/woodman33/openrouter-tui-agent.git"
+  },
+  "keywords": [
+    "agentops",
+    "ai-agents",
+    "cli",
+    "tui",
+    "receipts",
+    "replay",
+    "audit-log",
+    "openrouter",
+    "cloudflare",
+    "modal"
+  ],
+  "author": "William Meldman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/woodman33/openrouter-tui-agent/issues"
+  },
+  "homepage": "https://github.com/woodman33/openrouter-tui-agent#readme",
   "dependencies": {
     "@cloudflare/flagship": "^0.3.1",
     "@openfeature/server-sdk": "^1.21.0",
@@ -56,6 +94,7 @@
     "@vercel/sandbox": "^2.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^3.0.0"
   }
 }

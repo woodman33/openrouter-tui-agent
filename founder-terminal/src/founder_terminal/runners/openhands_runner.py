@@ -445,7 +445,7 @@ class OpenHandsRunner(BaseRunner):
             except Exception:
                 pass
 
-        # 8. Redaction & Cryptographic Hashing
+        # 8. Redaction & Secure Hashing
         stdout_text = redact_secrets(stdout_text)
         stderr_text = redact_secrets(stderr_text)
         cwd_redacted = redact_secrets(cwd_absolute)

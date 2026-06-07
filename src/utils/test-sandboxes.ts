@@ -177,7 +177,7 @@ async function main() {
   const markdownReport = `
 # Systems-Thinking Sandbox & SDK Benchmark Report
 
-This document reports the live and simulated execution comparisons between the **Vercel Sandbox (Vercel AI-SDK)** and **Cloudflare Sandbox (Cloudflare Agents SDK)** when compiling and testing our Rive-animated TUI multi-agent framework.
+This document reports the live and simulated execution comparisons between the **Vercel Sandbox (Vercel AI-SDK)** and **Cloudflare Sandbox (Cloudflare Agents SDK)** when compiling and testing our TUI multi-agent framework.
 
 ---
 
@@ -196,7 +196,7 @@ This document reports the live and simulated execution comparisons between the *
 
 | Dimensional Vector | Vercel AI-SDK + Sandbox | Cloudflare Agents SDK + Sandbox | Systems Verdict |
 |:---|:---|:---|:---|
-| **Rive Visual Integration** | **Indirect (Heavy)**: play Rive in a headless chromium instance, screenshot canvas, compress and stream PNG base64 buffers to terminal. | **Direct (Lightweight)**: TUI & Companion Web Window connect directly to the Durable Object over WebSockets; sync lightweight triggers (\`state: thinking\`) for native local GPU rendering. | **Cloudflare (Best Practice)**: Reduces local terminal rendering overhead and CPU load to 0%. |
+| **Visual Companion Integration** | **Indirect (Heavy)**: render companion visuals in a headless chromium instance, screenshot canvas, compress and stream PNG base64 buffers to terminal. | **Direct (Lightweight)**: TUI & Companion Web Window connect directly to the Durable Object over WebSockets; sync lightweight triggers (\`state: thinking\`) for native local GPU rendering. | **Cloudflare (Best Practice)**: Reduces local terminal rendering overhead and CPU load to 0%. |
 | **Context Mutation & memory** | **Stateless**: passes complete context on every API call. Needs external KV/Postgres storage. | **Stateful**: local SQLite database (\`this.sql\`) physically co-located on edge CPUs for <1ms state reads. | **Cloudflare (Winner)**: Drastically reduces API invocation latency and costs. |
 | **Workflow Resiliency** | **Ephemeral**: fails on network drops or execution timeouts. | **Durable**: uses \`AgentWorkflow\` step retries and resumes execution from exactly where it failed. | **Cloudflare (Winner)**: Ideal for robust, multi-step agent actions. |
 | **Execution Control** | Gated behind corporate SaaS API safety filters and pricing. | Independent execution of open-source models (Llama, DeepSeek) on edge GPUs. | **Cloudflare (Winner)**: Sovereignty, no censorship, zero-margin cost control. |
@@ -218,15 +218,15 @@ ${report.cloudflare.log.map(l => `- ${l}`).join("\n")}
 For building the **highest quality TUI multi-agent framework ever made**, we must marry the two:
 1. Use **Cloudflare Agents SDK** as the stateful, persistent back-end on the global edge, utilizing co-located SQLite for zero-latency memories.
 2. Use **Vercel Sandbox SDK** during local tests when we need to simulate massive browser testing or verify UI render layouts with a complete headless browser.
-3. Serve the **Rive Companion Web Window** on Cloudflare Pages, establishing live WebSockets to the Durable Object for instantaneous zero-copy mascot animation.
+3. Serve the **Companion Web Window** on Cloudflare Pages, establishing live WebSockets to the Durable Object for instantaneous zero-copy state syncing.
 `.trim();
 
-  const docsDir = join(process.cwd(), "docs");
-  if (!existsSync(docsDir)) {
-    mkdirSync(docsDir, { recursive: true });
+  const outputDir = join(process.cwd(), ".timmy");
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true });
   }
 
-  const outputPath = join(docsDir, "sandbox-comparisons.md");
+  const outputPath = join(outputDir, "sandbox-comparisons.md");
   writeFileSync(outputPath, markdownReport);
   console.log(chalk.green(`\n✓ Comparison report successfully compiled and saved to ${outputPath}\n`));
 }

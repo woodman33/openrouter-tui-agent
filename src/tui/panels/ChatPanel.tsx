@@ -6,42 +6,73 @@ import type { Agent } from '../../agent/core.js';
 import { renderMarkdown } from '../../utils/markdown.js';
 import { theme } from '../theme.js';
 import { SLASH_COMMANDS, handleSlashCommand, getAutocompleteEnabled } from '../../utils/slash-commands.js';
-import { truncateVisible } from '../utils/text.js';
-import { ShimmerText, SignalBars, Spinner } from '../components/Motion.js';
+import { truncateVisible, scrollVisibleLeft } from '../utils/text.js';
+import { Spinner } from '../components/Motion.js';
 import { useEdgeHealth } from '../hooks/useEdgeHealth.js';
+import { PrimaryButton, SecondaryButton } from '../components/DesignSystem.js';
+import { fetchModels } from '../../agent/openrouter-client.js';
 
 interface ChatPanelProps {
   agent: Agent;
   setInspector: (data: any) => void;
+  focusArea: 'nav' | 'stage';
 }
 
-export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
+const FALLBACK_MODELS = [
+  { id: 'anthropic/claude-opus-4.7', name: 'Claude 4.7 Opus', description: 'high reasoning / coding' },
+  { id: 'openai/gpt-5.5', name: 'GPT-5.5', description: 'general reasoning' },
+  { id: 'google/gemini-3.5-flash', name: 'Gemini 3.5 Flash', description: 'fast multimodal' },
+  { id: 'moonshotai/kimi-k2.6', name: 'Kimi K2.6', description: 'long-context coding/reasoning' },
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', description: 'intelligence & speed leader' },
+  { id: 'openai/gpt-4o', name: 'GPT-4o', description: 'high-performance general reasoning' },
+  { id: 'deepseek/deepseek-chat', name: 'DeepSeek Chat', description: 'reasoning & coding cost disruptor' },
+  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', description: 'highly-capable open weights logic' },
+  { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', description: 'top coding open weights assistant' }
+];
+
+export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   const { rows: height, columns: width } = useWindowSize();
   const terminalHeight = height || 24;
   const terminalWidth = width || 80;
   
   const state = useAgent(agent);
   const edge = useEdgeHealth();
-  const edgeValue = edge.state === 'online' && edge.latencyMs !== null ? `${edge.latencyMs}ms` : edge.state;
-  const edgeColor = edge.state === 'online' ? '#3fb950' : '#d29922';
 
   const [input, setInput] = useState('');
   const [cursorPos, setCursorPos] = useState(0);
-  const [optionsExpanded, setOptionsExpanded] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [activeSuggestIdx, setActiveSuggestIdx] = useState(0);
   const [userScrolledUp, setUserScrolledUp] = useState(false);
   const [activeCheckpointIdx, setActiveCheckpointIdx] = useState(0);
 
-  // Focus navigation mode: 0 = Input box, 1 = Action buttons
-  const [focusMode, setFocusMode] = useState<number>(0);
-  const [btnHighlightIdx, setBtnHighlightIdx] = useState<number>(0);
+  // Home buttons interactive selection
+  const [activeHomeBtnIdx, setActiveHomeBtnIdx] = useState(-1); // -1 = input focus, 0 = Paste URL, 1 = Open Workspace, 2 = View Receipt
 
-  const actionButtons = [
-    { label: '[ Add Tool by URL ]', action: 'porter' },
-    { label: '[ Open Workspace ]', action: 'workspace' },
-    { label: '[ View Last Receipt ]', action: 'proof' }
-  ];
+  // OpenRouter Model Rail states
+  const [liveModels, setLiveModels] = useState<any[]>([]);
+  const [modelSearchQuery, setModelSearchQuery] = useState('');
+  const [highlightedModelIdx, setHighlightedModelIdx] = useState(0);
+  const [focusSection, setFocusSection] = useState<'chat' | 'modelRail'>('chat');
+  const [modelChangedFlash, setModelChangedFlash] = useState(false);
+
+  useEffect(() => {
+    fetchModels().then(models => {
+      if (models && models.length > 0) {
+        setLiveModels(models);
+      }
+    }).catch(() => {
+      // catalog unavailable fallback
+    });
+  }, []);
+
+  const stageWidth = focusArea === 'stage' ? terminalWidth : terminalWidth - 24;
+  const railWidth = 32;
+  const chatWidth = Math.max(30, stageWidth - railWidth - 2);
+
+  const isCompact = terminalHeight < 36;
+  const visibleHeight = isCompact 
+    ? Math.max(5, terminalHeight - 14) 
+    : Math.max(8, terminalHeight - 16);
 
   const updateInspectorData = () => {
     setInspector({
@@ -69,7 +100,7 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
     const lines: string[] = [];
     const checkpointsList: { checkpointIndex: number; lineIndex: number }[] = [];
     const messages = state.messages;
-    const leftPanelWidth = Math.max(20, terminalWidth - 54);
+    const textWidth = Math.max(16, chatWidth - 6);
     
     let checkpointCount = 0;
     
@@ -87,41 +118,42 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
         lines.push(...msg.content.split('\n'));
         lines.push('');
       } else if (msg.role === 'assistant') {
-        lines.push(chalk.bold.hex('#a5d6ff')('◀ Assistant'));
-        const parsedMarkdown = renderMarkdown(msg.content, leftPanelWidth);
+        lines.push(chalk.bold.hex('#a98bff')('◀ TIMMY Agent'));
+        const parsedMarkdown = renderMarkdown(msg.content, textWidth);
         lines.push(...parsedMarkdown.split('\n'));
         lines.push('');
-        lines.push(chalk.hex('#3fb950')('☁️  [Saved to Cloudflare Durable Object SQLite Session #default-local-run]'));
+        lines.push(chalk.hex('#43d6a0')('☁️  [Saved to Cloudflare Durable Object SQLite Session]'));
         lines.push('');
       }
     }
 
     if (state.isStreaming) {
       if (state.currentTools.length > 0) {
-        lines.push(chalk.hex('#d2a8ff')(state.currentTools.map(t => `⚙ ${t}`).join('  ')));
+        lines.push(chalk.hex('#a98bff')(state.currentTools.map(t => `⚙ ${t}`).join('  ')));
         lines.push('');
       }
       if (state.streamingText) {
-        lines.push(chalk.bold.hex('#a5d6ff')('◀ Assistant'));
-        const parsedStream = renderMarkdown(state.streamingText, leftPanelWidth);
+        lines.push(chalk.bold.hex('#a98bff')('◀ TIMMY Agent'));
+        const parsedStream = renderMarkdown(state.streamingText, textWidth);
         lines.push(...parsedStream.split('\n'));
-        lines.push(chalk.hex('#8b949e')('▌'));
+        lines.push(chalk.hex('#8a8a94')('▌'));
       } else {
-        lines.push(chalk.hex(theme.accent)('◌ Thinking and invoking swarm orchestrator...'));
+        lines.push(chalk.hex('#a98bff')('◌ Thinking...'));
       }
     }
 
     if (state.error) {
-      lines.push(chalk.bold.hex('#f85149')(`✕ Error: ${state.error.message}`));
+      lines.push(chalk.bold.hex('#ff6b6b')(`✕ Error: ${state.error.message}`));
     }
 
     return { allLines: lines, checkpoints: checkpointsList };
-  }, [state.messages, state.isStreaming, state.streamingText, state.currentTools, state.error, terminalWidth]);
+  }, [state.messages, state.isStreaming, state.streamingText, state.currentTools, state.error, chatWidth]);
 
   useEffect(() => {
     if (checkpoints.length > 0) {
       setActiveCheckpointIdx(checkpoints.length - 1);
       setUserScrolledUp(false);
+      setActiveHomeBtnIdx(-1);
     }
   }, [checkpoints.length]);
 
@@ -131,25 +163,13 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
     }
   }, [state.isStreaming, state.isThinking]);
 
-  const leftPanelWidth = Math.max(20, terminalWidth - 54);
   const showAutocomplete = getAutocompleteEnabled() && input.startsWith('/') && !input.includes(' ');
   const matches = showAutocomplete
     ? SLASH_COMMANDS.filter(c => c.command.startsWith(input.split(' ')[0])).slice(0, 5)
     : [];
   const closestMatch = matches[activeSuggestIdx] || matches[0];
 
-  const hasPager = checkpoints.length > 0;
-  const panelHeaderHeight = 2;
-  const nonFlexibleHeight = 
-    3 // Mascot guidance box
-    + panelHeaderHeight
-    + (hasPager ? 2 : 1)
-    + (showAutocomplete && matches.length > 0 ? 1 : 0)
-    + 3 // Buttons block
-    + 3 // Input prompt box
-    + 1; // Footer
-  const visibleHeight = Math.max(4, terminalHeight - nonFlexibleHeight - 4);
-  const inputTextWidth = Math.max(1, leftPanelWidth - 14);
+  const inputTextWidth = Math.max(1, chatWidth - 18);
 
   (agent as any).autocompleteActive = showAutocomplete && matches.length > 0;
 
@@ -172,68 +192,50 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
     }
   }, [allLines.length, visibleHeight, userScrolledUp]);
 
+  // Derive scrollable list of models
+  const rawModels = liveModels.length > 0 
+    ? liveModels.map(m => {
+        const fb = FALLBACK_MODELS.find(f => f.id === m.id);
+        return {
+          id: m.id,
+          name: m.name || m.id,
+          description: fb ? fb.description : (m.description || 'description unavailable')
+        };
+      })
+    : FALLBACK_MODELS;
+
+  const filteredModels = rawModels.filter(m => 
+    m.id.toLowerCase().includes(modelSearchQuery.toLowerCase()) ||
+    m.name.toLowerCase().includes(modelSearchQuery.toLowerCase())
+  );
+
+  const visibleModelCount = 10;
+  const startIdx = Math.max(0, Math.min(highlightedModelIdx - 4, filteredModels.length - visibleModelCount));
+  const visibleModels = filteredModels.slice(startIdx, startIdx + visibleModelCount);
+
   useInput((char, key) => {
-    // Esc closes autocomplete/options
-    if (key.escape) {
-      if (showAutocomplete) {
-        setInput('');
-        return;
-      }
-    }
-
-    // Key-navigable Action Buttons (focusMode === 1)
-    if (focusMode === 1) {
-      if (key.leftArrow) {
-        setBtnHighlightIdx(prev => Math.max(0, prev - 1));
-        return;
-      }
-      if (key.rightArrow) {
-        setBtnHighlightIdx(prev => Math.min(actionButtons.length - 1, prev + 1));
-        return;
-      }
-      if (key.downArrow || key.tab) {
-        setFocusMode(0);
-        return;
-      }
-      if (key.return) {
-        const btn = actionButtons[btnHighlightIdx];
-        if (btn.action === 'porter') {
-          agent.emit('mode:change' as any, 'porter');
-        } else if (btn.action === 'workspace') {
-          agent.emit('mode:change' as any, 'workspace');
-        } else if (btn.action === 'proof') {
-          agent.emit('mode:change' as any, 'proof');
+    if (focusSection === 'chat') {
+      if (key.escape) {
+        if (showAutocomplete) {
+          setInput('');
+          return;
         }
-        return;
       }
-      return;
-    }
 
-    // Normal Input Mode (focusMode === 0)
-    if (showAutocomplete && matches.length > 0) {
       if (key.rightArrow) {
-        setActiveSuggestIdx(prev => (prev + 1) % matches.length);
-        return;
-      }
-      if (key.leftArrow) {
-        setActiveSuggestIdx(prev => (prev - 1 + matches.length) % matches.length);
-        return;
-      }
-      if (key.tab && closestMatch) {
-        setInput(closestMatch.command + ' ');
-        setCursorPos(closestMatch.command.length + 1);
-        setActiveSuggestIdx(0);
-        return;
-      }
-    } else {
-      // UpArrow at empty prompt shifts focus up to selectable buttons!
-      if (key.upArrow && !input) {
-        setFocusMode(1);
-        setBtnHighlightIdx(0);
+        setFocusSection('modelRail');
+        setHighlightedModelIdx(0);
         return;
       }
 
-      if (key.upArrow) {
+      if (key.ctrl && char === 'm') {
+        setFocusSection('modelRail');
+        setHighlightedModelIdx(0);
+        return;
+      }
+
+      // Scroll chat history
+      if (key.upArrow && checkpoints.length > 0) {
         setScrollOffset(prev => {
           const next = Math.max(0, prev - 1);
           setUserScrolledUp(true);
@@ -241,7 +243,7 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
         });
         return;
       }
-      if (key.downArrow) {
+      if (key.downArrow && checkpoints.length > 0) {
         const totalLines = allLines.length;
         const maxScroll = Math.max(0, totalLines - visibleHeight);
         setScrollOffset(prev => {
@@ -255,126 +257,326 @@ export function ChatPanel({ agent, setInspector }: ChatPanelProps) {
         });
         return;
       }
-    }
 
-    if ((key.return || char === '\r' || char === '\n') && input.trim()) {
-      const text = input.trim();
-      setInput('');
-      setCursorPos(0);
-      setActiveSuggestIdx(0);
-      
-      if (text.startsWith('/')) {
-        const res = handleSlashCommand(text, agent, state);
-        if (res) {
+      // If starting view, allow tab or left/right navigation of home buttons
+      if (checkpoints.length === 0) {
+        if (key.leftArrow) {
+          setActiveHomeBtnIdx(prev => prev <= 0 ? 2 : prev - 1);
+          return;
+        }
+        if (key.rightArrow || key.tab) {
+          setActiveHomeBtnIdx(prev => prev >= 2 ? 0 : prev + 1);
+          return;
+        }
+      }
+
+      if (showAutocomplete && matches.length > 0) {
+        if (key.tab && closestMatch) {
+          setInput(closestMatch.command + ' ');
+          setCursorPos(closestMatch.command.length + 1);
+          setActiveSuggestIdx(0);
+          return;
+        }
+      }
+
+      if (key.return || char === '\r' || char === '\n') {
+        if (checkpoints.length === 0 && activeHomeBtnIdx !== -1) {
+          // Trigger select button action
+          if (activeHomeBtnIdx === 0) {
+            // Run Proof
+            const newRunId = `run_proof_${Date.now()}`;
+            agent.emit('run.created' as any, {
+              runId: newRunId,
+              receiptUrl: `https://openrouter-tui-agent.wmeldman33.workers.dev/runs/${newRunId}/receipt`,
+              source: 'timmy-tui-chat-shortcut',
+              timestamp: Date.now()
+            });
+            agent.emit('message:user' as any, {
+              role: 'assistant',
+              content: `⚙️ **[SYSTEM]** Mock proof run generated. Receipt committed locally under Run ID: ${newRunId}. Check [Proof] tab for complete details.`,
+              timestamp: Date.now()
+            });
+          } else if (activeHomeBtnIdx === 1) {
+            // Paste MCP URL
+            agent.emit('mode:change' as any, 'porter');
+          } else if (activeHomeBtnIdx === 2) {
+            // Open Workspace
+            agent.emit('mode:change' as any, 'workspace');
+          }
+          return;
+        }
+
+        if (input.trim()) {
+          const text = input.trim();
+          setInput('');
+          setCursorPos(0);
+          setActiveSuggestIdx(0);
+          setActiveHomeBtnIdx(-1);
+          
+          if (text.startsWith('/')) {
+            const res = handleSlashCommand(text, agent, state);
+            if (res) {
+              agent.emit('message:user', {
+                role: 'assistant',
+                content: `⚙️ **[SYSTEM]** ${res}`,
+                timestamp: Date.now()
+              });
+            }
+          } else {
+            state.send(text);
+          }
+        }
+      } else if (key.backspace || key.delete) {
+        setInput(input.slice(0, -1));
+        setCursorPos(Math.max(0, cursorPos - 1));
+        setActiveSuggestIdx(0);
+        setActiveHomeBtnIdx(-1);
+      } else if (char && char !== '\t' && char !== '\r' && char !== '\n' && !key.ctrl && !key.meta) {
+        setInput(input + char);
+        setCursorPos(cursorPos + 1);
+        setActiveSuggestIdx(0);
+        setActiveHomeBtnIdx(-1);
+      }
+    } else {
+      // focusSection === 'modelRail'
+      if (key.leftArrow || key.escape) {
+        setFocusSection('chat');
+        return;
+      }
+      if (key.upArrow) {
+        setHighlightedModelIdx(prev => Math.max(0, prev - 1));
+        return;
+      }
+      if (key.downArrow) {
+        setHighlightedModelIdx(prev => Math.min(filteredModels.length - 1, prev + 1));
+        return;
+      }
+      if (key.return) {
+        const selectedModel = filteredModels[highlightedModelIdx];
+        if (selectedModel) {
+          state.switchModel(selectedModel.id);
+          setFocusSection('chat');
+          setModelChangedFlash(true);
+          setTimeout(() => setModelChangedFlash(false), 1500);
           agent.emit('message:user', {
             role: 'assistant',
-            content: `⚙️ **[SYSTEM]** ${res}`,
+            content: `⚙️ **[SYSTEM]** Switched active model to: \`${selectedModel.id}\``,
             timestamp: Date.now()
           });
         }
-      } else {
-        state.send(text);
+        return;
       }
-    } else if (key.backspace || key.delete) {
-      setInput(input.slice(0, -1));
-      setCursorPos(Math.max(0, cursorPos - 1));
-      setActiveSuggestIdx(0);
-    } else if (char && char !== '\t' && char !== '\r' && char !== '\n' && !key.ctrl && !key.meta) {
-      setInput(input + char);
-      setCursorPos(cursorPos + 1);
-      setActiveSuggestIdx(0);
+      if (char && char !== '\t' && char !== '\r' && char !== '\n' && !key.ctrl && !key.meta) {
+        setModelSearchQuery(prev => prev + char);
+        setHighlightedModelIdx(0);
+      } else if (key.backspace || key.delete) {
+        setModelSearchQuery(prev => prev.slice(0, -1));
+        setHighlightedModelIdx(0);
+      }
     }
   });
 
+  const totalLines = allLines.length;
+  const maxScroll = Math.max(0, totalLines - visibleHeight);
+  
+  const renderScrollbar = () => {
+    if (totalLines <= visibleHeight) {
+      return (
+        <Box flexDirection="column" width={2} alignItems="center" paddingLeft={1}>
+          <Text color="#30363d">▲</Text>
+          {Array.from({ length: visibleHeight - 2 }).map((_, idx) => (
+            <Text key={idx} color="#1f1f26">│</Text>
+          ))}
+          <Text color="#30363d">▼</Text>
+        </Box>
+      );
+    }
+
+    const trackHeight = visibleHeight;
+    const scrollPct = scrollOffset / maxScroll;
+    const handlePos = Math.round(scrollPct * (trackHeight - 3)) + 1;
+
+    const track = [];
+    for (let i = 0; i < trackHeight; i++) {
+      if (i === 0) track.push('▲');
+      else if (i === trackHeight - 1) track.push('▼');
+      else if (i === handlePos) track.push('█');
+      else track.push('░');
+    }
+
+    return (
+      <Box flexDirection="column" width={2} alignItems="center" paddingLeft={1}>
+        {track.map((char, idx) => (
+          <Text key={idx} color={char === '█' ? '#4f9cff' : '#1f1f26'}>{char}</Text>
+        ))}
+      </Box>
+    );
+  };
+
   return (
-    <Box flexDirection="column" flexGrow={1} width={leftPanelWidth} paddingX={1}>
-      {/* Title */}
-      <Box height={1} justifyContent="space-between" width={leftPanelWidth - 2}>
-        <Box>
-          <Text bold color="#79c0ff">Chat Stage</Text>
-          <Text color={theme.textTertiary}>  </Text>
-          {state.isThinking || state.isStreaming ? <Spinner color="#79c0ff" label="working" /> : <SignalBars width={8} color="#79c0ff" active />}
+    <Box flexDirection="row" width={stageWidth} flexGrow={1} flexShrink={1}>
+      {/* 1. Left Box: Chat Panel */}
+      <Box flexDirection="column" flexGrow={1} width={chatWidth} paddingX={1}>
+        
+        {/* Short 1-line top guide header */}
+        <Box paddingX={1} flexDirection="column" marginBottom={isCompact ? 0 : 1} width={chatWidth - 2}>
+          <Box justifyContent="space-between" width="100%">
+            <Text bold color="#a98bff">💬 Main Chat</Text>
+            {state.isThinking || state.isStreaming ? <Spinner color="#a98bff" label="thinking" /> : <Text color="#8a8a94">Ready</Text>}
+          </Box>
+          <Box marginTop={0}>
+            <Text bold color="#ffffff">OpenRouter Agent</Text>
+            <Text color="#8b949e">  - "Ask TIMMY anything. Choose a model on the right."</Text>
+          </Box>
         </Box>
-      </Box>
 
-      {/* Messages Scroll viewport */}
-      <Box flexDirection="column" height={visibleHeight} justifyContent="flex-start" overflowY="hidden" width={leftPanelWidth - 2}>
-        {checkpoints.length === 0 ? (
-          <Box flexGrow={1} flexDirection="column" paddingX={2} paddingY={1} borderStyle="single" borderColor={theme.borderDefault} width={leftPanelWidth - 2}>
-            <Box justifyContent="center" marginBottom={1}>
-              <Text bold color={edgeColor}>☁️  TIMMY Swarm: Connected D1 Database (latency: {edgeValue})</Text>
-            </Box>
-            
-            <Box flexDirection="column" marginBottom={1}>
-              <Text bold color="#a5d6ff">⚡ VERIFIABLE COGNITIVE VALUE CHAIN:</Text>
-              <Text color="#79c0ff" bold>  Capability ──&gt; Control ──&gt; Proof ──&gt; Reuse</Text>
-            </Box>
+        {/* Messages Viewport with sleek Border and Scrollbar */}
+        <Box borderStyle="round" borderColor="#30363d" width={chatWidth - 2} height={visibleHeight + 2} flexDirection="row" paddingX={1} flexShrink={1} flexGrow={1}>
+          
+          {/* Scrollable text region */}
+          <Box flexDirection="column" flexGrow={1} height={visibleHeight} justifyContent="flex-start" overflowY="hidden">
+            {checkpoints.length === 0 ? (
+              <Box flexGrow={1} flexDirection="column" paddingX={2} paddingY={1} justifyContent="space-around">
+                
+                <Box justifyContent="center" marginBottom={1}>
+                  <Text bold color="#ffffff">Start here. Ask the OpenRouter agent what to do.</Text>
+                </Box>
+                
+                {/* Available Tools Summary */}
+                <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={2} paddingY={isCompact ? 0 : 1} marginBottom={1}>
+                  <Text bold color="#a98bff">⚙️ Core trust chain:</Text>
+                  <Text color="#e6edf3"> • <Text bold color="#43d6a0">OpenRouter Agent</Text>: model routing and agent reasoning</Text>
+                  <Text color="#e6edf3"> • <Text bold color="#ff7b72">TIMMY Porter</Text>: MCP server ➔ CLI onboarding</Text>
+                  <Text color="#e6edf3"> • <Text bold color="#3fb950">cmux</Text>: visual workspace shell execution surface</Text>
+                </Box>
 
-            <Box flexDirection="column" marginBottom={1}>
-              <Text bold color="#d2a8ff">🔧 AVAILABLE AGENT TOOLS:</Text>
-              <Text color="#e6edf3">  • MCPorter ─ Safe URL capability scanner & JTI token signer</Text>
-              <Text color="#e6edf3">  • cmux     ─ Multi-cell virtual terminal workspace launcher ($ cmux .)</Text>
-            </Box>
-            
-            <Box flexDirection="column" marginBottom={1}>
-              <Text bold color="#3fb950">🤖 SWARM AGENT ORCHESTRATION SHIELD:</Text>
-              <Text color="#e6edf3">  • OpenRouter SDK ─ Regular chat operator pipeline</Text>
-              <Text color="#e6edf3">  • Pi Agent       ─ telemetric Durable Object syncing</Text>
-              <Text color="#e6edf3">  • Hermes Specialist ─ deep architecture research builder</Text>
-            </Box>
-          </Box>
-        ) : (
-          visibleLines.map((line, i) => (
-            <Text key={i} wrap="wrap">{line}</Text>
-          ))
-        )}
-      </Box>
+                {/* Three Buttons - Position Stable Fixed Width */}
+                <Box flexDirection="row" justifyContent="center" width="100%">
+                  {activeHomeBtnIdx === 0 
+                    ? <PrimaryButton label="Run Proof" selected={true} width={20} /> 
+                    : <SecondaryButton label="Run Proof" selected={false} width={20} />
+                  }
+                  {activeHomeBtnIdx === 1 
+                    ? <PrimaryButton label="MCP ➔ CLI" selected={true} width={20} /> 
+                    : <SecondaryButton label="MCP ➔ CLI" selected={false} width={20} />
+                  }
+                  {activeHomeBtnIdx === 2 
+                    ? <PrimaryButton label="Open Workspace" selected={true} width={20} /> 
+                    : <SecondaryButton label="Open Workspace" selected={false} width={20} />
+                  }
+                </Box>
 
-      {/* Autocomplete Suggestions */}
-      {showAutocomplete && matches.length > 0 && (
-        <Box paddingX={1} minHeight={1} width={leftPanelWidth - 2} flexDirection="row" flexWrap="wrap" marginBottom={1}>
-          <Box marginRight={2}>
-            <Text color={theme.textTertiary}>Suggestions: </Text>
-          </Box>
-          {matches.map((m, idx) => {
-            const isCurrent = idx === activeSuggestIdx;
-            return (
-              <Box key={m.command} marginRight={4}>
-                <Text color={isCurrent ? '#58a6ff' : theme.textSecondary} bold={isCurrent}>
-                  {isCurrent ? `▶ ${m.command}` : m.command}
-                </Text>
               </Box>
-            );
-          })}
+            ) : (
+              visibleLines.map((line, i) => (
+                <Text key={i} wrap="wrap">{line}</Text>
+              ))
+            )}
+          </Box>
+
+          {/* Dynamic visual scrollbar track */}
+          {renderScrollbar()}
         </Box>
-      )}
 
-      {/* TIMMY Quartermaster Guide Card */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginY={1} flexDirection="column" width={leftPanelWidth - 2}>
-        <Text bold color="#79c0ff">🧑‍✈️  TIMMY Quartermaster Mascot Guide</Text>
-        <Text color="#8b949e">
-          "Quartermaster ready, operator. Swarm telemetry JTI visa auth is fully secure. Input your prompt below, or use the Left Nav list to configure Swarm Blueprints and run evidence chambers."
-        </Text>
-      </Box>
-
-      {/* Selectable Navigability Buttons */}
-      <Box flexDirection="row" justifyContent="space-between" width={leftPanelWidth - 2} marginY={1}>
-        {actionButtons.map((btn, idx) => {
-          const isButtonFocused = focusMode === 1 && idx === btnHighlightIdx;
-          return (
-            <Box key={btn.action} borderStyle={isButtonFocused ? 'double' : 'single'} borderColor={isButtonFocused ? '#d2a8ff' : '#30363d'} paddingX={1}>
-              <Text bold color={isButtonFocused ? '#d2a8ff' : '#8b949e'}>{btn.label}</Text>
+        {/* Autocomplete Suggestions */}
+        {showAutocomplete && matches.length > 0 && (
+          <Box paddingX={1} minHeight={1} width={chatWidth - 2} flexDirection="row" flexWrap="wrap" marginBottom={1} flexShrink={0}>
+            <Box marginRight={2}>
+              <Text color="#8a8a94">Suggestions: </Text>
             </Box>
-          );
-        })}
+            {matches.map((m, idx) => {
+              const isCurrent = idx === activeSuggestIdx;
+              return (
+                <Box key={m.command} marginRight={4}>
+                  <Text color={isCurrent ? '#4f9cff' : '#8a8a94'} bold={isCurrent}>
+                    {isCurrent ? `▶ ${m.command}` : m.command}
+                  </Text>
+                </Box>
+              );
+            })}
+          </Box>
+        )}
+
+        {/* Input prompt box - Never disappears */}
+        <Box borderStyle="single" borderColor={focusSection === 'chat' && focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} width={chatWidth - 2} flexShrink={0} marginTop={1}>
+          <Text color="#8a8a94">[ main-chat ] </Text>
+          <Text color="#4f9cff">{state.isThinking ? '◌ ' : '▶ '} </Text>
+          <Text color="#e6edf3" wrap="truncate">{scrollVisibleLeft(input, inputTextWidth)}</Text>
+          <Text color="#a98bff">{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
+        </Box>
       </Box>
 
-      {/* Input prompt box */}
-      <Box borderStyle="single" borderColor={focusMode === 0 ? "#5e6ad2" : "#30363d"} paddingX={1} width={leftPanelWidth - 2}>
-        <Text color={theme.textTertiary}>[ brief-chat ] </Text>
-        <Text color="#79c0ff">{state.isThinking ? '◌ ' : '▶ '} </Text>
-        <Text color={theme.textPrimary} wrap="truncate">{truncateVisible(input, inputTextWidth)}</Text>
-        <Text color="#8b949e">{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
+      {/* 2. Right Box: OpenRouter Model Rail */}
+      <Box width={railWidth} flexDirection="column" borderStyle="single" borderColor={modelChangedFlash ? '#3fb950' : (focusSection === 'modelRail' ? '#a98bff' : '#30363d')} borderLeft={true} borderRight={false} borderTop={false} borderBottom={false} paddingX={1} flexShrink={0}>
+        <Box marginBottom={1} height={1} justifyContent="space-between" flexDirection="row">
+          <Text bold color={focusSection === 'modelRail' ? '#d2a8ff' : '#ff7b72'}>🤖 OPENROUTER MODELS</Text>
+          {modelChangedFlash && <Text bold color="#3fb950"> [ 🤖 OK ]</Text>}
+        </Box>
+
+        {/* Active Model & Session Cost */}
+        <Box flexDirection="column" marginBottom={1}>
+          <Text color="#8b949e">Active Model:</Text>
+          <Text bold color="#e6edf3" wrap="truncate">{state.model}</Text>
+          <Text color="#8b949e">Cost/Session: <Text bold color="#3fb950">${state.totalCost.toFixed(4)}</Text></Text>
+          <Text color="#8b949e">Model Health: <Text bold color={
+            state.modelHealthStatus === 'READY' ? '#3fb950' :
+            state.modelHealthStatus === 'FALLBACK READY' ? '#d29922' :
+            state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#8a8a94'
+          }>{state.modelHealthStatus || 'UNTESTED'}</Text></Text>
+          <Text color="#8b949e">Provider Status: <Text bold color={
+            (state.modelHealthStatus === 'READY' || state.modelHealthStatus === 'FALLBACK READY') ? '#3fb950' : '#ff7b72'
+          }>{(state.modelHealthStatus === 'READY' || state.modelHealthStatus === 'FALLBACK READY') ? 'ONLINE 🟢' : 'ERROR 🔴'}</Text></Text>
+        </Box>
+
+        {/* Model Search Box */}
+        <Box borderStyle="single" borderColor={focusSection === 'modelRail' ? '#a98bff' : '#30363d'} paddingX={1} marginBottom={1} flexShrink={0}>
+          <Text color="#8b949e">[ search ] </Text>
+          <Text color="#e6edf3" wrap="truncate">{scrollVisibleLeft(modelSearchQuery, 14)}</Text>
+          {focusSection === 'modelRail' && <Text color="#a98bff">█</Text>}
+        </Box>
+
+        {/* Scrollable Model List */}
+        <Box flexDirection="column" flexGrow={1} overflowY="hidden" minHeight={8}>
+          {filteredModels.length === 0 ? (
+            <Text color="#8b949e" italic>No matching models.</Text>
+          ) : (
+            visibleModels.map((m, idx) => {
+              const actualIdx = startIdx + idx;
+              const isSelected = actualIdx === highlightedModelIdx && focusSection === 'modelRail';
+              const isActive = m.id === state.model;
+              
+              let marker = '  ';
+              if (isSelected) marker = '▶ ';
+              else if (isActive) marker = '● ';
+
+              let textColor = '#8a8a94';
+              if (isSelected) textColor = '#ffffff';
+              else if (isActive) textColor = '#5e6ad2';
+
+              return (
+                <Box key={m.id} flexDirection="column" marginBottom={1}>
+                  <Box>
+                    <Text bold={isSelected || isActive} color={textColor} wrap="truncate">
+                      {marker}{m.name || m.id}
+                    </Text>
+                  </Box>
+                  <Box paddingLeft={2}>
+                    <Text dimColor color="#8b949e" wrap="truncate">{m.description}</Text>
+                  </Box>
+                </Box>
+              );
+            })
+          )}
+        </Box>
+
+        <Box flexGrow={1} />
+
+        <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
+          <Text color="#8b949e" dimColor>RightArrow: focus rail</Text>
+          <Text color="#8b949e" dimColor>LeftArrow: return to chat</Text>
+          <Text color="#8b949e" dimColor>Up/Down: scroll models</Text>
+          <Text color="#8b949e" dimColor>Enter: select model</Text>
+        </Box>
       </Box>
     </Box>
   );

@@ -40,3 +40,7 @@ founder-terminal/artifacts/
 founder-terminal/demo-pack/sample.agentrun/
 founder-terminal/docs/context-packs/_generated/
 !.gitkeep
+.runs/
+mcp-cli/
+markdown-vault/
+tmp_test_outputs/

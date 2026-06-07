@@ -188,11 +188,28 @@ export function useTelemetryBridge({
           body: safeStringify(telemetryPayload)
         });
 
+        // Safe telemetry event logging
+        const logFilePath = path.join(process.cwd(), 'logs', 'agent-events.log');
+        try {
+          fs.appendFileSync(logFilePath, `[${new Date().toISOString()}] Telemetry sync: Endpoint=${endpoint}/telemetry Event=${item.event} Status=${res.ok ? 'SUCCESS' : 'FAILED'} HTTP_Status=${res.status}\n`, 'utf8');
+        } catch {
+          // ignore
+        }
+
         if (!res.ok) {
           throw new Error(`Edge telemetry rejected: HTTP ${res.status}`);
         }
       } catch (err: any) {
         const errMsg = err instanceof Error ? err.message : String(err);
+        
+        // Safe telemetry error logging
+        const logFilePath = path.join(process.cwd(), 'logs', 'agent-events.log');
+        try {
+          fs.appendFileSync(logFilePath, `[${new Date().toISOString()}] Telemetry sync: Endpoint=${endpoint}/telemetry Event=${item.event} Status=ERROR Error=${errMsg}\n`, 'utf8');
+        } catch {
+          // ignore
+        }
+
         setLastTelemetryError(errMsg);
         item.retries++;
         if (item.retries < 5) {

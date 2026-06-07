@@ -11,7 +11,7 @@ export const PAGES: PageItem[] = [
   { id: "discovery", label: "Discovery", desc: "Capability reveal & MCP tools scan", glyph: "solar:magic-stick-bold", accent: "#3b82f6" },
   { id: "teams", label: "Teams", desc: "Control & swarm orchestration DAG", glyph: "solar:users-group-two-rounded-bold", accent: "#f59e0b" },
   { id: "workspace", label: "Workspace", desc: "File evidence, terminal outputs & diffs", glyph: "solar:code-file-bold", accent: "#e11d48" },
-  { id: "proof", label: "Proof", desc: "Cryptographic receipts & verified VM thread", glyph: "solar:shield-check-bold", accent: "#a78bfa" },
+  { id: "proof", label: "Proof", desc: "Verifiable receipts & conformed VM thread", glyph: "solar:shield-check-bold", accent: "#a78bfa" },
   { id: "porter", label: "Porter", desc: "MCP/CLI/tool installer & svix bridge", glyph: "solar:download-square-bold", accent: "#00f0ff" },
   { id: "options", label: "Options", desc: "Themes, animations, mascot & layout density", glyph: "solar:settings-bold", accent: "#ec4899" },
 ];
@@ -46,7 +46,7 @@ export const DISCOVERED_TOOLS: ToolItem[] = [
   { name: "browser.click", desc: "Simulates mouse click on specified DOM element ref", schema: "ref: string, session?: string", status: "active", provider: "agent-browser" },
   { name: "composio.help", desc: "Retrieves list of registered integration connectors", schema: "None", status: "idle", provider: "composio" },
   { name: "github.mcp", desc: "Clones, updates, and reviews files in GitHub repo", schema: "repo: string, branch?: string, action: string", status: "active", provider: "github-mcp-server" },
-  { name: "cloudflare.kv", desc: "Reads/writes cryptographic session state to Cloudflare", schema: "namespace: string, key: string, val?: string", status: "restricted", provider: "stratum-worker" },
+  { name: "cloudflare.kv", desc: "Reads/writes secure session state to Cloudflare", schema: "namespace: string, key: string, val?: string", status: "restricted", provider: "stratum-worker" },
 ];
 
 export interface FileChangeItem {
@@ -128,8 +128,8 @@ export const VM_LOGS: VMLogRow[] = [
   { t: "19:21:17", lvl: "ok", src: "DOCTRINE", msg: "Doctrine hash matched: sha256_e430f8219ab92cd0" },
   { t: "19:21:18", lvl: "warn", src: "GOVERNANCE", msg: "Command 'git push' requires manual approval (gated visa)" },
   { t: "19:21:19", lvl: "info", src: "OPENROUTER", msg: "Routing request for anthropic/claude-3-5-sonnet (normal budget zone)" },
-  { t: "19:21:20", lvl: "ok", src: "SQLITE-D1", msg: "Committed Run run_jti_81f292 cryptographic evidence" },
+  { t: "19:21:20", lvl: "ok", src: "SQLITE-D1", msg: "Committed Run run_jti_81f292 verifiable evidence" },
   { t: "19:21:21", lvl: "ok", src: "COMPILER", msg: "Vite + TypeScript compilation passed (0 errors)" },
   { t: "19:21:22", lvl: "info", src: "TELEMETRY", msg: "Relaying real-time run telemetry to companion websocket" },
-  { t: "19:21:23", lvl: "ok", src: "SVIX-DISP", msg: "Dispatched cryptographic proof to webhooks stream" }
+  { t: "19:21:23", lvl: "ok", src: "SVIX-DISP", msg: "Dispatched verifiable proof to webhooks stream" }
 ];

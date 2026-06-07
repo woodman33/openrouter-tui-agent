@@ -6,6 +6,8 @@ import { theme } from './theme.js';
 import type { Agent } from '../agent/core.js';
 import type { Mode } from './router.js';
 import { truncateVisible } from './utils/text.js';
+import { usePulse } from './hooks/usePulse.js';
+
 
 export interface LayoutProps {
   agent: Agent;
@@ -45,28 +47,39 @@ export function Layout({
   const { columns: width, rows: height } = useWindowSize();
   const terminalWidth = width || process.stdout.columns || 80;
   const terminalHeight = height || process.stdout.rows || 24;
+  const pulseFrame = usePulse(600);
 
-  const isDev = (_agent as any).developerMode === true;
+
   const navItems: { mode: Mode; label: string; desc: string }[] = [
-    { mode: 'brief' as Mode, label: 'Brief', desc: 'Intent & mascot guide' },
-    ...(isDev ? [
-      { mode: 'discovery' as Mode, label: 'Discovery', desc: 'Capability map specs' },
-      { mode: 'teams' as Mode, label: 'Teams', desc: 'Swarm Team Blueprint' }
-    ] : []),
-    { mode: 'workspace' as Mode, label: 'Workspace', desc: 'Parallel work evidence' },
-    { mode: 'proof' as Mode, label: 'Proof', desc: 'Cryptographic receipt' },
-    { mode: 'porter' as Mode, label: 'Porter', desc: 'Safe URL cap scanner' },
-    { mode: 'options' as Mode, label: 'Options', desc: 'Dynamic configuration' }
+    { mode: 'brief' as Mode, label: 'Main Chat', desc: 'OpenRouter Agent prompt' },
+    { mode: 'porter' as Mode, label: 'MCP ➔ CLI', desc: 'Turn MCP server into CLI' },
+    { mode: 'workspace' as Mode, label: 'Workspace', desc: 'Open cmux/browser workspace' },
+    { mode: 'options' as Mode, label: 'Options', desc: 'Change simple settings' }
   ];
+
+  const nextStepMap: Record<Mode, string> = {
+    brief: 'Type a prompt or run proof.',
+    porter: 'Paste an MCP server URL.',
+    workspace: 'Open cmux Workspace.',
+    proof: 'Copy hash or open receipt.',
+    options: 'Toggle one setting.',
+    files: 'Open cmux Workspace.',
+    discovery: 'ready',
+    teams: 'ready',
+    logs: 'ready'
+  };
+  const nextStep = nextStepMap[mode] || 'ready';
 
   const modeColors: Record<Mode, string> = {
     brief: '#5e6ad2',
+    files: '#a5d6ff',
     discovery: '#d29922',
     teams: '#d2a8ff',
     workspace: '#3fb950',
     proof: '#58a6ff',
     porter: '#ff7b72',
-    options: '#79c0ff'
+    options: '#79c0ff',
+    logs: '#4f9cff'
   };
 
   const modeColor = modeColors[mode] || '#5e6ad2';
@@ -95,6 +108,8 @@ export function Layout({
   const headerLeft = ` TIMMY | Verifiable Agent Trust OS`;
   const headerRight = `[COST: $${totalCost.toFixed(4)}]`;
 
+  const isChatActiveAndFocused = mode === 'brief' && focusArea === 'stage';
+
   return (
     <Box flexDirection="column" width={terminalWidth} height={terminalHeight}>
       {/* Top Title Bar */}
@@ -116,96 +131,74 @@ export function Layout({
       <Box flexGrow={1} flexShrink={1} flexDirection="row">
         
         {/* 1. Left Column: Persistent VerticalNav (width 24) */}
-        <Box width={24} flexDirection="column" borderStyle="single" borderColor="#30363d" borderRight={true} borderLeft={false} borderTop={false} borderBottom={false} paddingX={1}>
-          <Box marginBottom={1} height={1}>
-            <Text bold color={focusArea === 'nav' ? '#d2a8ff' : '#8b949e'}>🧭 LEFT NAV DECK</Text>
-          </Box>
-          {navItems.map((item, idx) => {
-            const isFocused = focusedMode === item.mode && focusArea === 'nav';
-            const isActiveStage = mode === item.mode;
-            
-            let bullet = '  ';
-            if (isFocused) bullet = '▶ ';
-            else if (isActiveStage) bullet = '● ';
+        {!isChatActiveAndFocused && (
+          <Box width={24} flexDirection="column" borderStyle="single" borderColor="#30363d" borderRight={true} borderLeft={false} borderTop={false} borderBottom={false} paddingX={1}>
+            <Box marginBottom={1} height={1}>
+              <Text bold color={focusArea === 'nav' ? '#d2a8ff' : '#8b949e'}>🧭 LEFT NAV DECK</Text>
+            </Box>
+            {navItems.map((item) => {
+              const isFocused = focusedMode === item.mode && focusArea === 'nav';
+              const isActiveStage = mode === item.mode;
+              
+              let bullet = '  ';
+              if (isFocused) bullet = '▶ ';
+              else if (isActiveStage) bullet = '● ';
 
-            let color = '#8b949e';
-            if (isFocused) color = '#ffffff';
-            else if (isActiveStage) color = modeColors[item.mode];
+              let color = '#8b949e';
+              if (isFocused) color = pulseFrame % 2 === 0 ? '#ffffff' : '#d2a8ff';
+              else if (isActiveStage) color = pulseFrame % 2 === 0 ? modeColors[item.mode] : '#a5d6ff';
 
-            return (
-              <Box key={item.mode} flexDirection="column" marginBottom={1}>
-                <Box>
-                  <Text bold={isFocused || isActiveStage} color={color}>
-                    {bullet}{item.label}
-                  </Text>
+              return (
+                <Box key={item.mode} flexDirection="column" marginBottom={1}>
+                  <Box>
+                    <Text bold={isFocused || isActiveStage} color={color}>
+                      {bullet}{item.label}
+                    </Text>
+                  </Box>
+                  <Box paddingLeft={2}>
+                    <Text dimColor color="#8b949e">{item.desc}</Text>
+                  </Box>
                 </Box>
-                <Box paddingLeft={2}>
-                  <Text dimColor color="#8b949e">{item.desc}</Text>
-                </Box>
-              </Box>
-            );
-          })}
-          <Box flexGrow={1} />
-          <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false}>
-            <Text color="#8b949e" dimColor>Tab / Shift+Tab</Text>
-            <Text color="#8b949e" dimColor>to move navigation.</Text>
-            <Text color="#8b949e" dimColor>Enter to select.</Text>
+              );
+            })}
+            <Box flexGrow={1} />
+            <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false}>
+              <Text color="#8b949e" dimColor>Tab / Shift+Tab</Text>
+              <Text color="#8b949e" dimColor>to move navigation.</Text>
+              <Text color="#8b949e" dimColor>Enter to select.</Text>
+            </Box>
           </Box>
-        </Box>
+        )}
 
         {/* 2. Center Column: Main Stage (flexGrow) */}
         <Box flexGrow={1} flexShrink={1} flexDirection="column" paddingX={1} paddingTop={1}>
           {children}
         </Box>
 
-        {/* 3. Right Column: Persistent TrustInspector (width 28) */}
-        <Box width={28} flexDirection="column" borderStyle="single" borderColor="#30363d" borderLeft={true} borderRight={false} borderTop={false} borderBottom={false} paddingX={1}>
-          <Box marginBottom={1} height={1} justifyContent="space-between">
-            <Text bold color="#79c0ff">🛡️ TRUST INSPECTOR</Text>
-          </Box>
-          
-          <Box borderStyle="round" borderColor={modeColors[mode]} paddingX={1} flexDirection="column">
-            <Text bold color={modeColors[mode]} wrap="truncate">{activeInspector.title}</Text>
-            <Text color="#8b949e" dimColor wrap="truncate">{activeInspector.subtitle}</Text>
-          </Box>
+        {/* 3. Right Column: Compact TrustInspector */}
+        {mode !== 'brief' && (
+          <Box width={28} flexDirection="column" borderStyle="single" borderColor="#30363d" borderLeft={true} borderRight={false} borderTop={false} borderBottom={false} paddingX={1}>
+            <Box marginBottom={1} height={1}>
+              <Text bold color="#79c0ff">🛡️ TRUST INSPECTOR</Text>
+            </Box>
 
-          <Box marginTop={1} flexDirection="column">
-            <Box justifyContent="space-between">
-              <Text color="#8b949e">Class:</Text>
-              <Text bold color="#e6edf3">{activeInspector.type}</Text>
+            <Box flexDirection="column">
+              <Text color="#8b949e">Selected: <Text bold color="#e6edf3" wrap="truncate">{activeInspector.title}</Text></Text>
+              <Text color="#8b949e">Status:   <Text bold color="#3fb950">[{activeInspector.status}]</Text></Text>
+              <Text color="#8b949e">Risk:     <Text bold color={activeInspector.risk === 'HIGH' ? '#f85149' : activeInspector.risk === 'MEDIUM' ? '#d29922' : '#3fb950'}>{activeInspector.risk}</Text></Text>
+              <Text color="#8b949e">Visa:     <Text color="#79c0ff" wrap="truncate">{activeInspector.scope}</Text></Text>
+              <Text color="#8b949e">Receipt:  <Text color="#bc8cff">verifiable hash</Text></Text>
+              <Text color="#8b949e">Next:     <Text color="#d2a8ff">{nextStep}</Text></Text>
             </Box>
-            <Box justifyContent="space-between">
-              <Text color="#8b949e">Status:</Text>
-              <Text bold color="#3fb950">[{activeInspector.status}]</Text>
-            </Box>
-            <Box justifyContent="space-between">
-              <Text color="#8b949e">Risk Level:</Text>
-              <Text bold color={activeInspector.risk === 'HIGH' ? '#f85149' : activeInspector.risk === 'MEDIUM' ? '#d29922' : '#3fb950'}>{activeInspector.risk}</Text>
-            </Box>
-            <Box justifyContent="space-between">
-              <Text color="#8b949e">Scope:</Text>
-              <Text color="#79c0ff" wrap="truncate">{activeInspector.scope}</Text>
-            </Box>
-          </Box>
 
-          <Box height={1} marginY={1}>
-            <Text color="#30363d">──────────────────────────</Text>
-          </Box>
+            <Box flexGrow={1} />
 
-          <Box flexDirection="column" flexGrow={1}>
-            <Box marginBottom={1}>
-              <Text bold color="#e6edf3">Authority Visas & Details:</Text>
+            <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false}>
+              <Text color="#8b949e" dimColor>Esc: return to nav</Text>
+              <Text color="#8b949e" dimColor>Ctrl+G: release lock</Text>
             </Box>
-            {activeInspector.details.map((detail: string, dIdx: number) => (
-              <Text key={dIdx} color="#c9d1d9" wrap="wrap">{detail}</Text>
-            ))}
           </Box>
-
-          <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false}>
-            <Text color="#8b949e" dimColor>Esc: return to nav</Text>
-            <Text color="#8b949e" dimColor>Ctrl+G: release lock</Text>
-          </Box>
-        </Box>
+        )}
       </Box>
 
       {/* Operator controls and Safety Global Bar */}
@@ -221,13 +214,13 @@ export function Layout({
             </Text>
           </Box>
           <Box>
-            <Text bold color="#3fb950">AgentPass VERIFIED </Text>
+            <Text bold color={pulseFrame % 2 === 0 ? "#3fb950" : "#2ea043"}>AgentPass VERIFIED </Text>
             <Text color="#8b949e">| </Text>
-            <Text bold color="#79c0ff">Visa READY </Text>
+            <Text bold color={pulseFrame % 2 === 0 ? "#79c0ff" : "#58a6ff"}>Visa READY </Text>
             <Text color="#8b949e">| </Text>
-            <Text bold color="#d2a8ff">Stamp ARMED </Text>
+            <Text bold color={pulseFrame % 2 === 0 ? "#d2a8ff" : "#bc8cff"}>Stamp ARMED </Text>
             <Text color="#8b949e">| </Text>
-            <Text bold color="#58a6ff">Receipt READY </Text>
+            <Text bold color={pulseFrame % 2 === 0 ? "#58a6ff" : "#388bfd"}>Receipt READY </Text>
           </Box>
         </Box>
       </Box>

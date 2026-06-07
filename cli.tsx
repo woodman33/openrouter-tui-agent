@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+const isHeadless = process.argv.includes('--headless') || process.argv.includes('-h');
+if (!isHeadless) {
+  process.env.TIMMY_TUI_ACTIVE = 'true';
+}
+import './src/utils/logger.js';
 import { program } from 'commander';
 import chalk from 'chalk';
 import { loadConfig } from './src/utils/config.js';
@@ -34,7 +39,7 @@ if (existsSync('.env')) {
 
 program
   .name('openrouter-tui')
-  .description('OpenRouter AI Agent TUI with Rive animations')
+  .description('TIMMY TUI, a terminal-first Agent Trust OS.')
   .version('0.1.0')
   .option('-m, --model <model>', 'OpenRouter model to use')
   .option('--mode <mode>', 'Start in a specific mode', 'chat')
@@ -152,9 +157,6 @@ if (opts.headless) {
   }
 
   const mode = hasKey ? ((opts.mode as Mode) || 'brief') : 'brief';
-
-  // Set active TUI state to mute companion server terminal outputs
-  process.env.TIMMY_TUI_ACTIVE = 'true';
 
   // Ensure standard terminal clear before starting TUI to avoid layout corruption
   process.stdout.write('\x1Bc');

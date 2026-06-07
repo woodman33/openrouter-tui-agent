@@ -1,0 +1,4 @@
+packages:
+  - shared
+  - agent-providers
+  - agent-services
