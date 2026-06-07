@@ -8,6 +8,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 import http from 'http';
 import { PrimaryButton, SecondaryButton, WarningButton } from '../components/DesignSystem.js';
+import { truncateVisible } from '../utils/text.js';
 
 interface CodeReviewPanelProps {
   agent: any;
@@ -276,20 +277,33 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
     const prefixStr = isSelected ? '┃ ' : '│ ';
     const prefixColor = isSelected ? '#3fb950' : '#484f58';
     
+    const rowWidth = mainStageWidth - 6;
+    const col1Width = 3;
+    const col3Width = 16;
+    const showDesc = rowWidth > 55;
+    const col2Width = showDesc ? 26 : Math.max(10, rowWidth - col1Width - col3Width - 2);
+    const col4Width = showDesc ? Math.max(10, rowWidth - col1Width - col2Width - col3Width) : 0;
+
+    const truncatedLabel = truncateVisible(marker + btn.label, col2Width - 1);
+    const truncatedStatus = truncateVisible(`[ ${statusText} ]`, col3Width - 1);
+    const truncatedDesc = showDesc ? truncateVisible(btn.desc, col4Width - 1) : '';
+
     return (
-      <Box key={btn.key} flexDirection="row" marginBottom={1}>
-        <Box width={3} flexShrink={0}>
+      <Box key={btn.key} flexDirection="row" marginBottom={1} width={rowWidth}>
+        <Box width={col1Width} flexShrink={0}>
           <Text color={prefixColor}>{prefixStr}</Text>
         </Box>
-        <Box width={26} flexShrink={0}>
-          <Text bold={isSelected} color={labelColor}>{marker}{btn.label}</Text>
+        <Box width={col2Width} flexShrink={0}>
+          <Text bold={isSelected} color={labelColor}>{truncatedLabel}</Text>
         </Box>
-        <Box width={16} flexShrink={0}>
-          <Text bold color={statusColor}>{`[ ${statusText} ]`}</Text>
+        <Box width={col3Width} flexShrink={0}>
+          <Text bold color={statusColor}>{truncatedStatus}</Text>
         </Box>
-        <Box flexGrow={1} flexShrink={1}>
-          <Text color={isSelected ? '#ffffff' : '#8b949e'}>{btn.desc}</Text>
-        </Box>
+        {showDesc && (
+          <Box width={col4Width} flexGrow={1} flexShrink={1}>
+            <Text color={isSelected ? '#ffffff' : '#8b949e'}>{truncatedDesc}</Text>
+          </Box>
+        )}
       </Box>
     );
   };
@@ -337,7 +351,7 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
         {activeBtn.key === 'cmux' && (
           <Box marginTop={1} flexDirection="column">
             <Text bold color="#8b949e">Path:</Text>
-            <Text color="#79c0ff">{process.cwd()}</Text>
+            <Text color="#79c0ff">{truncateVisible(process.cwd(), mainStageWidth - 10)}</Text>
           </Box>
         )}
 
@@ -349,7 +363,7 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
               <Box flexDirection="column" borderStyle="single" borderColor="#d29922" paddingX={2} marginY={1}>
                 <Text color="#e6edf3"> • Session Name  : <Text color="#ffffff" bold>timmy-run</Text></Text>
                 <Text color="#e6edf3"> • Status        : {tmuxSessionExists ? <Text color="#3fb950" bold>READY</Text> : <Text color="#8b949e">STANDBY</Text>}</Text>
-                <Text color="#e6edf3"> • Last Output   : <Text color="#8b949e" italic wrap="truncate">"{tmuxLastOutput}"</Text></Text>
+                <Text color="#e6edf3"> • Last Output   : <Text color="#8b949e" italic>"{truncateVisible(tmuxLastOutput, Math.max(10, mainStageWidth - 30))}"</Text></Text>
               </Box>
             )}
           </Box>

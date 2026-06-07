@@ -153,23 +153,23 @@ export function WorkspacePanel({ agent, setInspector }: WorkspacePanelProps) {
                 color={cardColor} 
                 width={mainStageWidth - 2} 
                 label={isSelected ? `▶ ${team.name.toUpperCase()}` : `  ${team.name.toUpperCase()}`}
-                borderStyle={isSelected ? 'double' : 'round'}
+                borderStyle="round"
               >
                 <Box paddingX={1} flexDirection="column" width={mainStageWidth - 6}>
                   <Box justifyContent="space-between" width={mainStageWidth - 8}>
-                    <Text bold color={isSelected ? '#d2a8ff' : '#e6edf3'}>{team.desc}</Text>
+                    <Text bold color={isSelected ? '#d2a8ff' : '#e6edf3'}>{truncateVisible(team.desc, Math.max(10, mainStageWidth - 24))}</Text>
                     <Box>
                       {isSelected && <Text color="#d2a8ff" bold>&lt; </Text>}
                       <Text bold color="#58a6ff">{team.agents} Agents</Text>
                       {isSelected && <Text color="#d2a8ff" bold> &gt;</Text>}
                     </Box>
                   </Box>
-
-                  <Box flexDirection="row" marginTop={1} justifyContent="space-between" width={mainStageWidth - 8}>
-                    <Text color="#8b949e" dimColor>Passport: <Text bold color="#e6edf3">{team.passport}</Text></Text>
-                    <Text color="#8b949e" dimColor>Visas: <Text bold color="#79c0ff">{team.visas.join(', ')}</Text></Text>
-                    <Text color="#8b949e" dimColor>Mutate System: <Text bold color={team.mutateSystem ? '#3fb950' : '#f85149'}>{team.mutateSystem ? 'ALLOWED' : 'DENIED'}</Text></Text>
-                    <Text color="#8b949e" dimColor>Risk Ceiling: <Text bold color={team.riskCeiling === 'HIGH' ? '#f85149' : team.riskCeiling === 'MEDIUM' ? '#d29922' : '#3fb950'}>{team.riskCeiling}</Text></Text>
+ 
+                  <Box flexDirection={mainStageWidth < 70 ? "column" : "row"} marginTop={1} justifyContent="space-between" width={mainStageWidth - 8}>
+                    <Text color="#8b949e" dimColor>Passport: <Text bold color="#e6edf3">{truncateVisible(team.passport, 22)}</Text></Text>
+                    <Text color="#8b949e" dimColor>Visas: <Text bold color="#79c0ff">{truncateVisible(team.visas.join(','), 18)}</Text></Text>
+                    <Text color="#8b949e" dimColor>Mutate: <Text bold color={team.mutateSystem ? '#3fb950' : '#f85149'}>{team.mutateSystem ? 'YES' : 'NO'}</Text></Text>
+                    <Text color="#8b949e" dimColor>Risk: <Text bold color={team.riskCeiling === 'HIGH' ? '#f85149' : team.riskCeiling === 'MEDIUM' ? '#d29922' : '#3fb950'}>{team.riskCeiling}</Text></Text>
                   </Box>
                 </Box>
               </GlowBorder>
