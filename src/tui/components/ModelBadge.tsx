@@ -4,10 +4,14 @@ import { Text, Box } from 'ink';
 interface ModelBadgeProps {
   model: string;
   current?: boolean;
+  maxWidth?: number;
 }
 
-export function ModelBadge({ model, current }: ModelBadgeProps) {
-  const shortModel = model.split('/').pop() || model;
+export function ModelBadge({ model, current, maxWidth }: ModelBadgeProps) {
+  let shortModel = model.split('/').pop() || model;
+  if (maxWidth && shortModel.length > maxWidth) {
+    shortModel = shortModel.slice(0, maxWidth - 3) + '...';
+  }
 
   const providerColor = (() => {
     const m = model.toLowerCase();

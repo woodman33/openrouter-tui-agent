@@ -5,6 +5,7 @@ import { GlowBorder } from '../components/GlowBorder.js';
 import { existsSync, readdirSync, statSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { join, basename, relative } from 'path';
 import { exec } from 'child_process';
+import { getResponsiveLayout } from '../utils/responsive.js';
 
 interface FilesPanelProps {
   agent: any;
@@ -407,9 +408,9 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
     }
   });
 
-  // Strict cap on main stage width to prevent stretching awkwardly in wide screens
-  const panelWidth = Math.max(20, (width || 80) - 28);
-  const mainStageWidth = Math.min(84, Math.floor(panelWidth * 0.95));
+  // Responsive width calculation — match layout.tsx breakpoints
+  const terminalWidth = width || 80;
+  const { mainStageWidth, isCompact } = getResponsiveLayout(terminalWidth);
 
   const getEllipsizedName = (name: string, maxLen = 30) => {
     if (name.length <= maxLen) return name;

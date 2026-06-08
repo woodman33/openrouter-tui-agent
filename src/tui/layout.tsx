@@ -104,34 +104,47 @@ export function Layout({
 
   const activeInspector = inspectorData || defaultInspector;
 
-  // Header Title and Slogan only
-  const headerLeft = ` TIMMY | Verifiable Agent Trust OS`;
-  const headerRight = `[COST: $${totalCost.toFixed(4)}]`;
-
+  // Responsive breakpoints
+  const isCompact = terminalWidth < 120;
   const isChatActiveAndFocused = mode === 'brief' && focusArea === 'stage';
+  const showTrustInspector = terminalWidth >= 140 && mode !== 'brief';
+  const showLeftNav = !isChatActiveAndFocused && (terminalWidth >= 120);
+
+  // Header Title and Slogan only
+  let headerLeftText = ` TIMMY | ${mode.toUpperCase()} | Verifiable Agent Trust OS`;
+  if (terminalWidth < 110) {
+    headerLeftText = ` TIMMY | ${mode.toUpperCase()}`;
+  }
+  if (terminalWidth < 70) {
+    headerLeftText = ` TIMMY`;
+  }
+
+  const headerRight = `[COST: $${totalCost.toFixed(4)}]`;
 
   return (
     <Box flexDirection="column" width={terminalWidth} height={terminalHeight}>
       {/* Top Title Bar */}
       <Box justifyContent="space-between" paddingX={1} borderStyle="single" borderColor="#30363d" borderBottom={true} borderTop={false} borderLeft={false} borderRight={false}>
         <Box>
-          <Text bold color={modeColor}>{headerLeft}</Text>
-          <Text color={theme.textTertiary}>  - "Governed work. Verifiable proofs."</Text>
+          <Text bold color={modeColor}>{headerLeftText}</Text>
+          {terminalWidth >= 120 && (
+            <Text color={theme.textTertiary}>  - "Governed work. Verifiable proofs."</Text>
+          )}
         </Box>
         <Box>
           {isActive ? <Spinner color={modeColor} label={animState.toLowerCase()} /> : <SignalBars width={8} color={modeColor} active={telemetryStatus === 'online'} />}
           <Text color={theme.textSecondary}> | </Text>
-          <ModelBadge model={model} current />
+          <ModelBadge model={model} current maxWidth={terminalWidth < 95 ? 10 : 20} />
           <Text color={theme.textSecondary}> | </Text>
           <Text color="#e6edf3" bold>{headerRight}</Text>
         </Box>
       </Box>
 
-      {/* Main 3-Column App Shell Grid */}
+      {/* Main Responsive App Shell Grid */}
       <Box flexGrow={1} flexShrink={1} flexDirection="row">
         
-        {/* 1. Left Column: Persistent VerticalNav (width 24) */}
-        {!isChatActiveAndFocused && (
+        {/* 1. Left Column: Persistent VerticalNav (width 24, hidden in compact mode) */}
+        {showLeftNav && (
           <Box width={24} flexDirection="column" borderStyle="single" borderColor="#30363d" borderRight={true} borderLeft={false} borderTop={false} borderBottom={false} paddingX={1}>
             <Box marginBottom={1} height={1}>
               <Text bold color={focusArea === 'nav' ? '#d2a8ff' : '#8b949e'}>🧭 LEFT NAV DECK</Text>
@@ -175,8 +188,8 @@ export function Layout({
           {children}
         </Box>
 
-        {/* 3. Right Column: Compact TrustInspector */}
-        {mode !== 'brief' && (
+        {/* 3. Right Column: Compact TrustInspector (hidden in compact/medium layout) */}
+        {showTrustInspector && (
           <Box width={28} flexDirection="column" borderStyle="single" borderColor="#30363d" borderLeft={true} borderRight={false} borderTop={false} borderBottom={false} paddingX={1}>
             <Box marginBottom={1} height={1}>
               <Text bold color="#79c0ff">🛡️ TRUST INSPECTOR</Text>
@@ -204,23 +217,39 @@ export function Layout({
       {/* Operator controls and Safety Global Bar */}
       <Box height={2} flexDirection="column" borderStyle="single" borderColor="#30363d" borderTop={true} borderBottom={false} borderLeft={false} borderRight={false} paddingX={1}>
         <Box height={1} justifyContent="space-between">
-          <Box flexGrow={1}>
+          <Box flexGrow={1} flexShrink={1}>
             <Text bold color="#d29922">GUIDES </Text>
-            <Text color="#e6edf3">
+            <Text color="#e6edf3" wrap="truncate">
               {focusArea === 'nav' 
-                ? 'Tab down nav | Shift+Tab up nav | Enter select main stage' 
-                : 'Arrow keys navigate active panel | Esc back to nav deck'
+                ? (isCompact ? 'Tab/Enter nav' : 'Tab down nav | Shift+Tab up nav | Enter select main stage')
+                : (isCompact ? 'Arrows nav | Esc back' : 'Arrow keys navigate active panel | Esc back to nav deck')
               }
             </Text>
           </Box>
-          <Box>
+          <Box flexShrink={0}>
+            {!showTrustInspector && terminalWidth >= 100 && (
+              <>
+                <Text color="#8b949e">Inspector: </Text>
+                <Text bold color="#79c0ff">{truncateVisible(activeInspector.title, isCompact ? 8 : 14)} </Text>
+                <Text bold color="#3fb950">[{activeInspector.status}] </Text>
+                <Text color="#8b949e">| </Text>
+              </>
+            )}
             <Text bold color={pulseFrame % 2 === 0 ? "#3fb950" : "#2ea043"}>AgentPass VERIFIED </Text>
-            <Text color="#8b949e">| </Text>
-            <Text bold color={pulseFrame % 2 === 0 ? "#79c0ff" : "#58a6ff"}>Visa READY </Text>
-            <Text color="#8b949e">| </Text>
-            <Text bold color={pulseFrame % 2 === 0 ? "#d2a8ff" : "#bc8cff"}>Stamp ARMED </Text>
-            <Text color="#8b949e">| </Text>
-            <Text bold color={pulseFrame % 2 === 0 ? "#58a6ff" : "#388bfd"}>Receipt READY </Text>
+            {terminalWidth >= 110 && (
+              <>
+                <Text color="#8b949e">| </Text>
+                <Text bold color={pulseFrame % 2 === 0 ? "#79c0ff" : "#58a6ff"}>Visa READY </Text>
+              </>
+            )}
+            {terminalWidth >= 130 && (
+              <>
+                <Text color="#8b949e">| </Text>
+                <Text bold color={pulseFrame % 2 === 0 ? "#d2a8ff" : "#bc8cff"}>Stamp ARMED </Text>
+                <Text color="#8b949e">| </Text>
+                <Text bold color={pulseFrame % 2 === 0 ? "#58a6ff" : "#388bfd"}>Receipt READY </Text>
+              </>
+            )}
           </Box>
         </Box>
       </Box>

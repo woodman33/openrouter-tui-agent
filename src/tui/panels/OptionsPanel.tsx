@@ -6,6 +6,7 @@ import { execSync } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { getResponsiveLayout } from '../utils/responsive.js';
 import { truncateVisible } from '../utils/text.js';
 
 interface OptionsPanelProps {
@@ -176,9 +177,9 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
     }
   });
 
-  // Strict cap on main stage width to prevent stretching awkwardly in wide screens
-  const panelWidth = Math.max(20, (width || 80) - 28);
-  const mainStageWidth = Math.min(84, Math.floor(panelWidth * 0.95));
+  // Responsive width calculation — match layout.tsx breakpoints
+  const terminalWidth = width || 80;
+  const { mainStageWidth, isCompact } = getResponsiveLayout(terminalWidth);
 
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>

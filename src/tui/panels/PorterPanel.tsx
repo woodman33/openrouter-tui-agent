@@ -4,6 +4,7 @@ import { theme } from '../theme.js';
 import { GlowBorder } from '../components/GlowBorder.js';
 import { usePulse } from '../hooks/usePulse.js';
 import { StepPipeline, PrimaryButton, SecondaryButton } from '../components/DesignSystem.js';
+import { truncateVisible } from '../utils/text.js';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import crypto from 'crypto';
@@ -241,8 +242,15 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
     }, 1200);
   };
 
-  const panelWidth = Math.max(20, (width || 80) - 28);
-  const mainStageWidth = Math.min(84, Math.floor(panelWidth * 0.95));
+  // Responsive width calculation — match layout.tsx breakpoints
+  const terminalWidth = width || 80;
+  const isCompact = terminalWidth < 120;
+  const showLeftNav = terminalWidth >= 120;
+  const showTrustInspector = terminalWidth >= 140;
+  const leftNavWidth = showLeftNav ? 24 : 0;
+  const inspectorWidth = showTrustInspector ? 28 : 0;
+  const stageWidth = terminalWidth - leftNavWidth - inspectorWidth;
+  const mainStageWidth = Math.max(30, Math.min(stageWidth - 4, Math.floor(stageWidth * 0.95)));
 
   const pulseFrame = usePulse(250);
   const activeStep = scanResult === 'success'
@@ -256,17 +264,19 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
       {/* 1. Headline & Explainer */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
         <Text bold color="#a98bff">🔌 MCP ➔ CLI</Text>
         <Text bold color="#ffffff">Turn an MCP server into a CLI.</Text>
-        <Text color="#8b949e">Paste a URL. TIMMY scans it, proposes generated files, assigns a Visa, and prepares a receipt.</Text>
+        {!isCompact && (
+          <Text color="#8b949e" wrap="truncate">Paste a URL. TIMMY scans it, proposes generated files, assigns a Visa, and prepares a receipt.</Text>
+        )}
       </Box>
 
       {/* 2. Main Input Slot */}
-      <Box borderStyle="round" borderColor={activeElement === 'url' ? "#a98bff" : "#30363d"} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+      <Box borderStyle="round" borderColor={activeElement === 'url' ? "#a98bff" : "#30363d"} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
         <Text color="#e6edf3" bold>Paste MCP Server URL:</Text>
         <Box borderStyle="single" borderColor={activeElement === 'url' ? "#4f9cff" : "#21262d"} paddingX={1} marginY={1}>
-          <Text color="#ffffff">{urlInput}</Text>
+          <Text color="#ffffff" wrap="truncate">{isCompact ? truncateVisible(urlInput, mainStageWidth - 10) : urlInput}</Text>
           {activeElement === 'url' && <Text color="#a98bff">█</Text>}
         </Box>
         
@@ -281,33 +291,56 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
       </Box>
 
       {/* 3. Ingest Pipeline */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
         <Text color="#8b949e" dimColor bold>Pipeline Track Map:</Text>
-        <StepPipeline steps={pipelineSteps} activeIdx={activeStep} activeColor="#d29922" />
+        {isCompact ? (
+          <Box flexDirection="column" paddingX={1} marginY={1}>
+            {pipelineSteps.map((step, idx) => {
+              const isCurrent = idx === activeStep;
+              const isPast = idx < activeStep;
+              let color = '#8b949e';
+              if (isCurrent) color = '#d29922';
+              else if (isPast) color = '#3fb950';
+              const prefix = isPast ? '✔ ' : isCurrent ? '● ' : '○ ';
+              return (
+                <Text key={step} bold={isCurrent} color={color}>
+                  {prefix}{step}
+                </Text>
+              );
+            })}
+          </Box>
+        ) : (
+          <StepPipeline steps={pipelineSteps} activeIdx={activeStep} activeColor="#d29922" />
+        )}
       </Box>
 
       {/* 4. Dynamic Simple Result Card */}
       {scanResult && (
-        <GlowBorder color={scanResult === 'success' ? '#3fb950' : theme.borderDefault} width={mainStageWidth - 2} label="📂 MCP ➔ CLI EVIDENCE SAVED">
+        <GlowBorder color={scanResult === 'success' ? '#3fb950' : theme.borderDefault} width={Math.max(20, mainStageWidth - 2)} label="📂 MCP ➔ CLI EVIDENCE SAVED">
           {scanResult === 'success' ? (
             <Box flexDirection="column" paddingX={2} paddingY={1}>
               <Text color="#3fb950" bold>✓ MCP ➔ CLI Scan Complete. Evidence Saved Locally!</Text>
               <Box flexDirection="column" marginTop={1} marginBottom={1}>
-                <Text color="#e6edf3">◈ - Folder:   <Text color="#79c0ff" bold>mcp-cli/{getSlug()}/</Text></Text>
-                <Text color="#e6edf3">◈ - README:   <Text color="#ffffff">mcp-cli/{getSlug()}/README.md</Text></Text>
-                <Text color="#e6edf3">◈ - CLI Plan: <Text color="#ffffff">mcp-cli/{getSlug()}/cli-plan.md</Text></Text>
-                <Text color="#e6edf3">◈ - Visa:     <Text color="#ffffff">mcp-cli/{getSlug()}/agentpass-visa.md</Text></Text>
-                <Text color="#e6edf3">◈ - Commands: <Text color="#ffffff">mcp-cli/{getSlug()}/commands.txt</Text></Text>
+                <Text color="#e6edf3" wrap="truncate">◈ Folder:   <Text color="#79c0ff" bold>mcp-cli/{getSlug()}/</Text></Text>
+                <Text color="#e6edf3" wrap="truncate">◈ README:   <Text color="#ffffff">mcp-cli/{getSlug()}/README.md</Text></Text>
+                {!isCompact && (
+                  <>
+                    <Text color="#e6edf3" wrap="truncate">◈ CLI Plan: <Text color="#ffffff">mcp-cli/{getSlug()}/cli-plan.md</Text></Text>
+                    <Text color="#e6edf3" wrap="truncate">◈ Visa:     <Text color="#ffffff">mcp-cli/{getSlug()}/agentpass-visa.md</Text></Text>
+                    <Text color="#e6edf3" wrap="truncate">◈ Commands: <Text color="#ffffff">mcp-cli/{getSlug()}/commands.txt</Text></Text>
+                  </>
+                )}
               </Box>
 
-              {/* Action Buttons Row */}
-              <Box flexDirection="row" justifyContent="space-between" width={mainStageWidth - 8} marginTop={1}>
+              {/* Action Buttons - vertical in compact, horizontal in wide */}
+              <Box flexDirection={isCompact ? 'column' : 'row'} justifyContent="space-between" marginTop={1} gap={isCompact ? 0 : 1}>
                 {['Open Folder', 'Open README', 'Copy Path', 'Go to Workspace'].map((label, idx) => {
                   const isSelected = activeElement === 'buttons' && idx === activeBtnIdx;
+                  const btnWidth = isCompact ? Math.max(16, mainStageWidth - 10) : 18;
                   if (isSelected) {
-                    return <PrimaryButton key={label} label={label} selected={true} width={18} />;
+                    return <PrimaryButton key={label} label={label} selected={true} width={btnWidth} />;
                   } else {
-                    return <SecondaryButton key={label} label={label} selected={false} width={18} />;
+                    return <SecondaryButton key={label} label={label} selected={false} width={btnWidth} />;
                   }
                 })}
               </Box>
@@ -321,18 +354,20 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
       )}
 
       {/* 5. Secondary command reference */}
-      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginY={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Text bold color="#8b949e">Secondary command reference:</Text>
-        <Text color="#8b949e"> • npx mcporter list</Text>
-        <Text color="#8b949e"> • npx mcporter emit-ts &lt;server&gt; --mode client --out &lt;path&gt;</Text>
-        <Text color="#8b949e"> • npx mcporter generate-cli &lt;server&gt; --bundle &lt;path&gt;</Text>
-      </Box>
+      {!isCompact && (
+        <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginY={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
+          <Text bold color="#8b949e">Secondary command reference:</Text>
+          <Text color="#8b949e" wrap="truncate"> • npx mcporter list</Text>
+          <Text color="#8b949e" wrap="truncate"> • npx mcporter emit-ts &lt;server&gt; --mode client --out &lt;path&gt;</Text>
+          <Text color="#8b949e" wrap="truncate"> • npx mcporter generate-cli &lt;server&gt; --bundle &lt;path&gt;</Text>
+        </Box>
+      )}
 
       {/* 6. Universal bottom input prompt */}
-      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} marginTop={0} width={mainStageWidth - 2} flexShrink={0}>
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} marginTop={0} flexShrink={0}>
         <Text color="#8b949e">[ mcp-cli ] </Text>
         <Text color="#79c0ff">▶ </Text>
-        <Text color="#ffffff">{inputCmd}</Text>
+        <Text color="#ffffff" wrap="truncate">{isCompact ? truncateVisible(inputCmd, mainStageWidth - 20) : inputCmd}</Text>
         <Text color="#8b949e">█</Text>
       </Box>
     </Box>
