@@ -7,7 +7,26 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { getResponsiveLayout } from '../utils/responsive.js';
-import { truncateVisible } from '../utils/text.js';
+
+// ── Local helper: strict truncation ────────────────────────────────────────
+function ellipsize(text: string, maxWidth: number): string {
+  if (maxWidth <= 0) return '';
+  if (!text) return '';
+  if (text.length <= maxWidth) return text;
+  if (maxWidth <= 3) return text.slice(0, maxWidth);
+  return text.slice(0, maxWidth - 2) + '..';  // 2-char suffix so labels stay readable
+}
+
+// ── Pad/right-align a string to exactly `width` chars ──────────────────────
+function padRight(text: string, width: number): string {
+  if (text.length >= width) return text.slice(0, width);
+  return text + ' '.repeat(width - text.length);
+}
+
+function padLeft(text: string, width: number): string {
+  if (text.length >= width) return text.slice(0, width);
+  return ' '.repeat(width - text.length) + text;
+}
 
 interface OptionsPanelProps {
   agent: any;
@@ -61,19 +80,20 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
 
   // Initialize and keep options in sync
   useEffect(() => {
-    const cmuxStatus = cmuxInstalled ? 'detected' : 'missing';
-    const tmuxStatus = tmuxInstalled ? 'detected' : 'missing';
+    const cmuxStatus = cmuxInstalled ? 'DETECTED' : 'MISSING';
+    const tmuxStatus = tmuxInstalled ? 'DETECTED' : 'MISSING';
+    const currentModel = agent.model || 'not set';
 
     setOptions([
-      { key: 'animations', label: 'Animations', choices: ['ON', 'OFF'], current: process.env.TIMMY_DISABLE_ANIMATION === '1' ? 'OFF' : 'ON', desc: 'Visual motion and state indicators style' },
-      { key: 'devmode', label: 'Developer Mode', choices: ['ON', 'OFF'], current: agent.developerMode ? 'ON' : 'OFF', desc: 'Toggle Discovery, Teams, and Logs in Left Nav' },
-      { key: 'autohide', label: 'Sidebar Auto-hide', choices: ['ON', 'OFF'], current: agent.sidebarAutoHide ? 'ON' : 'OFF', desc: 'Auto hide left navigation column when workspace is active' },
-      { key: 'autoopen', label: 'Browser Auto-open', choices: ['ON', 'OFF'], current: agent.browserAutoOpen ? 'ON' : 'OFF', desc: 'Automatically open browser companion' },
-      { key: 'theme', label: 'Theme', choices: ['Timmy Amber', 'Timmy Blue', 'Timmy Green'], current: process.env.TIMMY_THEME === 'blue' ? 'Timmy Blue' : (process.env.TIMMY_THEME === 'green' ? 'Timmy Green' : 'Timmy Amber'), desc: 'Global border color palette and accents' },
-      { key: 'model', label: 'OpenRouter Model', choices: [agent.model], current: agent.model, desc: 'Active model for cognitive workflows' },
-      { key: 'cmuxPath', label: 'cmux Path', choices: [cmuxStatus], current: cmuxStatus, desc: 'Path to native cmux desktop companion' },
-      { key: 'tmuxPath', label: 'tmux Path', choices: [tmuxStatus], current: tmuxStatus, desc: 'Path to local tmux binary' },
-      { key: 'logs', label: 'Logs', choices: ['ON', 'OFF'], current: agent.logsEnabled !== false ? 'ON' : 'OFF', desc: 'Toggle write logs utility' }
+      { key: 'animations', label: 'Animations', choices: ['ON', 'OFF'], current: process.env.TIMMY_DISABLE_ANIMATION === '1' ? 'OFF' : 'ON', desc: 'Visual motion indicators' },
+      { key: 'devmode', label: 'Developer Mode', choices: ['ON', 'OFF'], current: agent.developerMode ? 'ON' : 'OFF', desc: 'Show developer utilities' },
+      { key: 'autohide', label: 'Sidebar Auto-hide', choices: ['ON', 'OFF'], current: agent.sidebarAutoHide ? 'ON' : 'OFF', desc: 'Auto hide left nav column' },
+      { key: 'autoopen', label: 'Browser Auto-open', choices: ['ON', 'OFF'], current: agent.browserAutoOpen ? 'ON' : 'OFF', desc: 'Open browser companion' },
+      { key: 'theme', label: 'Theme', choices: ['Timmy Amber', 'Timmy Blue', 'Timmy Green'], current: process.env.TIMMY_THEME === 'blue' ? 'Timmy Blue' : (process.env.TIMMY_THEME === 'green' ? 'Timmy Green' : 'Timmy Amber'), desc: 'Color palette and accents' },
+      { key: 'model', label: 'OpenRouter Model', choices: [currentModel], current: currentModel, desc: 'Active model for workflows' },
+      { key: 'cmuxPath', label: 'cmux Path', choices: [cmuxStatus], current: cmuxStatus, desc: 'Native cmux companion' },
+      { key: 'tmuxPath', label: 'tmux Path', choices: [tmuxStatus], current: tmuxStatus, desc: 'Local tmux binary' },
+      { key: 'logs', label: 'Logs', choices: ['ON', 'OFF'], current: agent.logsEnabled !== false ? 'ON' : 'OFF', desc: 'Write bounded local logs' }
     ]);
   }, [cmuxInstalled, tmuxInstalled, agent.model, agent.developerMode, agent.sidebarAutoHide, agent.browserAutoOpen, agent.logsEnabled]);
 
@@ -96,12 +116,14 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
     });
   };
 
+  // Sync footer + inspector when selected row changes
   useEffect(() => {
     if (options.length > 0 && options[activeIdx]) {
-      updateInspectorData(options[activeIdx], 'READY');
-      setInputCmd(`/options toggle ${options[activeIdx].key}`);
+      const opt = options[activeIdx];
+      updateInspectorData(opt, 'READY');
+      setInputCmd(`/options toggle ${opt.key} to ${opt.current}`);
     }
-  }, [activeIdx]);
+  }, [activeIdx, options]);
 
   useInput((char, key) => {
     if (focusArea !== 'stage') return;
@@ -181,59 +203,114 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
   const terminalWidth = width || 80;
   const { mainStageWidth, isCompact } = getResponsiveLayout(terminalWidth);
 
+  // ── Deterministic column widths ──────────────────────────────────────────
+  // Available row width inside the GlowBorder (account for border + padding)
+  const rowWidth = Math.max(30, mainStageWidth - 8);
+
+  // Fixed column allocation:
+  //   selector(2) + label(col1) + gap(1) + desc(col2) + gap(1) + value(col3)
+  const SELECTOR_W = 2;
+  const VALUE_W = Math.min(16, Math.max(8, Math.floor(rowWidth * 0.2)));
+  const remainAfterValue = rowWidth - SELECTOR_W - VALUE_W - 2; // 2 gaps
+
+  // Show description only if there's enough room (>= 10 chars for desc)
+  const showDesc = remainAfterValue > 28;
+  const LABEL_W = showDesc
+    ? Math.min(20, Math.floor(remainAfterValue * 0.45))
+    : remainAfterValue;
+  const DESC_W = showDesc
+    ? remainAfterValue - LABEL_W
+    : 0;
+
+  // ── Value display formatter ──────────────────────────────────────────────
+  function formatValue(opt: DropdownOption): string {
+    const raw = opt.current;
+
+    // Guard against undefined/null/empty
+    if (raw == null || raw === '' || raw === 'undefined') return '[NOT SET]';
+
+    // Path detection keys
+    if (opt.key === 'cmuxPath' || opt.key === 'tmuxPath') {
+      const upper = raw.toUpperCase();
+      if (upper === 'DETECTED') return '[DETECTED]';
+      if (upper === 'MISSING') return '[MISSING]';
+      return `[${upper}]`;
+    }
+
+    // Binary ON/OFF
+    if (opt.choices.length === 2 && (opt.choices.includes('ON') && opt.choices.includes('OFF'))) {
+      return raw === 'ON' ? '[ON]' : '[OFF]';
+    }
+
+    // Everything else (theme, model, etc.)
+    return `[${raw}]`;
+  }
+
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
       {/* Header Banner */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
         <Text bold color="#a98bff">⚙️  TIMMY Settings & Options</Text>
-        <Text color="#8b949e">Change simple local settings. Runtime secrets and bindings are untouched.</Text>
+        {!isCompact && (
+          <Text color="#8b949e">Change simple local settings. Runtime secrets and bindings are untouched.</Text>
+        )}
       </Box>
 
       {/* Dynamic Settings List */}
-      <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 COMPACT CONFIGURATION DECK">
+      <GlowBorder color={theme.borderDefault} width={Math.max(20, mainStageWidth - 2)} label="💻 COMPACT CONFIGURATION DECK">
         <Box flexDirection="column" paddingX={1} flexGrow={1} marginY={1}>
           {options.map((opt, idx) => {
             const isSelected = idx === activeIdx;
-            const rowWidth = mainStageWidth - 8;
-            const col3Width = 12;
-            const showDesc = rowWidth > 45;
-            const col1Width = showDesc ? 22 : Math.max(10, rowWidth - col3Width - 2);
-            const col2Width = showDesc ? (rowWidth - col1Width - col3Width) : 0;
 
-            // Make sure binary toggles only show ON/OFF and path detection only shows DETECTED/MISSING
-            let displayValue = opt.current;
-            if (opt.key === 'cmuxPath' || opt.key === 'tmuxPath') {
-              displayValue = opt.current.toUpperCase(); // DETECTED or MISSING
-            }
-            const valText = `[${displayValue}]`;
-            
-            const truncatedLabel = truncateVisible(opt.label, col1Width - 3);
-            const labelStr = (isSelected ? '▶ ' : '  ') + truncatedLabel + ':';
-            const truncatedDesc = showDesc ? truncateVisible(opt.desc, col2Width - 1) : '';
-            const truncatedValText = truncateVisible(valText, col3Width - 1);
+            // Build each column with strict truncation
+            const selectorStr = isSelected ? '▶ ' : '  ';
+            const labelStr = ellipsize(opt.label, LABEL_W);
+            const descStr = showDesc ? ellipsize(opt.desc, DESC_W) : '';
+            const valStr = ellipsize(formatValue(opt), VALUE_W);
+
+            // Color coding for values
+            let valColor = '#79c0ff';
+            if (isSelected) valColor = '#d2a8ff';
+            const rawVal = formatValue(opt);
+            if (rawVal === '[ON]' || rawVal === '[DETECTED]') valColor = isSelected ? '#7ee787' : '#3fb950';
+            else if (rawVal === '[OFF]' || rawVal === '[MISSING]') valColor = isSelected ? '#ffa198' : '#f85149';
+            else if (rawVal === '[NOT SET]') valColor = '#8b949e';
 
             return (
-              <Box key={opt.key} flexDirection="row" width={rowWidth} marginY={0}>
-                {/* Column 1: Label */}
-                <Box width={col1Width} flexShrink={0}>
+              <Box key={opt.key} flexDirection="row" height={1}>
+                {/* Selector */}
+                <Box width={SELECTOR_W} flexShrink={0}>
                   <Text color={isSelected ? '#d2a8ff' : '#8b949e'} bold={isSelected}>
-                    {labelStr}
+                    {selectorStr}
                   </Text>
                 </Box>
-                
-                {/* Column 2: Description */}
+
+                {/* Label */}
+                <Box width={LABEL_W} flexShrink={0}>
+                  <Text color={isSelected ? '#e6edf3' : '#c9d1d9'} bold={isSelected}>
+                    {padRight(labelStr, LABEL_W)}
+                  </Text>
+                </Box>
+
+                {/* Gap */}
+                <Box width={1} flexShrink={0}><Text> </Text></Box>
+
+                {/* Description (hidden at narrow widths) */}
                 {showDesc && (
-                  <Box width={col2Width} flexGrow={1} flexShrink={1}>
-                    <Text color={isSelected ? '#ffffff' : '#8b949e'} dimColor={!isSelected}>
-                      {truncatedDesc}
+                  <Box width={DESC_W} flexShrink={0}>
+                    <Text color={isSelected ? '#8b949e' : '#6e7681'} dimColor={!isSelected}>
+                      {padRight(descStr, DESC_W)}
                     </Text>
                   </Box>
                 )}
 
-                {/* Column 3: Value/Status (Right-aligned) */}
-                <Box width={col3Width} justifyContent="flex-end" flexShrink={0}>
-                  <Text bold color={isSelected ? '#d2a8ff' : '#79c0ff'}>
-                    {truncatedValText}
+                {/* Gap */}
+                <Box width={1} flexShrink={0}><Text> </Text></Box>
+
+                {/* Value (right-aligned, never overflows) */}
+                <Box width={VALUE_W} flexShrink={0} justifyContent="flex-end">
+                  <Text bold color={valColor}>
+                    {valStr}
                   </Text>
                 </Box>
               </Box>
@@ -243,41 +320,34 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
       </GlowBorder>
 
       {/* Auth & Authority Panel */}
-      <Box borderStyle="single" borderColor="#d2a8ff" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+      <Box borderStyle="single" borderColor="#d2a8ff" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
         <Text bold color="#d2a8ff">🛡️  Auth & Authority</Text>
         <Box flexDirection="column" marginTop={1}>
-          <Box justifyContent="space-between" width={mainStageWidth - 8}>
-            <Text color="#8b949e"> • Human Auth:</Text>
-            <Text bold color="#e6edf3">Local (future SSO/SSO)</Text>
-          </Box>
-          <Box justifyContent="space-between" width={mainStageWidth - 8}>
-            <Text color="#8b949e"> • AgentPass:</Text>
-            <Text bold color="#3fb950">Active</Text>
-          </Box>
-          <Box justifyContent="space-between" width={mainStageWidth - 8}>
-            <Text color="#8b949e"> • Passports:</Text>
-            <Text bold color="#79c0ff">Enabled</Text>
-          </Box>
-          <Box justifyContent="space-between" width={mainStageWidth - 8}>
-            <Text color="#8b949e"> • Visas:</Text>
-            <Text bold color="#79c0ff">Enabled</Text>
-          </Box>
-          <Box justifyContent="space-between" width={mainStageWidth - 8}>
-            <Text color="#8b949e"> • Stamps:</Text>
-            <Text bold color="#79c0ff">Enabled</Text>
-          </Box>
-          <Box justifyContent="space-between" width={mainStageWidth - 8}>
-            <Text color="#8b949e"> • Receipts:</Text>
-            <Text bold color="#3fb950">Local</Text>
-          </Box>
+          {[
+            { label: 'Human Auth', value: 'Local', color: '#e6edf3' },
+            { label: 'AgentPass', value: 'Active', color: '#3fb950' },
+            { label: 'Passports', value: 'Enabled', color: '#79c0ff' },
+            { label: 'Visas', value: 'Enabled', color: '#79c0ff' },
+            { label: 'Stamps', value: 'Enabled', color: '#79c0ff' },
+            { label: 'Receipts', value: 'Local', color: '#3fb950' },
+          ].map((row) => (
+            <Box key={row.label} flexDirection="row" height={1}>
+              <Box width={Math.min(20, Math.floor(rowWidth * 0.4))} flexShrink={0}>
+                <Text color="#8b949e"> • {row.label}:</Text>
+              </Box>
+              <Box flexGrow={1} justifyContent="flex-end">
+                <Text bold color={row.color}>{row.value}</Text>
+              </Box>
+            </Box>
+          ))}
         </Box>
       </Box>
 
       {/* Active configuration prompt box - Universal bottom input */}
-      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} marginTop={isSmallScreen ? 0 : 1} width={mainStageWidth - 2} flexShrink={0}>
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} marginTop={isSmallScreen ? 0 : 1} flexShrink={0}>
         <Text color="#8b949e">[ options ] </Text>
         <Text color="#79c0ff">▶ </Text>
-        <Text color="#ffffff">{inputCmd}</Text>
+        <Text color="#ffffff" wrap="truncate">{inputCmd}</Text>
         <Text color="#8b949e">█</Text>
       </Box>
     </Box>
