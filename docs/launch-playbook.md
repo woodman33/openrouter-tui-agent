@@ -32,6 +32,19 @@ This playbook outlines the marketing assets, release checklists, and social medi
 - [ ] Tag the release as `v0.1.0` (this triggers the automated GitHub release workflow).
 - [ ] Paste the `CHANGELOG.md` section corresponding to v0.1.0 into the release body description.
 
+### 3. Hotfix & Upgrade Checklist
+If any launch-day regressions or bugs are detected, follow these steps to release a patch update:
+- [ ] Checkout the dev branch: `git checkout antigravity/polish-tui-v2`
+- [ ] Implement and verify the fix locally.
+- [ ] Run the automated hotfix script to bump version, run validation suite, merge to `main`, and push:
+      ```bash
+      ./scripts/hotfix.sh
+      ```
+- [ ] Run the final npm publish command outputted by the script:
+      ```bash
+      npm publish --access public
+      ```
+
 ---
 
 ## ✍️ Launch Post Templates
