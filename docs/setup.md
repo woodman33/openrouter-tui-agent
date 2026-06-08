@@ -42,7 +42,7 @@ To initialize your local workspace and verify system compatibility before launch
 The primary and canonical path to launch the interactive terminal console is:
 
 ```bash
-cd /Users/williammeldman/Desktop/openrouter-tui
+cd openrouter-tui-agent
 npm start
 ```
 

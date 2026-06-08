@@ -4,6 +4,7 @@ import { theme } from '../theme.js';
 import { GlowBorder } from '../components/GlowBorder.js';
 import { exec } from 'child_process';
 import { PrimaryButton, SecondaryButton, WarningButton } from '../components/DesignSystem.js';
+import { getResponsiveLayout } from '../utils/responsive.js';
 
 interface ModelExplorerPanelProps {
   agent: any;
@@ -141,9 +142,9 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
     }
   });
 
-  // Strict cap on main stage width to prevent stretching awkwardly in wide screens
-  const panelWidth = Math.max(20, (width || 80) - 28);
-  const mainStageWidth = Math.min(84, Math.floor(panelWidth * 0.95));
+  // Responsive width calculation — match layout.tsx breakpoints
+  const terminalWidth = width || 80;
+  const { mainStageWidth, isCompact } = getResponsiveLayout(terminalWidth);
 
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>

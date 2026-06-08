@@ -6,6 +6,7 @@ import { execSync, exec } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { getResponsiveLayout } from '../utils/responsive.js';
 import http from 'http';
 import { PrimaryButton, SecondaryButton, WarningButton } from '../components/DesignSystem.js';
 import { truncateVisible } from '../utils/text.js';
@@ -242,8 +243,9 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
     }
   });
 
-  const panelWidth = Math.max(20, (width || 80) - 28);
-  const mainStageWidth = Math.min(84, Math.floor(panelWidth * 0.95));
+  // Responsive width calculation — match layout.tsx breakpoints
+  const terminalWidth = width || 80;
+  const { mainStageWidth, isCompact } = getResponsiveLayout(terminalWidth);
 
   const renderRow = (idx: number) => {
     const isSelected = idx === activeBtnIdx;
