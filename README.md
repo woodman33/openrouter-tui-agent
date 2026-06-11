@@ -4,14 +4,26 @@ Open-source local receipt and replay layer for AI agent work.
 
 AI agents can edit files, run commands, call models, and change infrastructure. TIMMY creates local receipts so developers can see what happened, when it happened, and what artifacts were produced.
 
-## Installation
+## Installation & Setup
 
-Install globally:
+You can run TIMMY TUI by either cloning the source repository directly, installing it globally, or running it via `npx`.
+
+### Option A: Clone and Run from Source (Recommended)
+```bash
+git clone https://github.com/woodman33/openrouter-tui-agent.git
+cd openrouter-tui-agent
+npm install
+cp .env.example .env
+# (Optional) Add your OPENROUTER_API_KEY to the .env file
+npm start
+```
+
+### Option B: Install Globally
 ```bash
 npm install -g timmy-tui
 ```
 
-Or run directly using `npx`:
+### Option C: Run via `npx`
 ```bash
 npx timmy-tui demo
 ```
@@ -55,19 +67,23 @@ Launch the TUI and follow the guided demo flow described in [§6 below](#-6-demo
 To run the console locally:
 
 ```bash
-# 1. Install dependencies
+# 1. Clone the repository and navigate into it
+git clone https://github.com/woodman33/openrouter-tui-agent.git
+cd openrouter-tui-agent
+
+# 2. Install dependencies
 npm install
 
-# 2. Setup your local configuration
+# 3. Setup your local configuration
 cp .env.example .env
 
-# 3. Add your OPENROUTER_API_KEY to the .env file
+# 4. Add your OPENROUTER_API_KEY to the .env file
 # OPENROUTER_API_KEY=sk-or-v1-...
 
-# 4. Run system diagnostic check
+# 5. Run system diagnostic check
 npm run timmy -- doctor
 
-# 5. Start the TUI
+# 6. Start the TUI
 npm start
 ```
 

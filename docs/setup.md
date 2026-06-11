@@ -8,29 +8,35 @@ This document outlines the canonical first-run configuration and launch procedur
 
 To initialize your local workspace and verify system compatibility before launching the terminal interface, run these steps in order:
 
-1. **Install Dependencies**:
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/woodman33/openrouter-tui-agent.git
+   cd openrouter-tui-agent
+   ```
+
+2. **Install Dependencies**:
    ```bash
    npm install
    ```
 
-2. **Set Up Environment Variables**:
+3. **Set Up Environment Variables**:
    ```bash
    cp .env.example .env
    ```
 
-3. **Add OpenRouter API Key**:
+4. **Add OpenRouter API Key**:
    Open the `.env` file and append or edit your key:
    ```env
    OPENROUTER_API_KEY=your_key_here
    ```
 
-4. **Verify System Setup**:
+5. **Verify System Setup**:
    Run the system diagnostic tool:
    ```bash
    npm run timmy -- doctor
    ```
 
-5. **Launch the TUI Console**:
+6. **Launch the TUI Console**:
    ```bash
    npm start
    ```
