@@ -54,6 +54,7 @@ export function Layout({
     { mode: 'brief' as Mode, label: 'Main Chat', desc: 'OpenRouter Agent prompt' },
     { mode: 'porter' as Mode, label: 'MCP ➔ CLI', desc: 'Turn MCP server into CLI' },
     { mode: 'workspace' as Mode, label: 'Workspace', desc: 'Open cmux/browser workspace' },
+    { mode: 'hermes' as Mode, label: 'Hermes Mirror', desc: 'Hermes runs, live receipts' },
     { mode: 'options' as Mode, label: 'Options', desc: 'Change simple settings' }
   ];
 
@@ -66,7 +67,8 @@ export function Layout({
     files: 'Open cmux Workspace.',
     discovery: 'ready',
     teams: 'ready',
-    logs: 'ready'
+    logs: 'ready',
+    hermes: 'Connect, prompt, export receipt.'
   };
   const nextStep = nextStepMap[mode] || 'ready';
 
@@ -79,7 +81,8 @@ export function Layout({
     proof: '#58a6ff',
     porter: '#ff7b72',
     options: '#79c0ff',
-    logs: '#4f9cff'
+    logs: '#4f9cff',
+    hermes: '#d2a8ff'
   };
 
   const modeColor = modeColors[mode] || '#5e6ad2';

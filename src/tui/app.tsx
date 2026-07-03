@@ -169,6 +169,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
     { label: 'Main Chat Screen', action: () => { setMode('brief'); setFocusedMode('brief'); } },
     { label: 'MCP ➔ CLI Screen', action: () => { setMode('porter'); setFocusedMode('porter'); } },
     { label: 'Workspace Screen', action: () => { setMode('workspace'); setFocusedMode('workspace'); } },
+    { label: 'Hermes Mirror', action: () => { setMode('hermes'); setFocusedMode('hermes'); } },
     { label: 'Proof Screen', action: () => { setMode('proof'); setFocusedMode('proof'); } },
     { label: 'Options Screen', action: () => { setMode('options'); setFocusedMode('options'); } },
     ...(isDev ? [
@@ -243,7 +244,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
 
     // 4. In Navigation Deck Area Focus (focusArea === 'nav')
     if (focusArea === 'nav') {
-      const allowedModes: Mode[] = ['brief', 'porter', 'workspace', 'options'];
+      const allowedModes: Mode[] = ['brief', 'porter', 'workspace', 'hermes', 'options'];
 
       if (key.tab) {
         const idx = allowedModes.indexOf(focusedMode);
@@ -297,7 +298,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       focusArea={focusArea}
     >
       <Box flexGrow={1} flexShrink={1}>
-        <ModeRouter mode={mode} agent={agent} setInspector={setInspectorSafe} focusArea={focusArea} />
+        <ModeRouter mode={mode} agent={agent} setInspector={setInspectorSafe} focusArea={focusArea} inputLocked={commandPaletteOpen} />
 
         {/* Command Palette Overlay */}
         {commandPaletteOpen && (
