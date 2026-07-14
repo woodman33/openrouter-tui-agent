@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { computeReceiptHash, Receipt } from './receipt/schema.js';
 import crypto from 'crypto';
+import { VERSION } from './version.js';
 
 function getPackageMetadata() {
   const possiblePaths = [
@@ -17,13 +18,13 @@ function getPackageMetadata() {
     if (fs.existsSync(p)) {
       try {
         const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
-        return { name: pkg.name || 'timmy-tui', version: pkg.version || '0.1.0' };
+        return { name: pkg.name || 'timmy-tui', version: pkg.version || VERSION };
       } catch {
         // ignore
       }
     }
   }
-  return { name: 'timmy-tui', version: '0.1.0' };
+  return { name: 'timmy-tui', version: VERSION };
 }
 
 function printHelp() {

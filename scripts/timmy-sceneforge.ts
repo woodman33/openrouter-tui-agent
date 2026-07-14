@@ -5,6 +5,7 @@ import path from 'node:path';
 import { callSceneForge, sceneForgeUrl, type SceneForgeCall } from '../src/sceneforge/client.js';
 import { computeReceiptHash, type Receipt } from '../src/receipt/schema.js';
 import { redactTelemetryPayload } from '../src/utils/redact.js';
+import { VERSION } from '../src/version.js';
 
 type ParsedArgs = {
   command: string;
@@ -144,7 +145,7 @@ function writeReceipt(
     cwd: process.cwd(),
     platform: process.platform,
     node_version: process.version,
-    package: { name: 'timmy-tui', version: '0.4.3' },
+    package: { name: 'timmy-tui', version: VERSION },
     status: 'completed',
     plugins_run: ['mcporter', 'sceneforge-cloud'],
     artifacts: [

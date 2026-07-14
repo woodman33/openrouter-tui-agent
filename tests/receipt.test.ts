@@ -4,6 +4,7 @@ import path from 'path';
 import { execSync } from 'child_process';
 import { canonicalize, computeReceiptHash, Receipt } from '../src/receipt/schema.js';
 import { truncateMiddleOrEnd, splitModelNameAndBlurb, getModelColors } from '../src/tui/utils/text.js';
+import { VERSION } from '../src/version.js';
 
 
 describe('TIMMY Receipt System', () => {
@@ -96,7 +97,7 @@ describe('TIMMY Receipt System', () => {
 
     it('should print version information with timmy version', () => {
       const output = execSync('npx tsx timmy.ts version', { encoding: 'utf8' });
-      expect(output).toContain('timmy-tui v0.1.0');
+      expect(output).toContain('timmy-tui v' + VERSION);
     });
 
     it('should execute demo command and write demo-receipt.json', () => {
@@ -209,6 +210,14 @@ describe('TIMMY Receipt System', () => {
 
       const normal = getModelColors(false, false, false);
       expect(normal.nameColor).toBe('#ffffff'); // Bright white
+    });
+  });
+
+  describe('Version Consistency', () => {
+    it('VERSION constant matches package.json version', () => {
+      const packageJsonPath = path.join(process.cwd(), 'package.json');
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      expect(VERSION).toBe(packageJson.version);
     });
   });
 });

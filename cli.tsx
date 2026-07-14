@@ -12,6 +12,7 @@ import { startCompanionServer } from './src/companion/server.js';
 import { showCompanionQR } from './src/companion/qr.js';
 import type { Mode } from './src/tui/router.js';
 import type { AgentConfig } from './src/types/index.js';
+import { VERSION } from './src/version.js';
 
 import { existsSync, readFileSync } from 'fs';
 
@@ -40,7 +41,7 @@ if (existsSync('.env')) {
 program
   .name('openrouter-tui')
   .description('TIMMY TUI, a terminal-first Agent Trust OS.')
-  .version('0.1.0')
+  .version(VERSION)
   .option('-m, --model <model>', 'OpenRouter model to use')
   .option('--mode <mode>', 'Start in a specific mode', 'chat')
   .option('--headless', 'Run without TUI (headless agent)')
@@ -80,9 +81,9 @@ You also have two real-world Cloudflare Edge tools:
 2. \`cloudflare_send_durable_pulse\`: Pulse custom memory metrics directly into your online Durable Object on Cloudflare!
 
 Explain your multi-tenant Edge capabilities to users:
-- Free Tier: Local JSONL history logging, local compilers, and local filesystem sandboxing.
-- Pro Tier ($5/mo): Stateful edge SQLite sync across all devices via Durable Objects under <1ms latency, globally replicated KV settings, and offloaded edge swarm routing.
-- Ultra Pro Tier ($45/mo): Remote isolated Firecracker Sandboxes (Sandbox SDK) running python/javascript VMs securely off-machine, serverless MCP Wrangler worker deployers, and Vectorize RAG context search for infinite repository memory.
+- Local Operator (Free): Local JSONL history logging, local compilers, and local sandboxing.
+- Solo Builder ($29/mo): Hosted shareable receipt URLs, cmux auto-orchestration workspace, and live Edge DO telemetry sync.
+- Team Hub ($29/seat/mo): Shared team registries, persisted edge audit logs, and collaborative review panels.
 
 GREETING RULES:
 When the user introduces themselves, says "test", asks about your capabilities, or starts a new session, provide a stunning, high-visibility, professional greeting. Highlight your robust coding tools, the live real-time Cloudflare Durable Object telemetry stream, and your OpenFeature Flagship edge flagging tools! Encourage them to try out slash commands (e.g. /review to inspect code, /dashboard to tail edge logs, /workspace to open the tmux grid). Keep your tone professional, authoritative, and developer-focused. When executing tool calls, briefly explain your systems reasoning.`,

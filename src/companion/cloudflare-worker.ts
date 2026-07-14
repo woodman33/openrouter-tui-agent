@@ -1,6 +1,7 @@
 import { DurableObject, WorkflowEntrypoint } from "cloudflare:workers";
 import type { Message } from "../types/index.js";
 import { computeReceiptHash, Receipt } from "../receipt/schema.js";
+import { VERSION } from "../version.js";
 
 
 // Cloudflare Env Bindings conforming exactly to user receipt parameters
@@ -252,7 +253,7 @@ export class MyDurableObject extends DurableObject {
           node_version: "v20.0.0",
           package: {
             name: "timmy-tui",
-            version: "0.4.0"
+            version: VERSION
           },
           status: "completed",
           models_used: modelsUsed,

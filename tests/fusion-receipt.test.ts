@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { canonicalize, computeReceiptHash, Receipt } from '../src/receipt/schema.js';
+import { VERSION } from '../src/version.js';
 
 describe('TIMMY Fusion Receipt System', () => {
   it('should canonicalize and hash a conformed fusion receipt structure', () => {
@@ -12,7 +13,7 @@ describe('TIMMY Fusion Receipt System', () => {
       cwd: '/path/to/openrouter-tui-agent',
       platform: 'linux',
       node_version: 'v20.0.0',
-      package: { name: 'timmy-tui', version: '0.4.0' },
+      package: { name: 'timmy-tui', version: VERSION },
       status: 'completed',
       models_used: [
         { id: 'claude-sonnet-4', weight: 0.4, tokens: 250 },
@@ -53,7 +54,7 @@ describe('TIMMY Fusion Receipt System', () => {
         { id: 'gemini-2.5-pro', weight: 0.3, tokens: 200 }
       ],
       status: 'completed',
-      package: { name: 'timmy-tui', version: '0.4.0' },
+      package: { name: 'timmy-tui', version: VERSION },
       node_version: 'v20.0.0',
       platform: 'linux',
       cwd: '/path/to/openrouter-tui-agent',

@@ -7,6 +7,7 @@ import { logger } from '../utils/logger.js';
 import crypto from 'crypto';
 import fs from 'fs';
 import { computeReceiptHash, Receipt } from '../receipt/schema.js';
+import { VERSION } from '../version.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -110,7 +111,7 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
         node_version: process.version,
         package: {
           name: "timmy-tui",
-          version: "0.4.0"
+          version: VERSION
         },
         status: "completed",
         models_used: modelsUsed,
