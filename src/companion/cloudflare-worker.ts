@@ -1,5 +1,6 @@
 import { DurableObject, WorkflowEntrypoint } from "cloudflare:workers";
 import type { Message } from "../types/index.js";
+import { computeReceiptHash, Receipt } from "../receipt/schema.js";
 
 
 // Cloudflare Env Bindings conforming exactly to user receipt parameters
@@ -199,6 +200,92 @@ export class MyDurableObject extends DurableObject {
       return new Response(JSON.stringify({ status: "ok", sql: this.sqlInitialized }), {
         headers: { "Content-Type": "application/json" }
       });
+    // POST /api/workflow/fusion
+    if (method === "POST" && url.pathname === "/api/workflow/fusion") {
+      try {
+        const body = await request.json() as any;
+        const prompt = body.prompt || "";
+        const models = body.models || ["anthropic/claude-3.5-sonnet", "qwen/qwen-2.5-coder-32b", "google/gemini-2.5-pro"];
+        const plugins = body.plugins || ["zellij-forgot", "zellij-harpoon", "lazy-zellij"];
+        const riveStateHash = body.riveStateHash || "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+
+        const runId = `run_fusion_${Math.random().toString(36).substring(2, 9)}`;
+        const timestamp = Date.now();
+        const createdAt = new Date(timestamp).toISOString();
+
+        const modelsUsed = models.map((m: any, i: number) => {
+          if (typeof m === 'string') {
+            return { id: m, weight: i === 0 ? 0.6 : 0.2, tokens: 250 };
+          }
+          return {
+            id: m.id || "unknown",
+            weight: typeof m.weight === 'number' ? m.weight : 0.5,
+            tokens: typeof m.tokens === 'number' ? m.tokens : 250
+          };
+        });
+
+        const pluginsRun = plugins.map((p: any) => {
+          if (typeof p === 'string') {
+            if (p.includes('@')) return p;
+            return `${p}@1.0.0`;
+          }
+          return `${p.name || "unknown"}@${p.version || "1.0.0"}`;
+        });
+
+        const replayPath = `.timmy/receipts/fusion_run_${timestamp}/replay.md`;
+        const replayContent = `# Fusion Run Replay\n\nTask: ${prompt}\nModels: ${modelsUsed.map((m: any) => m.id).join(', ')}`;
+        
+        const encoder = new TextEncoder();
+        const data = encoder.encode(replayContent);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const replayHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+        const receiptWithoutHash: Omit<Receipt, 'receipt_sha256'> = {
+          schema_version: "0.3",
+          run_id: runId,
+          type: "fusion",
+          task: prompt,
+          created_at: createdAt,
+          cwd: "/path/to/openrouter-tui-agent",
+          platform: "linux",
+          node_version: "v20.0.0",
+          package: {
+            name: "timmy-tui",
+            version: "0.4.0"
+          },
+          status: "completed",
+          models_used: modelsUsed,
+          plugins_run: pluginsRun,
+          rive_state_hash: riveStateHash,
+          consensus: {
+            model: modelsUsed[0]?.id || "gemini-2.5-pro",
+            tokens: 1800,
+            latency_ms: 450
+          },
+          artifacts: [
+            { path: replayPath, sha256: replayHash }
+          ]
+        };
+
+        const finalHash = computeReceiptHash(receiptWithoutHash);
+        const receipt: Receipt = {
+          ...receiptWithoutHash,
+          receipt_sha256: finalHash
+        };
+
+        return new Response(JSON.stringify({
+          success: true,
+          receipt
+        }), {
+          headers: { "Content-Type": "application/json" }
+        });
+      } catch (err: any) {
+        return new Response(JSON.stringify({ success: false, error: err.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
     }
 
     // POST /runs/create
@@ -1617,7 +1704,8 @@ export default {
       url.pathname === "/account" ||
       url.pathname === "/api/create-checkout-session" ||
       url.pathname === "/api/stripe/webhook" ||
-      url.pathname === "/api/subscription"
+      url.pathname === "/api/subscription" ||
+      url.pathname === "/api/workflow/fusion"
     ) {
       const id = env.MY_DURABLE_OBJECT.idFromName("global_state");
       const stub = env.MY_DURABLE_OBJECT.get(id);

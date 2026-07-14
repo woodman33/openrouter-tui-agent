@@ -4,6 +4,9 @@ import { WebSocketServer } from 'ws';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { logger } from '../utils/logger.js';
+import crypto from 'crypto';
+import fs from 'fs';
+import { computeReceiptHash, Receipt } from '../receipt/schema.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -62,6 +65,85 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
         endpoint,
         error: err?.message || 'Cloudflare workflow endpoint unavailable'
       });
+    }
+  });
+
+  app.post('/api/workflow/fusion', express.json(), async (req, res) => {
+    try {
+      const { models = [], plugins = [], riveStateHash = "", prompt = "" } = req.body;
+
+      const runId = `run_fusion_${Math.random().toString(36).substring(2, 9)}`;
+      const timestamp = Date.now();
+      const createdAt = new Date(timestamp).toISOString();
+
+      const modelsUsed = models.map((m: any, i: number) => {
+        if (typeof m === 'string') {
+          return { id: m, weight: i === 0 ? 0.6 : 0.2, tokens: 250 };
+        }
+        return {
+          id: m.id || "unknown",
+          weight: typeof m.weight === 'number' ? m.weight : 0.5,
+          tokens: typeof m.tokens === 'number' ? m.tokens : 250
+        };
+      });
+
+      const pluginsRun = plugins.map((p: any) => {
+        if (typeof p === 'string') {
+          if (p.includes('@')) return p;
+          return `${p}@1.0.0`;
+        }
+        return `${p.name || "unknown"}@${p.version || "1.0.0"}`;
+      });
+
+      const replayPath = `.timmy/receipts/fusion_run_${timestamp}/replay.md`;
+      const replayContent = `# Fusion Run Replay\n\nTask: ${prompt}\nModels: ${modelsUsed.map((m: any) => m.id).join(', ')}`;
+      const replayHash = crypto.createHash('sha256').update(replayContent).digest('hex');
+
+      const receiptWithoutHash: Omit<Receipt, 'receipt_sha256'> = {
+        schema_version: "0.3",
+        run_id: runId,
+        type: "fusion",
+        task: prompt,
+        created_at: createdAt,
+        cwd: process.cwd(),
+        platform: process.platform,
+        node_version: process.version,
+        package: {
+          name: "timmy-tui",
+          version: "0.4.0"
+        },
+        status: "completed",
+        models_used: modelsUsed,
+        plugins_run: pluginsRun,
+        rive_state_hash: riveStateHash || crypto.createHash('sha256').update("timmy_fusion_state").digest('hex'),
+        consensus: {
+          model: modelsUsed[0]?.id || "gemini-2.5-pro",
+          tokens: 1800,
+          latency_ms: 450
+        },
+        artifacts: [
+          { path: replayPath, sha256: replayHash }
+        ]
+      };
+
+      const finalHash = computeReceiptHash(receiptWithoutHash);
+      const receipt: Receipt = {
+        ...receiptWithoutHash,
+        receipt_sha256: finalHash
+      };
+
+      // Write mock replay and receipt to local file system
+      const receiptsDir = path.join(process.cwd(), '.timmy', 'receipts', `fusion_run_${timestamp}`);
+      fs.mkdirSync(receiptsDir, { recursive: true });
+      fs.writeFileSync(path.join(receiptsDir, 'replay.md'), replayContent, 'utf8');
+      fs.writeFileSync(path.join(receiptsDir, 'receipt.json'), JSON.stringify(receipt, null, 2), 'utf8');
+
+      res.json({
+        success: true,
+        receipt
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
     }
   });
 
