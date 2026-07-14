@@ -41,6 +41,7 @@ Commands:
   docs preview    Render and serve local docs preview
   docs publish    Verify GitBook auth and prepare Git Sync publication
   providers audit List provider readiness without printing secrets
+  sceneforge      Use the authenticated Cloudflare control plane via MCPorter
 
 Options:
   --json          Output results in raw JSON format (for demo/proof)
@@ -342,14 +343,26 @@ if (command === 'setup') {
   }
 }
 
-if (command !== 'doctor' && command !== 'docs' && command !== 'providers') {
+if (
+  command !== 'doctor' &&
+  command !== 'docs' &&
+  command !== 'providers' &&
+  command !== 'sceneforge'
+) {
   printHelp();
   process.exit(2);
 }
 
 // Helper function to resolve script path dynamically for TS and JS environments
 function getScriptPath(cmd: string): string {
-  const baseName = cmd === 'doctor' ? 'timmy-doctor' : cmd === 'docs' ? 'timmy-docs' : 'timmy-providers';
+  const baseName =
+    cmd === 'doctor'
+      ? 'timmy-doctor'
+      : cmd === 'docs'
+        ? 'timmy-docs'
+        : cmd === 'providers'
+          ? 'timmy-providers'
+          : 'timmy-sceneforge';
   const tsPath = fileURLToPath(new URL(`../scripts/${baseName}.ts`, import.meta.url));
   const jsPath = fileURLToPath(new URL(`../scripts/${baseName}.js`, import.meta.url));
   
@@ -363,8 +376,31 @@ const scriptPath = getScriptPath(command);
 const isTs = scriptPath.endsWith('.ts');
 const spawnCmd = isTs ? 'npx' : process.execPath;
 const spawnArgs = isTs 
-  ? ['tsx', scriptPath, args[1] || (command === 'docs' ? 'verify' : command === 'providers' ? 'audit' : 'doctor'), ...args.slice(2)]
-  : [scriptPath, args[1] || (command === 'docs' ? 'verify' : command === 'providers' ? 'audit' : 'doctor'), ...args.slice(2)];
+  ? [
+      'tsx',
+      scriptPath,
+      args[1] ||
+        (command === 'docs'
+          ? 'verify'
+          : command === 'providers'
+            ? 'audit'
+            : command === 'sceneforge'
+              ? 'status'
+              : 'doctor'),
+      ...args.slice(2)
+    ]
+  : [
+      scriptPath,
+      args[1] ||
+        (command === 'docs'
+          ? 'verify'
+          : command === 'providers'
+            ? 'audit'
+            : command === 'sceneforge'
+              ? 'status'
+              : 'doctor'),
+      ...args.slice(2)
+    ];
 
 const child = spawn(spawnCmd, spawnArgs, {
   stdio: 'inherit',
