@@ -5,6 +5,7 @@
 * [Provider Registry](provider-registry.md)
 * [Multimodal Runtime](multimodal-runtime.md)
 * [Agent Runners](agent-runners.md)
+* [Agent Runtime Contract](agent-runtime-contract.md)
 * [Spark Runner](spark-runner.md)
 * [Modal, Mux, and Replay Pipeline](modal-mux-replay-pipeline.md)
 * [RMUX Workspace Evidence](rmux-workspace-evidence.md)

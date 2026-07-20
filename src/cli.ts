@@ -42,6 +42,8 @@ Commands:
   docs preview    Render and serve local docs preview
   docs publish    Verify GitBook auth and prepare Git Sync publication
   providers audit List provider readiness without printing secrets
+  runtimes list   List local, SDK, and remote agent runtime profiles
+  runtimes doctor Detect runtime readiness without executing agent tasks
   sceneforge      Use the authenticated Cloudflare control plane via MCPorter
 
 Options:
@@ -348,6 +350,7 @@ if (
   command !== 'doctor' &&
   command !== 'docs' &&
   command !== 'providers' &&
+  command !== 'runtimes' &&
   command !== 'sceneforge'
 ) {
   printHelp();
@@ -363,6 +366,8 @@ function getScriptPath(cmd: string): string {
         ? 'timmy-docs'
         : cmd === 'providers'
           ? 'timmy-providers'
+          : cmd === 'runtimes'
+            ? 'timmy-runtimes'
           : 'timmy-sceneforge';
   const tsPath = fileURLToPath(new URL(`../scripts/${baseName}.ts`, import.meta.url));
   const jsPath = fileURLToPath(new URL(`../scripts/${baseName}.js`, import.meta.url));
@@ -385,6 +390,8 @@ const spawnArgs = isTs
           ? 'verify'
           : command === 'providers'
             ? 'audit'
+            : command === 'runtimes'
+              ? 'list'
             : command === 'sceneforge'
               ? 'status'
               : 'doctor'),
@@ -397,6 +404,8 @@ const spawnArgs = isTs
           ? 'verify'
           : command === 'providers'
             ? 'audit'
+            : command === 'runtimes'
+              ? 'list'
             : command === 'sceneforge'
               ? 'status'
               : 'doctor'),
