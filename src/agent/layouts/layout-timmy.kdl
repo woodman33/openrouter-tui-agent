@@ -1,0 +1,29 @@
+layout {
+    pane size=1 borderless=true {
+        plugin location="zellij:tab-bar"
+    }
+    pane split_direction="vertical" {
+        pane name="TIMMY Agent Console" {
+            command "npm"
+            args "start"
+        }
+        pane name="Developer Workspace" split_direction="horizontal" {
+            pane name="Code View"
+            pane name="Swarm Telemetry"
+        }
+    }
+    pane size=2 borderless=true {
+        plugin location="file:~/.config/zellij/plugins/zellij-forgot.wasm"
+    }
+    pane size=1 borderless=true {
+        plugin location="zellij:status-bar"
+    }
+}
+
+// TIMMY v2 Zellij Plugins configuration mapping
+plugins {
+    harpoon location="file:~/.config/zellij/plugins/zellij-harpoon.wasm"
+    jdt location="file:~/.config/zellij/plugins/zellij-jdt.wasm"
+    lazy-zellij location="file:~/.config/zellij/plugins/lazy-zellij.wasm"
+    zellij-forgot location="file:~/.config/zellij/plugins/zellij-forgot.wasm"
+}

@@ -11,8 +11,10 @@ import { execSync, execFileSync } from 'child_process';
 import { classifyCommand } from '../utils/safety.js';
 import fs from 'fs';
 import path from 'path';
+import { MultiplexerManager } from './multiplexer.js';
+import { ZellijManager } from './zellij.js';
 
-class TmuxManager {
+class TmuxManager implements MultiplexerManager {
   private pollInterval: NodeJS.Timeout | null = null;
   private lastOutputs: Map<string, string[]> = new Map();
   private agent: Agent;
@@ -294,7 +296,7 @@ export class Agent extends EventEmitter<AgentEvents> {
   private config: AgentConfig;
   private tools: ReturnType<typeof tool>[];
   private running = false;
-  private tmuxMgr: TmuxManager;
+  private tmuxMgr: MultiplexerManager;
 
   public currentRunId = 'default-local-run';
   public lastBlockedCommands: Map<string, string> = new Map();
@@ -348,8 +350,12 @@ export class Agent extends EventEmitter<AgentEvents> {
     this.config = config;
     this.tools = [...defaultTools];
 
-    // Initialize Tmux background manager
-    this.tmuxMgr = new TmuxManager(this);
+    // Initialize multiplexer background manager (tmux or zellij)
+    if (process.env.TIMMY_MULTIPLEXER === 'zellij') {
+      this.tmuxMgr = new ZellijManager(this);
+    } else {
+      this.tmuxMgr = new TmuxManager(this);
+    }
     this.tmuxMgr.init();
 
     // Attach listener to capture tmux stdout and update persistent workspace threads
