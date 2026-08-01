@@ -163,21 +163,11 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
     exit();
   };
 
-  const isDev = (agent as any).developerMode === true;
-
   const paletteItems = [
-    { label: 'Main Chat Screen', action: () => { setMode('brief'); setFocusedMode('brief'); } },
-    { label: 'MCP ➔ CLI Screen', action: () => { setMode('porter'); setFocusedMode('porter'); } },
-    { label: 'Workspace Screen', action: () => { setMode('workspace'); setFocusedMode('workspace'); } },
-    { label: 'Hermes Mirror', action: () => { setMode('hermes'); setFocusedMode('hermes'); } },
-    { label: 'Proof Screen', action: () => { setMode('proof'); setFocusedMode('proof'); } },
-    { label: 'Options Screen', action: () => { setMode('options'); setFocusedMode('options'); } },
-    ...(isDev ? [
-      { label: 'Local Files Browser', action: () => { setMode('files'); setFocusedMode('files'); } },
-      { label: 'Discovery Screen', action: () => { setMode('discovery'); setFocusedMode('discovery'); } },
-      { label: 'Teams Screen', action: () => { setMode('teams'); setFocusedMode('teams'); } },
-      { label: 'Logs Monitor', action: () => { setMode('logs'); setFocusedMode('logs'); } }
-    ] : []),
+    { label: 'Chat', action: () => { setMode('brief'); setFocusedMode('brief'); } },
+    { label: 'Runs', action: () => { setMode('hermes'); setFocusedMode('hermes'); } },
+    { label: 'Work', action: () => { setMode('workspace'); setFocusedMode('workspace'); } },
+    { label: 'Logs', action: () => { setMode('logs'); setFocusedMode('logs'); } },
     { label: 'Exit Application', action: safeExit }
   ];
 
@@ -244,7 +234,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
 
     // 4. In Navigation Deck Area Focus (focusArea === 'nav')
     if (focusArea === 'nav') {
-      const allowedModes: Mode[] = ['brief', 'porter', 'workspace', 'hermes', 'options'];
+      const allowedModes: Mode[] = MODES;
 
       if (key.tab) {
         const idx = allowedModes.indexOf(focusedMode);

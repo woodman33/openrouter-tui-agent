@@ -1,22 +1,25 @@
 import chalk from 'chalk';
 
+// Deterministic masculine minimal: one dominant accent, one semantic color set,
+// no purple/pink/violet tones. Amber = precision instrument, terminal-classic.
 export const theme = {
-  surfaceBase: '#0d1117',
-  surfaceRaised: '#161b22',
-  surfaceOverlay: '#21262d',
-  textPrimary: '#e6edf3',
-  textSecondary: '#8b949e',
-  textTertiary: '#6e7681',
-  borderDefault: '#30363d',
-  accent: '#5e6ad2',
-  success: '#3fb950',
-  warning: '#d29922',
-  error: '#f85149',
-  info: '#58a6ff',
-  userColor: '#79c0ff',
-  assistantColor: '#a5d6ff',
-  toolColor: '#d2a8ff',
-  reasoningColor: '#8b949e',
+  surfaceBase: '#0a0e12',       // near-black, slightly cool
+  surfaceRaised: '#101418',     // 1 step up
+  surfaceOverlay: '#161c22',    // 2 steps up
+  textPrimary: '#e8ecf0',       // bright neutral
+  textSecondary: '#8892a0',     // mid grey-blue
+  textTertiary: '#5a6470',      // dim
+  borderDefault: '#1c232c',     // hairline, barely-there
+  accent: '#ffaa33',            // AMBER — the signal color (singular, dominant)
+  accentDim: '#7a5a20',         // amber muted (inactive chrome)
+  success: '#3ddc84',           // mint green — sharp, not yellow-green
+  warning: '#e6b800',           // deep yellow (distinct from amber accent)
+  error: '#ff4444',             // hard red, no pink
+  info: '#4aa8ff',              // cool blue (info/links)
+  userColor: '#ffc966',         // warm mid-amber for user text
+  assistantColor: '#d0d6dd',    // neutral for assistant
+  toolColor: '#8f9aa8',         // greyed tool output
+  reasoningColor: '#5a6470',    // very dim mono
 };
 
 // Named color wrappers for quick use
@@ -24,6 +27,7 @@ export const colors = {
   primary: (t: string) => chalk.hex(theme.textPrimary)(t),
   secondary: (t: string) => chalk.hex(theme.textSecondary)(t),
   accent: (t: string) => chalk.hex(theme.accent)(t),
+  accentDim: (t: string) => chalk.hex(theme.accentDim)(t),
   success: (t: string) => chalk.hex(theme.success)(t),
   error: (t: string) => chalk.hex(theme.error)(t),
   warning: (t: string) => chalk.hex(theme.warning)(t),

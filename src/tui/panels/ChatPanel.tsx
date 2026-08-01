@@ -297,8 +297,8 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
               timestamp: Date.now()
             });
           } else if (activeHomeBtnIdx === 1) {
-            // Paste MCP URL
-            agent.emit('mode:change' as any, 'porter');
+            // Open Runs/Receipts
+            agent.emit('mode:change' as any, 'hermes');
           } else if (activeHomeBtnIdx === 2) {
             // Open Workspace
             agent.emit('mode:change' as any, 'workspace');
@@ -457,12 +457,12 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                     : <SecondaryButton label="Run Proof" selected={false} width={20} />
                   }
                   {activeHomeBtnIdx === 1 
-                    ? <PrimaryButton label="MCP ➔ CLI" selected={true} width={20} /> 
-                    : <SecondaryButton label="MCP ➔ CLI" selected={false} width={20} />
+                    ? <PrimaryButton label="Runs" selected={true} width={20} /> 
+                    : <SecondaryButton label="Runs" selected={false} width={20} />
                   }
                   {activeHomeBtnIdx === 2 
-                    ? <PrimaryButton label="Open Workspace" selected={true} width={20} /> 
-                    : <SecondaryButton label="Open Workspace" selected={false} width={20} />
+                    ? <PrimaryButton label="Work" selected={true} width={20} /> 
+                    : <SecondaryButton label="Work" selected={false} width={20} />
                   }
                 </Box>
 
