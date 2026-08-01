@@ -2,6 +2,7 @@
   "name": "openrouter-tui-agent",
   "main": "src/companion/cloudflare-worker.ts",
   "compatibility_date": "2025-10-08",
+  "compatibility_flags": ["nodejs_compat"],
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
@@ -48,12 +49,7 @@
       "database_id": "4bf52fae-2df3-4885-90d1-215b632587e8"
     }
   ],
-  "vectorize": [
-    {
-      "binding": "OPENROUTER_TUI_AGENT_VECTORIZE_INDEX",
-      "index_name": "autorag-autorag-system"
-    }
-  ],
+
   "ai": {
     "binding": "OPENROUTER_TUI_AGENT_WORKERS_AI"
   },
