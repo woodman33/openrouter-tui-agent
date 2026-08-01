@@ -38,7 +38,7 @@ export interface RuntimeReceipt {
 export interface Receipt {
   schema_version: string;
   run_id: string;
-  type: 'demo' | 'proof';
+  type: 'demo' | 'proof' | 'fusion';
   task: string;
   created_at: string;
   cwd: string;
@@ -50,6 +50,14 @@ export interface Receipt {
   };
   status: 'completed' | 'running' | 'failed';
   runtime?: RuntimeReceipt;
+  plugins_run?: string[];
+  models_used?: Array<{ id: string; weight?: number; tokens?: number }>;
+  rive_state_hash?: string;
+  consensus?: {
+    model: string;
+    tokens: number;
+    latency_ms: number;
+  };
   artifacts: ReceiptArtifact[];
   receipt_sha256: string;
 }

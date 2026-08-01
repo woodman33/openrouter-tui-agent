@@ -2,6 +2,12 @@ import { execSync, execFileSync } from 'child_process';
 import { MultiplexerManager } from './multiplexer.js';
 import { classifyCommand } from '../utils/safety.js';
 import type { Agent } from './core.js';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export class ZellijManager implements MultiplexerManager {
   private agent: Agent;
@@ -12,12 +18,14 @@ export class ZellijManager implements MultiplexerManager {
     sessionId: string;
     startedAt: string;
   }> = new Map();
+  private _resolvedLayoutName: string = 'layout-timmy';
 
   constructor(agent: Agent) {
     this.agent = agent;
   }
 
   init() {
+    this.ensureLayoutAndPlugins();
     this.cleanupOrphaned();
     // Pre-spawn standard sessions/panes
     for (const session of this.agent.tmuxSessions) {
@@ -27,49 +35,129 @@ export class ZellijManager implements MultiplexerManager {
     this.pollInterval = setInterval(() => this.poll(), pollMs);
   }
 
+  /**
+   * Ensure layout-timmy.kdl is registered in ~/.config/zellij/layouts/, where
+   * zellij actually looks for named layouts (it cannot load layouts from a repo).
+   *
+   * If WASM plugins are missing, writes a minimal layout variant without them,
+   * so the demo still runs on a fresh zellij install. All calls have timeouts
+   * so a slow zellij never blocks the Ink renderer.
+   */
+  ensureLayoutAndPlugins(): void {
+    try {
+      const home = os.homedir();
+      const zellijLayoutsDir = path.join(home, '.config', 'zellij', 'layouts');
+      const zellijPluginsDir = path.join(home, '.config', 'zellij', 'plugins');
+
+      // Find the KDL source (repo or built package)
+      const candidates = [
+        path.resolve(process.cwd(), 'src/agent/layouts/layout-timmy.kdl'),
+        path.resolve(__dirname, 'layouts/layout-timmy.kdl'),
+        path.resolve(__dirname, '../src/agent/layouts/layout-timmy.kdl'),
+        path.resolve(__dirname, '../../src/agent/layouts/layout-timmy.kdl'),
+      ];
+      const sourceKdl = candidates.find(p => fs.existsSync(p));
+      if (!sourceKdl) {
+        console.warn('[TIMMY] layout-timmy.kdl not found; zellij will use default layout.');
+        this._resolvedLayoutName = '';
+        return;
+      }
+
+      // Check for required WASM plugins
+      const requiredPlugins = [
+        'zellij-forgot.wasm',
+        'zellij-harpoon.wasm',
+        'zellij-jdt.wasm',
+        'lazy-zellij.wasm',
+      ];
+      let pluginsMissing = false;
+      if (!fs.existsSync(zellijPluginsDir)) {
+        pluginsMissing = true;
+      } else {
+        const installed = fs.readdirSync(zellijPluginsDir);
+        pluginsMissing = requiredPlugins.some(p => !installed.includes(p));
+      }
+
+      if (!fs.existsSync(zellijLayoutsDir)) {
+        fs.mkdirSync(zellijLayoutsDir, { recursive: true });
+      }
+
+      let kdlContent = fs.readFileSync(sourceKdl, 'utf8');
+      const layoutName = pluginsMissing ? 'layout-timmy-minimal' : 'layout-timmy';
+      if (pluginsMissing) {
+        // Strip plugin panes so the layout parses without WASM files
+        kdlContent = kdlContent.replace(/pane size=\d+ borderless=true \{\s*plugin location="file:[^"]+"\s*\}/gs, '');
+        kdlContent = kdlContent.replace(/plugins \{[^}]*\}/gs, '');
+        // Fallback comment so users know why the layout is minimal
+        console.warn('[TIMMY] zellij WASM plugins not installed; wrote layout-timmy-minimal.kdl without plugin panes.');
+        console.warn('[TIMMY] To enable the full layout, install plugins to ~/.config/zellij/plugins/ then re-run TIMMY.');
+      }
+
+      const targetPath = path.join(zellijLayoutsDir, `${layoutName}.kdl`);
+      fs.writeFileSync(targetPath, kdlContent, 'utf8');
+      this._resolvedLayoutName = layoutName;
+    } catch (e) {
+      console.warn('[TIMMY] zellij layout install failed, falling back to defaults:', e);
+      this._resolvedLayoutName = '';
+    }
+  }
+
   cleanupOrphaned() {
     try {
-      execSync('zellij kill-all-sessions -y', { stdio: 'ignore' });
+      // `zellij kill-all-sessions -y` hangs when no sessions exist in some versions.
+      // Probe first with list-sessions; skip kill if empty.
+      const out = execSync('zellij list-sessions 2>/dev/null', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 3000 }) || '';
+      const active = out.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('No'));
+      if (active.length === 0) return;
+      execSync('zellij kill-all-sessions -y', { stdio: 'ignore', timeout: 3000 });
     } catch {
-      // Ignore if no zellij sessions are running or it's missing
+      // Ignore if no zellij sessions are running or zellij is missing
     }
   }
 
   spawnSession(id: string) {
     const sName = `ortui-${id}`;
+    const layout = this._resolvedLayoutName;
+    // Try the named layout first; if it fails, fall back to a plain session.
+    if (layout) {
+      try {
+        execSync(`zellij --session ${sName} options --default-layout ${layout} -d`, { stdio: 'ignore', timeout: 5000 });
+        this.lastOutputs.set(id, []);
+        return;
+      } catch {
+        // fall through to plain session below
+      }
+    }
     try {
-      // Start zellij in background with a custom layout loading plugins
-      execSync(`zellij --session ${sName} options --default-layout layout-timmy -d`, { stdio: 'ignore' });
+      execSync(`zellij --session ${sName} -d`, { stdio: 'ignore', timeout: 5000 });
       this.lastOutputs.set(id, []);
     } catch {
-      // Fallback if layout or options not set up
-      try {
-        execSync(`zellij --session ${sName} -d`, { stdio: 'ignore' });
-      } catch {}
+      // Give up silently — the UI will show the no-session state via capturePane fallback
     }
   }
 
   killSession(id: string) {
     const sName = `ortui-${id}`;
     try {
-      execSync(`zellij kill-session ${sName}`, { stdio: 'ignore' });
+      execSync(`zellij kill-session ${sName}`, { stdio: 'ignore', timeout: 3000 });
       this.lastOutputs.delete(id);
     } catch {}
   }
 
   getCwd(id: string): string {
-    // Return mock path or read active directory for zellij session
     return process.cwd();
   }
 
   capturePane(id: string): string[] {
     const sName = `ortui-${id}`;
     try {
-      // Using zellij action dump-screen or command capture
-      const output = execSync(`zellij --session ${sName} action dump-screen`, { encoding: 'utf8', stdio: 'pipe' });
+      const output = execSync(`zellij --session ${sName} action dump-screen`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 3000 });
       return output.split('\n').filter(Boolean);
     } catch {
-      return [`[Zellij System] Active session "${sName}" telemetry listening...`, `[Plugins] harpoon, jdt, lazy-zellij, zellij-forgot active.`];
+      return [
+        `[Zellij System] Active session "${sName}" telemetry listening...`,
+        `[Plugins] harpoon, jdt, lazy-zellij, zellij-forgot active (minimal fallback if not installed).`
+      ];
     }
   }
 
@@ -135,7 +223,8 @@ export class ZellijManager implements MultiplexerManager {
       });
 
       // Send input keys into Zellij session
-      execSync(`zellij --session ${sName} action write-chars "${wrappedCommand}\n"`, { stdio: 'ignore' });
+      const escaped = wrappedCommand.replace(/"/g, '\\"');
+      execSync(`zellij --session ${sName} action write-chars "${escaped}\n"`, { stdio: 'ignore', timeout: 3000 });
     } catch {}
   }
 
