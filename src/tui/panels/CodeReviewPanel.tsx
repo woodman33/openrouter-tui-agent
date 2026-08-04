@@ -51,7 +51,7 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
   const isSmallScreen = terminalHeight < 36;
 
   // Binary detection & health states
-  const [cmuxInstalled, setCmuxInstalled] = useState(false);
+  const [carbonylInstalled, setCarbonylInstalled] = useState(false);
   const [tmuxInstalled, setTmuxInstalled] = useState(false);
   const [browserRunning, setBrowserRunning] = useState<boolean | null>(null);
 
@@ -63,13 +63,13 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
   // Workspace Launcher active selection
   const [activeBtnIdx, setActiveBtnIdx] = useState(0);
   const [outputLog, setOutputLog] = useState<string>('Select an action to launch work surface.');
-  const [inputCmd, setInputCmd] = useState('/workspace launch cmux');
+  const [inputCmd, setInputCmd] = useState('/workspace browser');
 
   const companionPort = (global as any).companionServer?.port || 3001;
   const companionUrl = `http://localhost:${companionPort}`;
 
   const buttons = [
-    { label: 'Open cmux Workspace', key: 'cmux', desc: 'Visual local shell' },
+    { label: 'Open In-Pane Browser', key: 'carbonyl', desc: 'carbonyl Chromium lane (headless in terminal)' },
     { label: 'Open Browser Companion', key: 'browser', desc: 'Browser mirror surface' },
     { label: 'Open Local Files', key: 'files', desc: 'Workspace root explorer' },
     { label: 'View Logs', key: 'logs', desc: 'Bounded event logs' },
@@ -91,19 +91,12 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
 
   // Detect binaries and setup
   useEffect(() => {
-    let cmuxFound = false;
     try {
-      execSync('command -v cmux', { stdio: 'ignore' });
-      cmuxFound = true;
+      execSync('command -v carbonyl', { stdio: 'ignore' });
+      setCarbonylInstalled(true);
     } catch {
-      cmuxFound = false;
+      setCarbonylInstalled(existsSync(join(homedir(), '.local', 'bin', 'carbonyl')));
     }
-    if (!cmuxFound) {
-      cmuxFound = existsSync('/opt/homebrew/bin/cmux') || 
-                  existsSync('/Applications/cmux.app') || 
-                  existsSync(join(homedir(), 'Applications', 'cmux.app'));
-    }
-    setCmuxInstalled(cmuxFound);
 
     try {
       execSync('command -v tmux', { stdio: 'ignore' });
@@ -133,7 +126,7 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
       scope: `workspace.launcher.${btn.key}`,
       details: [
         `• Selected Launcher: ${btn.label}`,
-        `• cmux status: ${cmuxInstalled ? 'READY' : 'MISSING'}`,
+        `• carbonyl status: ${carbonylInstalled ? 'READY' : 'MISSING'}`,
         `• tmux status: ${tmuxInstalled ? 'READY' : 'MISSING'}`,
         `• Companion: ${browserRunning ? 'RUNNING' : 'NOT RUNNING'}`
       ]
@@ -142,7 +135,7 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
 
   useEffect(() => {
     updateInspectorData();
-  }, [activeBtnIdx, cmuxInstalled, tmuxInstalled, browserRunning]);
+  }, [activeBtnIdx, carbonylInstalled, tmuxInstalled, browserRunning]);
 
   // Main input cmd sync
   useEffect(() => {
@@ -198,12 +191,12 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
       const keyStr = buttons[activeBtnIdx]?.key;
       if (!keyStr) return;
 
-      if (keyStr === 'cmux') {
-        if (cmuxInstalled) {
-          setOutputLog(`✓ cmux opened at: ${process.cwd()}`);
-          exec(`cmux "${process.cwd()}"`, {});
+      if (keyStr === 'carbonyl') {
+        if (carbonylInstalled) {
+          agent.emit('workspace:add-browser-pane', companionUrl);
+          setOutputLog(`✓ Opening carbonyl in-pane browser lane at ${companionUrl}`);
         } else {
-          setOutputLog('✕ Launch cancelled: cmux path is missing.');
+          setOutputLog('✕ carbonyl not found. Install: https://github.com/fathyb/carbonyl/releases');
         }
       } else if (keyStr === 'browser') {
         checkUrlHealth(companionUrl).then(healthy => {
@@ -256,7 +249,7 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
     if (isSelected) {
       labelColor = '#3fb950';
     } else {
-      if (btn.key === 'cmux') labelColor = '#a98bff';
+      if (btn.key === 'carbonyl') labelColor = '#a98bff';
       else if (btn.key === 'browser') labelColor = '#58a6ff';
       else if (btn.key === 'files') labelColor = '#d2a8ff';
       else if (btn.key === 'logs') labelColor = '#3fb950';
@@ -265,9 +258,9 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
 
     let statusText = 'READY';
     let statusColor = '#3fb950';
-    if (btn.key === 'cmux') {
-      statusText = cmuxInstalled ? 'READY' : 'MISSING';
-      statusColor = cmuxInstalled ? '#3fb950' : '#ff7b72';
+    if (btn.key === 'carbonyl') {
+      statusText = carbonylInstalled ? 'READY' : 'MISSING';
+      statusColor = carbonylInstalled ? '#3fb950' : '#ff7b72';
     } else if (btn.key === 'browser') {
       statusText = browserRunning ? 'RUNNING' : 'NOT RUNNING';
       statusColor = browserRunning ? '#3fb950' : '#d29922';
@@ -314,8 +307,8 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
   let detailedExplain = '';
   let detailedAction = `[Enter] ${activeBtn.label}`;
   
-  if (activeBtn.key === 'cmux') {
-    detailedExplain = 'Opens a clickable local workspace at the current TIMMY root.';
+  if (activeBtn.key === 'carbonyl') {
+    detailedExplain = 'Spawns a carbonyl session (real Chromium renderer) as a tracked TIMMY lane inside your active multiplexer backend. Browsing happens headlessly in the terminal.';
   } else if (activeBtn.key === 'browser') {
     detailedExplain = 'Opens the Browser Companion. It mirrors chat, logs, workspace status, and receipts.';
   } else if (activeBtn.key === 'files') {
@@ -332,7 +325,7 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
       {/* 1. Header Explainer */}
       <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
         <Text bold color="#a98bff">TIMMY Workspace</Text>
-        <Text color="#8b949e">Choose where work happens. cmux is visual. Browser mirrors TIMMY. tmux is fallback persistence.</Text>
+        <Text color="#8b949e">Choose where work happens. carbonyl renders a real browser in a pane. Browser Companion mirrors TIMMY. tmux is fallback persistence.</Text>
       </Box>
 
       {/* 2. Main Command List */}
@@ -350,10 +343,10 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
           <Text color="#e6edf3">{detailedExplain}</Text>
         </Box>
 
-        {activeBtn.key === 'cmux' && (
+        {activeBtn.key === 'carbonyl' && (
           <Box marginTop={1} flexDirection="column">
-            <Text bold color="#8b949e">Path:</Text>
-            <Text color="#79c0ff">{truncateVisible(process.cwd(), mainStageWidth - 10)}</Text>
+            <Text bold color="#8b949e">Target URL:</Text>
+            <Text color="#79c0ff">{companionUrl}</Text>
           </Box>
         )}
 

@@ -13,6 +13,9 @@ import fs from 'fs';
 import path from 'path';
 import { MultiplexerManager } from './multiplexer.js';
 import { ZellijManager } from './zellij.js';
+import { RmuxManager } from './rmux.js';
+import { DEFAULT_LANE_BINDINGS, LANE_RUNNERS, laneStartupScript } from './lanes.js';
+import { writeLog, tuiLogger } from '../utils/logger.js';
 
 class TmuxManager implements MultiplexerManager {
   private pollInterval: NodeJS.Timeout | null = null;
@@ -60,38 +63,14 @@ class TmuxManager implements MultiplexerManager {
       execFileSync('tmux', ['new-session', '-d', '-s', sName], { stdio: 'ignore' });
       this.lastOutputs.set(id, []);
 
-      const targetRunners: Record<string, { cmd: string; label: string; expected: string }> = {
-        '1': { cmd: 'opencode', label: 'OpenCode CLI', expected: '$HOME/.opencode/bin/opencode' },
-        '2': { cmd: 'hermes', label: 'Hermes CLI', expected: '$HOME/.local/bin/hermes' },
-        '3': { cmd: 'pi', label: 'Pi Daemon', expected: '$HOME/.local/bin/pi' },
-      };
-      const runner = targetRunners[id];
+      const runnerKey = DEFAULT_LANE_BINDINGS[id];
 
       // Generate dynamic AgentPass credentials
       const jti = `ap_${Math.random().toString(36).substring(2, 8)}${Math.random().toString(36).substring(2, 8)}`;
       const visa = `visa_${Math.random().toString(36).substring(2, 8)}`;
       const hash = `hash_${Math.random().toString(36).substring(2, 8)}`;
 
-      const startupLines = [
-        'clear',
-        `printf '\\033[38;5;81m============================================================\\n\\033[0m'`,
-        `printf '\\033[38;5;81m[TIMMY Core]\\033[0m Cloudflare Durable Storage: SUCCESS (D1/R2)\\n'`,
-        `printf '\\033[38;5;121m[AgentPass]\\033[0m Delivering session passport (JTI: ${jti})\\n'`,
-        `printf '\\033[38;5;121m[AgentPass]\\033[0m Visa stamp: ${visa} | scope: agent.run.governed: VERIFIED\\n'`,
-        `printf '\\033[38;5;215m[Receipt]\\033[0m Shipped local-first proof bundle: ${hash}\\n'`,
-        `printf '\\033[38;5;81m============================================================\\n\\033[0m'`,
-        'export PATH="$HOME/.opencode/bin:$HOME/.local/bin:$PATH"'
-      ];
-
-      if (runner) {
-        startupLines.push(`printf '\\n\\033[38;5;220m⚡ Launching ${runner.label} in 3 seconds...\\n\\033[0m'`);
-        startupLines.push('sleep 3');
-        startupLines.push(`if command -v ${runner.cmd} >/dev/null 2>&1; then printf '\\033[38;5;121m[Runner]\\033[0m ${runner.label}: connected (${runner.cmd})\\n'; ${runner.cmd} || printf '\\n\\033[31m[Agent Alert] ${runner.label} exited with code $?\\n\\033[0m'; else printf '\\n\\033[38;5;215m[Runner]\\033[0m ${runner.label}: not found. Expected ${runner.expected}.\\n'; fi`);
-      } else {
-        startupLines.push(`printf '\\033[38;5;121m[Runner]\\033[0m Systems MCP shell ready. Type commands below.\\n'`);
-      }
-
-      const startup = startupLines.join('; ');
+      const startup = laneStartupScript(runnerKey, jti, visa, hash);
       execFileSync('tmux', ['send-keys', '-t', sName, startup, 'C-m'], { stdio: 'ignore' });
     } catch {
       // Ignore errors
@@ -162,6 +141,9 @@ class TmuxManager implements MultiplexerManager {
       const sessionName = session ? session.name : 'Unknown';
 
       if (approved) {
+        // Clear the attention state — this lane no longer needs human eyes.
+        this.agent.lastBlockedCommands.delete(id);
+
         this.agent.emit('approval.granted' as any, {
           runId,
           sessionId: id,
@@ -301,6 +283,8 @@ export class Agent extends EventEmitter<AgentEvents> {
   public currentRunId = 'default-local-run';
   public lastBlockedCommands: Map<string, string> = new Map();
   public modelHealthStatus: 'UNTESTED' | 'READY' | 'ERROR' | 'FALLBACK READY' = 'UNTESTED';
+  /** Live file-logging switch — mirrored into the logger gate by OptionsPanel. */
+  public logsEnabled: boolean = true;
 
   // Persistent workspace chamber contexts (logs)
   public workspaceContexts: Record<string, string[]> = {
@@ -339,7 +323,9 @@ export class Agent extends EventEmitter<AgentEvents> {
     { id: '1', name: 'OpenCode CLI', model: 'qwen/qwen-2.5-coder-32b', memory: '14.8 MB', cost: 0.0020 },
     { id: '2', name: 'Hermes CLI', model: 'nousresearch/hermes-3-llama-3.1-405b', memory: '12.1 MB', cost: 0.0034 },
     { id: '3', name: 'Pi Daemon', model: 'inflection/pi-3', memory: '22.4 MB', cost: 0.0015 },
-    { id: '4', name: 'Systems MCP', model: 'meta/llama-3.3', memory: '8.2 MB', cost: 0.0015 }
+    { id: '4', name: 'Systems MCP', model: 'meta/llama-3.3', memory: '8.2 MB', cost: 0.0015 },
+    { id: '5', name: 'jcode', model: 'jcode/default', memory: '0.0 MB', cost: 0.0000 },
+    { id: '6', name: 'Minds CLI', model: 'animoca/builder', memory: '0.0 MB', cost: 0.0000 }
   ];
   public showTmuxDropdown = false;
 
@@ -350,9 +336,12 @@ export class Agent extends EventEmitter<AgentEvents> {
     this.config = config;
     this.tools = [...defaultTools];
 
-    // Initialize multiplexer background manager (tmux or zellij)
-    if (process.env.TIMMY_MULTIPLEXER === 'zellij') {
+    // Initialize multiplexer background manager (tmux, zellij, or rmux)
+    const mux = process.env.TIMMY_MULTIPLEXER || 'tmux';
+    if (mux === 'zellij') {
       this.tmuxMgr = new ZellijManager(this);
+    } else if (mux === 'rmux') {
+      this.tmuxMgr = new RmuxManager(this);
     } else {
       this.tmuxMgr = new TmuxManager(this);
     }
@@ -373,6 +362,13 @@ export class Agent extends EventEmitter<AgentEvents> {
         this.emit('workspace:log:update' as any);
       }
     });
+
+    // Browser pane lane requests from the UI
+    this.on('workspace:add-browser-pane' as any, (url: string) => {
+      this.addBrowserPane(typeof url === 'string' && url.length > 0 ? url : 'https://localhost:3001');
+    });
+
+    this.wireFileLogging();
 
     // Cleanup Tmux on process exit
     process.on('exit', () => this.tmuxMgr.destroy());
@@ -412,12 +408,35 @@ export class Agent extends EventEmitter<AgentEvents> {
       cost: 0.0000
     });
     this.tmuxMgr.spawnSession(id);
+    if (this.logsEnabled !== false) tuiLogger.info(`[lane.spawned] ${JSON.stringify({ id, name, model })}`);
+    this.emit('tmux:update');
+  }
+
+  /**
+   * addBrowserPane — opens a carbonyl (Chromium-in-terminal) session as a
+   * tracked lane. Carbonyl renders a real browser headlessly inside the pane,
+   * streamed through the multiplexer like any other session.
+   */
+  addBrowserPane(url: string = 'https://localhost:3001'): void {
+    const id = (this.tmuxSessions.length + 1).toString();
+    this.tmuxSessions.push({
+      id,
+      name: `Browser: ${url}`,
+      model: 'carbonyl/chromium-109',
+      memory: '0.0 MB',
+      cost: 0.0000
+    });
+    this.tmuxMgr.spawnSession(id);
+    this.tmuxMgr.sendCommand(id, `if command -v carbonyl >/dev/null 2>&1; then carbonyl "${url}"; else printf '\\033[31m[Browser]\\033[0m carbonyl not found on PATH. Install from https://github.com/fathyb/carbonyl\\n'; fi`, true);
+    if (this.logsEnabled !== false) tuiLogger.info(`[browser.spawned] ${JSON.stringify({ id, url })}`);
     this.emit('tmux:update');
   }
 
   removeTmuxSession(id: string): void {
+    this.lastBlockedCommands.delete(id);
     this.tmuxMgr.killSession(id);
     this.tmuxSessions = this.tmuxSessions.filter(s => s.id !== id);
+    if (this.logsEnabled !== false) tuiLogger.info(`[lane.removed] ${JSON.stringify({ id })}`);
     this.emit('tmux:update');
   }
 
@@ -429,6 +448,8 @@ export class Agent extends EventEmitter<AgentEvents> {
       opencode: { name: 'OpenCode CLI', model: 'qwen/qwen-2.5-coder-32b' },
       hermes: { name: 'Hermes CLI', model: 'nousresearch/hermes-3-llama-3.1-405b' },
       pi: { name: 'Pi Daemon', model: 'inflection/pi-3' },
+      jcode: { name: 'jcode', model: 'jcode/default' },
+      minds: { name: 'Minds CLI', model: 'animoca/builder' },
       openrouter: { name: 'OpenRouter Agent', model: this.config.model || 'anthropic/claude-3-5-sonnet' }
     };
 
@@ -475,23 +496,47 @@ export class Agent extends EventEmitter<AgentEvents> {
 
   public logModelEvent(event: string, data: any) {
     try {
-      const logDir = path.join(process.cwd(), 'logs');
-      if (!fs.existsSync(logDir)) {
-        fs.mkdirSync(logDir, { recursive: true });
-      }
-      const logPath = path.join(logDir, 'agent-events.log');
       const sanitizedData = { ...data };
       if (sanitizedData.apiKey) delete sanitizedData.apiKey;
       if (sanitizedData.Authorization) delete sanitizedData.Authorization;
       if (sanitizedData.env) delete sanitizedData.env;
-      
-      const logLine = JSON.stringify({
-        timestamp: new Date().toISOString(),
-        event,
-        ...sanitizedData
-      }) + '\n';
-      fs.appendFileSync(logPath, logLine);
+
+      // writeLog adds the timestamp, honors the logs gate, and rotates at 200KB
+      writeLog('agent-events.log', 'info', JSON.stringify({ event, ...sanitizedData }));
     } catch {}
+  }
+
+  /**
+   * wireFileLogging — mirrors key lifecycle events into logs/timmy-tui.log so
+   * the Logs panel reflects real activity (lane commands, approvals, runs,
+   * receipts, model/mode switches) instead of staying frozen.
+   */
+  private wireFileLogging(): void {
+    const summarize = (d: any): string => {
+      try {
+        const s = typeof d === 'string' ? d : JSON.stringify(d);
+        return s && s.length > 160 ? s.slice(0, 157) + '...' : s;
+      } catch {
+        return String(d);
+      }
+    };
+    const log = (event: string, data?: any) => {
+      if (this.logsEnabled === false) return;
+      tuiLogger.info(`[${event}]${data !== undefined ? ' ' + summarize(data) : ''}`);
+    };
+
+    this.on('tmux.command.sent' as any, (d: any) => log('lane.command.sent', {
+      session: d?.sessionId,
+      approved: d?.approved === true,
+      cmd: String(d?.command || '').slice(0, 120)
+    }));
+    this.on('approval.required' as any, (d: any) => log('approval.required', { session: d?.sessionId, risk: d?.risk }));
+    this.on('approval.granted' as any, (d: any) => log('approval.granted', { session: d?.sessionId }));
+    this.on('command.finished' as any, (d: any) => log('lane.command.finished', { session: d?.sessionId, exitCode: d?.exitCode }));
+    this.on('run.created' as any, (d: any) => log('run.created', { runId: d?.runId, source: d?.source }));
+    this.on('receipt.generated' as any, (d: any) => log('receipt.generated', { receiptUrl: d?.receiptUrl }));
+    this.on('model:switch' as any, (m: string) => log('model.switch', { model: m }));
+    this.on('mode:change' as any, (m: string) => log('mode.change', { mode: m }));
   }
 
   async testModelHealth(modelId: string): Promise<{

@@ -39,6 +39,9 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [paletteIdx, setPaletteIdx] = useState(0);
 
+  // Help overlay state (the '?·help' hint is now real, not a dead affordance)
+  const [helpOpen, setHelpOpen] = useState(false);
+
   // Stateful Active Receipt and Snapshot Trackers
   const [activeRunId, setActiveRunId] = useState<string | undefined>(undefined);
   const [activeReceiptUrl, setActiveReceiptUrl] = useState<string | undefined>(undefined);
@@ -218,6 +221,14 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       return;
     }
 
+    // Help overlay: any Esc or '?' closes it
+    if (helpOpen) {
+      if (key.escape || input === '?') {
+        setHelpOpen(false);
+      }
+      return;
+    }
+
     // 3. Central release commands: Esc returns focus to Nav, Ctrl+G force-releases pane lock
     if (key.escape) {
       if (focusArea === 'stage') {
@@ -235,6 +246,12 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
     // 4. In Navigation Deck Area Focus (focusArea === 'nav')
     if (focusArea === 'nav') {
       const allowedModes: Mode[] = MODES;
+
+      if (input === '?') {
+        tuiLogger.info('Help overlay opened from nav.');
+        setHelpOpen(true);
+        return;
+      }
 
       if (key.tab) {
         const idx = allowedModes.indexOf(focusedMode);
@@ -316,6 +333,33 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
             })}
             <Text color="#8b949e">─────────────────────────────────────────</Text>
             <Text color="#8b949e" dimColor>Arrows to scroll | Enter to choose | Esc to exit</Text>
+          </Box>
+        )}
+
+        {/* Help Overlay */}
+        {helpOpen && (
+          <Box
+            position="absolute"
+            top={3}
+            left={25}
+            borderStyle="double"
+            borderColor="#3fb950"
+            paddingX={2}
+            flexDirection="column"
+            width={52}
+          >
+            <Text bold color="#3fb950">❓ TIMMY QUICK HELP</Text>
+            <Text color="#8b949e">────────────────────────────────────────────────</Text>
+            <Text color="#e6edf3">TAB / ↑↓    move between panels (nav focus)</Text>
+            <Text color="#e6edf3">ENTER       open the focused panel</Text>
+            <Text color="#e6edf3">ESC         back to nav / release panel focus</Text>
+            <Text color="#e6edf3">Ctrl+K      command palette</Text>
+            <Text color="#e6edf3">Ctrl+L      jump straight to Logs monitor</Text>
+            <Text color="#e6edf3">Ctrl+C      quit TIMMY cleanly</Text>
+            <Text color="#e6edf3">?           this help (while in nav)</Text>
+            <Text color="#8b949e">────────────────────────────────────────────────</Text>
+            <Text color="#8b949e" dimColor>Panels: CHAT · RUNS · WORK · LOGS</Text>
+            <Text color="#8b949e" dimColor>Press ? or ESC to close</Text>
           </Box>
         )}
       </Box>

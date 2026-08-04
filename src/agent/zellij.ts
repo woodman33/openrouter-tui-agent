@@ -19,9 +19,19 @@ export class ZellijManager implements MultiplexerManager {
     startedAt: string;
   }> = new Map();
   private _resolvedLayoutName: string = 'layout-timmy';
+  private _spawnSupported: boolean = true;
 
   constructor(agent: Agent) {
     this.agent = agent;
+  }
+
+  /**
+   * hasTty — zellij requires a controlling terminal even for detached spawn.
+   * In headless contexts (test sandboxes, CI, some SSH pipes) there is no TTY
+   * and zellij panics with "could not enable raw mode: Device not configured".
+   */
+  static hasTty(): boolean {
+    return Boolean(process.stdout.isTTY && process.stdin.isTTY);
   }
 
   init() {
@@ -47,7 +57,9 @@ export class ZellijManager implements MultiplexerManager {
     try {
       const home = os.homedir();
       const zellijLayoutsDir = path.join(home, '.config', 'zellij', 'layouts');
-      const zellijPluginsDir = path.join(home, '.config', 'zellij', 'plugins');
+      // Zellij 0.44+ uses Application Support directory for plugins on macOS
+      const zellijPluginsDir = path.join(home, 'Library', 'Application Support', 'org.Zellij-Contributors.Zellij', 'plugins');
+      const legacyPluginsDir = path.join(home, '.config', 'zellij', 'plugins');
 
       // Find the KDL source (repo or built package)
       const candidates = [
@@ -72,7 +84,13 @@ export class ZellijManager implements MultiplexerManager {
       ];
       let pluginsMissing = false;
       if (!fs.existsSync(zellijPluginsDir)) {
-        pluginsMissing = true;
+        // Check legacy location as fallback
+        if (!fs.existsSync(legacyPluginsDir)) {
+          pluginsMissing = true;
+        } else {
+          const installed = fs.readdirSync(legacyPluginsDir);
+          pluginsMissing = requiredPlugins.some(p => !installed.includes(p));
+        }
       } else {
         const installed = fs.readdirSync(zellijPluginsDir);
         pluginsMissing = requiredPlugins.some(p => !installed.includes(p));
@@ -118,10 +136,13 @@ export class ZellijManager implements MultiplexerManager {
   spawnSession(id: string) {
     const sName = `ortui-${id}`;
     const layout = this._resolvedLayoutName;
-    // Try the named layout first; if it fails, fall back to a plain session.
+    // Zellij requires a TTY even when detached; execSync has none. Wrap in
+    // `script` (BSD) to allocate a pseudo-tty so the server doesn't panic
+    // with "could not enable raw mode: Device not configured".
+    const scriptWrap = (cmd: string) => `script -q /dev/null ${cmd}`;
     if (layout) {
       try {
-        execSync(`zellij --session ${sName} options --default-layout ${layout} -d`, { stdio: 'ignore', timeout: 5000 });
+        execSync(scriptWrap(`zellij -s ${sName} options --default-layout ${layout} -d`), { stdio: 'ignore', timeout: 5000 });
         this.lastOutputs.set(id, []);
         return;
       } catch {
@@ -129,10 +150,12 @@ export class ZellijManager implements MultiplexerManager {
       }
     }
     try {
-      execSync(`zellij --session ${sName} -d`, { stdio: 'ignore', timeout: 5000 });
+      execSync(scriptWrap(`zellij -s ${sName} -d`), { stdio: 'ignore', timeout: 5000 });
       this.lastOutputs.set(id, []);
     } catch {
-      // Give up silently — the UI will show the no-session state via capturePane fallback
+      // Spawn failed — likely no TTY (headless driver). Surface a clear status.
+      this._spawnSupported = false;
+      console.warn('[TIMMY] zellij detached spawn failed (no TTY). Run TIMMY from a real terminal to use the zellij backend; falling back to observable-only lane state.');
     }
   }
 
@@ -150,8 +173,15 @@ export class ZellijManager implements MultiplexerManager {
 
   capturePane(id: string): string[] {
     const sName = `ortui-${id}`;
+    if (!this._spawnSupported) {
+      return [
+        `[Zellij Lane] "${sName}" (detached spawn unavailable without TTY)`,
+        'Run TIMMY from an interactive terminal to activate this backend.',
+        'tmux and rmux backends work headlessly.'
+      ];
+    }
     try {
-      const output = execSync(`zellij --session ${sName} action dump-screen`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 3000 });
+      const output = execSync(`zellij -s ${sName} action dump-screen`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 3000 });
       return output.split('\n').filter(Boolean);
     } catch {
       return [
@@ -194,6 +224,8 @@ export class ZellijManager implements MultiplexerManager {
       const sessionName = session ? session.name : 'Unknown';
 
       if (approved) {
+        this.agent.lastBlockedCommands.delete(id);
+
         this.agent.emit('approval.granted' as any, {
           runId,
           sessionId: id,
@@ -224,7 +256,7 @@ export class ZellijManager implements MultiplexerManager {
 
       // Send input keys into Zellij session
       const escaped = wrappedCommand.replace(/"/g, '\\"');
-      execSync(`zellij --session ${sName} action write-chars "${escaped}\n"`, { stdio: 'ignore', timeout: 3000 });
+      execSync(`zellij -s ${sName} action write-chars "${escaped}\n"`, { stdio: 'ignore', timeout: 3000 });
     } catch {}
   }
 

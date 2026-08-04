@@ -455,22 +455,22 @@
           </div>
           
           <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
-            Choose where work happens. cmux is visual. Browser mirrors TIMMY. tmux is fallback persistence.
+            Choose where work happens. Carbonyl renders a real browser in a terminal pane. Browser Companion mirrors TIMMY. tmux is fallback persistence.
           </p>
 
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px;">
-            <!-- Card 1: cmux Workspace -->
+            <!-- Card 1: Carbonyl In-Pane Browser -->
             <div style="background: #06090e; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; justify-content: space-between; transition: all 0.2s ease;">
               <div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <strong style="color: var(--success-hsl); font-size: 14px; font-family: var(--font-outfit);">cmux Workspace</strong>
+                  <strong style="color: #a98bff; font-size: 14px; font-family: var(--font-outfit);">Carbonyl Browser</strong>
                   <span style="font-size: 10px; font-weight: bold; color: var(--success-hsl);">[ READY ]</span>
                 </div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Purpose: Visual local workspace shell</div>
-                <p style="font-size: 12px; color: var(--text-main); margin-top: 8px; line-height: 1.4;">Opens a clickable local workspace at the current TIMMY root.</p>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Purpose: In-pane Chromium browser lane</div>
+                <p style="font-size: 12px; color: var(--text-main); margin-top: 8px; line-height: 1.4;">Renders this companion UI (real Chromium: JS, WebGL, video) headlessly inside a multiplexer pane.</p>
               </div>
               <div style="margin-top: 12px;">
-                <button class="btn-action success" style="width: 100%; justify-content: center; font-size: 11px; padding: 8px;" onclick="alert('Launch from terminal UI using Open cmux Workspace')">Open cmux</button>
+                <button class="btn-action" style="width: 100%; justify-content: center; font-size: 11px; padding: 8px; border-color: #a98bff; color: #a98bff;" onclick="navigator.clipboard.writeText('carbonyl http://localhost:3001'); alert('Launch command copied! Run it in any tmux/rmux/zellij pane.')">Copy Launch Command</button>
               </div>
             </div>
 
@@ -509,7 +509,7 @@
             <div style="color: var(--primary-hsl); font-weight: bold;">📟 Fallback persistence attach specifications:</div>
             <div>• To attach to the persistent fallback tmux session, run:</div>
             <div style="background: #0f141c; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; color: var(--primary-hsl); font-weight: bold; width: fit-content; margin-left: 12px;">tmux attach -t timmy-run</div>
-            <div style="margin-top: 8px; color: var(--text-muted); font-style: italic;">Use cmux for visual workspace, tmux for fallback terminal persistence.</div>
+            <div style="margin-top: 8px; color: var(--text-muted); font-style: italic;">Use carbonyl for in-pane browsing, tmux for fallback terminal persistence.</div>
           </div>
         </div>
       </div>

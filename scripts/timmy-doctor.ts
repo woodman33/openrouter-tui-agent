@@ -11,7 +11,7 @@ function printDoctor(json = false): void {
   const rmux = workspace.rmux;
   const tmuxSessions = workspace.tmux.sessions;
   const palette = workspace.palette;
-  const cmux = workspace.cmux;
+  const zellij = workspace.zellij;
 
   if (json) {
     console.log(JSON.stringify(workspace, null, 2));
@@ -31,13 +31,11 @@ function printDoctor(json = false): void {
   console.log(`tmux-palette TIMMY Palette: ${palette.timmyPaletteInstalled ? 'YES' : 'NO'}`);
   console.log(`tmux-palette Bindings: ${palette.bindingHint}`);
   console.log('');
-  console.log(`cmux Installed: ${cmux.installed ? 'YES' : 'NO'}`);
-  console.log(`cmux Connected: ${cmux.connected ? 'YES' : 'NO'} (${cmux.connection})`);
-  console.log(`cmux Version: ${cmux.version || 'not detected'}`);
-  console.log(`cmux CLI: ${cmux.cliPath || 'not detected'}`);
-  console.log(`cmux App: ${cmux.appPath || 'not detected'}`);
-  console.log('cmux Required for launch: NO');
-  console.log(`cmux Role: ${cmux.role}`);
+  console.log(`zellij Installed: ${zellij.installed ? 'YES' : 'NO'}`);
+  console.log(`zellij Version: ${zellij.version || 'not detected'}`);
+  console.log(`zellij CLI: ${zellij.cliPath || 'not detected'}`);
+  console.log('zellij Required for launch: NO');
+  console.log(`zellij Role: ${zellij.role}`);
   console.log('');
   console.log('Ready for demo: YES');
   console.log('Next step: npm start');

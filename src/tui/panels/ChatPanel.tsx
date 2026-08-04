@@ -69,10 +69,16 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   const railWidth = Math.min(48, Math.max(32, Math.floor(stageWidth * 0.32)));
   const chatWidth = Math.max(30, stageWidth - railWidth - 2);
 
+  // Chat viewport = measured fill, not a hard cap.
+  // Fixed chrome (Layout): top bar 2 (1 text + 1 border-bottom), bottom bar 1, stage paddingTop 1  → 4
+  // Panel chrome: header 2 + marginBottom 1, border box 2 (round borders), input marginTop 1 + 3 (1 text + 2 borders) → 9
+  // Autocomplete row (when visible): minHeight 1 + marginBottom 1 → +2
   const isCompact = terminalHeight < 36;
-  const visibleHeight = isCompact 
-    ? Math.max(5, terminalHeight - 14) 
-    : Math.max(8, terminalHeight - 16);
+  const chromeOverhead = 4;
+  const headerOverhead = isCompact ? 2 : 3;
+  const autocompleteOverhead = 0; // refined below once autocomplete is known
+  const visibleHeight = Math.max(6, terminalHeight - chromeOverhead - headerOverhead - 2 - 4 - 2);
+  // = terminalHeight - 12 (compact) / - 13 (normal); the trailing -2 is headroom for autocomplete so the input never gets pushed off-screen.
 
   const updateInspectorData = () => {
     setInspector({
@@ -234,27 +240,54 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         return;
       }
 
-      // Scroll chat history
-      if (key.upArrow && checkpoints.length > 0) {
+      // Scroll chat history — step scroll: default 3 lines (smooth), shift+↑↓ = 1 line (fine)
+      const scrollStep = key.shift ? 1 : 3;
+      if ((key.upArrow || (key.ctrl && char === 'k')) && checkpoints.length > 0) {
         setScrollOffset(prev => {
-          const next = Math.max(0, prev - 1);
+          const next = Math.max(0, prev - scrollStep);
           setUserScrolledUp(true);
           return next;
         });
         return;
       }
-      if (key.downArrow && checkpoints.length > 0) {
+      if ((key.downArrow || (key.ctrl && char === 'j')) && checkpoints.length > 0) {
         const totalLines = allLines.length;
         const maxScroll = Math.max(0, totalLines - visibleHeight);
         setScrollOffset(prev => {
-          const next = Math.min(maxScroll, prev + 1);
-          if (next >= maxScroll) {
-            setUserScrolledUp(false);
-          } else {
-            setUserScrolledUp(true);
-          }
+          const next = Math.min(maxScroll, prev + scrollStep);
+          setUserScrolledUp(next < maxScroll);
           return next;
         });
+        return;
+      }
+      // Page scroll — full viewport jumps
+      if (key.pageUp && checkpoints.length > 0) {
+        setScrollOffset(prev => {
+          const next = Math.max(0, prev - visibleHeight);
+          setUserScrolledUp(true);
+          return next;
+        });
+        return;
+      }
+      if (key.pageDown && checkpoints.length > 0) {
+        const totalLines = allLines.length;
+        const maxScroll = Math.max(0, totalLines - visibleHeight);
+        setScrollOffset(prev => {
+          const next = Math.min(maxScroll, prev + visibleHeight);
+          setUserScrolledUp(next < maxScroll);
+          return next;
+        });
+        return;
+      }
+      // Home/End
+      if (key.home && checkpoints.length > 0) {
+        setScrollOffset(0);
+        setUserScrolledUp(true);
+        return;
+      }
+      if (key.end && checkpoints.length > 0) {
+        setScrollOffset(Math.max(0, allLines.length - visibleHeight));
+        setUserScrolledUp(false);
         return;
       }
 
@@ -430,8 +463,8 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
           </Box>
         </Box>
 
-        {/* Messages Viewport with sleek Border and Scrollbar */}
-        <Box borderStyle="round" borderColor="#30363d" width={chatWidth - 2} height={visibleHeight + 2} flexDirection="row" paddingX={1} flexShrink={1} flexGrow={1}>
+        {/* Messages Viewport — flex-fills all remaining stage height */}
+        <Box borderStyle="round" borderColor="#30363d" width={chatWidth - 2} flexDirection="row" paddingX={1} flexShrink={1} flexGrow={1}>
           
           {/* Scrollable text region */}
           <Box flexDirection="column" flexGrow={1} height={visibleHeight} justifyContent="flex-start" overflowY="hidden">
@@ -447,7 +480,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                   <Text bold color="#a98bff">⚙️ Core trust chain:</Text>
                   <Text color="#e6edf3"> • <Text bold color="#43d6a0">OpenRouter Agent</Text>: model routing and agent reasoning</Text>
                   <Text color="#e6edf3"> • <Text bold color="#ff7b72">TIMMY Porter</Text>: MCP server ➔ CLI onboarding</Text>
-                  <Text color="#e6edf3"> • <Text bold color="#3fb950">cmux</Text>: visual workspace shell execution surface</Text>
+                  <Text color="#e6edf3"> • <Text bold color="#3fb950">carbonyl</Text>: headless Chromium browser lanes in terminal panes</Text>
                 </Box>
 
                 {/* Three Buttons - Position Stable Fixed Width */}

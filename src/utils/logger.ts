@@ -33,6 +33,18 @@ export function setLogLevel(level: LogLevel) {
   currentLevel = level;
 }
 
+// Global file-logging gate — toggled live from the Options panel so the
+// "Logs ON/OFF" setting actually controls writes instead of being cosmetic.
+let fileLogsEnabled = true;
+
+export function setLogsEnabled(enabled: boolean) {
+  fileLogsEnabled = enabled;
+}
+
+export function isLogsEnabled(): boolean {
+  return fileLogsEnabled;
+}
+
 // Preserve original console methods
 export const originalConsole = {
   log: console.log,
@@ -43,6 +55,7 @@ export const originalConsole = {
 
 export function writeLog(file: string, level: string, msg: string) {
   try {
+    if (!fileLogsEnabled) return;
     if (!existsSync('logs')) {
       mkdirSync('logs');
     }

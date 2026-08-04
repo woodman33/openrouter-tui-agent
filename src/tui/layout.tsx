@@ -162,7 +162,7 @@ export function Layout({
             })}
             <Box flexGrow={1} />
             <Box marginBottom={0}>
-              <Text color={theme.textTertiary}>TAB</Text>
+              <Text color={theme.textTertiary}>TAB·↑↓</Text>
             </Box>
           </Box>
         )}
@@ -188,8 +188,8 @@ export function Layout({
         <Box>
           <Text color={theme.textTertiary}>
             {focusArea === 'nav'
-              ? (W >= 90 ? 'TAB·↓  ENTER·select  ESC·back' : 'TAB·nav  ENTER·select')
-              : (W >= 90 ? 'ESC·nav  ↑↓·scroll  ?·help' : 'ESC·nav  ↑↓·scroll')
+              ? (W >= 90 ? 'TAB·↑↓  ENTER·open  ?·help  ESC·back' : 'TAB·nav  ENTER·open  ?·help')
+              : (W >= 90 ? 'ESC·nav  ↑↓·scroll  Ctrl+K·palette' : 'ESC·nav  ↑↓·scroll')
             }
           </Text>
         </Box>

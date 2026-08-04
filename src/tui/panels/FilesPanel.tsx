@@ -374,7 +374,7 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
       }
     } else if (viewState === 'detail') {
       const isMcpCli = activeCategory?.id === 'mcp_cli';
-      const actions = isMcpCli ? ['Open README', 'Open Folder', 'Copy Path', 'Back'] : ['Open File', 'Copy Path', 'Open Folder in cmux', 'Inspect Metadata', 'Back'];
+      const actions = isMcpCli ? ['Open README', 'Open Folder', 'Copy Path', 'Back'] : ['Open File', 'Copy Path', 'Open Folder', 'Inspect Metadata', 'Back'];
 
       if (key.upArrow) {
         setSelectedActionIdx(prev => Math.max(0, prev - 1));
@@ -392,7 +392,7 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
         } else if (act === 'Copy Path') {
           exec(`echo "${selectedFile?.path}" | pbcopy`, {}, () => {});
           setOutputLog(`✓ Copied absolute path: ${selectedFile?.path}`);
-        } else if (act === 'Open Folder in cmux' || act === 'Open Folder') {
+        } else if (act === 'Open Folder') {
           setOutputLog(`✓ Opening folder: ${selectedFile?.path}`);
           exec(`open "${selectedFile?.path}"`, {}, () => {});
         } else if (act === 'Inspect Metadata') {
@@ -544,11 +544,11 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
                   <Text color="#8b949e"> • Scope Enforced  : <Text color="#bc8cff">fs.read.workspace</Text></Text>
 
                   <Box borderStyle="single" borderColor="#d29922" paddingX={1} marginY={1}>
-                    <Text color="#d29922">💡 cmux opens a visual workspace at the selected local folder. TIMMY keeps the root, receipts, and proof.</Text>
+                    <Text color="#d29922">💡 Open Folder reveals the selected path in Finder. TIMMY keeps the root, receipts, and proof.</Text>
                   </Box>
                   
                   <Box flexDirection="column" marginTop={0} borderStyle="single" borderColor="#30363d" paddingX={2} paddingY={0}>
-                    {['Open File', 'Copy Path', 'Open Folder in cmux', 'Inspect Metadata', 'Back'].map((act, idx) => {
+                    {['Open File', 'Copy Path', 'Open Folder', 'Inspect Metadata', 'Back'].map((act, idx) => {
                       const isSelected = idx === selectedActionIdx;
                       return (
                         <Text key={act} color={isSelected ? '#d2a8ff' : '#8b949e'} bold={isSelected}>

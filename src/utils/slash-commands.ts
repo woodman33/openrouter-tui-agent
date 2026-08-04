@@ -773,7 +773,7 @@ function getMockResponse(prompt: string): string {
 • Chat-First Architecture: Centralizes user conversations directly within a full-screen terminal stage.
 • App Shell & Multi-Nav: Organizes vertical views (Brief, Porter, Workspace, Proof, Options) for premium aesthetics.
 • MCPorter & Sandboxing: Seamlessly scans MCP servers, extracts tool definitions, and gates active execution.
-• Workspace Launcher: Integrates native cmux workspace triggers with robust tmux shell fallbacks.
+• Workspace Launcher: In-pane carbonyl browser lanes with robust tmux/zellij/rmux shell fallbacks.
 • Verifiable Proofs Ledger: Renders tamper-evident, hash-bound TIMMY receipts to trace agent actions safely.
 
 Safe Next Improvement Proposal:

@@ -7,6 +7,7 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { getResponsiveLayout } from '../utils/responsive.js';
+import { setLogsEnabled } from '../../utils/logger.js';
 
 // ── Local helper: strict truncation ────────────────────────────────────────
 function ellipsize(text: string, maxWidth: number): string {
@@ -46,26 +47,19 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
   const { columns: width, rows: height } = useWindowSize();
   const terminalHeight = height || 24;
   const isSmallScreen = terminalHeight < 30;
-  const [cmuxInstalled, setCmuxInstalled] = useState(false);
+  const [rmuxInstalled, setRmuxInstalled] = useState(false);
   const [tmuxInstalled, setTmuxInstalled] = useState(false);
+  const [carbonylInstalled, setCarbonylInstalled] = useState(false);
   const [inputCmd, setInputCmd] = useState('/options toggle animations');
 
   // Detect binaries
   useEffect(() => {
-    let cmuxFound = false;
     try {
-      execSync('command -v cmux', { stdio: 'ignore' });
-      cmuxFound = true;
+      execSync('command -v rmux', { stdio: 'ignore' });
+      setRmuxInstalled(true);
     } catch {
-      cmuxFound = false;
+      setRmuxInstalled(existsSync(join(homedir(), '.local', 'bin', 'rmux')));
     }
-
-    if (!cmuxFound) {
-      cmuxFound = existsSync('/opt/homebrew/bin/cmux') || 
-                  existsSync('/Applications/cmux.app') || 
-                  existsSync(join(homedir(), 'Applications', 'cmux.app'));
-    }
-    setCmuxInstalled(cmuxFound);
 
     try {
       execSync('command -v tmux', { stdio: 'ignore' });
@@ -73,6 +67,19 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
     } catch {
       setTmuxInstalled(false);
     }
+
+    try {
+      execSync('command -v carbonyl', { stdio: 'ignore' });
+      setCarbonylInstalled(true);
+    } catch {
+      setCarbonylInstalled(existsSync(join(homedir(), '.local', 'bin', 'carbonyl')));
+    }
+  }, []);
+
+  // Sync the global file-logging gate with the agent setting on mount
+  useEffect(() => {
+    setLogsEnabled(agent.logsEnabled !== false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [options, setOptions] = useState<DropdownOption[]>([]);
@@ -80,9 +87,11 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
 
   // Initialize and keep options in sync
   useEffect(() => {
-    const cmuxStatus = cmuxInstalled ? 'DETECTED' : 'MISSING';
+    const rmuxStatus = rmuxInstalled ? 'DETECTED' : 'MISSING';
     const tmuxStatus = tmuxInstalled ? 'DETECTED' : 'MISSING';
+    const carbonylStatus = carbonylInstalled ? 'DETECTED' : 'MISSING';
     const currentModel = agent.model || 'not set';
+    const currentMux = process.env.TIMMY_MULTIPLEXER || 'tmux';
 
     setOptions([
       { key: 'animations', label: 'Animations', choices: ['ON', 'OFF'], current: process.env.TIMMY_DISABLE_ANIMATION === '1' ? 'OFF' : 'ON', desc: 'Visual motion indicators' },
@@ -91,11 +100,13 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
       { key: 'autoopen', label: 'Browser Auto-open', choices: ['ON', 'OFF'], current: agent.browserAutoOpen ? 'ON' : 'OFF', desc: 'Open browser companion' },
       { key: 'theme', label: 'Theme', choices: ['Timmy Amber', 'Timmy Blue', 'Timmy Green'], current: process.env.TIMMY_THEME === 'blue' ? 'Timmy Blue' : (process.env.TIMMY_THEME === 'green' ? 'Timmy Green' : 'Timmy Amber'), desc: 'Color palette and accents' },
       { key: 'model', label: 'OpenRouter Model', choices: [currentModel], current: currentModel, desc: 'Active model for workflows' },
-      { key: 'cmuxPath', label: 'cmux Path', choices: [cmuxStatus], current: cmuxStatus, desc: 'Native cmux companion' },
+      { key: 'multiplexer', label: 'Multiplexer', choices: ['tmux', 'zellij', 'rmux'], current: currentMux, desc: 'Terminal multiplexer backend (restart required)' },
+      { key: 'rmuxPath', label: 'rmux Path', choices: [rmuxStatus], current: rmuxStatus, desc: 'tmux-compatible multiplexer (agent lanes)' },
       { key: 'tmuxPath', label: 'tmux Path', choices: [tmuxStatus], current: tmuxStatus, desc: 'Local tmux binary' },
+      { key: 'carbonylPath', label: 'carbonyl Path', choices: [carbonylStatus], current: carbonylStatus, desc: 'Headless Chromium for in-pane browser lanes' },
       { key: 'logs', label: 'Logs', choices: ['ON', 'OFF'], current: agent.logsEnabled !== false ? 'ON' : 'OFF', desc: 'Write bounded local logs' }
     ]);
-  }, [cmuxInstalled, tmuxInstalled, agent.model, agent.developerMode, agent.sidebarAutoHide, agent.browserAutoOpen, agent.logsEnabled]);
+  }, [rmuxInstalled, tmuxInstalled, carbonylInstalled, agent.model, agent.developerMode, agent.sidebarAutoHide, agent.browserAutoOpen, agent.logsEnabled]);
 
   const updateInspectorData = (opt: DropdownOption, status: string) => {
     if (!opt) return;
@@ -109,8 +120,9 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
       details: [
         `• Option description: ${opt.desc}`,
         `• Current value: ${opt.current}`,
-        `• cmux status: ${cmuxInstalled ? '🟢 INSTALLED' : '🔴 NOT INSTALLED'}`,
+        `• rmux status: ${rmuxInstalled ? '🟢 INSTALLED' : '🔴 NOT INSTALLED'}`,
         `• tmux status: ${tmuxInstalled ? '🟢 ACTIVE' : '🔴 NOT INSTALLED'}`,
+        `• carbonyl status: ${carbonylInstalled ? '🟢 INSTALLED' : '🔴 NOT INSTALLED'}`,
         `• Allowed choices: ${opt.choices.join(', ')}`
       ]
     });
@@ -182,8 +194,13 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
         agent.sidebarAutoHide = nextChoice === 'ON';
       } else if (activeOpt.key === 'autoopen') {
         agent.browserAutoOpen = nextChoice === 'ON';
+      } else if (activeOpt.key === 'multiplexer') {
+        process.env.TIMMY_MULTIPLEXER = nextChoice;
+        // Show restart notice
+        setInputCmd(`/options toggle multiplexer to ${nextChoice} — RESTART REQUIRED`);
       } else if (activeOpt.key === 'logs') {
         agent.logsEnabled = nextChoice === 'ON';
+        setLogsEnabled(agent.logsEnabled);
       }
 
       setOptions(prev => prev.map((o, idx) => {
@@ -230,7 +247,7 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
     if (raw == null || raw === '' || raw === 'undefined') return '[NOT SET]';
 
     // Path detection keys
-    if (opt.key === 'cmuxPath' || opt.key === 'tmuxPath') {
+    if (opt.key === 'rmuxPath' || opt.key === 'tmuxPath' || opt.key === 'carbonylPath') {
       const upper = raw.toUpperCase();
       if (upper === 'DETECTED') return '[DETECTED]';
       if (upper === 'MISSING') return '[MISSING]';
@@ -240,6 +257,11 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
     // Binary ON/OFF
     if (opt.choices.length === 2 && (opt.choices.includes('ON') && opt.choices.includes('OFF'))) {
       return raw === 'ON' ? '[ON]' : '[OFF]';
+    }
+
+    // Multiplexer selection
+    if (opt.key === 'multiplexer') {
+      return `[${raw}]`;
     }
 
     // Everything else (theme, model, etc.)

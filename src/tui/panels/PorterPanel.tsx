@@ -162,7 +162,7 @@ export function PorterPanel({ agent, setInspector, focusArea = 'stage' }: Porter
 - **Source URL:** ${urlInput.trim()}
 - **Status:** dry-run planned
 - **Created Timestamp:** ${new Date().toLocaleString()}
-- **Next Step:** Run \`/porter approve ${slug}\` or use cmux to execute CLI plans safely.
+- **Next Step:** Run \`/porter approve ${slug}\` or execute CLI plans in a tmux/zellij/rmux lane safely.
 `, 'utf8');
 
       // 2. cli-plan.md

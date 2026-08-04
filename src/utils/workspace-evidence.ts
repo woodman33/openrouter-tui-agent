@@ -27,13 +27,10 @@ export interface TmuxPaletteStatus {
   bindingHint: string;
 }
 
-export interface CmuxStatus {
+export interface ZellijStatus {
   installed: boolean;
-  connected: boolean;
   cliPath: string | null;
-  appPath: string | null;
   version: string | null;
-  connection: 'socket-online' | 'installed-offline' | 'cli-only' | 'not-installed';
   required: false;
   role: string;
 }
@@ -46,7 +43,7 @@ export interface WorkspaceEvidenceStatus {
   };
   rmux: RmuxCapabilityStatus;
   palette: TmuxPaletteStatus;
-  cmux: CmuxStatus;
+  zellij: ZellijStatus;
 }
 
 function safeExecFile(command: string, args: string[], timeout = 800): string | null {
@@ -128,30 +125,16 @@ export function detectTmuxPalette(): TmuxPaletteStatus {
   };
 }
 
-export function detectCmux(): CmuxStatus {
-  const cliPath = safeExecFile('sh', ['-lc', 'command -v cmux'], 500)?.trim() || null;
-  const appCandidates = [
-    '/Applications/cmux.app',
-    join(homedir(), 'Applications', 'cmux.app'),
-  ];
-  const appPath = appCandidates.find((candidate) => existsSync(candidate)) || null;
-  const version = cliPath ? safeExecFile('cmux', ['--version'], 800)?.trim() || null : null;
-  const connected = cliPath ? safeExecFile('cmux', ['ping'], 600) !== null : false;
-  const installed = !!(cliPath || appPath);
+export function detectZellij(): ZellijStatus {
+  const cliPath = safeExecFile('sh', ['-lc', 'command -v zellij'], 500)?.trim() || null;
+  const version = cliPath ? safeExecFile('zellij', ['--version'], 800)?.trim() || null : null;
 
   return {
-    installed,
-    connected,
+    installed: !!cliPath,
     cliPath,
-    appPath,
     version,
-    connection: connected
-      ? 'socket-online'
-      : installed
-        ? appPath ? 'installed-offline' : 'cli-only'
-        : 'not-installed',
     required: false,
-    role: 'optional native macOS terminal for parallel AI agent workspaces',
+    role: 'optional WASM-plugin multiplexer for KDL-layout agent workspaces',
   };
 }
 
@@ -170,6 +153,6 @@ export function getWorkspaceEvidenceStatus(): WorkspaceEvidenceStatus {
     },
     rmux: detectRmux(),
     palette: detectTmuxPalette(),
-    cmux: detectCmux(),
+    zellij: detectZellij(),
   };
 }
