@@ -16,6 +16,7 @@ import { ZellijManager } from './zellij.js';
 import { RmuxManager } from './rmux.js';
 import { DEFAULT_LANE_BINDINGS, LANE_RUNNERS, laneStartupScript } from './lanes.js';
 import { writeLog, tuiLogger } from '../utils/logger.js';
+import { probeOllama, pickOllamaModel, ollamaChatCompletion } from './providers.js';
 
 class TmuxManager implements MultiplexerManager {
   private pollInterval: NodeJS.Timeout | null = null;
@@ -285,6 +286,8 @@ export class Agent extends EventEmitter<AgentEvents> {
   public modelHealthStatus: 'UNTESTED' | 'READY' | 'ERROR' | 'FALLBACK READY' = 'UNTESTED';
   /** Live file-logging switch — mirrored into the logger gate by OptionsPanel. */
   public logsEnabled: boolean = true;
+  /** Which upstream is currently answering: openrouter, ollama, or none. */
+  public activeProvider: 'openrouter' | 'ollama' | 'none' = 'none';
 
   // Persistent workspace chamber contexts (logs)
   public workspaceContexts: Record<string, string[]> = {
@@ -547,6 +550,10 @@ export class Agent extends EventEmitter<AgentEvents> {
   }> {
     const apiKey = this.config.apiKey;
     if (!apiKey) {
+      // No more silent early-return: surface the missing-key failure in logs + UI
+      this.modelHealthStatus = 'ERROR';
+      this.emit('model:health', 'ERROR');
+      this.logModelEvent('model.test.failed', { modelId, error: 'API key is missing' });
       return { ok: false, error: 'API key is missing' };
     }
     const start = Date.now();
@@ -596,10 +603,54 @@ export class Agent extends EventEmitter<AgentEvents> {
     } catch (e: any) {
       const latency = Date.now() - start;
       const errMsg = e.name === 'AbortError' ? 'Request timed out after 8 seconds' : e.message;
-      this.modelHealthStatus = 'ERROR';
-      this.emit('model:health', 'ERROR');
       this.logModelEvent('model.test.failed', { modelId, error: errMsg });
+
+      // Last resort: local Ollama keeps TIMMY talking when OpenRouter is down
+      const probe = await probeOllama();
+      if (probe.ok) {
+        this.modelHealthStatus = 'FALLBACK READY';
+        this.activeProvider = 'ollama';
+        this.emit('model:health', 'FALLBACK READY');
+        this.logModelEvent('model.test.fallback', { modelId, provider: 'ollama', models: probe.models.slice(0, 5) });
+        return { ok: true, error: `OpenRouter failed (${errMsg}); Ollama fallback ready`, latency };
+      }
+
+      this.modelHealthStatus = 'ERROR';
+      this.activeProvider = 'none';
+      this.emit('model:health', 'ERROR');
       return { ok: false, error: errMsg, latency };
+    }
+  }
+
+  /** Run once on TUI mount so Provider Status reflects reality immediately. */
+  public runStartupHealthCheck(): void {
+    void this.testModelHealth(this.config.model);
+  }
+
+  /**
+   * tryOllamaLastResort — when every OpenRouter candidate fails, answer via
+   * local Ollama instead of throwing. Returns null if Ollama is unreachable.
+   */
+  private async tryOllamaLastResort(
+    history: { role: string; content: string }[],
+    reason: string
+  ): Promise<{ fullText: string; actualModel: string } | null> {
+    try {
+      const probe = await probeOllama();
+      if (!probe.ok) return null;
+      const model = pickOllamaModel(probe.models, ['kimi-k2.7-code', 'glm-5.2', 'minimax-m3', 'qwen', 'ornith']);
+      if (!model) return null;
+      this.logModelEvent('model.fallback.used', { provider: 'ollama', model, reason: String(reason).slice(0, 200) });
+      this.emit('stream:start');
+      const text = await ollamaChatCompletion(model, history);
+      if (!text) return null;
+      this.emit('stream:delta', text, text);
+      this.modelHealthStatus = 'FALLBACK READY';
+      this.activeProvider = 'ollama';
+      this.emit('model:health', 'FALLBACK READY');
+      return { fullText: text, actualModel: `ollama/${model}` };
+    } catch {
+      return null;
     }
   }
 
@@ -710,6 +761,7 @@ export class Agent extends EventEmitter<AgentEvents> {
         }
 
         this.modelHealthStatus = isFallback ? 'FALLBACK READY' : 'READY';
+        this.activeProvider = 'openrouter';
         this.emit('model:health', this.modelHealthStatus);
         return { fullText, actualModel: modelId };
       };
@@ -748,16 +800,36 @@ export class Agent extends EventEmitter<AgentEvents> {
             this.config.model = fallbackModel;
             this.emit('model:switch', fallbackModel);
           } catch (fallbackErr: any) {
-            const finalErr = `OpenRouter request failed for ${activeModel}.\nReason: ${sanitizedErr}.\nNext: choose another model or run /model fallback.\n\nFallback failed for ${fallbackModel} too: ${fallbackErr.message}`;
+            const ollamaResult = await this.tryOllamaLastResort(history, `${sanitizedErr} / ${fallbackErr.message}`);
+            if (ollamaResult) {
+              executionResult = ollamaResult;
+              this.emit('message:user', {
+                role: 'assistant',
+                content: `⚙️ **[SYSTEM]** OpenRouter unreachable. Answered via local Ollama (\`${ollamaResult.actualModel}\`).`,
+                timestamp: Date.now()
+              });
+            } else {
+              const finalErr = `OpenRouter request failed for ${activeModel}.\nReason: ${sanitizedErr}.\nNext: choose another model or run /model fallback.\n\nFallback failed for ${fallbackModel} too: ${fallbackErr.message}`;
+              const error = new Error(finalErr);
+              this.emit('error', error);
+              throw error;
+            }
+          }
+        } else {
+          const ollamaResult = await this.tryOllamaLastResort(history, sanitizedErr);
+          if (ollamaResult) {
+            executionResult = ollamaResult;
+            this.emit('message:user', {
+              role: 'assistant',
+              content: `⚙️ **[SYSTEM]** OpenRouter unreachable. Answered via local Ollama (\`${ollamaResult.actualModel}\`).`,
+              timestamp: Date.now()
+            });
+          } else {
+            const finalErr = `OpenRouter request failed for ${activeModel}.\nReason: ${sanitizedErr}.\nNext: choose another model or run /model fallback.`;
             const error = new Error(finalErr);
             this.emit('error', error);
             throw error;
           }
-        } else {
-          const finalErr = `OpenRouter request failed for ${activeModel}.\nReason: ${sanitizedErr}.\nNext: choose another model or run /model fallback.`;
-          const error = new Error(finalErr);
-          this.emit('error', error);
-          throw error;
         }
       }
 

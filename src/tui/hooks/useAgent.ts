@@ -78,6 +78,12 @@ export function useAgent(agent: Agent) {
     for (const [event, handler] of Object.entries(handlers)) {
       agent.on(event as any, handler as any);
     }
+
+    // Reflect provider health immediately on mount instead of sitting at UNTESTED
+    try {
+      (agent as any).runStartupHealthCheck?.();
+    } catch { /* never block mount on a health probe */ }
+
     return () => {
       for (const [event, handler] of Object.entries(handlers)) {
         agent.off(event as any, handler as any);

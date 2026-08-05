@@ -557,8 +557,14 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
             state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#8a8a94'
           }>{state.modelHealthStatus || 'UNTESTED'}</Text></Text>
           <Text color="#8b949e">Provider Status: <Text bold color={
-            (state.modelHealthStatus === 'READY' || state.modelHealthStatus === 'FALLBACK READY') ? '#3fb950' : '#ff7b72'
-          }>{(state.modelHealthStatus === 'READY' || state.modelHealthStatus === 'FALLBACK READY') ? 'ONLINE 🟢' : 'ERROR 🔴'}</Text></Text>
+            state.modelHealthStatus === 'READY' ? '#3fb950' :
+            state.modelHealthStatus === 'FALLBACK READY' ? '#d29922' :
+            state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#d29922'
+          }>{
+            state.modelHealthStatus === 'READY' ? 'ONLINE 🟢' :
+            state.modelHealthStatus === 'FALLBACK READY' ? 'FALLBACK 🟡 ollama' :
+            state.modelHealthStatus === 'ERROR' ? 'ERROR 🔴' : 'CHECKING ⏳'
+          }</Text></Text>
         </Box>
 
         {/* Model Search Box */}
