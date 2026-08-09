@@ -5,9 +5,9 @@ import { resolve } from 'path';
 // Zero-dependency .env loader: the repo ships a .env but nothing ever loaded
 // it, so OPENROUTER_API_KEY (and friends) never reached process.env and the
 // provider health check died on "API key is missing". Real env vars win.
-function loadEnvFile(): void {
+export function loadEnvFile(dir: string = process.cwd()): void {
   try {
-    const envPath = resolve(process.cwd(), '.env');
+    const envPath = resolve(dir, '.env');
     if (!existsSync(envPath)) return;
     for (const raw of readFileSync(envPath, 'utf-8').split('\n')) {
       let line = raw.trim();

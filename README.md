@@ -28,6 +28,13 @@ npm install -g timmy-tui
 npx timmy-tui demo
 ```
 
+### Runtime notes
+- `.env` is loaded automatically at startup (real environment variables still win). Set `OPENROUTER_API_KEY` there for OpenRouter.
+- **Provider fallback:** if OpenRouter is unreachable, TIMMY answers via local **Ollama** (`http://localhost:11434`) and shows `FALLBACK 🟡` instead of failing.
+- The WORK panel connects to a Hermes gateway when `TIMMY_HERMES_CMD=hermes gateway` (or `TIMMY_HERMES_URL=ws://…`) is set.
+- Inside the TUI: `Ctrl+L` opens the live log monitor, `?` (in nav) opens quick help, `Ctrl+K` the command palette.
+- Logs land in `logs/` (timmy-tui.log, agent-events.log, companion.log, …) and rotate at 200KB.
+
 ## CLI Usage
 
 ### A. Run Demo

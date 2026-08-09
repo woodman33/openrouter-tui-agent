@@ -47,7 +47,8 @@
     "version:generate": "tsx scripts/generate-version.ts",
     "prebuild": "npm run version:generate",
     "pretest": "npm run version:generate",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "typecheck:native": "tsgo --noEmit"
   },
   "repository": {
     "type": "git",
@@ -97,6 +98,7 @@
     "@types/qrcode-terminal": "^0.12.2",
     "@types/react": "^19.0.0",
     "@types/ws": "^8.5.13",
+    "@typescript/native-preview": "^7.0.0-dev.20260707.2",
     "@vercel/sandbox": "^2.0.0",
     "tsx": "^4.19.0",
     "typescript": "^7.0.2",

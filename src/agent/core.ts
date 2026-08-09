@@ -288,6 +288,8 @@ export class Agent extends EventEmitter<AgentEvents> {
   public logsEnabled: boolean = true;
   /** Which upstream is currently answering: openrouter, ollama, or none. */
   public activeProvider: 'openrouter' | 'ollama' | 'none' = 'none';
+  /** Human-readable reason for the last health-check failure, shown in the UI. */
+  public lastHealthError: string | undefined;
 
   // Persistent workspace chamber contexts (logs)
   public workspaceContexts: Record<string, string[]> = {
@@ -552,6 +554,7 @@ export class Agent extends EventEmitter<AgentEvents> {
     if (!apiKey) {
       // No more silent early-return: surface the missing-key failure in logs + UI
       this.modelHealthStatus = 'ERROR';
+      this.lastHealthError = 'API key is missing (set OPENROUTER_API_KEY in .env)';
       this.emit('model:health', 'ERROR');
       this.logModelEvent('model.test.failed', { modelId, error: 'API key is missing' });
       return { ok: false, error: 'API key is missing' };
@@ -589,6 +592,7 @@ export class Agent extends EventEmitter<AgentEvents> {
           }
         } catch {}
         this.modelHealthStatus = 'ERROR';
+        this.lastHealthError = errMsg;
         this.emit('model:health', 'ERROR');
         this.logModelEvent('model.test.failed', { modelId, error: errMsg });
         return { ok: false, error: errMsg, latency };
@@ -597,12 +601,15 @@ export class Agent extends EventEmitter<AgentEvents> {
       const resData = await response.json();
       const provider = resData?.provider || 'unknown';
       this.modelHealthStatus = 'READY';
+      this.activeProvider = 'openrouter';
+      this.lastHealthError = undefined;
       this.emit('model:health', 'READY');
       this.logModelEvent('model.test.succeeded', { modelId, latency, provider });
       return { ok: true, provider, latency };
     } catch (e: any) {
       const latency = Date.now() - start;
       const errMsg = e.name === 'AbortError' ? 'Request timed out after 8 seconds' : e.message;
+      this.lastHealthError = errMsg;
       this.logModelEvent('model.test.failed', { modelId, error: errMsg });
 
       // Last resort: local Ollama keeps TIMMY talking when OpenRouter is down

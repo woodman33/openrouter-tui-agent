@@ -199,13 +199,14 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   }, [allLines.length, visibleHeight, userScrolledUp]);
 
   // Derive scrollable list of models
-  const rawModels = liveModels.length > 0 
+  const rawModels = liveModels.length > 0
     ? liveModels.map(m => {
         const fb = FALLBACK_MODELS.find(f => f.id === m.id);
         return {
           id: m.id,
           name: m.name || m.id,
-          description: fb ? fb.description : (m.description || 'description unavailable')
+          description: fb ? fb.description : (m.description || 'description unavailable'),
+          pricing: (m as any).pricing
         };
       })
     : FALLBACK_MODELS;
@@ -565,6 +566,9 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
             state.modelHealthStatus === 'FALLBACK READY' ? 'FALLBACK 🟡 ollama' :
             state.modelHealthStatus === 'ERROR' ? 'ERROR 🔴' : 'CHECKING ⏳'
           }</Text></Text>
+          {state.modelHealthStatus === 'ERROR' && (agent as any).lastHealthError ? (
+            <Text color="#8b949e" dimColor>  └ {String((agent as any).lastHealthError).slice(0, 70)}</Text>
+          ) : null}
         </Box>
 
         {/* Model Search Box */}
@@ -595,6 +599,21 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
               const nameText = truncateMiddleOrEnd(cleanName, usableWidth - 2);
               const descText = cleanDesc ? truncateMiddleOrEnd(cleanDesc, usableWidth - 2, true) : '';
 
+              const priceText = (() => {
+                try {
+                  const p = (m as any).pricing;
+                  if (!p) return '';
+                  const inn = parseFloat(p.prompt);
+                  const out = parseFloat(p.completion);
+                  if (!isFinite(inn) && !isFinite(out)) return '';
+                  if (inn === 0 && out === 0) return 'free';
+                  const fmt = (v: number) => (v === 0 ? '$0' : `$${(v * 1e6).toFixed(2)}`);
+                  return `${fmt(inn)} in · ${fmt(out)} out /M`;
+                } catch {
+                  return '';
+                }
+              })();
+
               const showDescription = !isCompact || isSelected || isActive;
 
               return (
@@ -607,6 +626,11 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                   {showDescription && descText && (
                     <Box paddingLeft={2}>
                       <Text color={descColor}>{descText}</Text>
+                    </Box>
+                  )}
+                  {showDescription && priceText && (
+                    <Box paddingLeft={2}>
+                      <Text color="#8a8a94" dimColor>{priceText}</Text>
                     </Box>
                   )}
                 </Box>

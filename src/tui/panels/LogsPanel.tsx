@@ -13,7 +13,7 @@ type LogFile = 'timmy-tui.log' | 'companion.log' | 'browser-launcher.log' | 'wor
 
 const REFRESH_MS = 2000;
 
-export function LogsPanel({ agent: _agent, setInspector, focusArea: _focusArea }: LogsPanelProps) {
+export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelProps) {
   const { columns: width, rows: height } = useWindowSize();
   const terminalHeight = height || 24;
   const terminalWidth = width || 80;
@@ -108,6 +108,9 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea: _focusArea }
   const atBottom = scrollOffset >= Math.max(0, logLines.length - visibleHeight);
 
   useInput((char, key) => {
+    // Only consume keys when the stage owns focus; nav keeps its arrows/numbers-free behavior
+    if (focusArea !== 'stage') return;
+
     const fileByNum = logFiles.find(lf => lf.num === char);
     if (fileByNum) {
       setActiveFile(fileByNum.key);
@@ -168,8 +171,15 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea: _focusArea }
 
       <Box borderStyle="round" borderColor="#30363d" paddingX={1} width={mainStageWidth - 2} height={visibleHeight + 2} flexDirection="column">
         {logLines.length === 0 ? (
-          <Box flexGrow={1} justifyContent="center" alignItems="center">
+          <Box flexGrow={1} justifyContent="center" alignItems="center" flexDirection="column">
             <Text color="#8a8a94" bold>● No logs written yet under logs/{activeFile}</Text>
+            <Text color="#8a8a94" dimColor>
+              {activeFile === 'timmy-tui.log' && '· lane commands, approvals, model/mode events land here while you work'}
+              {activeFile === 'agent-events.log' && '· model health + telemetry events land here'}
+              {activeFile === 'companion.log' && '· the companion web server writes here on launch'}
+              {activeFile === 'browser-launcher.log' && '· carbonyl browser-lane launches write here'}
+              {activeFile === 'workspace-launcher.log' && '· workspace launches write here — none yet on this machine'}
+            </Text>
           </Box>
         ) : (
           visibleLines.map((line, idx) => {

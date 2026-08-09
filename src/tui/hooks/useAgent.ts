@@ -16,17 +16,33 @@ export interface AgentUIState {
 }
 
 export function useAgent(agent: Agent) {
-  const [state, setState] = useState<AgentUIState>({
-    messages: [],
-    streamingText: '',
-    isThinking: false,
-    isStreaming: false,
-    currentTools: [],
-    error: null,
-    totalTokens: 0,
-    totalCost: 0,
-    model: agent.getModel(),
-    modelHealthStatus: (agent as any).modelHealthStatus || 'UNTESTED',
+  // Hydrate from the Agent's conversation so switching panels (unmount/remount)
+  // no longer wipes the visible chat — the history lives in core, not in React.
+  const [state, setState] = useState<AgentUIState>(() => {
+    let history: Message[] = [];
+    try {
+      const conv = (agent as any).conversation;
+      if (conv?.getHistory) {
+        history = conv
+          .getHistory()
+          .filter((m: any) => m.role === 'user' || m.role === 'assistant')
+          .map((m: any) => ({ role: m.role, content: m.content, timestamp: m.timestamp || Date.now() }));
+      }
+    } catch {
+      history = [];
+    }
+    return {
+      messages: history,
+      streamingText: '',
+      isThinking: false,
+      isStreaming: false,
+      currentTools: [],
+      error: null,
+      totalTokens: 0,
+      totalCost: (agent as any).totalCost || 0,
+      model: agent.getModel(),
+      modelHealthStatus: (agent as any).modelHealthStatus || 'UNTESTED',
+    };
   });
   const toolsRef = useRef<string[]>([]);
 
