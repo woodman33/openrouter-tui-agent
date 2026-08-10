@@ -576,7 +576,8 @@ export class Agent extends EventEmitter<AgentEvents> {
         body: JSON.stringify({
           model: modelId,
           messages: [{ role: 'user', content: 'Reply OK.' }],
-          max_tokens: 5
+          // Meta's provider enforces max_output_tokens >= 16; 5 used to 400
+          max_tokens: 16
         }),
         signal: controller.signal
       });
@@ -710,7 +711,8 @@ export class Agent extends EventEmitter<AgentEvents> {
             maxCost(this.config.maxCost || 1),
           ],
           ...(this.config.temperature !== undefined ? { temperature: this.config.temperature } : {}),
-          ...(this.config.maxOutputTokens ? { maxOutputTokens: this.config.maxOutputTokens } : {}),
+          // clamp: some providers (Meta) reject maxOutputTokens < 16
+          ...(this.config.maxOutputTokens ? { maxOutputTokens: Math.max(16, this.config.maxOutputTokens) } : {}),
         });
 
         this.emit('stream:start');
