@@ -11,6 +11,46 @@ import { VERSION } from '../version.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/** Model used by the /chat streaming proxy (TMX P3 Streamdown surface). */
+const CHAT_MODEL = 'qwen/qwen3.8-max';
+
+/**
+ * Ensure OPENROUTER_API_KEY is present even when the host entry point did
+ * not preload .env (the companion server can be started standalone). Uses
+ * the same zero-dep parsing rules as loadEnvFile in src/utils/config.ts but
+ * stays local to avoid pulling Conf store side effects into the server.
+ * Real environment variables always win.
+ */
+function ensureOpenRouterApiKey(): void {
+  if (process.env.OPENROUTER_API_KEY) return;
+  const candidates = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(__dirname, '..', '..', '.env'),
+  ];
+  for (const envPath of candidates) {
+    try {
+      if (!fs.existsSync(envPath)) continue;
+      for (const raw of fs.readFileSync(envPath, 'utf-8').split('\n')) {
+        let line = raw.trim();
+        if (!line || line.startsWith('#')) continue;
+        if (line.startsWith('export ')) line = line.slice(7).trim();
+        const eq = line.indexOf('=');
+        if (eq <= 0) continue;
+        const key = line.slice(0, eq).trim();
+        if (!/^[A-Za-z_][A-Za-z0-9_.]*$/.test(key)) continue;
+        let value = line.slice(eq + 1).trim();
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+        if (process.env[key] === undefined) process.env[key] = value;
+      }
+      if (process.env.OPENROUTER_API_KEY) return;
+    } catch {
+      // Never crash the companion server on env parsing
+    }
+  }
+}
+
 export interface CompanionServer {
   app: express.Application;
   httpServer: ReturnType<typeof createServer>;
@@ -145,6 +185,143 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
       });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  /**
+   * POST /chat — TMX P3 streaming chat proxy.
+   * Accepts JSON { message: string } or { messages: [{ role, content }] },
+   * proxies a streaming OpenRouter chat completion (model: qwen/qwen3.8-max)
+   * and relays it to the browser as Server-Sent Events:
+   *   event: delta  — JSON-encoded text chunk
+   *   event: usage  — token usage object (when OpenRouter reports it)
+   *   event: error  — { error, details? }
+   *   event: done   — { ok: true }
+   */
+  app.post('/chat', express.json(), async (req, res) => {
+    ensureOpenRouterApiKey();
+
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+
+    const sendSse = (event: string, data: unknown): void => {
+      if (res.writableEnded || res.destroyed) return;
+      try {
+        res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      } catch {
+        // Client disconnected mid-stream; the res 'close' handler aborts upstream
+      }
+    };
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      sendSse('error', {
+        error: 'OPENROUTER_API_KEY is missing. Add it to .env at the repo root (or export it) and restart the companion.'
+      });
+      res.end();
+      return;
+    }
+
+    // Accept { message } or { messages }
+    const body = (req.body || {}) as { message?: unknown; messages?: unknown };
+    let chatMessages: Array<{ role: string; content: string }> = [];
+    if (Array.isArray(body.messages)) {
+      chatMessages = body.messages
+        .filter((m: any) => m && typeof m.content === 'string' && m.content.trim().length > 0)
+        .map((m: any) => ({
+          role: typeof m.role === 'string' && m.role ? m.role : 'user',
+          content: m.content,
+        }));
+    }
+    if (chatMessages.length === 0 && typeof body.message === 'string' && body.message.trim()) {
+      chatMessages = [{ role: 'user', content: body.message.trim() }];
+    }
+    if (chatMessages.length === 0) {
+      sendSse('error', {
+        error: 'POST /chat expects a JSON body of { message: string } or { messages: [{ role, content }] }.'
+      });
+      res.end();
+      return;
+    }
+
+    // Abort the upstream request if the browser goes away.
+    // (Note: res 'close' is the disconnect signal — req 'close' fires as
+    // soon as the request body has been fully received.)
+    const controller = new AbortController();
+    res.on('close', () => {
+      if (!res.writableEnded) controller.abort();
+    });
+
+    try {
+      const upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ model: CHAT_MODEL, messages: chatMessages, stream: true }),
+        signal: controller.signal,
+      });
+
+      if (!upstream.ok || !upstream.body) {
+        const details = await upstream.text().catch(() => '');
+        sendSse('error', {
+          error: `OpenRouter responded ${upstream.status} for model ${CHAT_MODEL}`,
+          details: details.slice(0, 2000),
+        });
+        res.end();
+        return;
+      }
+
+      const reader = upstream.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // OpenRouter speaks SSE; split on blank lines and forward data lines
+        let sep: number;
+        while ((sep = buffer.indexOf('\n\n')) !== -1) {
+          const rawEvent = buffer.slice(0, sep);
+          buffer = buffer.slice(sep + 2);
+
+          for (const line of rawEvent.split('\n')) {
+            if (!line.startsWith('data:')) continue;
+            const payload = line.slice(5).trim();
+            if (!payload || payload === '[DONE]') continue;
+            try {
+              const chunk = JSON.parse(payload);
+              const delta = chunk?.choices?.[0]?.delta?.content;
+              if (typeof delta === 'string' && delta.length > 0) {
+                sendSse('delta', delta);
+              }
+              if (chunk?.usage) {
+                sendSse('usage', chunk.usage);
+              }
+            } catch {
+              // Ignore malformed stream chunks
+            }
+          }
+        }
+      }
+
+      sendSse('done', { ok: true });
+      res.end();
+    } catch (err: any) {
+      // AbortError means the client disconnected — nothing left to write.
+      if (err?.name === 'AbortError') return;
+      sendSse('error', { error: err?.message || 'Upstream stream failed' });
+      try {
+        if (!res.writableEnded) res.end();
+      } catch {
+        // Socket already gone
+      }
     }
   });
 

@@ -11,6 +11,7 @@ import { Spinner } from '../components/Motion.js';
 import { useEdgeHealth } from '../hooks/useEdgeHealth.js';
 import { PrimaryButton, SecondaryButton } from '../components/DesignSystem.js';
 import { fetchModels } from '../../agent/openrouter-client.js';
+import { LogRain } from './LogRain.js';
 
 interface ChatPanelProps {
   agent: Agent;
@@ -52,7 +53,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   const [liveModels, setLiveModels] = useState<any[]>([]);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
   const [highlightedModelIdx, setHighlightedModelIdx] = useState(0);
-  const [focusSection, setFocusSection] = useState<'chat' | 'modelRail'>('chat');
+  const [focusSection, setFocusSection] = useState<'chat' | 'modelRail' | 'logRain'>('chat');
   const [modelChangedFlash, setModelChangedFlash] = useState(false);
 
   useEffect(() => {
@@ -65,15 +66,23 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
     });
   }, []);
 
-  const stageWidth = focusArea === 'stage' ? terminalWidth : terminalWidth - 24;
-  const railWidth = Math.min(48, Math.max(32, Math.floor(stageWidth * 0.32)));
-  const chatWidth = Math.max(30, stageWidth - railWidth - 2);
+  // Drawable stage width = terminal minus Layout's NAV column (14 when W>=90) and STAGE paddingX=2.
+  // Sizing from the true width is what keeps the chat from ever sliding under the right rail.
+  const navWidth = terminalWidth >= 90 ? 14 : 0;
+  const stageWidth = Math.max(60, terminalWidth - navWidth - 4);
+  const railWidth = Math.max(30, Math.min(44, Math.floor(stageWidth * 0.28)));
+  const rainWidth = Math.max(34, Math.min(60, Math.floor(stageWidth * 0.24)));
+  // Three full-height columns (chat | rail | rain) only when chat keeps >=44 cols.
+  const threeCol = stageWidth >= 128 && stageWidth - railWidth - rainWidth - 8 >= 44;
+  const chatWidth = Math.max(30, stageWidth - railWidth - (threeCol ? rainWidth : 0) - 4);
 
   // Chat viewport = measured fill, not a hard cap.
   // Fixed chrome (Layout): top bar 2 (1 text + 1 border-bottom), bottom bar 1, stage paddingTop 1  → 4
   // Panel chrome: header 2 + marginBottom 1, border box 2 (round borders), input marginTop 1 + 3 (1 text + 2 borders) → 9
   // Autocomplete row (when visible): minHeight 1 + marginBottom 1 → +2
   const isCompact = terminalHeight < 36;
+  const railListHeight = Math.max(6, Math.floor((terminalHeight - 20) * 0.55));
+  const rainHeight = Math.max(6, terminalHeight - 20 - railListHeight);
   const chromeOverhead = 4;
   const headerOverhead = isCompact ? 2 : 3;
   const autocompleteOverhead = 0; // refined below once autocomplete is known
@@ -371,8 +380,18 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         setActiveSuggestIdx(0);
         setActiveHomeBtnIdx(-1);
       }
+    } else if (focusSection === 'logRain') {
+      // LogRain owns ↑↓ while focused; Tab/Esc/Left return to chat
+      if (key.tab || key.leftArrow || key.escape) {
+        setFocusSection('chat');
+      }
+      return;
     } else {
       // focusSection === 'modelRail'
+      if (key.tab) {
+        setFocusSection('logRain');
+        return;
+      }
       if (key.leftArrow || key.escape) {
         setFocusSection('chat');
         return;
@@ -468,7 +487,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         <Box borderStyle="round" borderColor="#30363d" width={chatWidth - 2} flexDirection="row" paddingX={1} flexShrink={1} flexGrow={1}>
           
           {/* Scrollable text region */}
-          <Box flexDirection="column" flexGrow={1} height={visibleHeight} justifyContent="flex-start" overflowY="hidden">
+          <Box flexDirection="column" flexGrow={1} height={visibleHeight} justifyContent={totalLines <= visibleHeight ? 'flex-end' : 'flex-start'} overflowY="hidden">
             {checkpoints.length === 0 ? (
               <Box flexGrow={1} flexDirection="column" paddingX={2} paddingY={1} justifyContent="space-around">
                 
@@ -579,7 +598,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         </Box>
 
         {/* Scrollable Model List */}
-        <Box flexDirection="column" flexGrow={1} overflowY="hidden" minHeight={8}>
+        <Box flexDirection="column" height={railListHeight} overflowY="hidden">
           {filteredModels.length === 0 ? (
             <Text color="#8b949e" italic>No matching models.</Text>
           ) : (
@@ -639,15 +658,21 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
           )}
         </Box>
 
-        <Box flexGrow={1} />
+        {/* Live log rain — newest at top, rains downward (stacked mode) */}
+        {!threeCol && <LogRain height={rainHeight} focused={focusSection === 'logRain' && focusArea === 'stage'} />}
 
         <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
-          <Text color="#8b949e" dimColor>RightArrow: focus rail</Text>
-          <Text color="#8b949e" dimColor>LeftArrow: return to chat</Text>
-          <Text color="#8b949e" dimColor>Up/Down: scroll models</Text>
-          <Text color="#8b949e" dimColor>Enter: select model</Text>
+          <Text color="#8b949e" dimColor>Tab·region ↑↓·move Enter·act</Text>
+          <Text color="#8b949e" dimColor>Esc·back ^R·runs ^W·work ^L·logs</Text>
+          <Text color="#8b949e" dimColor>^K·palette ?·help(nav)</Text>
         </Box>
       </Box>
+
+      {threeCol && (
+        <Box width={rainWidth} flexDirection="column" flexShrink={0}>
+          <LogRain height={terminalHeight - 12} focused={focusSection === 'logRain' && focusArea === 'stage'} />
+        </Box>
+      )}
     </Box>
   );
 }

@@ -13,6 +13,8 @@ import { useModeAgentConfig } from './hooks/useModeAgentConfig.js';
 
 import { agentLogger, tuiLogger } from '../utils/logger.js';
 
+import { Onboarding } from './Onboarding.js';
+
 interface AppProps {
   config: AgentConfig;
   initialMode?: Mode;
@@ -27,7 +29,8 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   
   // V2.0 App Shell navigation and focus states
   const [focusedMode, setFocusedMode] = useState<Mode>(mappedInitialMode);
-  const [focusArea, setFocusArea] = useState<'nav' | 'stage'>('nav');
+  // Drop straight into the chat stage — no Tab+Enter dance to start working
+  const [focusArea, setFocusArea] = useState<'nav' | 'stage'>('stage');
   const [inspectorData, setInspectorData] = useState<any>(null);
   const setInspectorSafe = React.useCallback((data: any) => {
     Promise.resolve().then(() => {
@@ -41,6 +44,9 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
 
   // Help overlay state (the '?·help' hint is now real, not a dead affordance)
   const [helpOpen, setHelpOpen] = useState(false);
+
+  // First-run onboarding gate (local-first, skippable, persisted)
+  const [showOnboard, setShowOnboard] = useState(() => !(config as any).onboarded);
 
   // Stateful Active Receipt and Snapshot Trackers
   const [activeRunId, setActiveRunId] = useState<string | undefined>(undefined);
@@ -229,6 +235,21 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       return;
     }
 
+    // Global Ctrl-layer jumps — one dialect everywhere, no nav dance required
+    // (Ink doesn't parse F-keys; Ctrl combos are conflict-free in raw mode)
+    if (key.ctrl && input === 'r') {
+      setMode('hermes');
+      setFocusedMode('hermes');
+      setFocusArea('stage');
+      return;
+    }
+    if (key.ctrl && input === 'w') {
+      setMode('workspace');
+      setFocusedMode('workspace');
+      setFocusArea('stage');
+      return;
+    }
+
     // 3. Central release commands: Esc returns focus to Nav, Ctrl+G force-releases pane lock
     if (key.escape) {
       if (focusArea === 'stage') {
@@ -286,6 +307,11 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       }
     }
   });
+
+  // First-run gate: local-first onboarding before the unified screen
+  if (showOnboard) {
+    return <Onboarding agent={agent} onDone={() => setShowOnboard(false)} />;
+  }
 
   return (
     <Layout
@@ -356,7 +382,8 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
             <Text color="#e6edf3">Ctrl+K      command palette</Text>
             <Text color="#e6edf3">Ctrl+L      jump straight to Logs monitor</Text>
             <Text color="#e6edf3">Ctrl+C      quit TIMMY cleanly</Text>
-            <Text color="#e6edf3">?           this help (while in nav)</Text>
+            <Text color="#e6edf3">Ctrl+R/W/L  runs / work / full logs</Text>
+            <Text color="#e6edf3">?           this help (in nav)</Text>
             <Text color="#8b949e">────────────────────────────────────────────────</Text>
             <Text color="#8b949e" dimColor>Panels: CHAT · RUNS · WORK · LOGS</Text>
             <Text color="#8b949e" dimColor>Press ? or ESC to close</Text>

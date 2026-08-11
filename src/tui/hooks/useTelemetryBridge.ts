@@ -85,6 +85,7 @@ export function useTelemetryBridge({
   // Resolve telemetry endpoint URL by priority
   const resolveEndpoint = (): string => {
     if (config.telemetryUrl) return config.telemetryUrl;
+    if (process.env.TIMMY_TELEMETRY_URL === 'off') return '';
     if (process.env.TIMMY_TELEMETRY_URL) return process.env.TIMMY_TELEMETRY_URL;
     return 'https://openrouter-tui-agent.wmeldman33.workers.dev';
   };
@@ -109,6 +110,7 @@ export function useTelemetryBridge({
 
   const drainOfflineSpool = async (endpoint: string) => {
     try {
+      if (!endpoint) return; // telemetry disabled
       if (Date.now() - lastDrainAtRef.current < 10000) return; // throttle: max 1 drain/10s
       const spoolPath = path.join(process.cwd(), '.timmy', 'offline-telemetry.jsonl');
       if (!fs.existsSync(spoolPath)) return;
@@ -221,6 +223,11 @@ export function useTelemetryBridge({
 
     setTelemetryStatus('syncing');
     const endpoint = resolveEndpoint();
+    if (!endpoint) {
+      // telemetry disabled (TIMMY_TELEMETRY_URL=off) — keep items queued, stay local
+      setTelemetryStatus('offline');
+      return;
+    }
 
     const itemsToProcess = [...currentQueue];
     setQueue([]); // Clear active queue during processing
