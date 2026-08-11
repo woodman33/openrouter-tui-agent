@@ -23,6 +23,10 @@ import {
 } from './generations.js';
 import { captureFrames, defaultFramesDir, FRAME_EVERY, ASSUMED_FPS } from './framecap.js';
 import { locateGenAgent, buildGenAgentArgs, launchDetached } from './genbridge.js';
+import { BRAND } from './brand.js';
+import { loadTemplate, listTemplates } from './templates.js';
+import { writeDashboard, ensureDashServer, dashUrl, probeUrl } from './dash.js';
+import { aggregateGenerations, parseCostFromLog } from './generations.js';
 
 
 export interface SlashCommand {
@@ -585,23 +589,26 @@ export default function DemoDashboard() {
   },
   {
     command: '/studio',
-    description: 'TIMMY Studios — seed a HyperFrames composition, preview it in a carbonyl browser lane',
-    usage: '/studio <idea>',
+    description: 'TIMMY Studios — seed a HyperFrames composition from a Slate template, preview in carbonyl',
+    usage: '/studio [--template <name>] <idea>',
     execute: (args, agent, state) => {
-      const brief = args.trim();
-      if (!brief) return 'Usage: /studio <idea>  — e.g. /studio 12s launch sting for the receipt ledger';
+      let restArgs = args.trim();
+      let templateName = 'storyboard';
+      const tMatch = restArgs.match(/^--template\s+(\S+)\s+([\s\S]*)$/);
+      if (tMatch) {
+        templateName = tMatch[1];
+        restArgs = tMatch[2].trim();
+      }
+      const brief = restArgs;
+      if (!brief) return 'Usage: /studio [--template <name>] <idea>  — templates live in studio/templates/ (any agent may author one)';
       const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const slugId = brief.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'untitled';
       const dir = join(process.cwd(), 'studio', slugId);
       mkdirSync(dir, { recursive: true });
       const compId = `timmy-${slugId}`;
-      const beats = [
-        { at: 0, dur: 2.5, label: 'HOOK', text: 'TIMMY' },
-        { at: 2.5, dur: 2.5, label: 'PROBLEM', text: brief },
-        { at: 5, dur: 3, label: 'DEMO', text: 'chat rises · logs rain · receipts seal' },
-        { at: 8, dur: 2.5, label: 'TRUST', text: 'every frame sha256-stamped' },
-        { at: 10.5, dur: 1.5, label: 'CTA', text: 'timmytui.com' }
-      ];
+      const template = loadTemplate(templateName, brief);
+      const beats = template.beats;
+      const total = template.total;
       const clips = beats.map(b =>
         `  <div class="clip" data-start="${b.at}" data-duration="${b.dur}">` +
         `<span class="label">${b.label}</span><h1>${esc(b.text)}</h1></div>`
@@ -621,12 +628,12 @@ h1{margin:0;color:#d2a8ff;font-size:28px;text-align:center;max-width:80%}
 </style>
 </head>
 <body>
-<div id="stage" data-composition-id="${compId}" data-start="0" data-duration="12">
+<div id="stage" data-composition-id="${compId}" data-start="0" data-duration="${total}">
 ${clips}
 </div>
 <script>
 window.__timelines = window.__timelines || {};
-window.__timelines["${compId}"] = { duration: 12 };
+window.__timelines["${compId}"] = { duration: ${total} };
 document.querySelectorAll(".clip").forEach(function (el) {
   el.style.setProperty("--at", el.getAttribute("data-start") + "s");
   el.style.setProperty("--dur", el.getAttribute("data-duration") + "s");
@@ -637,7 +644,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
 `;
       writeFileSync(join(dir, 'index.html'), html, 'utf8');
       writeFileSync(join(dir, 'STORYBOARD.md'),
-        `# TIMMY Studios storyboard — ${slugId}\n\nBrief: ${brief}\n\n` +
+        `# ${BRAND.studios} storyboard — ${slugId}\n\nBrief: ${brief}\nTemplate: ${template.name} (${template.source})\n\n` +
         beats.map(b => `- ${b.at}s–${b.at + b.dur}s [${b.label}] ${b.text}`).join('\n') +
         `\n\nRender: \`npx hyperframes render studio/${slugId}\`\n`, 'utf8');
       const port = 4173 + (crypto.createHash('sha256').update(slugId).digest().readUInt16BE(0) % 100);
@@ -669,10 +676,11 @@ document.querySelectorAll(".clip").forEach(function (el) {
       // The active OpenRouter agent stays in the loop: it proposes a tighter
       // beat sheet in chat while the deterministic seed previews immediately.
       if (state && state.send) {
-        state.send(`🎬 TIMMY STUDIOS brief: "${brief}". Propose a tighter 5-beat beat sheet (HOOK / PROBLEM / DEMO / TRUST / CTA, seconds + on-screen text, 12s total).`);
+        state.send(`🎬 ${BRAND.studios.toUpperCase()} brief: "${brief}" (template: ${template.name}). Propose a tighter beat sheet for this template's beats (seconds + on-screen text, ${total}s total).`);
       }
-      return `🎬 TIMMY STUDIOS — "${brief}"\n` +
-             `• composition: studio/${slugId}/index.html (12s · 5 beats)\n` +
+      return `🎬 ${BRAND.studios.toUpperCase()} — "${brief}"\n` +
+             `• composition: studio/${slugId}/index.html (${total}s · ${beats.length} beats)\n` +
+             `• template:    ${BRAND.slate} "${template.name}" (${template.source}) — author new ones in studio/templates/\n` +
              `• storyboard:  studio/${slugId}/STORYBOARD.md\n` +
              `• preview:     ${url}\n` +
              `• lane:        ${lane}\n` +
@@ -765,13 +773,19 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const lines = rows.map(g => {
         let status = g.status;
         let artifact = g.artifact;
+        let cost = g.cost_usd;
         if (g.log && existsSync(g.log)) {
           const logText = readFileSync(g.log, 'utf8');
           status = deriveStatusFromLog(logText, g.status);
           artifact = artifact || extractArtifactFromLog(logText);
-          if (status !== g.status || artifact !== g.artifact) updateGeneration(g.id, { status, artifact });
+          if (cost === undefined && status === 'done') cost = parseCostFromLog(logText);
+          if (status !== g.status || artifact !== g.artifact || cost !== g.cost_usd) {
+            const patch: { status: typeof status; artifact?: string; cost_usd?: number } = { status, artifact };
+            if (cost !== undefined) patch.cost_usd = cost;
+            updateGeneration(g.id, patch);
+          }
         }
-        return `• ${g.id}  ${g.provider.padEnd(18)} ${status.padEnd(7)}${g.frameCount ? ` ${g.frameCount}f` : ''}${artifact ? ` → ${artifact}` : ''}  "${g.prompt.slice(0, 44)}${g.prompt.length > 44 ? '…' : ''}"`;
+        return `• ${g.id}  ${g.provider.padEnd(18)} ${status.padEnd(7)}${cost !== undefined ? ` $${cost.toFixed(3)}` : ''}${g.frameCount ? ` ${g.frameCount}f` : ''}${artifact ? ` → ${artifact}` : ''}  "${g.prompt.slice(0, 44)}${g.prompt.length > 44 ? '…' : ''}"`;
       });
       return `🎞️  GENERATION LEDGER\n${lines.join('\n')}\n\n${generationsOverview()}`;
     }
@@ -798,6 +812,60 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/panes',
+    description: `${BRAND.studios} in carbonyl — dashboard pane + Slate (tldraw) pane`,
+    usage: '/panes',
+    execute: (_, agent) => {
+      const cwd = process.cwd();
+      writeDashboard(cwd);
+      const serverUp = ensureDashServer(cwd);
+      const slateUrl = process.env.TIMMY_SLATE_URL || 'http://127.0.0.1:5173/';
+      const slateUp = probeUrl(slateUrl);
+      let hasCarbonyl = false;
+      try { execSync('command -v carbonyl', { stdio: 'ignore' }); hasCarbonyl = true; } catch { /* no carbonyl */ }
+      const panes: Array<[string, string]> = [[`${BRAND.studios} dashboard`, dashUrl()]];
+      if (slateUp) panes.push([`${BRAND.slate} (tldraw)`, slateUrl]);
+      if (!hasCarbonyl || !agent || !agent.addBrowserPane) {
+        return `🖥️  ${BRAND.studios.toUpperCase()} PANES\n• dashboard: ${dashUrl()} (server ${serverUp ? 'up' : 'FAILED'})\n• slate:     ${slateUp ? slateUrl : 'not detected — start your tldraw dev server or set TIMMY_SLATE_URL'}\n• carbonyl not on PATH — open the URLs in any browser`;
+      }
+      const opened = panes.map(([label, url]) => { agent.addBrowserPane(url); return `${label} → ${url}`; });
+      return `🖥️  ${BRAND.studios.toUpperCase()} PANES — ${opened.length} carbonyl lane${opened.length === 1 ? '' : 's'}\n• ${opened.join('\n• ')}\n` +
+             (slateUp ? '' : `• slate not detected — start tldraw on localhost (or set TIMMY_SLATE_URL), then /panes again\n`) +
+             `• dashboard auto-refreshes every 5s: ledger, costs, frames, events`;
+    }
+  },
+  {
+    command: '/promptdb',
+    description: 'Provider/model-specific prompt + result database with costs and timestamps',
+    usage: '/promptdb [provider]',
+    execute: args => {
+      const stats = aggregateGenerations(args.trim() || undefined);
+      if (!stats.length) return `🗄️  Prompt DB is empty — run /gen first. ${generationsOverview()}`;
+      const lines = stats.map(s =>
+        `• ${s.provider.padEnd(18)} total:${String(s.total).padEnd(3)} done:${String(s.done).padEnd(3)} failed:${String(s.failed).padEnd(2)} $${s.cost.toFixed(3)}  models: ${Object.entries(s.models).map(([m, n]) => `${m}×${n}`).join(', ')}  last:${(s.last_at || '').slice(0, 19).replace('T', ' ')}`);
+      const recent = listGenerations({}).slice(0, 6).map(g =>
+        `  - ${g.id} [${g.status}]${g.cost_usd !== undefined ? ` $${g.cost_usd.toFixed(3)}` : ''} (${g.provider}${g.model ? `/${g.model}` : ''}) "${g.prompt.slice(0, 40)}${g.prompt.length > 40 ? '…' : ''}" → ${g.artifact || 'no artifact yet'}`);
+      return `🗄️  PROMPT & RESULT DB — timestamped trail in .timmy/runs/events.jsonl\n${lines.join('\n')}\nrecent:\n${recent.join('\n')}`;
+    }
+  },
+  {
+    command: '/template',
+    description: `${BRAND.slate} templates — list or show storyboard templates any agent can author`,
+    usage: '/template [name]',
+    execute: args => {
+      const name = args.trim();
+      const all = listTemplates();
+      if (!name) {
+        return `📐 ${BRAND.slate.toUpperCase()} TEMPLATES: ${all.join(', ') || '(none yet)'}\n` +
+               `• schema: {"name","total","beats":[{"at","dur","label","text"}]} — "{brief}" interpolates\n` +
+               `• any agent authors one per workflow: write studio/templates/<name>.json, then /studio --template <name> <idea>`;
+      }
+      const t = loadTemplate(name, '{brief}');
+      return `📐 ${BRAND.slate} template "${t.name}" (${t.source}, ${t.total}s)\n` +
+             t.beats.map(b => `• ${b.at}s–${b.at + b.dur}s [${b.label}] ${b.text}`).join('\n');
+    }
+  },
+  {
     command: '/help',
     description: 'Show list of all available commands',
     execute: () => {
@@ -808,7 +876,10 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const reset = '\x1b[0m';
       const dim = '\x1b[2m';
 
-      return `${boldCyan}💡 TIMMY CONSOLE SYSTEMS HELP DIRECTORY${reset}\n` +
+      return `${boldYellow}⛁ ${BRAND.umbrella} — ${BRAND.tagline}${reset}\n` +
+             `${dim}${BRAND.studios}: ${BRAND.studiosTagline}\n` +
+             `${BRAND.slate}: ${BRAND.slateTagline}${reset}\n` +
+             `${boldCyan}💡 TIMMY CONSOLE SYSTEMS HELP DIRECTORY${reset}\n` +
              `-----------------------------------------------------\n` +
              `${boldYellow}🎛️  NAVIGATION MODES & INTERFACES${reset}\n` +
              `  /chat         — Switch to conversational Chat\n` +
@@ -837,7 +908,10 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /providers [k]  — Fleet registry (openrouter/venice/wavespeed/local/cloud)\n` +
              `  /gen <a> :: <p> — Async sealed generation via your openrouter-agent\n` +
              `  /gens [filter]  — Review ledger by id / provider / kind (live status)\n` +
-             `  /framecap <vid> — ffmpeg every 30th frame @60fps into studio/frames/\n\n` +
+             `  /framecap <vid> — ffmpeg every 30th frame @60fps into studio/frames/\n` +
+             `  /panes          — Studios dashboard + Slate (tldraw) in carbonyl lanes\n` +
+             `  /promptdb [p]   — Provider/model prompt+result DB w/ costs & timestamps\n` +
+             `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n\n` +
              `${boldCyan}⚙️  CONSOLE SETTINGS & LIFE CYCLE${reset}\n` +
              `  /model <id>   — Switch active model dynamically\n` +
              `  /graphics <p> — Set TUI graphics (auto, kitty, iterm2, ansi)\n` +

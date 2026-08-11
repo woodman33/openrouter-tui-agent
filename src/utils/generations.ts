@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, appendFileSync } from 'fs';
+import { join, dirname } from 'path';
 import crypto from 'crypto';
 
 // TIMMY Generation Ledger — every prompt → generation → capture → critique
@@ -20,11 +20,29 @@ export interface GenerationRecord {
   artifact?: string;
   framesDir?: string;
   frameCount?: number;
+  cost_usd?: number;
   critique?: string;
   log?: string;
   recursion_of?: string;
   stamp: string;
   created_at: string;
+}
+
+export interface GenEvent {
+  ts: string;
+  genId: string;
+  event: string;
+  detail?: string;
+}
+
+export interface ProviderStats {
+  provider: string;
+  models: Record<string, number>;
+  total: number;
+  done: number;
+  failed: number;
+  cost: number;
+  last_at?: string;
 }
 
 interface LedgerFile {
@@ -72,7 +90,20 @@ export function recordGeneration(
   };
   records.push(record);
   saveGenerations(records, dir);
+  appendGenEvent(record.id, 'recorded', `${record.provider}/${record.kind}`, dir);
   return record;
+}
+
+// Timestamped JSONL event log — the reviewable trail behind the ledger.
+export function appendGenEvent(genId: string, event: string, detail: string = '', dir?: string): void {
+  const path = join(dir || process.cwd(), '.timmy', 'runs', 'events.jsonl');
+  try {
+    mkdirSync(dirname(path), { recursive: true });
+    const line: GenEvent = { ts: now(), genId, event, detail };
+    appendFileSync(path, JSON.stringify(line) + '\n', 'utf8');
+  } catch {
+    // event log is best-effort; never block the ledger
+  }
 }
 
 export function updateGeneration(id: string, patch: Partial<GenerationRecord>, dir?: string): GenerationRecord | undefined {
@@ -81,6 +112,7 @@ export function updateGeneration(id: string, patch: Partial<GenerationRecord>, d
   if (!rec) return undefined;
   Object.assign(rec, patch, { stamp: stampOf(JSON.stringify({ ...rec, ...patch, stamp: undefined })) });
   saveGenerations(records, dir);
+  appendGenEvent(id, 'update', Object.keys(patch).join(','), dir);
   return rec;
 }
 
@@ -105,6 +137,32 @@ export function deriveStatusFromLog(logText: string, fallback: GenerationStatus)
 export function extractArtifactFromLog(logText: string): string | undefined {
   const m = logText.match(/(out\/[^\s"']+\.(png|jpe?g|webp|mp4|webm|gif))/i);
   return m ? m[1] : undefined;
+}
+
+export function parseCostFromLog(logText: string): number | undefined {
+  const m = logText.match(/\$\s?(\d+\.\d{1,6})/);
+  return m ? parseFloat(m[1]) : undefined;
+}
+
+// Provider/model-specific prompt+result database over the ledger.
+export function aggregateGenerations(providerFilter?: string, dir?: string): ProviderStats[] {
+  const map = new Map<string, ProviderStats>();
+  for (const g of loadGenerations(dir)) {
+    if (providerFilter && !g.provider.includes(providerFilter.toLowerCase())) continue;
+    let s = map.get(g.provider);
+    if (!s) {
+      s = { provider: g.provider, models: {}, total: 0, done: 0, failed: 0, cost: 0 };
+      map.set(g.provider, s);
+    }
+    const model = g.model || '(unspecified)';
+    s.models[model] = (s.models[model] || 0) + 1;
+    s.total += 1;
+    if (g.status === 'done') s.done += 1;
+    if (g.status === 'failed') s.failed += 1;
+    s.cost += g.cost_usd || 0;
+    if (!s.last_at || g.created_at > s.last_at) s.last_at = g.created_at;
+  }
+  return [...map.values()].sort((a, b) => b.total - a.total);
 }
 
 export function countFrames(framesDir: string): number {
