@@ -12,6 +12,17 @@ import {
   harnessOverview,
   type HarnessKind
 } from './harness.js';
+import { listProviders, findProvider, providerOverview, type ProviderKind } from './providers.js';
+import {
+  recordGeneration,
+  listGenerations,
+  updateGeneration,
+  deriveStatusFromLog,
+  extractArtifactFromLog,
+  generationsOverview
+} from './generations.js';
+import { captureFrames, defaultFramesDir, FRAME_EVERY, ASSUMED_FPS } from './framecap.js';
+import { locateGenAgent, buildGenAgentArgs, launchDetached } from './genbridge.js';
 
 
 export interface SlashCommand {
@@ -691,6 +702,102 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/providers',
+    description: 'Generation fleet registry — openrouter / venice / wavespeed / local / cloud-api lanes',
+    usage: '/providers [image|video|text|meta]',
+    execute: args => {
+      const q = args.trim() as ProviderKind;
+      const kind = (['image', 'video', 'text', 'meta'] as ProviderKind[]).includes(q) ? q : undefined;
+      const rows = listProviders(kind).map(p =>
+        `• ${p.id.padEnd(20)} ${p.kind.padEnd(5)} ${p.transport.padEnd(9)} ${p.modelId || ''}${p.notes ? `  — ${p.notes}` : ''}`);
+      return `️  GENERATION FLEET (${rows.length})\n${rows.join('\n')}\n\n${providerOverview(kind)}`;
+    }
+  },
+  {
+    command: '/gen',
+    description: 'Async sealed generation via your openrouter-agent — prompt → ledger → critique recursion',
+    usage: '/gen <provider alias> :: <prompt>',
+    execute: (args, agent, state) => {
+      const [aliasPart, ...rest] = args.split('::');
+      const prompt = rest.join('::').trim();
+      const provider = findProvider(aliasPart.trim());
+      if (!provider || !prompt) return 'Usage: /gen <provider> :: <prompt>  — see /providers';
+      const genDir = locateGenAgent();
+      const scriptArgs = buildGenAgentArgs(provider, prompt);
+      const launched = Boolean(genDir && scriptArgs);
+      const rec = recordGeneration({
+        prompt,
+        provider: provider.id,
+        model: provider.modelId,
+        kind: provider.kind,
+        transport: provider.transport,
+        status: launched ? 'running' : 'queued'
+      });
+      const logPath = join(process.cwd(), '.timmy', 'runs', `${rec.id}.log`);
+      if (launched) {
+        updateGeneration(rec.id, { log: logPath });
+        launchDetached(genDir as string, scriptArgs as string[], logPath);
+      }
+      if (agent && agent.emit) {
+        agent.emit('run.created', { runId: rec.id, source: 'timmy-gen', provider: provider.id, prompt_hash: rec.prompt_hash, timestamp: Date.now() });
+      }
+      // Recursive prompting: the active agent tightens the prompt while the
+      // current generation runs; the user (or /gen) re-queues the variant.
+      if (state && state.send) {
+        state.send(`🎬 GENERATION ${rec.id} on ${provider.id}: "${prompt}". While it runs, propose ONE tightened prompt variant (same intent; sharper subject, lighting, motion, lens) for the next recursion.`);
+      }
+      return `🎬 /gen ${rec.id}\n` +
+             `• provider: ${provider.displayName} (${provider.transport}${provider.modelId ? ` · ${provider.modelId}` : ''})\n` +
+             `• status:   ${launched ? `running — log .timmy/runs/${rec.id}.log` : `queued — no runner for ${provider.transport} yet (gen agent ${genDir ? 'found' : 'not found'})`}\n` +
+             `• review:   /gens ${rec.id}\n` +
+             `• receipt:  sealed (${rec.prompt_hash.slice(0, 24)}…)`;
+    }
+  },
+  {
+    command: '/gens',
+    description: 'Review the generation ledger by id, provider or kind — live status from run logs',
+    usage: '/gens [id|provider|image|video]',
+    execute: args => {
+      const q = args.trim();
+      const kind = q === 'image' || q === 'video' ? q : undefined;
+      const rows = listGenerations({ id: kind ? undefined : q || undefined, kind }).slice(0, 12);
+      if (!rows.length) return `🎞️  No generations match. ${generationsOverview()}`;
+      const lines = rows.map(g => {
+        let status = g.status;
+        let artifact = g.artifact;
+        if (g.log && existsSync(g.log)) {
+          const logText = readFileSync(g.log, 'utf8');
+          status = deriveStatusFromLog(logText, g.status);
+          artifact = artifact || extractArtifactFromLog(logText);
+          if (status !== g.status || artifact !== g.artifact) updateGeneration(g.id, { status, artifact });
+        }
+        return `• ${g.id}  ${g.provider.padEnd(18)} ${status.padEnd(7)}${g.frameCount ? ` ${g.frameCount}f` : ''}${artifact ? ` → ${artifact}` : ''}  "${g.prompt.slice(0, 44)}${g.prompt.length > 44 ? '…' : ''}"`;
+      });
+      return `🎞️  GENERATION LEDGER\n${lines.join('\n')}\n\n${generationsOverview()}`;
+    }
+  },
+  {
+    command: '/framecap',
+    description: `ffmpeg critique capture — every ${FRAME_EVERY}th frame @${ASSUMED_FPS}fps into studio/frames/`,
+    usage: '/framecap <video path> [gen id]',
+    execute: args => {
+      const parts = args.trim().split(/\s+/);
+      const video = parts[0];
+      if (!video) return 'Usage: /framecap <video path> [gen id]';
+      const outDir = defaultFramesDir(video);
+      const res = captureFrames(video, outDir);
+      const genId = parts[1];
+      if (genId) {
+        const match = listGenerations({ id: genId })[0];
+        if (match) updateGeneration(match.id, { framesDir: outDir, frameCount: res.frames });
+      }
+      if (!res.ok) return `🎞️  framecap failed — ${res.reason}`;
+      return `🎞️  FRAMECAP — ${res.frames} review frames (every ${FRAME_EVERY}th @${ASSUMED_FPS}fps)\n` +
+             `• dir:  ${outDir}\n` +
+             `• next: feed frames + prompt to the active agent for critique, then /refine or re-queue /gen`;
+    }
+  },
+  {
     command: '/help',
     description: 'Show list of all available commands',
     execute: () => {
@@ -726,6 +833,11 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /harness [kind] — Inspect continual-harness state & refinements\n` +
              `  /studio <idea>  — Seed HyperFrames comp + carbonyl preview lane\n` +
              `  /stats          — Session analytics from our own logs\n\n` +
+             `${boldMagenta}🎬 GENERATION FABRIC (recursive · async)${reset}\n` +
+             `  /providers [k]  — Fleet registry (openrouter/venice/wavespeed/local/cloud)\n` +
+             `  /gen <a> :: <p> — Async sealed generation via your openrouter-agent\n` +
+             `  /gens [filter]  — Review ledger by id / provider / kind (live status)\n` +
+             `  /framecap <vid> — ffmpeg every 30th frame @60fps into studio/frames/\n\n` +
              `${boldCyan}⚙️  CONSOLE SETTINGS & LIFE CYCLE${reset}\n` +
              `  /model <id>   — Switch active model dynamically\n` +
              `  /graphics <p> — Set TUI graphics (auto, kitty, iterm2, ansi)\n` +
