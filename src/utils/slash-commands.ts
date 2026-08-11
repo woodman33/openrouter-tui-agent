@@ -2,8 +2,16 @@ import { saveConfig, getConfig } from './config.js';
 import { terminalLink } from './hyperlink.js';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { basename, extname } from 'path';
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import qrcodeTerminal from 'qrcode-terminal';
+import {
+  HARNESS_KINDS,
+  listHarnessEntries,
+  upsertHarnessEntry,
+  recordHarnessRefinement,
+  harnessOverview,
+  type HarnessKind
+} from './harness.js';
 
 
 export interface SlashCommand {
@@ -516,6 +524,173 @@ export default function DemoDashboard() {
     }
   },
   {
+    command: '/harness',
+    description: 'Show continual-harness state (prompts, memory, skills, subagents, refinements)',
+    usage: '/harness [prompt|memory|skill|subagent]',
+    execute: (args) => {
+      const kind = args.trim().toLowerCase() as HarnessKind;
+      if (kind && !HARNESS_KINDS.includes(kind)) return `Usage: /harness [${HARNESS_KINDS.join('|')}]`;
+      const entries = listHarnessEntries(kind || undefined);
+      const head = `⛁ TIMMY CONTINUAL HARNESS\n${harnessOverview()}`;
+      if (entries.length === 0) {
+        return `${head}\n(no entries${kind ? ` of kind "${kind}"` : ''} yet — teach TIMMY with \`/refine <kind> <title> :: <content>\`)`;
+      }
+      return head + '\n' + entries.map(e => {
+        const preview = e.content.length > 64 ? e.content.slice(0, 64) + '…' : e.content;
+        return `• [${e.kind}] ${e.title} (v${e.version}) — ${preview}`;
+      }).join('\n');
+    }
+  },
+  {
+    command: '/refine',
+    description: 'Apply a small evidence-backed harness update (base prompt stays immutable)',
+    usage: '/refine <prompt|memory|skill|subagent> <title> :: <content>',
+    execute: (args, agent) => {
+      const halves = args.trim().split('::');
+      if (halves.length < 2) return 'Usage: /refine <prompt|memory|skill|subagent> <title> :: <content>';
+      const headParts = halves[0].trim().split(/\s+/);
+      const kind = (headParts[0] || '').toLowerCase() as HarnessKind;
+      if (!HARNESS_KINDS.includes(kind)) return `Usage: /refine <${HARNESS_KINDS.join('|')}> <title> :: <content>`;
+      const title = headParts.slice(1).join(' ').trim() || 'untitled refinement';
+      const content = halves.slice(1).join('::').trim();
+      if (!content) return 'Refinement content after :: must not be empty.';
+      const entry = upsertHarnessEntry(kind, title, content, { source: 'refine' });
+      const event = recordHarnessRefinement(
+        `user /refine ${kind}`,
+        [`${kind}:${entry.id} v${entry.version}`],
+        content.slice(0, 120),
+        'applied'
+      );
+      if (agent && agent.emit) {
+        agent.emit('run.created', {
+          runId: `run_harness_${Date.now().toString(36)}`,
+          source: 'timmy-harness',
+          prompt_hash: entry.stamp,
+          timestamp: Date.now()
+        });
+      }
+      return `⛁ HARNESS REFINED (sealed ${event.stamp.slice(0, 20)}…)\n• [${kind}] ${entry.title} → v${entry.version}\n• change: ${content.length > 80 ? content.slice(0, 80) + '…' : content}\nBase system prompt untouched. State lives in .timmy/harness_state.json.`;
+    }
+  },
+  {
+    command: '/studio',
+    description: 'TIMMY Studios — seed a HyperFrames composition, preview it in a carbonyl browser lane',
+    usage: '/studio <idea>',
+    execute: (args, agent, state) => {
+      const brief = args.trim();
+      if (!brief) return 'Usage: /studio <idea>  — e.g. /studio 12s launch sting for the receipt ledger';
+      const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const slugId = brief.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'untitled';
+      const dir = join(process.cwd(), 'studio', slugId);
+      mkdirSync(dir, { recursive: true });
+      const compId = `timmy-${slugId}`;
+      const beats = [
+        { at: 0, dur: 2.5, label: 'HOOK', text: 'TIMMY' },
+        { at: 2.5, dur: 2.5, label: 'PROBLEM', text: brief },
+        { at: 5, dur: 3, label: 'DEMO', text: 'chat rises · logs rain · receipts seal' },
+        { at: 8, dur: 2.5, label: 'TRUST', text: 'every frame sha256-stamped' },
+        { at: 10.5, dur: 1.5, label: 'CTA', text: 'timmytui.com' }
+      ];
+      const clips = beats.map(b =>
+        `  <div class="clip" data-start="${b.at}" data-duration="${b.dur}">` +
+        `<span class="label">${b.label}</span><h1>${esc(b.text)}</h1></div>`
+      ).join('\n');
+      const html = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>TIMMY Studios — ${esc(slugId)}</title>
+<style>
+body{margin:0;background:#090b10;color:#e6edf3;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;overflow:hidden}
+#stage{position:relative;width:100vw;height:100vh}
+.clip{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:0;animation:beat var(--dur) linear var(--at) forwards}
+.label{color:#3fb950;letter-spacing:.3em;font-size:12px}
+h1{margin:0;color:#d2a8ff;font-size:28px;text-align:center;max-width:80%}
+@keyframes beat{0%{opacity:0}12%{opacity:1}88%{opacity:1}100%{opacity:0}}
+</style>
+</head>
+<body>
+<div id="stage" data-composition-id="${compId}" data-start="0" data-duration="12">
+${clips}
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+window.__timelines["${compId}"] = { duration: 12 };
+document.querySelectorAll(".clip").forEach(function (el) {
+  el.style.setProperty("--at", el.getAttribute("data-start") + "s");
+  el.style.setProperty("--dur", el.getAttribute("data-duration") + "s");
+});
+</script>
+</body>
+</html>
+`;
+      writeFileSync(join(dir, 'index.html'), html, 'utf8');
+      writeFileSync(join(dir, 'STORYBOARD.md'),
+        `# TIMMY Studios storyboard — ${slugId}\n\nBrief: ${brief}\n\n` +
+        beats.map(b => `- ${b.at}s–${b.at + b.dur}s [${b.label}] ${b.text}`).join('\n') +
+        `\n\nRender: \`npx hyperframes render studio/${slugId}\`\n`, 'utf8');
+      const port = 4173 + (crypto.createHash('sha256').update(slugId).digest().readUInt16BE(0) % 100);
+      try {
+        const child = spawn('python3', ['-m', 'http.server', String(port), '--directory', dir], { detached: true, stdio: 'ignore' });
+        child.unref();
+      } catch {
+        // preview server is best-effort
+      }
+      const url = `http://localhost:${port}/`;
+      let lane = 'carbonyl not on PATH — open the preview URL in the companion or any browser (github.com/fathyb/carbonyl)';
+      try {
+        execSync('command -v carbonyl', { stdio: 'ignore' });
+        if (agent && agent.addBrowserPane) {
+          agent.addBrowserPane(url);
+          lane = `carbonyl lane opened at ${url}`;
+        }
+      } catch {
+        // carbonyl missing — message above stands
+      }
+      if (agent && agent.emit) {
+        agent.emit('run.created', {
+          runId: `run_studio_${Date.now().toString(36)}`,
+          source: 'timmy-studio',
+          prompt_hash: 'sha256_' + crypto.createHash('sha256').update(brief).digest('hex'),
+          timestamp: Date.now()
+        });
+      }
+      // The active OpenRouter agent stays in the loop: it proposes a tighter
+      // beat sheet in chat while the deterministic seed previews immediately.
+      if (state && state.send) {
+        state.send(`🎬 TIMMY STUDIOS brief: "${brief}". Propose a tighter 5-beat beat sheet (HOOK / PROBLEM / DEMO / TRUST / CTA, seconds + on-screen text, 12s total).`);
+      }
+      return `🎬 TIMMY STUDIOS — "${brief}"\n` +
+             `• composition: studio/${slugId}/index.html (12s · 5 beats)\n` +
+             `• storyboard:  studio/${slugId}/STORYBOARD.md\n` +
+             `• preview:     ${url}\n` +
+             `• lane:        ${lane}\n` +
+             `• render:      npx hyperframes render studio/${slugId}\n` +
+             `• receipt:     sealed (studio run created)`;
+    }
+  },
+  {
+    command: '/stats',
+    description: 'Session analytics from our own logs: cost, messages, telemetry health, harness activity',
+    execute: (_, agent, state) => {
+      const read = (p: string) => { try { return existsSync(p) ? readFileSync(p, 'utf8') : ''; } catch { return ''; } };
+      const tui = read(join(process.cwd(), 'logs', 'timmy-tui.log'));
+      const events = read(join(process.cwd(), 'logs', 'agent-events.log'));
+      const count = (s: string, re: RegExp) => (s.match(re) || []).length;
+      const telOk = count(events, /Status=SUCCESS/g);
+      const telFail = count(events, /Status=(FAILED|ERROR)/g);
+      const runs = count(tui, /run\.created/g) + count(events, /run\.created/g);
+      const lanes = count(tui, /lane\.spawned|browser\.spawned/g);
+      const cost = state?.totalCost || 0;
+      const msgs = state?.messages?.length || 0;
+      const model = agent && agent.getModel ? agent.getModel() : 'n/a';
+      return `📊 TIMMY SESSION STATS\n` +
+             `• model: ${model}   messages: ${msgs}   api spend: $${cost.toFixed(5)}\n` +
+             `• telemetry: ${telOk} ok / ${telFail} failed   runs sealed: ${runs}   lanes spawned: ${lanes}\n` +
+             `• harness: ${harnessOverview()}`;
+    }
+  },
+  {
     command: '/help',
     description: 'Show list of all available commands',
     execute: () => {
@@ -546,6 +721,11 @@ export default function DemoDashboard() {
              `  /render <file>— Push images, videos or media frames to companion\n` +
              `  /stress <url> — Perform high-concurrency Rust oha stress tests\n` +
              `  /qr <url>     — Generate glowing terminal QR code\n\n` +
+             `${boldMagenta}⛁ HARNESS, STUDIOS & STATS${reset}\n` +
+             `  /refine <k> <t> :: <c> — Small evidence-backed harness update (sealed)\n` +
+             `  /harness [kind] — Inspect continual-harness state & refinements\n` +
+             `  /studio <idea>  — Seed HyperFrames comp + carbonyl preview lane\n` +
+             `  /stats          — Session analytics from our own logs\n\n` +
              `${boldCyan}⚙️  CONSOLE SETTINGS & LIFE CYCLE${reset}\n` +
              `  /model <id>   — Switch active model dynamically\n` +
              `  /graphics <p> — Set TUI graphics (auto, kitty, iterm2, ansi)\n` +
