@@ -28,7 +28,7 @@ import { loadTemplate, listTemplates } from './templates.js';
 import { writeDashboard, ensureDashServer, dashUrl, probeUrl } from './dash.js';
 import { aggregateGenerations, parseCostFromLog } from './generations.js';
 import { loadOrgConfig, exportSession } from './sessionstore.js';
-import { initProject, listProjects, readProject, saveProject, addGenToProject, addRefToProject, renderProjectSite } from './projects.js';
+import { initProject, listProjects, readProject, saveProject, addGenToProject, addRefToProject, renderProjectSite, addCastToProject, castPromptBlock, renderBlockingSvg } from './projects.js';
 import { callSceneForge, sceneForgeUrl } from '../sceneforge/client.js';
 import { LANE_RUNNERS } from '../agent/lanes.js';
 import { verifyChain } from './receipts.js';
@@ -740,11 +740,18 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const prompt = rest.join('::').trim();
       const provider = findProvider(aliasPart.trim());
       if (!provider || !prompt) return 'Usage: /gen [--project <name>] [--label <text>] <provider> :: <prompt>  — see /providers';
+      // call-sheet injection: typed cast details ride along on every project gen
+      let finalPrompt = prompt;
+      if (projName) {
+        const proj = readProject(projName);
+        const block = proj ? castPromptBlock(proj) : '';
+        if (block) finalPrompt = `${prompt}\n${block}`;
+      }
       const genDir = locateGenAgent();
-      const scriptArgs = buildGenAgentArgs(provider, prompt);
+      const scriptArgs = buildGenAgentArgs(provider, finalPrompt);
       const launched = Boolean(genDir && scriptArgs);
       const rec = recordGeneration({
-        prompt,
+        prompt: finalPrompt,
         provider: provider.id,
         model: provider.modelId,
         kind: provider.kind,
@@ -754,7 +761,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       });
       if (projName) {
         initProject(projName);
-        addGenToProject(projName, { id: rec.id, provider: provider.id, model: provider.modelId, prompt, label: label || aliasPart.trim() || prompt.slice(0, 30) });
+        addGenToProject(projName, { id: rec.id, provider: provider.id, model: provider.modelId, prompt: finalPrompt, label: label || aliasPart.trim() || prompt.slice(0, 30) });
       }
       const logPath = join(process.cwd(), '.timmy', 'runs', `${rec.id}.log`);
       if (launched) {
@@ -921,6 +928,39 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/cast',
+    description: 'Add a call-sheet character card to a project (C1 = hair/wardrobe/emotion/age/props)',
+    usage: '/cast <project> <C1> <name> | hair | wardrobe | emotion | age | prop1,prop2',
+    execute: args => {
+      const [projName, cid, ...restParts] = args.trim().split(/\s+/);
+      const fields = restParts.join(' ').split('|').map(s => s.trim());
+      if (!projName || !cid || !fields[0]) return 'Usage: /cast <project> <C1> <name> | hair | wardrobe | emotion | age | props,comma';
+      const proj = addCastToProject(projName, {
+        id: cid.toUpperCase(),
+        name: fields[0],
+        hair: fields[1] || undefined,
+        wardrobe: fields[2] || undefined,
+        emotion: fields[3] || undefined,
+        age: fields[4] || undefined,
+        props: fields[5] ? fields[5].split(',').map(s => s.trim()).filter(Boolean) : undefined
+      });
+      if (!proj) return `✕ no project "${projName}" — /project ${projName} first`;
+      return `🎭 cast card ${cid.toUpperCase()} (${fields[0]}) slated into "${projName}"\n• every /gen --project ${projName} now injects the call sheet into the prompt\n• /pose ${projName} renders the blocking diagram (conditioning input)`;
+    }
+  },
+  {
+    command: '/pose',
+    description: 'Render the director\'s blocking diagram (stick-figure conditioning SVG) for a project',
+    usage: '/pose <project>',
+    execute: args => {
+      const name = args.trim().split(/\s+/)[0];
+      if (!name) return 'Usage: /pose <project>';
+      const svg = renderBlockingSvg(name);
+      if (!svg) return `✕ no project "${name}"`;
+      return `🕺 blocking diagram → ${svg}\n• stick figures per beat with C-ids, emotion, wardrobe — usable as scribble/pose conditioning\n• pixel-perfect poses: draw in tldraw, export PNG from the canvas`;
+    }
+  },
+  {
     command: '/ref',
     description: 'Attach a reference image to a Slate project (character, style, storyboard ref)',
     usage: '/ref <project> <path> [label]',
@@ -1039,7 +1079,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       writeFileSync(join(dir, 'lanes.ncl'),
         `# TIMMY deterministic command layer — lane profiles (Nickel)\n# nickel export lanes.ncl > lanes.json  (when nickel is installed)\n{\n  version = 1,\n  policy = {\n    risky_prefixes = ["rm ", "sudo ", "git push", "curl ", "chmod "],\n    default = "human-gated",\n  },\n  lanes = {\n${lanes},\n  },\n}\n`, 'utf8');
       writeFileSync(join(dir, 'slate.cue'),
-        `// TIMMY Slate schema — the contract every template/project/site must satisfy\n// cue vet slate.cue <project>/slate.json  (when cue is installed)\nname: string\ntemplate?: string\ncreated_at?: string\ntotal?: number\nrefs?: [...{ file: string, label: string }]\ngens?: [...{ id: string, provider: string, prompt: string, label: string, artifact?: string, cost_usd?: number }]\nbeats?: [...{ at: number, dur: number, label: string, text: string }]\n`, 'utf8');
+        `// TIMMY Slate schema — the contract every template/project/site must satisfy\n// cue vet slate.cue <project>/slate.json  (when cue is installed)\nname: string\ntemplate?: string\ncreated_at?: string\ntotal?: number\nrefs?: [...{ file: string, label: string }]\ngens?: [...{ id: string, provider: string, prompt: string, label: string, artifact?: string, cost_usd?: number }]\nbeats?: [...{ at: number, dur: number, label: string, text: string }]\ncast?: [...{ id: string, name: string, hair?: string, wardrobe?: string, emotion?: string, age?: string, props?: [...string] }]\nscene_props?: [...string]\n`, 'utf8');
       return `🧾 deterministic layer → ${dir}\n• lanes.ncl — Nickel profiles for every lane (cmd, timeout, human-gated approval)\n• slate.cue — CUE schema for slate.json (templates, projects, sites)\n• validated in TS today; run \`nickel export\` / \`cue vet\` once the CLIs are installed`;
     }
   },
@@ -1111,6 +1151,8 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n` +
              `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
              `  /ref <p> <img>  — Attach reference image to a project\n` +
+             `  /cast <p> <C1> … — Call-sheet character card (hair/wardrobe/emotion/age/props)\n` +
+             `  /pose <p>       — Blocking diagram SVG (stick-figure conditioning)\n` +
              `  /publish <p>    — Render project → HTML site (Instatic/Paper) + pane\n` +
              `  /porter [cmd]   — TIMMY Porter: strict MCP→CLI gateway (status/caps/job)\n` +
              `  /remotion <p>   — Export Slate beats as a Remotion composition scaffold\n` +

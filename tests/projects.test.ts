@@ -4,7 +4,8 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import {
   initProject, listProjects, readProject,
-  addGenToProject, addRefToProject, renderProjectSite, projectDir
+  addGenToProject, addRefToProject, renderProjectSite, projectDir,
+  addCastToProject, castPromptBlock, renderBlockingSvg, saveProject
 } from '../src/utils/projects.js';
 
 let dir: string;
@@ -45,6 +46,28 @@ describe('Slate projects', () => {
     expect(html).toContain('hero');
     expect(html).toContain('foil card on velvet');
     expect(html).toContain('receipts for everything');
+  });
+
+  it('call-sheet cast cards inject into generation prompts', () => {
+    initProject('film', {}, dir);
+    addCastToProject('film', { id: 'c1', name: 'Mara', hair: 'buzzcut', wardrobe: 'orange jumpsuit', emotion: 'wired', age: '30s', props: ['tablet', 'badge'] }, dir);
+    const proj = readProject('film', dir)!;
+    const block = castPromptBlock(proj);
+    expect(block).toContain('CALL SHEET — film');
+    expect(block).toContain('C1 (Mara) hair: buzzcut; wardrobe: orange jumpsuit; emotion: wired; age: 30s; props: tablet, badge;');
+  });
+
+  it('renders a stick-figure blocking diagram as conditioning SVG', () => {
+    initProject('film', {}, dir);
+    addCastToProject('film', { id: 'C1', name: 'Mara', emotion: 'wired', wardrobe: 'orange jumpsuit' }, dir);
+    const proj = readProject('film', dir)!;
+    proj.beats = [{ at: 0, dur: 3, label: 'HOOK', text: 'Mara enters' }];
+    saveProject(proj, dir);
+    const svg = renderBlockingSvg('film', dir)!;
+    const body = readFileSync(svg, 'utf8');
+    expect(body).toContain('<circle');
+    expect(body).toContain('C1 wired');
+    expect(body).toContain('orange jumpsuit');
   });
 
   it('keeps Porter strictly separate — no MCP fleet data in Slate sites', () => {

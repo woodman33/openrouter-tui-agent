@@ -10,6 +10,18 @@ export interface ProjectRef {
   label: string;
 }
 
+// Call-sheet block — the character registry that kills drift.
+// Mirrors real movie call sheets: cast / wardrobe / props per shoot day.
+export interface CharacterCard {
+  id: string; // C1, C2…
+  name: string;
+  hair?: string;
+  wardrobe?: string;
+  emotion?: string;
+  age?: string;
+  props?: string[];
+}
+
 export interface ProjectGen {
   id: string;
   provider: string;
@@ -29,6 +41,8 @@ export interface SlateProject {
   beats?: { at: number; dur: number; label: string; text: string }[];
   refs: ProjectRef[];
   gens: ProjectGen[];
+  cast?: CharacterCard[];
+  scene_props?: string[];
 }
 
 const now = () => new Date().toISOString();
@@ -149,4 +163,72 @@ ${genCards ? `<section><h2>GENERATIONS</h2><div class="gens">${genCards}</div></
 `;
   writeFileSync(join(p, 'site', 'index.html'), html, 'utf8');
   return join(p, 'site', 'index.html');
+}
+
+export function addCastToProject(name: string, card: CharacterCard, dir?: string): SlateProject | null {
+  const proj = readProject(name, dir);
+  if (!proj) return null;
+  proj.cast = [...(proj.cast || []).filter(c => c.id !== card.id), card];
+  saveProject(proj, dir);
+  return proj;
+}
+
+// The accuracy win: typed call-sheet details injected into every generation
+// prompt, so C1 looks like C1 in every frame and every provider.
+export function castPromptBlock(proj: SlateProject): string {
+  const cast = (proj.cast || []).map(c =>
+    `${c.id} (${c.name})` +
+    (c.hair ? ` hair: ${c.hair};` : '') +
+    (c.wardrobe ? ` wardrobe: ${c.wardrobe};` : '') +
+    (c.emotion ? ` emotion: ${c.emotion};` : '') +
+    (c.age ? ` age: ${c.age};` : '') +
+    (c.props?.length ? ` props: ${c.props.join(', ')};` : '')
+  );
+  const propsLine = proj.scene_props?.length ? `SCENE PROPS: ${proj.scene_props.join(', ')}` : '';
+  if (!cast.length && !propsLine) return '';
+  return [`CALL SHEET — ${proj.name}:`, ...cast.map(c => `  ${c}`), propsLine].filter(Boolean).join('\n');
+}
+
+// Director's blocking diagram — usable as a scribble/pose conditioning input.
+// Pixel-perfect poses: draw in tldraw and export PNG; this SVG carries the
+// typed blocking (who, where, facing, feeling) per beat.
+export function renderBlockingSvg(name: string, dir?: string): string | null {
+  const proj = readProject(name, dir);
+  if (!proj) return null;
+  const beats = proj.beats || [];
+  const cast = proj.cast || [];
+  const W = 960;
+  const beatH = 140;
+  const H = Math.max(200, beats.length * beatH + 60);
+  const figures = beats.map((b, bi) => {
+    const y = 60 + bi * beatH;
+    const marks = cast.map((c, ci) => {
+      const x = 120 + ci * 220 + (bi % 2) * 40;
+      return `
+      <g stroke="#3fb950" stroke-width="3" fill="none">
+        <circle cx="${x}" cy="${y + 30}" r="16"/>
+        <line x1="${x}" y1="${y + 46}" x2="${x}" y2="${y + 86}"/>
+        <line x1="${x}" y1="${y + 56}" x2="${x - 22}" y2="${y + 76}"/>
+        <line x1="${x}" y1="${y + 56}" x2="${x + 22}" y2="${y + 76}"/>
+        <line x1="${x}" y1="${y + 86}" x2="${x - 16}" y2="${y + 116}"/>
+        <line x1="${x}" y1="${y + 86}" x2="${x + 16}" y2="${y + 116}"/>
+      </g>
+      <text x="${x}" y="${y + 8}" fill="#d2a8ff" font-family="monospace" font-size="16" text-anchor="middle">${c.id} ${c.emotion || ''}</text>
+      <text x="${x}" y="${y + 132}" fill="#8b949e" font-family="monospace" font-size="12" text-anchor="middle">${(c.wardrobe || '').slice(0, 28)}</text>`;
+    }).join('');
+    return `
+    <rect x="20" y="${y - 14}" width="${W - 40}" height="${beatH - 12}" fill="none" stroke="#21262d"/>
+    <text x="30" y="${y + 4}" fill="#e6edf3" font-family="monospace" font-size="14">${b.at}s [${b.label}] ${b.text.slice(0, 60)}</text>
+    ${marks}`;
+  }).join('');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<rect width="${W}" height="${H}" fill="#090b10"/>
+<text x="20" y="28" fill="#79c0ff" font-family="monospace" font-size="18">TIMMY Slate blocking — ${name} (conditioning input)</text>
+${figures}
+</svg>
+`;
+  const p = projectDir(name, dir);
+  mkdirSync(p, { recursive: true });
+  writeFileSync(join(p, 'conditioning.svg'), svg, 'utf8');
+  return join(p, 'conditioning.svg');
 }
