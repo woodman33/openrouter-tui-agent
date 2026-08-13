@@ -168,7 +168,8 @@ ${genCards ? `<section><h2>GENERATIONS</h2><div class="gens">${genCards}</div></
 export function addCastToProject(name: string, card: CharacterCard, dir?: string): SlateProject | null {
   const proj = readProject(name, dir);
   if (!proj) return null;
-  proj.cast = [...(proj.cast || []).filter(c => c.id !== card.id), card];
+  const normalized = { ...card, id: card.id.toUpperCase() };
+  proj.cast = [...(proj.cast || []).filter(c => c.id !== normalized.id), normalized];
   saveProject(proj, dir);
   return proj;
 }
