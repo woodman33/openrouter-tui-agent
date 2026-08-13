@@ -43,6 +43,7 @@ import { seedStarter } from './starter.js';
 import { renderComfyWorkflow } from './comfy.js';
 import { detectRoboflow, roboflowUpload } from './roboflow.js';
 import { ensureProjectTree, appendChatThread, syncLaneLogs, exportTraining, renderProjectIndex, writePromptRecord } from './projecttree.js';
+import { shareFile, demoTerminal } from './share.js';
 
 
 export interface SlashCommand {
@@ -976,6 +977,30 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/share',
+    description: 'Send any artifact via croc — encrypted, one-time code, zero infra (rights logs, gens, sites)',
+    usage: '/share <path>',
+    execute: args => {
+      const path = args.trim();
+      if (!path) return 'Usage: /share <path>  — e.g. /share studio/demo-north/RIGHTS-LOG.md';
+      const r = shareFile(path);
+      return r.ok
+        ? `📤 sharing ${path}\n• code: ${r.code}  — receiver runs: croc ${r.code}\n• encrypted peer-to-peer; the code IS the auth`
+        : `✕ ${r.reason}`;
+    }
+  },
+  {
+    command: '/demo',
+    description: 'Put the crew in a browser via ttyd (auth-gated) — client demos without leaving the terminal',
+    usage: '/demo',
+    execute: () => {
+      const r = demoTerminal();
+      return r.ok
+        ? `🎥 demo terminal live → ${r.url}\n• build the tabs first: LANES [w] (timmy-watch)\n${r.reason ? `• ⚠ ${r.reason}` : '• on your tailnet — safe to share the URL + login'}`
+        : `✕ ${r.reason}`;
+    }
+  },
+  {
     command: '/sync',
     description: 'Pull the world into a project tree: chat threads + lane logs + training export + reindex',
     usage: '/sync <project>',
@@ -1454,6 +1479,8 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n` +
              `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
              `  /ref <p> <img>  — Attach reference image to a project\n` +
+             `  /share <path>   — croc: encrypted one-time-code file share\n` +
+             `  /demo           — ttyd: crew in a browser (auth-gated demos)\n` +
              `  /sync <p>       — Pull chat/lanes/training into the project tree\n` +
              `  /roboflow [up]  — Roboflow connector: status · upload artifacts to train\n` +
              `  /market [inst]  — Template market: curated pro bundles → install\n` +

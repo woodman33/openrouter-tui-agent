@@ -20,7 +20,9 @@ export const DEFAULT_FLEET: FleetConnector[] = [
   { id: 'comfyui', rank: 3, forms: ['api', 'cli'], detect: { url: 'http://127.0.0.1:8188' }, note: 'isolated Docker ComfyUI (lab/comfy) — never system python' },
   { id: 'runcomfy', rank: 4, forms: ['api', 'cli'], note: 'burst cloud ComfyUI, per-generation billing' },
   { id: 'comfydeploy', rank: 5, forms: ['api'], note: 'hosted ComfyUI API endpoints' },
-  { id: 'wavespeed', rank: 6, forms: ['api'], note: 'free Z-Image tier + fast video lanes' }
+  { id: 'wavespeed', rank: 6, forms: ['api'], note: 'free Z-Image tier + fast video lanes' },
+  { id: 'croc', rank: 7, forms: ['cli'], detect: { cmd: 'croc' }, note: 'encrypted p2p file share — /share' },
+  { id: 'ttyd', rank: 8, forms: ['cli'], detect: { cmd: 'ttyd' }, note: 'terminal-in-browser — /demo (auth-gated)' }
 ];
 
 export function fleetPath(dir: string = process.cwd()): string {

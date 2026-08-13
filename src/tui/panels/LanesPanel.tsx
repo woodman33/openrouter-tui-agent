@@ -123,6 +123,23 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
       } catch { setNote('tmux unavailable — lanes run, but the watch session needs tmux'); }
       return;
     }
+    if (char === 'G') {
+      // tiled grid: every lane live in one window (nested attaches, tiled)
+      try {
+        execFileSync('tmux', ['kill-session', '-t', 'timmy-grid'], { stdio: 'ignore' });
+      } catch { /* not running */ }
+      try {
+        const [first, ...restLanes] = lanes;
+        if (!first) { setNote('no lanes alive to grid'); return; }
+        execFileSync('tmux', ['new-session', '-d', '-s', 'timmy-grid', '-x', '220', '-y', '60', `tmux attach -t ortui-${first.id}`], { stdio: 'ignore' });
+        for (const l of restLanes) {
+          try { execFileSync('tmux', ['split-window', '-t', 'timmy-grid:0', `tmux attach -t ortui-${l.id}`], { stdio: 'ignore' }); } catch { /* pane limit */ }
+        }
+        execFileSync('tmux', ['select-layout', '-t', 'timmy-grid:0', 'tiled'], { stdio: 'ignore' });
+        setNote('timmy-grid built — tmux attach -t timmy-grid · the whole crew, one window');
+      } catch { setNote('tmux unavailable — grid needs tmux'); }
+      return;
+    }
     if (c === 'x' && coach) {
       setCoach(false);
       try { mkdirSync(join(process.cwd(), '.timmy'), { recursive: true }); writeFileSync(join(process.cwd(), '.timmy', '.lanes-coach'), new Date().toISOString(), 'utf8'); } catch { /* best effort */ }
@@ -144,6 +161,7 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
         { key: '↵/t', label: 'type task' },
         { key: 'g', label: 'approve' },
         { key: 'w', label: 'tmux tabs' },
+        { key: 'G', label: 'tiled grid' },
         { key: 'a', label: 'attach' },
         { key: 's/k', label: 'spawn/kill' }
       ]}
