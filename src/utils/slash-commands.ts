@@ -33,7 +33,7 @@ import { callSceneForge, sceneForgeUrl } from '../sceneforge/client.js';
 import { LANE_RUNNERS } from '../agent/lanes.js';
 import { verifyChain } from './receipts.js';
 import { detectFleet } from './fleet.js';
-import { writeTemplateSeeds } from './templates.js';
+import { writeTemplateSeeds, listMarket, installMarketTemplate } from './templates.js';
 import { recall, buildIndex, condenseSession } from './iceberg.js';
 import { loadAgentPass, saveAgentPass, detectProvider, CLEARANCE_LEVELS, clearanceFor, type ClearanceProvider } from './agentpass.js';
 import { policyCheck } from './effects.js';
@@ -971,6 +971,22 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/market',
+    description: 'Template market: curated pro bundles (music-video/ugc-ad/podcast/trailer) → install into your library',
+    usage: '/market [install <name>]',
+    execute: args => {
+      const [sub, name] = args.trim().split(/\s+/);
+      if (sub === 'install' && name) {
+        const p = installMarketTemplate(name);
+        return p ? `🏪 installed → ${p}\n• use it: /studio --template ${name} <idea> · or Enter on it in SLATE` : `✕ not in the market — /market lists what's available`;
+      }
+      const rows = listMarket();
+      return `🏪 TEMPLATE MARKET — ${rows.filter(r => r.installed).length}/${rows.length} installed\n` +
+        rows.map(r => `• ${r.installed ? '✓' : '○'} ${r.name.padEnd(18)} ${r.blurb}`).join('\n') +
+        `\n• /market install <name> — hosted store later (paid tier), curated bundles now`;
+    }
+  },
+  {
     command: '/controlnet',
     description: 'Slate blocking diagram → ComfyUI ControlNet workflow (pose conditioning, fixed seed)',
     usage: '/controlnet <project>',
@@ -1398,6 +1414,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n` +
              `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
              `  /ref <p> <img>  — Attach reference image to a project\n` +
+             `  /market [inst]  — Template market: curated pro bundles → install\n` +
              `  /promptbank     — Prompt banking: list/add/use fragments (learns usage)\n` +
              `  /char [p]       — Random character: slatable card + turntable prompt\n` +
              `  /breakdown [p]  — Script → scenes → slate + prompts file\n` +

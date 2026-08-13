@@ -86,6 +86,69 @@ export function listTemplates(dir?: string): string[] {
   }
 }
 
+// Template market v0 — bundled "pro" templates, installable into the local
+// library. Offline and honest: market = curated bundles today, a hosted
+// store later (that's the paid tier per the research rulings).
+export const MARKET_TEMPLATES: Record<string, { kind: string; total: number; beats: { at: number; dur: number; label: string; text: string }[]; blurb: string }> = {
+  'music-video-30s': {
+    kind: 'storyboard', total: 30, blurb: '6 beats × 5s — hook/verse/chorus/bridge/drop/outro',
+    beats: [
+      { at: 0, dur: 5, label: 'HOOK', text: '{brief} — cold open on the strongest image' },
+      { at: 5, dur: 5, label: 'VERSE', text: 'world-building wide + detail inserts' },
+      { at: 10, dur: 5, label: 'CHORUS', text: 'performance shots, cut on the beat' },
+      { at: 15, dur: 5, label: 'BRIDGE', text: 'contrast — new location or lighting flip' },
+      { at: 20, dur: 5, label: 'DROP', text: 'fastest cuts of the piece' },
+      { at: 25, dur: 5, label: 'OUTRO', text: 'title card + artist card, hold 2s' }
+    ]
+  },
+  'ugc-ad-15s': {
+    kind: 'storyboard', total: 15, blurb: 'TikTok/Reels UGC ad — problem/agitate/flip/proof/cta',
+    beats: [
+      { at: 0, dur: 2, label: 'HOOK', text: 'pattern-interrupt close-up, {brief}' },
+      { at: 2, dur: 3, label: 'PROBLEM', text: 'the pain, shown not told' },
+      { at: 5, dur: 3, label: 'AGITATE', text: 'make it 10% worse' },
+      { at: 8, dur: 3, label: 'FLIP', text: 'product enters, world changes' },
+      { at: 11, dur: 2, label: 'PROOF', text: 'receipt/result on screen' },
+      { at: 13, dur: 2, label: 'CTA', text: 'one verb, one URL' }
+    ]
+  },
+  'podcast-clip-60s': {
+    kind: 'storyboard', total: 60, blurb: 'talking-head clip — cold open/quote/b-roll/return/tag',
+    beats: [
+      { at: 0, dur: 8, label: 'COLD-OPEN', text: 'the best sentence first, no intro' },
+      { at: 8, dur: 20, label: 'QUOTE', text: 'two-shot → push-in on the punchline' },
+      { at: 28, dur: 16, label: 'B-ROLL', text: 'coverage over the story beat' },
+      { at: 44, dur: 10, label: 'RETURN', text: 'reaction shot, hold the laugh' },
+      { at: 54, dur: 6, label: 'TAG', text: 'show card + follow CTA' }
+    ]
+  },
+  'trailer-60s': {
+    kind: 'storyboard', total: 60, blurb: 'film trailer — world/inciting/escalation/turn/climax/button',
+    beats: [
+      { at: 0, dur: 10, label: 'WORLD', text: 'establish tone + place, {brief}' },
+      { at: 10, dur: 10, label: 'INCITING', text: 'the thing that breaks the world' },
+      { at: 20, dur: 12, label: 'ESCALATION', text: 'three rising images, faster cuts' },
+      { at: 32, dur: 10, label: 'TURN', text: 'silence beat — one image, no music' },
+      { at: 42, dur: 12, label: 'CLIMAX', text: 'fastest montage, title stingers between' },
+      { at: 54, dur: 6, label: 'BUTTON', text: 'title + date card' }
+    ]
+  }
+};
+
+export function listMarket(dir?: string): { name: string; installed: boolean; blurb: string }[] {
+  const have = new Set(listTemplates(dir));
+  return Object.entries(MARKET_TEMPLATES).map(([name, t]) => ({ name, installed: have.has(name), blurb: t.blurb }));
+}
+
+export function installMarketTemplate(name: string, dir?: string): string | null {
+  const t = MARKET_TEMPLATES[name];
+  if (!t) return null;
+  const p = join(templatesDir(dir), `${name}.json`);
+  mkdirSync(templatesDir(dir), { recursive: true });
+  writeFileSync(p, JSON.stringify({ name, kind: t.kind, total: t.total, source: 'market', beats: t.beats }, null, 2), 'utf8');
+  return p;
+}
+
 // The template library — six kinds, seeded once, agent-authorable forever.
 // kinds: storyboard · callsheet · character · moodboard · branching · blocking
 export function writeTemplateSeeds(dir?: string): string[] {

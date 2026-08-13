@@ -10,7 +10,7 @@ import {
   deriveStatusFromLog, extractArtifactFromLog, parseCostFromLog,
   generationsOverview, type GenerationRecord
 } from '../../utils/generations.js';
-import { GENERATION_PROVIDERS } from '../../utils/providers.js';
+import { GENERATION_PROVIDERS, optionsFor } from '../../utils/providers.js';
 import { locateGenAgent, buildGenAgentArgs, launchDetached } from '../../utils/genbridge.js';
 import { clockTime } from '../../utils/humanlog.js';
 import { appendGenEvent } from '../../utils/generations.js';
@@ -34,6 +34,7 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
   const [composing, setComposing] = useState(false);
   const [draft, setDraft] = useState('');
   const [provIdx, setProvIdx] = useState(0);
+  const [optIdx, setOptIdx] = useState(0);
 
   const providers = GENERATION_PROVIDERS.filter(p => p.kind === 'image' || p.kind === 'video');
   const prov = providers[provIdx % providers.length];
@@ -72,16 +73,21 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
   useInput((char, key) => {
     if (composing) {
       if (key.escape) { setComposing(false); setDraft(''); return; }
-      if (char && char.toLowerCase() === 'm' && key.meta) { setProvIdx(i => i + 1); return; }
-      if (key.tab) { setProvIdx(i => i + 1); return; }
+      // chat-style picker: arrows move the provider list, not the ledger
+      if (key.upArrow) { setProvIdx(i => Math.max(0, i - 1)); setOptIdx(0); return; }
+      if (key.downArrow) { setProvIdx(i => Math.min(providers.length - 1, i + 1)); setOptIdx(0); return; }
+      if (key.tab || (char && char.toLowerCase() === 'o')) { setOptIdx(o => o + 1); return; }
       if (key.return) {
         const prompt = draft.trim();
         if (prompt && prov) {
+          const opts = optionsFor(prov.id);
+          const opt = opts.length ? opts[optIdx % opts.length] : undefined;
+          const fullPrompt = opt ? `${prompt} ${opt.suffix}` : prompt;
           const genDir = locateGenAgent();
-          const sargs = buildGenAgentArgs(prov, prompt);
+          const sargs = buildGenAgentArgs(prov, fullPrompt);
           const launched = Boolean(genDir && sargs);
           const rec = recordGeneration({
-            prompt, provider: prov.id, model: prov.modelId, kind: prov.kind,
+            prompt: fullPrompt, provider: prov.id, model: prov.modelId, kind: prov.kind,
             transport: prov.transport, status: launched ? 'running' : 'queued'
           });
           if (launched) {
@@ -158,13 +164,29 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
           ) : (
             <Text color="#8b949e">select a generation, or [p] to queue one.</Text>
           )}
-          {composing && (
-            <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
-              <Text color="#79c0ff">provider: {prov?.id || '?'} ({prov?.kind}) — [tab] cycles</Text>
-              <Text>prompt: {draft}█</Text>
-              <Text color="#a5b0bc">Enter queues (real credits if launched) · Esc cancels</Text>
-            </Box>
-          )}
+          {composing && (() => {
+            const winStart = Math.max(0, Math.min(provIdx - 4, Math.max(0, providers.length - 9)));
+            const win = providers.slice(winStart, winStart + 9);
+            const opts = optionsFor(prov.id);
+            const opt = opts.length ? opts[optIdx % opts.length] : undefined;
+            return (
+              <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
+                <Text bold color="#79c0ff">PROVIDER — ↑↓ like the chat model rail · [o]/Tab option</Text>
+                {win.map((p, i) => {
+                  const isSel = winStart + i === provIdx;
+                  const pOpts = optionsFor(p.id);
+                  const pOpt = isSel && pOpts.length ? pOpts[optIdx % pOpts.length] : undefined;
+                  return (
+                    <Text key={p.id} color={isSel ? '#d2a8ff' : '#a5b0bc'} bold={isSel} wrap="truncate">
+                      {isSel ? '▶ ' : '  '}{p.kind === 'video' ? '🎞️' : '🖼️'} {p.id.padEnd(20)} {p.modelId || ''}{pOpt ? ` · opt: ${pOpt.label}` : ''}
+                    </Text>
+                  );
+                })}
+                <Text>prompt: {draft}█</Text>
+                <Text color="#a5b0bc">{opt ? `option ${opt.label} rides the prompt · ` : ''}Enter queues (real credits if launched) · Esc cancels</Text>
+              </Box>
+            );
+          })()}
         </Box>
       </Box>
     </PanelFrame>

@@ -75,6 +75,33 @@ export function findProvider(query: string): GenerationProvider | undefined {
   );
 }
 
+// Per-provider generation options — the "more options per provider" layer.
+// Options ride the prompt as suffixes the provider CLIs/ APIs understand.
+export interface ProviderOption { label: string; suffix: string; }
+
+const AR = (a: string): ProviderOption => ({ label: a, suffix: `--ar ${a}` });
+const DUR = (d: string): ProviderOption => ({ label: d, suffix: `--dur ${d}` });
+const RES = (r: string): ProviderOption => ({ label: r, suffix: `--res ${r}` });
+
+export const PROVIDER_OPTIONS: Record<string, ProviderOption[]> = {
+  'seedance-2-0': [AR('16:9'), AR('9:16'), AR('1:1'), DUR('5s'), DUR('8s'), DUR('12s'), DUR('15s')],
+  'seedance-2-5': [AR('16:9'), AR('9:16'), DUR('10s'), DUR('20s'), DUR('30s')],
+  'kling-3-0': [AR('16:9'), AR('9:16'), DUR('5s'), DUR('10s')],
+  'wan-2-7': [AR('16:9'), AR('9:16'), DUR('5s'), DUR('8s')],
+  'happyhorse-1-1': [AR('16:9'), DUR('8s'), DUR('12s')],
+  'grok-imagine-video': [DUR('6s'), DUR('10s')],
+  'nano-banana-2': [RES('1K'), RES('2K'), RES('4K')],
+  'nano-banana-pro': [RES('1K'), RES('2K'), RES('4K')],
+  'gpt-image-2': [RES('1024'), RES('1536'), AR('16:9'), AR('9:16')],
+  'reve-2-1': [RES('2K'), AR('16:9')],
+  'comfyui-controlnet': [{ label: 'scribble', suffix: '--cn scribble' }, { label: 'openpose', suffix: '--cn openpose' }],
+  'ernie-image-turbo': [RES('1K'), RES('2K')]
+};
+
+export function optionsFor(id: string): ProviderOption[] {
+  return PROVIDER_OPTIONS[id] || [];
+}
+
 export function providerOverview(kind?: ProviderKind): string {
   const all = listProviders(kind);
   const byTransport = (t: ProviderTransport) => all.filter(p => p.transport === t).map(p => p.id).join(', ');

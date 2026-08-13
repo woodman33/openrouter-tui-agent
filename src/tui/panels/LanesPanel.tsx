@@ -49,7 +49,13 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
       if (sel && nextAlive[sel.id]) {
         try {
           const out = execFileSync('tmux', ['capture-pane', '-pt', `ortui-${sel.id}`], { encoding: 'utf8', stdio: 'pipe' });
-          setCapture(out.split('\n').map(stripAnsi).filter((l, i, a) => !(i > a.length - 8 && l.trim() === '')).slice(-20));
+          setCapture(
+            out.split('\n').map(stripAnsi)
+              // hide launcher plumbing — show the agent's output, not its bootstrap script
+              .filter(l => !/printf '|else quote>|export PATH=|TIMMY_EXIT_CODE|sleep 3; if command|williams-macbook/i.test(l))
+              .filter((l, i, a) => !(i > a.length - 8 && l.trim() === ''))
+              .slice(-20)
+          );
         } catch { setCapture(['[capture failed]']); }
       } else {
         setCapture([]);
