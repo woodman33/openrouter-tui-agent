@@ -133,7 +133,7 @@ export function PorterPanel({ agent, setInspector, focusArea = 'stage' }: Porter
           exec(`echo "${slugDir}" | pbcopy`, {}, () => {});
           setInputCmd(`/porter copy-path mcp-cli/${slug}/`);
         } else if (btn === 'Go to Workspace') {
-          agent.emit('mode:change', 'workspace');
+          agent.emit('mode:change', 'lanes');
         }
       }
     }

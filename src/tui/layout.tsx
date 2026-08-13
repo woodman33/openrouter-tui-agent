@@ -25,13 +25,15 @@ export interface LayoutProps {
   focusArea: 'nav' | 'stage';
 }
 
-type ModeDef = { mode: Mode; key: string; label: string };
+type ModeDef = { mode: Mode; key: string; label: string; sub: string };
 
+// Labels + one-line plain-English subs so a first-time user knows what each
+// screen is FOR without reading a manual.
 const MODES: ModeDef[] = [
-  { mode: 'brief',    key: '1', label: 'CHAT' },
-  { mode: 'hermes',   key: '2', label: 'RUNS' },
-  { mode: 'workspace',key: '3', label: 'WORK' },
-  { mode: 'logs',     key: '4', label: 'LOGS' },
+  { mode: 'brief', key: '1', label: 'CHAT',  sub: 'ask anything' },
+  { mode: 'lanes', key: '2', label: 'LANES', sub: 'live agents' },
+  { mode: 'logs',  key: '3', label: 'LOGS',  sub: 'history' },
+  { mode: 'files', key: '4', label: 'FILES', sub: 'your disk' },
 ];
 
 function telemetryGlyph(status: string, queued: number): { glyph: string; color: string } {
@@ -152,11 +154,12 @@ export function Layout({
               if (active) color = theme.accent;
               if (focused) color = pulseFrame % 2 === 0 ? theme.textPrimary : theme.accent;
               return (
-                <Box key={m.mode} marginBottom={1}>
+                <Box key={m.mode} marginBottom={1} flexDirection="column">
                   <Text color={color}>
                     <Text color={focused || active ? theme.accent : theme.textTertiary}>{marker}</Text>
                     {' '}{m.label}
                   </Text>
+                  <Text color={theme.textTertiary} dimColor>  {m.sub}</Text>
                 </Box>
               );
             })}

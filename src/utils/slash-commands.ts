@@ -1,6 +1,6 @@
 import { saveConfig, getConfig } from './config.js';
 import { terminalLink } from './hyperlink.js';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'fs';
 import { basename, extname } from 'path';
 import { execSync, spawn } from 'child_process';
 import qrcodeTerminal from 'qrcode-terminal';
@@ -27,6 +27,9 @@ import { BRAND } from './brand.js';
 import { loadTemplate, listTemplates } from './templates.js';
 import { writeDashboard, ensureDashServer, dashUrl, probeUrl } from './dash.js';
 import { aggregateGenerations, parseCostFromLog } from './generations.js';
+import { loadOrgConfig, exportSession } from './sessionstore.js';
+import { initProject, listProjects, readProject, saveProject, addGenToProject, addRefToProject, renderProjectSite } from './projects.js';
+import { callSceneForge, sceneForgeUrl } from '../sceneforge/client.js';
 
 
 export interface SlashCommand {
@@ -44,18 +47,18 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     command: '/review',
-    description: 'Switch to Workspace Launcher',
-    execute: (_, agent) => { agent.emit('mode:change', 'workspace'); }
+    description: 'Switch to Lanes (live agent panes)',
+    execute: (_, agent) => { agent.emit('mode:change', 'lanes'); }
   },
   {
     command: '/dashboard',
-    description: 'Switch to Swarm Dashboard',
-    execute: (_, agent) => { agent.emit('mode:change', 'discovery'); }
+    description: 'Switch to Logs (history + observability)',
+    execute: (_, agent) => { agent.emit('mode:change', 'logs'); }
   },
   {
     command: '/proof',
-    description: 'Switch to Proof receipts Explorer',
-    execute: (_, agent) => { agent.emit('mode:change', 'proof'); }
+    description: 'Switch to Logs (receipts live in history)',
+    execute: (_, agent) => { agent.emit('mode:change', 'logs'); }
   },
   {
     command: '/models',
@@ -73,8 +76,8 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     command: '/workspace',
-    description: 'Switch to Workspace IDE',
-    execute: (_, agent) => { agent.emit('mode:change', 'workspace'); }
+    description: 'Switch to Lanes (live agent panes)',
+    execute: (_, agent) => { agent.emit('mode:change', 'lanes'); }
   },
   {
     command: '/logs',
@@ -726,10 +729,15 @@ document.querySelectorAll(".clip").forEach(function (el) {
     description: 'Async sealed generation via your openrouter-agent — prompt → ledger → critique recursion',
     usage: '/gen <provider alias> :: <prompt>',
     execute: (args, agent, state) => {
-      const [aliasPart, ...rest] = args.split('::');
+      let [aliasPart, ...rest] = args.split('::');
+      let projName: string | undefined;
+      let label: string | undefined;
+      aliasPart = aliasPart
+        .replace(/--project\s+(\S+)/, (_m, n) => { projName = n; return ''; })
+        .replace(/--label\s+([^:]+?)\s*$/, (_m, l) => { label = l.trim(); return ''; });
       const prompt = rest.join('::').trim();
       const provider = findProvider(aliasPart.trim());
-      if (!provider || !prompt) return 'Usage: /gen <provider> :: <prompt>  — see /providers';
+      if (!provider || !prompt) return 'Usage: /gen [--project <name>] [--label <text>] <provider> :: <prompt>  — see /providers';
       const genDir = locateGenAgent();
       const scriptArgs = buildGenAgentArgs(provider, prompt);
       const launched = Boolean(genDir && scriptArgs);
@@ -739,8 +747,13 @@ document.querySelectorAll(".clip").forEach(function (el) {
         model: provider.modelId,
         kind: provider.kind,
         transport: provider.transport,
-        status: launched ? 'running' : 'queued'
+        status: launched ? 'running' : 'queued',
+        project: projName
       });
+      if (projName) {
+        initProject(projName);
+        addGenToProject(projName, { id: rec.id, provider: provider.id, model: provider.modelId, prompt, label: label || aliasPart.trim() || prompt.slice(0, 30) });
+      }
       const logPath = join(process.cwd(), '.timmy', 'runs', `${rec.id}.log`);
       if (launched) {
         updateGeneration(rec.id, { log: logPath });
@@ -783,6 +796,25 @@ document.querySelectorAll(".clip").forEach(function (el) {
             const patch: { status: typeof status; artifact?: string; cost_usd?: number } = { status, artifact };
             if (cost !== undefined) patch.cost_usd = cost;
             updateGeneration(g.id, patch);
+          }
+          // project-linked gens: copy finished artifacts into the Slate folder
+          if (g.project && status === 'done' && artifact) {
+            try {
+              const base = locateGenAgent() || process.cwd();
+              const src = existsSync(artifact) ? artifact : join(base, artifact);
+              if (existsSync(src)) {
+                const proj = readProject(g.project);
+                const pg = proj?.gens.find(x => x.id === g.id);
+                if (proj && pg && !pg.artifact) {
+                  const rel = join('gens', `${g.id}${extname(src)}`);
+                  mkdirSync(join(process.cwd(), 'studio', g.project, 'gens'), { recursive: true });
+                  copyFileSync(src, join(process.cwd(), 'studio', g.project, rel));
+                  pg.artifact = rel;
+                  if (cost !== undefined) pg.cost_usd = cost;
+                  saveProject(proj);
+                }
+              }
+            } catch { /* project sync is best-effort */ }
           }
         }
         return `• ${g.id}  ${g.provider.padEnd(18)} ${status.padEnd(7)}${cost !== undefined ? ` $${cost.toFixed(3)}` : ''}${g.frameCount ? ` ${g.frameCount}f` : ''}${artifact ? ` → ${artifact}` : ''}  "${g.prompt.slice(0, 44)}${g.prompt.length > 44 ? '…' : ''}"`;
@@ -866,6 +898,102 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/project',
+    description: 'TIMMY Slate visual project folder — refs + labeled gens + storyboard + site',
+    usage: '/project [name] [--template <t>]',
+    execute: args => {
+      const name = args.trim().split(/\s+/)[0];
+      if (!name) return `📁 projects: ${listProjects().join(', ') || '(none)'} — create: /project <name> [--template <t>]`;
+      initProject(name);
+      const tMatch = args.match(/--template\s+(\S+)/);
+      if (tMatch?.[1]) {
+        const proj = readProject(name);
+        if (proj) {
+          const t = loadTemplate(tMatch[1], name);
+          proj.beats = t.beats;
+          proj.template = t.name;
+          saveProject(proj);
+        }
+      }
+      return `📁 TIMMY Slate project "${name}" → studio/${name}/\n• folders: refs/ gens/ frames/ receipts/ site/\n• next: /gen --project ${name} <provider> :: prompt · /ref ${name} <image> · /publish ${name}`;
+    }
+  },
+  {
+    command: '/ref',
+    description: 'Attach a reference image to a Slate project (character, style, storyboard ref)',
+    usage: '/ref <project> <path> [label]',
+    execute: args => {
+      const [name, src, ...lbl] = args.trim().split(/\s+/);
+      if (!name || !src) return 'Usage: /ref <project> <path> [label]';
+      const label = lbl.join(' ') || basename(src).replace(/\.[^.]+$/, '');
+      const rel = addRefToProject(name, src, label);
+      return rel ? `🖼️  ref added → studio/${name}/${rel} (${label})` : `✕ no project "${name}" or file not found: ${src}`;
+    }
+  },
+  {
+    command: '/publish',
+    description: 'Render a Slate project into an HTML site (Instatic/Paper target) + carbonyl pane',
+    usage: '/publish <project>',
+    execute: (args, agent) => {
+      const name = args.trim().split(/\s+/)[0];
+      if (!name) return 'Usage: /publish <project>';
+      const sitePath = renderProjectSite(name);
+      if (!sitePath) return `✕ no project "${name}" — /project ${name} first`;
+      ensureDashServer();
+      const url = `http://127.0.0.1:4273/studio/${name}/site/index.html`;
+      if (agent && (agent as any).addBrowserPane) (agent as any).addBrowserPane(url);
+      return `🌐 published → ${url}\n• production: open ${sitePath} with Instatic / Paper\n• page carries the receipt footer — provable by construction`;
+    }
+  },
+  {
+    command: '/porter',
+    description: 'TIMMY Porter — strict MCP→CLI gateway: status, capabilities, inert job proposals',
+    usage: '/porter [status|caps|job <note>]',
+    execute: (args, agent) => {
+      const [sub, ...restArgs] = args.trim().split(/\s+/);
+      const note = restArgs.join(' ');
+      const deliver = (msg: string) => {
+        if (agent) agent.emit('message:user' as any, { role: 'assistant', content: `⚙️ **[SYSTEM]** ${msg}`, timestamp: Date.now() });
+      };
+      if (sub === 'job') {
+        if (!note) return 'Usage: /porter job <note> — proposes an INERT job; nothing executes without approval';
+        callSceneForge({ tool: 'sceneforge_propose_job', args: { note } })
+          .then((r: any) => deliver(`📋 porter job proposed (inert): ${JSON.stringify(r).slice(0, 300)}`))
+          .catch((e: any) => deliver(`✕ porter: ${String(e?.message || e).slice(0, 160)} — set SCENEFORGE_AGENT_KEY in your shell`));
+        return '⏳ porter job proposal dispatched — result lands in chat';
+      }
+      if (sub === 'caps') {
+        callSceneForge({ tool: 'sceneforge_capabilities' })
+          .then((r: any) => deliver(`🧰 sceneforge capabilities:\n${JSON.stringify(r, null, 1).slice(0, 700)}`))
+          .catch((e: any) => deliver(`✕ porter: ${String(e?.message || e).slice(0, 160)}`));
+        return '⏳ porter capabilities requested — result lands in chat';
+      }
+      callSceneForge({ tool: 'sceneforge_project_status' })
+        .then((r: any) => deliver(`🎛️  PORTER — houdini/sceneforge @ ${sceneForgeUrl()}\n${JSON.stringify(r, null, 1).slice(0, 700)}`))
+        .catch((e: any) => deliver(`✕ porter: ${String(e?.message || e).slice(0, 160)}\n• SCENEFORGE_AGENT_KEY (keychain) required · url override: SCENEFORGE_MCP_URL`));
+      return '⏳ porter status requested — result lands in chat';
+    }
+  },
+  {
+    command: '/export',
+    description: 'Export this session into the organized archive tree (configured at onboarding step 3)',
+    usage: '/export [name]',
+    execute: (args, _agent, state) => {
+      const cfg = loadOrgConfig();
+      const sessionId = args.trim() || `session_${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}`;
+      const cwd = process.cwd();
+      const eventsPath = join(cwd, 'logs', 'agent-events.log');
+      const gensPath = join(cwd, '.timmy', 'generations.json');
+      const folder = exportSession(cfg, {
+        sessionId,
+        chat: ((state as any)?.messages || []) as { role: string; content: string }[],
+        eventsLines: existsSync(eventsPath) ? readFileSync(eventsPath, 'utf8').split('\n').filter(Boolean) : [],
+        generationsJson: existsSync(gensPath) ? readFileSync(gensPath, 'utf8') : undefined
+      });
+      return `📦 exported → ${folder}\n• chat.md · events.jsonl${existsSync(gensPath) ? ' · generations.json' : ''}\n• archive tree: sessions/ generations/ uploads/ skills/ context/ exports/`;
+    }
+  },
+  {
     command: '/help',
     description: 'Show list of all available commands',
     execute: () => {
@@ -911,7 +1039,11 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /framecap <vid> — ffmpeg every 30th frame @60fps into studio/frames/\n` +
              `  /panes          — Studios dashboard + Slate (tldraw) in carbonyl lanes\n` +
              `  /promptdb [p]   — Provider/model prompt+result DB w/ costs & timestamps\n` +
-             `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n\n` +
+             `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n` +
+             `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
+             `  /ref <p> <img>  — Attach reference image to a project\n` +
+             `  /publish <p>    — Render project → HTML site (Instatic/Paper) + pane\n` +
+             `  /porter [cmd]   — TIMMY Porter: strict MCP→CLI gateway (status/caps/job)\n\n` +
              `${boldCyan}⚙️  CONSOLE SETTINGS & LIFE CYCLE${reset}\n` +
              `  /model <id>   — Switch active model dynamically\n` +
              `  /graphics <p> — Set TUI graphics (auto, kitty, iterm2, ansi)\n` +

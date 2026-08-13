@@ -23,6 +23,7 @@ export interface GenerationRecord {
   cost_usd?: number;
   critique?: string;
   log?: string;
+  project?: string;
   recursion_of?: string;
   stamp: string;
   created_at: string;

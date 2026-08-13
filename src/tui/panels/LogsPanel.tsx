@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
 import { existsSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
+import { humanizeLines, clockTime } from '../../utils/humanlog.js';
 
 interface LogsPanelProps {
   agent: any;
@@ -22,6 +23,7 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
   const [scrollOffset, setScrollOffset] = useState(0);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [autoFollow, setAutoFollow] = useState(true);
+  const [human, setHuman] = useState(true);
   const [fileStat, setFileStat] = useState<{ sizeKb: number; mtime: string } | null>(null);
 
   const autoFollowRef = useRef(autoFollow);
@@ -104,8 +106,21 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
 
   const isSmallScreen = terminalHeight < 30;
   const visibleHeight = Math.max(4, terminalHeight - 16);
-  const visibleLines = logLines.slice(scrollOffset, scrollOffset + visibleHeight);
-  const atBottom = scrollOffset >= Math.max(0, logLines.length - visibleHeight);
+
+  // Human mode (default): short readable sentences, telemetry collapsed.
+  const humanized = human ? humanizeLines(logLines) : null;
+  const rows: { text: string; color: string }[] = humanized
+    ? humanized.events.map(e => ({ text: `${clockTime(e.ts)}  ${e.icon}  ${e.text}`, color: e.color }))
+    : logLines.map(l => {
+        let color = '#e6e6ea';
+        if (l.includes('[ERROR]')) color = '#ff6b6b';
+        else if (l.includes('[WARN]')) color = '#f5b545';
+        else if (l.includes('[DEBUG]')) color = '#8a8a94';
+        return { text: l, color };
+      });
+  const off = Math.min(scrollOffset, Math.max(0, rows.length - visibleHeight));
+  const visibleLines = rows.slice(off, off + visibleHeight);
+  const atBottom = off >= Math.max(0, rows.length - visibleHeight);
 
   useInput((char, key) => {
     // Only consume keys when the stage owns focus; nav keeps its arrows/numbers-free behavior
@@ -125,6 +140,12 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
 
     if (char.toLowerCase() === 'f') {
       setAutoFollow(prev => !prev);
+      return;
+    }
+
+    if (char.toLowerCase() === 'h') {
+      setHuman(prev => !prev);
+      setScrollOffset(0);
       return;
     }
 
@@ -165,7 +186,7 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
           })}
         </Box>
         <Box marginTop={1}>
-          <Text color="#8a8a94" dimColor>[1-5] switch file · [R] refresh · [F] follow tail ({autoFollow ? 'ON' : 'OFF'}) · [↑↓] scroll</Text>
+          <Text color="#8a8a94" dimColor>[1-5] switch file · [H] {human ? 'raw' : 'human'} view · [F] follow ({autoFollow ? 'ON' : 'OFF'}) · [↑↓] scroll</Text>
         </Box>
       </Box>
 
@@ -181,25 +202,25 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
               {activeFile === 'workspace-launcher.log' && '· workspace launches write here — none yet on this machine'}
             </Text>
           </Box>
+        ) : rows.length === 0 ? (
+          <Box flexGrow={1} justifyContent="center" alignItems="center">
+            <Text color="#8a8a94" dimColor>· everything in this file is telemetry sync noise — hidden in human view. [H] for raw.</Text>
+          </Box>
         ) : (
-          visibleLines.map((line, idx) => {
-            let color = '#e6e6ea';
-            if (line.includes('[ERROR]')) color = '#ff6b6b';
-            else if (line.includes('[WARN]')) color = '#f5b545';
-            else if (line.includes('[INFO]')) color = '#e6e6ea';
-            else if (line.includes('[DEBUG]')) color = '#8a8a94';
-            return (
-              <Text key={`${scrollOffset}-${idx}`} color={color} wrap="wrap">{line}</Text>
-            );
-          })
+          visibleLines.map((row, idx) => (
+            <Text key={`${off}-${idx}`} color={row.color} wrap="wrap">{row.text}</Text>
+          ))
+        )}
+        {human && humanized && humanized.telemetryCount > 0 && (
+          <Text color="#6e7681" dimColor>☁ {humanized.telemetryCount} telemetry sync lines collapsed</Text>
         )}
       </Box>
 
       <Box marginTop={1} justifyContent="space-between" flexShrink={0}>
         <Text color="#8a8a94" dimColor>
-          {logLines.length === 0
-            ? '0 lines'
-            : `lines ${scrollOffset + 1}-${Math.min(logLines.length, scrollOffset + visibleHeight)} of ${logLines.length} (last 100)`}
+          {rows.length === 0
+            ? '0 readable lines'
+            : `lines ${off + 1}-${Math.min(rows.length, off + visibleHeight)} of ${rows.length}${human ? ' (human view)' : ' (last 100)'}`}
           {fileStat ? ` · ${fileStat.sizeKb} KB · upd ${fileStat.mtime}` : ''}
         </Text>
         <Text color={atBottom ? '#3fb950' : '#f5b545'} dimColor>

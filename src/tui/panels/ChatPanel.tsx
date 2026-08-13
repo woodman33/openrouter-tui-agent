@@ -6,7 +6,7 @@ import type { Agent } from '../../agent/core.js';
 import { renderMarkdown } from '../../utils/markdown.js';
 import { theme } from '../theme.js';
 import { SLASH_COMMANDS, handleSlashCommand, getAutocompleteEnabled } from '../../utils/slash-commands.js';
-import { truncateVisible, scrollVisibleLeft, truncateMiddleOrEnd, splitModelNameAndBlurb, getModelColors } from '../utils/text.js';
+import { truncateVisible, scrollVisibleLeft, truncateMiddleOrEnd, splitModelNameAndBlurb, getModelColors, wrapVisible } from '../utils/text.js';
 import { Spinner } from '../components/Motion.js';
 import { useEdgeHealth } from '../hooks/useEdgeHealth.js';
 import { PrimaryButton, SecondaryButton } from '../components/DesignSystem.js';
@@ -52,6 +52,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   // OpenRouter Model Rail states
   const [liveModels, setLiveModels] = useState<any[]>([]);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
+  const [showModelDetail, setShowModelDetail] = useState(false);
   const [highlightedModelIdx, setHighlightedModelIdx] = useState(0);
   const [focusSection, setFocusSection] = useState<'chat' | 'modelRail' | 'logRain'>('chat');
   const [modelChangedFlash, setModelChangedFlash] = useState(false);
@@ -340,11 +341,11 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
               timestamp: Date.now()
             });
           } else if (activeHomeBtnIdx === 1) {
-            // Open Runs/Receipts
-            agent.emit('mode:change' as any, 'hermes');
+            // Open Lanes (live agent panes)
+            agent.emit('mode:change' as any, 'lanes');
           } else if (activeHomeBtnIdx === 2) {
-            // Open Workspace
-            agent.emit('mode:change' as any, 'workspace');
+            // Open Files
+            agent.emit('mode:change' as any, 'files');
           }
           return;
         }
@@ -417,6 +418,12 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
             timestamp: Date.now()
           });
         }
+        return;
+      }
+      if (char === 'd') { setShowModelDetail(v => !v); return; }
+      if (char === 'o') {
+        const m = filteredModels[highlightedModelIdx];
+        if (m && (agent as any).addBrowserPane) (agent as any).addBrowserPane(`https://openrouter.ai/${m.id}`);
         return;
       }
       if (char && char !== '\t' && char !== '\r' && char !== '\n' && !key.ctrl && !key.meta) {
@@ -510,12 +517,12 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                     : <SecondaryButton label="Run Proof" selected={false} width={20} />
                   }
                   {activeHomeBtnIdx === 1 
-                    ? <PrimaryButton label="Runs" selected={true} width={20} /> 
-                    : <SecondaryButton label="Runs" selected={false} width={20} />
+                    ? <PrimaryButton label="Lanes" selected={true} width={20} /> 
+                    : <SecondaryButton label="Lanes" selected={false} width={20} /> 
                   }
                   {activeHomeBtnIdx === 2 
-                    ? <PrimaryButton label="Work" selected={true} width={20} /> 
-                    : <SecondaryButton label="Work" selected={false} width={20} />
+                    ? <PrimaryButton label="Files" selected={true} width={20} /> 
+                    : <SecondaryButton label="Files" selected={false} width={20} /> 
                   }
                 </Box>
 
@@ -627,13 +634,15 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                   if (!isFinite(inn) && !isFinite(out)) return '';
                   if (inn === 0 && out === 0) return 'free';
                   const fmt = (v: number) => (v === 0 ? '$0' : `$${(v * 1e6).toFixed(2)}`);
-                  return `${fmt(inn)} in · ${fmt(out)} out /M`;
+                  return `${fmt(inn)}→${fmt(out)} /M tokens`;
                 } catch {
                   return '';
                 }
               })();
 
-              const showDescription = !isCompact || isSelected || isActive;
+              // Descriptions only for the highlighted/active model — a rail of
+              // mid-truncated blurbs was noise, not information.
+              const showDescription = isSelected || isActive;
 
               return (
                 <Box key={m.id} flexDirection="column" marginBottom={1}>
@@ -658,12 +667,44 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
           )}
         </Box>
 
+        {/* Model detail card — ghost-bordered, bottom-docked; the list above stays fully visible */}
+        {showModelDetail && (filteredModels[highlightedModelIdx] as any) && (() => {
+          const dm = filteredModels[highlightedModelIdx] as any;
+          const priceOf = (m: any): string => {
+            try {
+              const p = m?.pricing;
+              if (!p) return '';
+              const i = parseFloat(p.prompt), o = parseFloat(p.completion);
+              if (!isFinite(i) && !isFinite(o)) return '';
+              const f = (v: number) => (v === 0 ? '$0' : `$${(v * 1e6).toFixed(2)}`);
+              return `${f(i)}→${f(o)}/M`;
+            } catch { return ''; }
+          };
+          const activeModel = (rawModels as any[]).find(r => r.id === state.model);
+          return (
+            <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} marginTop={1} flexShrink={0}>
+              <Text bold color="#d2a8ff" wrap="truncate">{dm.name || dm.id}</Text>
+              {wrapVisible(String(dm.description || 'no description'), Math.max(20, railWidth - 6)).slice(0, 7).map((l, i) => (
+                <Text key={i} color="#9aa4b2">{l}</Text>
+              ))}
+              <Text color="#8a8a94" dimColor>
+                {dm.context_length ? `${Math.round(dm.context_length / 1000)}k ctx · ` : ''}{priceOf(dm)}
+              </Text>
+              {activeModel && activeModel.id !== dm.id && (
+                <Text color="#8a8a94" dimColor wrap="truncate">vs active {String(state.model).split('/').pop()}: {priceOf(activeModel)}</Text>
+              )}
+              <Text color="#8a8a94" dimColor>[d] close · [o] full page in carbonyl</Text>
+            </Box>
+          );
+        })()}
+
         {/* Live log rain — newest at top, rains downward (stacked mode) */}
         {!threeCol && <LogRain height={rainHeight} focused={focusSection === 'logRain' && focusArea === 'stage'} />}
 
         <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
           <Text color="#8b949e" dimColor>Tab·region ↑↓·move Enter·act</Text>
           <Text color="#8b949e" dimColor>Esc·back ^R·runs ^W·work ^L·logs</Text>
+          <Text color="#8b949e" dimColor>d·model detail o·open page</Text>
           <Text color="#8b949e" dimColor>^K·palette ?·help(nav)</Text>
         </Box>
       </Box>

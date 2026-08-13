@@ -5,13 +5,14 @@ import { join } from 'path';
 import type { Agent } from '../agent/core.js';
 import { saveConfig } from '../utils/config.js';
 import { probeOllama } from '../agent/providers.js';
+import { saveOrgConfig } from '../utils/sessionstore.js';
 
 interface OnboardingProps {
   agent: Agent;
   onDone: () => void;
 }
 
-type Step = 'provider' | 'key' | 'cloud' | 'cloudUrl' | 'done';
+type Step = 'provider' | 'key' | 'cloud' | 'cloudUrl' | 'logs' | 'done';
 
 /**
  * First-run onboarding: pick a brain (local Ollama, OpenRouter key, or both),
@@ -25,6 +26,9 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
   const [urlInput, setUrlInput] = useState('');
   const [choice, setChoice] = useState<'ollama' | 'key' | 'both'>('both');
   const [cloud, setCloud] = useState<'default' | 'custom' | 'off'>('default');
+  const [pendingCloud, setPendingCloud] = useState<'default' | 'custom' | 'off'>('default');
+  const [logBase, setLogBase] = useState<'repo' | 'home'>('repo');
+  const [logNaming, setLogNaming] = useState<'date' | 'run'>('date');
   const [note, setNote] = useState('');
 
   useEffect(() => {
@@ -68,17 +72,32 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
       return;
     }
     if (step === 'cloud') {
-      if (key.return) finish('default');
+      if (key.return) { setPendingCloud('default'); setStep('logs'); }
       if (char === 'c') setStep('cloudUrl');
-      if (char === 'l') finish('off');
+      if (char === 'l') { setPendingCloud('off'); setStep('logs'); }
       if (key.escape) setStep(choice === 'ollama' ? 'provider' : 'key');
       return;
     }
     if (step === 'cloudUrl') {
-      if (key.return) { finish('custom', urlInput.trim()); return; }
+      if (key.return) { setPendingCloud('custom'); setStep('logs'); return; }
       if (key.backspace || key.delete) { setUrlInput(urlInput.slice(0, -1)); return; }
       if (key.escape) { setStep('cloud'); return; }
       if (char && !key.ctrl && !key.meta && char !== '\t') setUrlInput(urlInput + char);
+      return;
+    }
+    if (step === 'logs') {
+      if (char === '1') setLogBase('repo');
+      if (char === '2') setLogBase('home');
+      if (char === 'd') setLogNaming('date');
+      if (char === 'r') setLogNaming('run');
+      if (key.return) {
+        saveOrgConfig({
+          baseDir: logBase === 'home' ? '~/TIMMY-archive' : join('.timmy', 'archive'),
+          naming: logNaming
+        });
+        finish(pendingCloud, pendingCloud === 'custom' ? urlInput.trim() : undefined);
+      }
+      if (key.escape) setStep('cloud');
       return;
     }
   });
@@ -95,13 +114,20 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
         <Text bold color="#d2a8ff">⚡ TIMMY FIRST RUN — 60-second setup</Text>
         <Text color="#8b949e">Local-first: everything works with zero accounts. The rest is enhancement.</Text>
 
-        <Box flexDirection="column" marginTop={1}>
-          <Text bold color="#e6edf3">1 · PICK A BRAIN</Text>
-          <Text color="#8b949e">  {ollamaLine}</Text>
-          <Text color={choice === 'both' ? '#3fb950' : '#e6edf3'}>  [b] Both — OpenRouter primary, Ollama fallback (recommended)</Text>
-          <Text color={choice === 'ollama' ? '#3fb950' : '#e6edf3'}>  [o] Local Ollama only — offline, free, private</Text>
-          <Text color={choice === 'key' ? '#3fb950' : '#e6edf3'}>  [k] OpenRouter key only — paste a key (openrouter.ai/keys)</Text>
-        </Box>
+        {step === 'provider' ? (
+          <Box flexDirection="column" marginTop={1}>
+            <Text bold color="#e6edf3">1 · PICK A BRAIN — choose ONE, Enter continues</Text>
+            <Text color="#8b949e">  {ollamaLine}</Text>
+            <Text color={choice === 'both' ? '#3fb950' : '#e6edf3'}>{choice === 'both' ? '  ▶ [b]' : '  ○ [b]'} Both — OpenRouter primary, Ollama fallback (recommended)</Text>
+            <Text color={choice === 'ollama' ? '#3fb950' : '#e6edf3'}>{choice === 'ollama' ? '  ▶ [o]' : '  ○ [o]'} Local Ollama only — offline, free, private</Text>
+            <Text color={choice === 'key' ? '#3fb950' : '#e6edf3'}>{choice === 'key' ? '  ▶ [k]' : '  ○ [k]'} OpenRouter key only — paste a key (openrouter.ai/keys)</Text>
+            <Text color="#8a8a94" dimColor>  ▶ = current choice — press its key to change it</Text>
+          </Box>
+        ) : (
+          <Box marginTop={1}>
+            <Text color="#8a8a94" dimColor>1 · brain: {choice === 'both' ? 'Both (OpenRouter + Ollama)' : choice === 'ollama' ? 'Local Ollama' : 'OpenRouter key'} ✓</Text>
+          </Box>
+        )}
 
         {step === 'key' && (
           <Box flexDirection="column" marginTop={1}>
@@ -128,6 +154,21 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
             <Box borderStyle="single" borderColor="#30363d" paddingX={1}>
               <Text color="#e6edf3">{urlInput || 'https://your-worker.workers.dev'}</Text>
             </Box>
+          </Box>
+        )}
+
+        {step === 'logs' && (
+          <Box flexDirection="column" marginTop={1}>
+            <Text color="#8a8a94" dimColor>2 · cloud sync: {pendingCloud === 'default' ? 'your worker' : pendingCloud === 'off' ? 'local-only' : 'custom URL'} ✓</Text>
+            <Text bold color="#e6edf3">3 · LOG ORGANIZATION — ONE answer per question, Enter confirms both</Text>
+            <Text color="#8a8a94" dimColor>  Two questions. ▶ = your current choice — press a key to change it, Enter confirms.</Text>
+            <Text color="#e6edf3">  where should the archive live?</Text>
+            <Text color={logBase === 'repo' ? '#3fb950' : '#e6edf3'}>{logBase === 'repo' ? '  ▶ [1]' : '  ○ [1]'} .timmy/archive in this repo (recommended — stays with the project)</Text>
+            <Text color={logBase === 'home' ? '#3fb950' : '#e6edf3'}>{logBase === 'home' ? '  ▶ [2]' : '  ○ [2]'} ~/TIMMY-archive — survives clones & reinstalls</Text>
+            <Text color="#e6edf3">  how should session folders be named?</Text>
+            <Text color={logNaming === 'date' ? '#3fb950' : '#e6edf3'}>{logNaming === 'date' ? '  ▶ [d]' : '  ○ [d]'} folders by date (2026-08-12/session…) — recommended</Text>
+            <Text color={logNaming === 'run' ? '#3fb950' : '#e6edf3'}>{logNaming === 'run' ? '  ▶ [r]' : '  ○ [r]'} folders by run id</Text>
+            <Text color="#8a8a94" dimColor>  tree: sessions/ generations/ uploads/ skills/ context/ exports/ · Enter saves · /export anytime</Text>
           </Box>
         )}
 

@@ -1,13 +1,13 @@
 import React from 'react';
 import { ChatPanel } from './panels/ChatPanel.js';
-import { WorkspacePanel } from './panels/WorkspacePanel.js';
 import { LogsPanel } from './panels/LogsPanel.js';
-import { HermesPanel } from './panels/HermesPanel.js';
+import { LanesPanel } from './panels/LanesPanel.js';
+import { FilesPanel } from './panels/FilesPanel.js';
 import type { Agent } from '../agent/core.js';
 
-export type Mode = 'brief' | 'hermes' | 'workspace' | 'logs';
+export type Mode = 'brief' | 'lanes' | 'logs' | 'files';
 
-export const MODES: Mode[] = ['brief', 'hermes', 'workspace', 'logs'];
+export const MODES: Mode[] = ['brief', 'lanes', 'logs', 'files'];
 
 interface ModeRouterProps {
   mode: Mode;
@@ -22,12 +22,12 @@ export function ModeRouter({ mode, agent, setInspector, focusArea, inputLocked }
   switch (mode) {
     case 'brief':
       return <ChatPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
-    case 'hermes':
-      return <HermesPanel agent={agent} setInspector={setInspector} focusArea={focusArea} inputLocked={inputLocked} />;
-    case 'workspace':
-      return <WorkspacePanel agent={agent} setInspector={setInspector} />;
+    case 'lanes':
+      return <LanesPanel agent={agent} setInspector={setInspector} focusArea={focusArea} inputLocked={inputLocked} />;
     case 'logs':
       return <LogsPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
+    case 'files':
+      return <FilesPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
     default:
       return <ChatPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
   }

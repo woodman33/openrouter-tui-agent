@@ -174,8 +174,8 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
 
   const paletteItems = [
     { label: 'Chat', action: () => { setMode('brief'); setFocusedMode('brief'); } },
-    { label: 'Runs', action: () => { setMode('hermes'); setFocusedMode('hermes'); } },
-    { label: 'Work', action: () => { setMode('workspace'); setFocusedMode('workspace'); } },
+    { label: 'Lanes', action: () => { setMode('lanes'); setFocusedMode('lanes'); } },
+    { label: 'Files', action: () => { setMode('files'); setFocusedMode('files'); } },
     { label: 'Logs', action: () => { setMode('logs'); setFocusedMode('logs'); } },
     { label: 'Exit Application', action: safeExit }
   ];
@@ -238,14 +238,14 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
     // Global Ctrl-layer jumps — one dialect everywhere, no nav dance required
     // (Ink doesn't parse F-keys; Ctrl combos are conflict-free in raw mode)
     if (key.ctrl && input === 'r') {
-      setMode('hermes');
-      setFocusedMode('hermes');
+      setMode('lanes');
+      setFocusedMode('lanes');
       setFocusArea('stage');
       return;
     }
     if (key.ctrl && input === 'w') {
-      setMode('workspace');
-      setFocusedMode('workspace');
+      setMode('files');
+      setFocusedMode('files');
       setFocusArea('stage');
       return;
     }
