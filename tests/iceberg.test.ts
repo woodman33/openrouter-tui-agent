@@ -3,7 +3,7 @@ import { mkdtempSync, existsSync, readFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { buildIndex, recall, contextDir } from '../src/utils/iceberg.js';
-import { initProject, addCastToProject } from '../src/utils/projects.js';
+import { initProject, addCastToProject, readProject, saveProject } from '../src/utils/projects.js';
 
 let dir: string;
 
@@ -28,7 +28,10 @@ describe('ICEBERG context funnel', () => {
 
   it('descends relevant branches and caps vault hits', () => {
     initProject('sting', {}, dir);
-    addCastToProject('sting', { id: 'C1', name: 'Mara' }, dir);
+    addCastToProject('sting', { id: 'C1', name: 'Mara', wardrobe: 'orange jumpsuit' }, dir);
+    const proj = readProject('sting', dir)!;
+    proj.sheet = { continuity: { flags: ['wardrobe', 'hair'] } };
+    saveProject(proj, dir);
     const r = recall('mara wardrobe continuity', dir);
     expect(r.descended.length).toBeGreaterThan(0);
     expect(r.descended[0].id).toBe('slate:sting');
