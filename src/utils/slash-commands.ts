@@ -1,7 +1,7 @@
 import { saveConfig, getConfig } from './config.js';
 import { terminalLink } from './hyperlink.js';
 import { existsSync, readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'fs';
-import { basename, extname } from 'path';
+import { basename, extname, dirname } from 'path';
 import { execSync, spawn } from 'child_process';
 import qrcodeTerminal from 'qrcode-terminal';
 import {
@@ -28,7 +28,7 @@ import { loadTemplate, listTemplates } from './templates.js';
 import { writeDashboard, ensureDashServer, dashUrl, probeUrl } from './dash.js';
 import { aggregateGenerations, parseCostFromLog } from './generations.js';
 import { loadOrgConfig, exportSession } from './sessionstore.js';
-import { initProject, listProjects, readProject, saveProject, addGenToProject, addRefToProject, renderProjectSite, addCastToProject, castPromptBlock, renderBlockingSvg } from './projects.js';
+import { initProject, listProjects, readProject, saveProject, addGenToProject, addRefToProject, renderProjectSite, addCastToProject, castPromptBlock, renderBlockingSvg, renderRightsLog } from './projects.js';
 import { callSceneForge, sceneForgeUrl } from '../sceneforge/client.js';
 import { LANE_RUNNERS } from '../agent/lanes.js';
 import { verifyChain } from './receipts.js';
@@ -954,6 +954,54 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/breakdown',
+    description: 'Script → scene breakdown (INT./EXT. headings) → slate scenes + prompts file',
+    usage: '/breakdown [--project <p>] <path-or-logline>',
+    execute: args => {
+      const m = args.match(/--project\s+(\S+)/);
+      const projName = m?.[1];
+      const rest = args.replace(/--project\s+\S+/, '').trim();
+      const text = existsSync(rest) ? readFileSync(rest, 'utf8') : rest;
+      if (!text) return 'Usage: /breakdown [--project <p>] <script-path-or-logline>';
+      const scenes: { order: number; scene: string; description: string; cast: string[] }[] = [];
+      let cur: { order: number; scene: string; description: string; cast: string[] } | null = null;
+      for (const raw of text.split('\n')) {
+        const l = raw.trim();
+        if (/^(INT\.|EXT\.|INT\/EXT\.|I\/E\.)/i.test(l)) {
+          if (cur) scenes.push(cur);
+          cur = { order: scenes.length + 1, scene: l.slice(0, 48), description: '', cast: [] };
+        } else if (cur && l && !cur.description) {
+          cur.description = l.slice(0, 140);
+        }
+      }
+      if (cur) scenes.push(cur);
+      if (!scenes.length) scenes.push({ order: 1, scene: 'SC 1', description: text.slice(0, 140), cast: [] });
+      if (projName) {
+        initProject(projName);
+        const proj = readProject(projName);
+        if (proj) {
+          proj.sheet = { ...proj.sheet, scenes };
+          saveProject(proj);
+        }
+      }
+      const out = join(process.cwd(), 'studio', projName || 'breakdown', 'breakdown.md');
+      mkdirSync(dirname(out), { recursive: true });
+      writeFileSync(out, `# BREAKDOWN — ${projName || 'script'} · ${scenes.length} scenes\n\n` + scenes.map(s => `${s.order}. **${s.scene}** — ${s.description}`).join('\n') + '\n', 'utf8');
+      return `🎬 breakdown: ${scenes.length} scenes → ${out}${projName ? ` · slated into ${projName}.sheet.scenes` : ''}\n• next: /gen --project ${projName || '<p>'} :: <scene prompt> per scene`;
+    }
+  },
+  {
+    command: '/rights',
+    description: 'Export the rights/receipts log — outsider-verifiable proof per artifact (the pack differentiator)',
+    usage: '/rights <project>',
+    execute: args => {
+      const name = args.trim().split(/\s+/)[0];
+      if (!name) return 'Usage: /rights <project>';
+      const p = renderRightsLog(name);
+      return p ? `⚖️  RIGHTS/RECEIPTS LOG → ${p} (+ .json)\n• every gen with prompt, cost, artifact, receipt hash + chain link\n• a studio outsider verifies any row without lab access` : `✕ no project "${name}"`;
+    }
+  },
+  {
     command: '/sheet',
     description: 'Set the call-sheet v2 block: light window, weather, continuity flags, coverage',
     usage: '/sheet <project> | sunrise 5:51 AM | sunset 8:26 PM | weather 68F partly cloudy | flags wardrobe,hair,injury | hours unshowered 24h, cut scabbed | must get confrontation,wide',
@@ -1247,6 +1295,8 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n` +
              `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
              `  /ref <p> <img>  — Attach reference image to a project\n` +
+             `  /breakdown [p]  — Script → scenes → slate + prompts file\n` +
+             `  /rights <p>     — Outsider-verifiable rights/receipts log\n` +
              `  /cast <p> <C1> … — Call-sheet character card (hair/wardrobe/emotion/age/props)\n` +
              `  /pose <p>       — Blocking diagram SVG (stick-figure conditioning)\n` +
              `  /publish <p>    — Render project → HTML site (Instatic/Paper) + pane\n` +

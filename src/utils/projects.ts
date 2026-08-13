@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, readdirSync } from 'fs';
 import { join, basename, extname } from 'path';
+import { readChain, verifyChain } from './receipts.js';
 
 // TIMMY Slate projects — the visual project folder. One schema (slate.json),
 // many targets: HyperFrames comp, Remotion scaffold, Instatic/Paper site,
@@ -223,6 +224,35 @@ export function castPromptBlock(proj: SlateProject): string {
   const lines = [cast.length ? `CALL SHEET — ${proj.name}:` : '', ...cast.map(c => `  ${c}`), propsLine, lightLine, contLine, hoursLine, covLine, branchLine].filter(Boolean);
   if (!lines.length) return '';
   return lines.join('\n');
+}
+
+// Rights/receipts log — the pack's differentiator. Per-project export of
+// every generation with its receipt hash + chain link, so a studio outsider
+// can verify any artifact without lab access.
+export function renderRightsLog(name: string, dir?: string): string | null {
+  const proj = readProject(name, dir);
+  if (!proj) return null;
+  const chain = readChain('gens', dir);
+  const bySubject = new Map(chain.map(r => [r.subject, r]));
+  const rows = proj.gens.map(g => {
+    const r = bySubject.get(g.id);
+    return {
+      id: g.id, provider: g.provider, model: g.model, label: g.label,
+      prompt: g.prompt, cost_usd: g.cost_usd, artifact: g.artifact,
+      receipt: r ? { hash: r.hash, prev_hash: r.prev_hash, ts: r.ts } : null
+    };
+  });
+  const verification = verifyChain('gens', dir);
+  const p = projectDir(name, dir);
+  mkdirSync(p, { recursive: true });
+  writeFileSync(join(p, 'RIGHTS-LOG.json'), JSON.stringify({ project: name, exported_at: now(), verification, rows }, null, 2), 'utf8');
+  writeFileSync(join(p, 'RIGHTS-LOG.md'), [
+    `# RIGHTS / RECEIPTS LOG — ${name}`,
+    `exported ${now()} · chain: ${verification.ok ? `intact (${verification.count} receipts)` : `BROKEN at ${verification.brokenAt}`}`,
+    '',
+    ...rows.map(r => `- **${r.label || r.id}** · ${r.provider}${r.model ? `/${r.model}` : ''}${r.cost_usd !== undefined ? ` · $${r.cost_usd.toFixed(4)}` : ''}\n  prompt: ${String(r.prompt).slice(0, 160)}\n  artifact: ${r.artifact || '—'} · receipt: ${r.receipt?.hash || '—'} ← ${r.receipt?.prev_hash?.slice(0, 20) || 'genesis'}…`)
+  ].join('\n') + '\n', 'utf8');
+  return join(p, 'RIGHTS-LOG.md');
 }
 
 // tldraw SDK canvas — the Slate visual layer. Polls slate.json every 2s and

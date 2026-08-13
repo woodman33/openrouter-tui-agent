@@ -5,7 +5,7 @@ import { join } from 'path';
 import {
   initProject, listProjects, readProject,
   addGenToProject, addRefToProject, renderProjectSite, projectDir,
-  addCastToProject, castPromptBlock, renderBlockingSvg, saveProject
+  addCastToProject, castPromptBlock, renderBlockingSvg, saveProject, renderRightsLog
 } from '../src/utils/projects.js';
 
 let dir: string;
@@ -68,6 +68,16 @@ describe('Slate projects', () => {
     expect(body).toContain('<circle');
     expect(body).toContain('C1 wired');
     expect(body).toContain('orange jumpsuit');
+  });
+
+  it('exports an outsider-verifiable rights/receipts log', () => {
+    initProject('film', {}, dir);
+    addGenToProject('film', { id: 'gen_9', provider: 'nano-banana-2', prompt: 'C1 enters', label: 'sc12' }, dir);
+    const md = renderRightsLog('film', dir)!;
+    const body = readFileSync(md, 'utf8');
+    expect(body).toContain('RIGHTS / RECEIPTS LOG — film');
+    expect(body).toContain('sc12');
+    expect(existsSync(join(projectDir('film', dir), 'RIGHTS-LOG.json'))).toBe(true);
   });
 
   it('keeps Porter strictly separate — no MCP fleet data in Slate sites', () => {
