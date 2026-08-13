@@ -490,7 +490,7 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
                     {selectedFileIdx === files.length ? '▶ ' : '  '}
                     .. [Back]
                   </Text>
-                  <Text color="#8b949e" dimColor>
+                  <Text color="#8b949e">
                     Go Back
                   </Text>
                 </Box>

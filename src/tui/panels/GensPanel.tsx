@@ -109,11 +109,11 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
       ]}
     >
       <Box flexDirection="row" flexGrow={1}>
-        <Box flexDirection="column" width="46%" paddingRight={1} borderStyle="single" borderColor="#21262d">
+        <Box flexDirection="column" width="46%" paddingRight={1} borderStyle="single" borderColor="#30363d">
           {gens.length === 0 && (
             <Box flexDirection="column">
-              <Text color="#6e7681" dimColor>no generations yet.</Text>
-              <Text color="#6e7681" dimColor>[p] writes a prompt — tab cycles {providers.length} providers.</Text>
+              <Text color="#8b949e">no generations yet.</Text>
+              <Text color="#8b949e">[p] writes a prompt — tab cycles {providers.length} providers.</Text>
             </Box>
           )}
           {gens.map((g, i) => {
@@ -130,28 +130,28 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
           {sel ? (
             <>
               <Text bold color="#d2a8ff" wrap="truncate">{sel.provider}{sel.model ? ` · ${sel.model}` : ''} · {sel.status}</Text>
-              <Text color="#8b949e" dimColor>{sel.created_at.replace('T', ' ').slice(0, 19)} · {sel.transport}{sel.cost_usd !== undefined ? ` · $${sel.cost_usd.toFixed(4)}` : ''}</Text>
+              <Text color="#8b949e">{sel.created_at.replace('T', ' ').slice(0, 19)} · {sel.transport}{sel.cost_usd !== undefined ? ` · $${sel.cost_usd.toFixed(4)}` : ''}</Text>
               <Box marginTop={1} flexDirection="column">
                 <Text wrap="wrap">{sel.prompt}</Text>
               </Box>
               {sel.artifact && <Text color="#3fb950">→ {sel.artifact}</Text>}
-              {sel.framesDir && <Text color="#8a8a94" dimColor>frames: {sel.framesDir} ({sel.frameCount || 0})</Text>}
+              {sel.framesDir && <Text color="#a5b0bc">frames: {sel.framesDir} ({sel.frameCount || 0})</Text>}
               {sel.log && existsSync(sel.log) && (
                 <Box flexDirection="column" marginTop={1}>
                   {readFileSync(sel.log, 'utf8').split('\n').filter(Boolean).slice(-4).map((l, i) => (
-                    <Text key={i} color="#6e7681" dimColor wrap="truncate">{l}</Text>
+                    <Text key={i} color="#8b949e" wrap="truncate">{l}</Text>
                   ))}
                 </Box>
               )}
             </>
           ) : (
-            <Text color="#6e7681" dimColor>select a generation, or [p] to queue one.</Text>
+            <Text color="#8b949e">select a generation, or [p] to queue one.</Text>
           )}
           {composing && (
             <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
               <Text color="#79c0ff">provider: {prov?.id || '?'} ({prov?.kind}) — [tab] cycles</Text>
               <Text>prompt: {draft}█</Text>
-              <Text color="#8a8a94" dimColor>Enter queues (real credits if launched) · Esc cancels</Text>
+              <Text color="#a5b0bc">Enter queues (real credits if launched) · Esc cancels</Text>
             </Box>
           )}
         </Box>

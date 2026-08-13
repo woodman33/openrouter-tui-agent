@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
-import { listProjects, readProject, initProject, renderProjectSite } from '../../utils/projects.js';
+import { listProjects, readProject, initProject, renderProjectSite, renderCanvasPage } from '../../utils/projects.js';
 import { listTemplates, loadTemplate } from '../../utils/templates.js';
 import { ensureDashServer } from '../../utils/dash.js';
 
@@ -41,12 +41,19 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
   const proj = sel?.kind === 'project' ? readProject(sel.name) : null;
   const tmpl = sel?.kind === 'template' ? loadTemplate(sel.name, '{brief}') : null;
 
-  const openCarbonyl = (item: SlateItem) => {
+  const openCanvas = (item: SlateItem) => {
     ensureDashServer();
+    if (item.kind === 'project') renderCanvasPage(item.name);
     const url = item.kind === 'project'
-      ? `http://127.0.0.1:4273/studio/${item.name}/site/index.html`
+      ? `http://127.0.0.1:4273/studio/${item.name}/site/canvas.html`
       : (process.env.TIMMY_SLATE_URL || 'http://127.0.0.1:5173/');
     agent.addBrowserPane(url);
+  };
+
+  const openSite = (item: SlateItem) => {
+    ensureDashServer();
+    if (item.kind === 'project') renderProjectSite(item.name);
+    agent.addBrowserPane(`http://127.0.0.1:4273/studio/${item.name}/site/index.html`);
   };
 
   useInput((char, key) => {
@@ -72,7 +79,8 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
       if (site) ensureDashServer();
       return;
     }
-    if (c === 'c' && sel) { openCarbonyl(sel); return; }
+    if (c === 'c' && sel) { openCanvas(sel); return; }
+    if (c === 'w' && sel) { openSite(sel); return; }
   }, { isActive: !inputLocked });
 
   return (
@@ -86,15 +94,16 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
         { key: '↑↓', label: 'select' },
         { key: 'n', label: 'new project' },
         { key: 'p', label: 'publish site' },
-        { key: 'c', label: 'open canvas pane' }
+        { key: 'c', label: 'tldraw canvas pane' },
+        { key: 'w', label: 'site pane' }
       ]}
     >
       <Box flexDirection="row" flexGrow={1}>
-        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor="#21262d">
+        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor="#30363d">
           {items.length === 0 && (
             <Box flexDirection="column">
-              <Text color="#6e7681" dimColor>no projects yet.</Text>
-              <Text color="#6e7681" dimColor>[n] creates one; templates seed from /studio.</Text>
+              <Text color="#8b949e">no projects yet.</Text>
+              <Text color="#8b949e">[n] creates one; templates seed from /studio.</Text>
             </Box>
           )}
           {items.map((it, i) => (
@@ -107,15 +116,15 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
           {proj && (
             <>
               <Text bold color="#d2a8ff">📁 {proj.name}</Text>
-              <Text color="#8b949e" dimColor>{proj.created_at.replace('T', ' ').slice(0, 16)} · template: {proj.template || '—'}</Text>
+              <Text color="#8b949e">{proj.created_at.replace('T', ' ').slice(0, 16)} · template: {proj.template || '—'}</Text>
               <Text color="#8b949e">{proj.refs.length} refs · {proj.gens.length} gens</Text>
               {(proj.beats || []).map((b, i) => (
                 <Text key={i} color="#9aa4b2" wrap="truncate">• {b.at}s–{b.at + b.dur}s [{b.label}] {b.text}</Text>
               ))}
               {proj.gens.slice(-4).map(g => (
-                <Text key={g.id} color="#8a8a94" dimColor wrap="truncate">  🎬 {g.label} · {g.provider}{g.artifact ? ` → ${g.artifact}` : ''}</Text>
+                <Text key={g.id} color="#a5b0bc" wrap="truncate">  🎬 {g.label} · {g.provider}{g.artifact ? ` → ${g.artifact}` : ''}</Text>
               ))}
-              <Text color="#8a8a94" dimColor>[p] renders site/ · [c] opens it live</Text>
+              <Text color="#a5b0bc">[p] renders site/ · [c] opens it live</Text>
             </>
           )}
           {tmpl && (
@@ -124,11 +133,11 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
               {tmpl.beats.map((b, i) => (
                 <Text key={i} color="#9aa4b2" wrap="truncate">• {b.at}s–{b.at + b.dur}s [{b.label}] {b.text}</Text>
               ))}
-              <Text color="#8a8a94" dimColor>use with /studio --template {tmpl.name} &lt;idea&gt;</Text>
-              <Text color="#8a8a94" dimColor>[c] opens your tldraw Slate canvas (TIMMY_SLATE_URL)</Text>
+              <Text color="#a5b0bc">use with /studio --template {tmpl.name} &lt;idea&gt;</Text>
+              <Text color="#a5b0bc">[c] opens your tldraw Slate canvas (TIMMY_SLATE_URL)</Text>
             </>
           )}
-          {!proj && !tmpl && <Text color="#6e7681" dimColor>select a project or template.</Text>}
+          {!proj && !tmpl && <Text color="#8b949e">select a project or template.</Text>}
           {naming && (
             <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
               <Text color="#79c0ff">new project name: {draft}█</Text>

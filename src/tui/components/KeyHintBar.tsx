@@ -10,7 +10,7 @@ export interface KeyHint {
 export function KeyHintBar({ hints }: { hints: KeyHint[] }) {
   return (
     <Box marginTop={1} flexShrink={0}>
-      <Text color="#8a8a94" dimColor wrap="truncate">
+      <Text color="#a5b0bc" wrap="truncate">
         {hints.map(h => `[${h.key}] ${h.label}`).join(' · ')}
       </Text>
     </Box>

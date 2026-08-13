@@ -85,3 +85,48 @@ export function listTemplates(dir?: string): string[] {
     return [];
   }
 }
+
+// The template library — six kinds, seeded once, agent-authorable forever.
+// kinds: storyboard · callsheet · character · moodboard · branching · blocking
+export function writeTemplateSeeds(dir?: string): string[] {
+  mkdirSync(templatesDir(dir), { recursive: true });
+  const seeds: Record<string, unknown> = {
+    storyboard: defaultStoryboard(),
+    character: {
+      name: 'character', kind: 'character', total: 30, source: 'timmy-default',
+      views: ['front', 'side', 'back', 'other_side', 'bottom'],
+      variations: { wardrobe: 3, moods: 4, ages: 2, lightings: ['dawn', 'noon', 'dusk', 'night'], ref_cap: 50 },
+      beats: [{ at: 0, dur: 30, label: 'TURNTABLE', text: '{brief} — full reference turntable + variations' }]
+    },
+    moodboard: {
+      name: 'moodboard', kind: 'moodboard', total: 12, source: 'timmy-default',
+      refs: [{ role: 'palette', weight: 1 }, { role: 'lighting', weight: 1 }, { role: 'lens', weight: 0.5 }],
+      beats: [{ at: 0, dur: 12, label: 'MOOD', text: '{brief} — seedance 2.0 reference-to-video' }]
+    },
+    callsheet: {
+      name: 'callsheet', kind: 'callsheet', total: 0, source: 'timmy-default',
+      sheet: { day: 17, of: 32, sunrise: '5:51 AM', sunset: '8:26 PM', weather: '68F/54F partly cloudy', continuity: { flags: ['wardrobe', 'hair', 'props', 'weather', 'injury'], hours_rule: 'unshowered 24h · cut scabbed · non-lethal' }, coverage: { must_get: ['confrontation', 'phone insert', 'wide establishing'] } },
+      beats: []
+    },
+    branching: {
+      name: 'branching', kind: 'branching', total: 0, source: 'timmy-default',
+      branches: [
+        { id: 'b1', prompt: 'treat the cut with iodine', if_yes: 'clean heal by day 3', if_no: 'infection — pus by nightfall', consequence: 'changes C1 stamina + wardrobe stain' }
+      ],
+      beats: []
+    },
+    blocking: {
+      name: 'blocking', kind: 'blocking', total: 12, source: 'timmy-default',
+      beats: [{ at: 0, dur: 12, label: 'BLOCKING', text: '{brief} — GOD/POV diagrams, marks + facing + emotion' }]
+    }
+  };
+  const written: string[] = [];
+  for (const [name, body] of Object.entries(seeds)) {
+    const p = join(templatesDir(dir), `${name}.json`);
+    if (!existsSync(p)) {
+      writeFileSync(p, JSON.stringify(body, null, 2), 'utf8');
+      written.push(name);
+    }
+  }
+  return written;
+}

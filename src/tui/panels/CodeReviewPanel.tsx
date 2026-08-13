@@ -374,13 +374,13 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
 
       {/* 4. Gated OpenHands Status Pill */}
       <Box paddingX={2} marginBottom={isSmallScreen ? 0 : 1} width={mainStageWidth - 2} flexShrink={0}>
-        <Text color="#8b949e" dimColor>OpenHands Runner: not configured</Text>
+        <Text color="#8b949e">OpenHands Runner: not configured</Text>
       </Box>
 
       {/* 5. Diagnostics Log verifier */}
       <Box borderStyle="single" borderColor="#30363d" paddingX={2} width={mainStageWidth - 2} flexShrink={0} marginBottom={isSmallScreen ? 0 : 1}>
         <Text color="#c9d1d9">{outputLog}</Text>
-        <Text color="#8b949e" dimColor>Press arrows / Tab to navigate. Enter selects surface.</Text>
+        <Text color="#8b949e">Press arrows / Tab to navigate. Enter selects surface.</Text>
       </Box>
 
       {/* 6. Universal bottom input prompt */}
@@ -388,7 +388,7 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
         <Text color="#8b949e">[ workspace ] </Text>
         <Text color="#79c0ff">▶ </Text>
         <Text color="#ffffff">{inputCmd}</Text>
-        <Text color="#8a8a94">█</Text>
+        <Text color="#a5b0bc">█</Text>
       </Box>
     </Box>
   );

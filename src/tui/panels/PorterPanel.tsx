@@ -275,7 +275,7 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
       {/* 2. Main Input Slot */}
       <Box borderStyle="round" borderColor={activeElement === 'url' ? "#a98bff" : "#30363d"} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
         <Text color="#e6edf3" bold>Paste MCP Server URL:</Text>
-        <Box borderStyle="single" borderColor={activeElement === 'url' ? "#4f9cff" : "#21262d"} paddingX={1} marginY={1}>
+        <Box borderStyle="single" borderColor={activeElement === 'url' ? "#4f9cff" : "#30363d"} paddingX={1} marginY={1}>
           <Text color="#ffffff" wrap="truncate">{isCompact ? truncateVisible(urlInput, mainStageWidth - 10) : urlInput}</Text>
           {activeElement === 'url' && <Text color="#a98bff">█</Text>}
         </Box>
@@ -292,7 +292,7 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
 
       {/* 3. Ingest Pipeline */}
       <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
-        <Text color="#8b949e" dimColor bold>Pipeline Track Map:</Text>
+        <Text color="#8b949e" bold>Pipeline Track Map:</Text>
         {isCompact ? (
           <Box flexDirection="column" paddingX={1} marginY={1}>
             {pipelineSteps.map((step, idx) => {

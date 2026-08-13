@@ -100,7 +100,7 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
         />
       ) : (
         <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" width="34%" paddingRight={1} borderStyle="single" borderColor="#21262d">
+          <Box flexDirection="column" width="34%" paddingRight={1} borderStyle="single" borderColor="#30363d">
             {lanes.map((l, i) => (
               <Text key={l.id} color={i === Math.min(idx, lanes.length - 1) ? '#d2a8ff' : '#e6edf3'} bold={i === Math.min(idx, lanes.length - 1)} wrap="truncate">
                 {i === Math.min(idx, lanes.length - 1) ? '▶ ' : '  '}🌐 {l.name.replace('Browser: ', '')}

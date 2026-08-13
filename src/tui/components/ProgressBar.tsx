@@ -22,7 +22,7 @@ export function ProgressBar({ value, width = 30, label, showPercent = true, colo
   return (
     <Box>
       <Text>{bar}{pct}</Text>
-      {label && <Text dimColor> {label}</Text>}
+      {label && <Text> {label}</Text>}
     </Box>
   );
 }
@@ -48,7 +48,7 @@ export function IndeterminateBar({ width = 30, label }: { width?: number; label?
   return (
     <Box>
       <Text>{chalk.hex('#5e6ad2')(chars.join(''))}</Text>
-      {label && <Text dimColor> {label}</Text>}
+      {label && <Text> {label}</Text>}
     </Box>
   );
 }

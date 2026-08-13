@@ -20,9 +20,9 @@ export function PanelFrame({ icon, title, status, statusColor, explain, hints, c
       <Box flexDirection="column" marginBottom={1} flexShrink={0}>
         <Box justifyContent="space-between">
           <Text bold color="#d2a8ff">{icon} {title}</Text>
-          {status ? <Text color={statusColor || '#8a8a94'}>{status}</Text> : null}
+          {status ? <Text color={statusColor || '#a5b0bc'}>{status}</Text> : null}
         </Box>
-        {explain ? <Text color="#8b949e" dimColor>{explain}</Text> : null}
+        {explain ? <Text color="#8b949e">{explain}</Text> : null}
       </Box>
       {children}
       <KeyHintBar hints={hints} />

@@ -17,6 +17,10 @@ export interface LaneRunner {
   env?: Record<string, string>;
   /** OpenRouter model associated with the lane (UI metadata) */
   model?: string;
+  /** One-line plain-English blurb (what this agent actually is) */
+  blurb?: string;
+  /** One-shot delegation template; {task} replaced at delegate time */
+  task?: string;
 }
 
 /**
@@ -29,30 +33,38 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     label: 'OpenCode CLI',
     expected: '$HOME/.opencode/bin/opencode',
     model: 'qwen/qwen-2.5-coder-32b',
+    blurb: 'open-source coding agent · MIT · 75+ providers',
+    task: 'opencode run "{task}"',
   },
   hermes: {
     cmd: 'hermes',
     label: 'Hermes CLI',
     expected: '$HOME/.local/bin/hermes',
     model: 'nousresearch/hermes-3-llama-3.1-405b',
+    blurb: 'governed agent runner · #1 OpenRouter app',
   },
   pi: {
     cmd: 'pi',
     label: 'Pi Daemon',
     expected: '$HOME/.local/bin/pi',
     model: 'inflection/pi-3',
+    blurb: 'minimal coding agent: read · bash · edit · write',
+    task: 'pi -p "{task}"',
   },
   jcode: {
     cmd: 'jcode',
     label: 'jcode',
     expected: '$HOME/.local/bin/jcode',
     model: 'jcode/default',
+    blurb: 'coding agent on Claude Max / ChatGPT Pro subs · ACP adapter',
+    task: 'jcode run "{task}"',
   },
   minds: {
     cmd: 'minds',
     label: 'Minds CLI (Animoca Builder)',
     expected: '/opt/homebrew/bin/minds',
     model: 'animoca/builder',
+    blurb: 'Animoca Brands Builder CLI · web3 builder toolchain',
   },
 };
 

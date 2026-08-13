@@ -69,8 +69,8 @@ export function WarningButton({ label, selected = false, width }: ButtonProps) {
 export function DisabledButton({ label }: ButtonProps) {
   const displayLabel = label.startsWith('[') && label.endsWith(']') ? label : `[${label}]`;
   return (
-    <Box borderStyle="single" borderColor="#21262d" paddingX={1} marginX={1}>
-      <Text color="#484f58" dimColor>
+    <Box borderStyle="single" borderColor="#30363d" paddingX={1} marginX={1}>
+      <Text color="#484f58">
         {displayLabel} (Planned)
       </Text>
     </Box>
@@ -185,7 +185,7 @@ export function CompactInspector({ fields }: CompactInspectorProps) {
 export function EmptyState({ message }: { message: string }) {
   return (
     <Box flexGrow={1} flexDirection="column" justifyContent="center" alignItems="center" paddingY={2}>
-      <Text color="#8b949e" dimColor>◌ {message}</Text>
+      <Text color="#8b949e">◌ {message}</Text>
     </Box>
   );
 }

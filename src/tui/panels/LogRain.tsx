@@ -57,26 +57,26 @@ export function LogRain({ height, focused }: LogRainProps) {
   return (
     <Box flexDirection="column" borderStyle="single" borderColor={focused ? '#a98bff' : '#30363d'} paddingX={1} flexShrink={0} height={height}>
       <Box justifyContent="space-between">
-        <Text bold color={focused ? '#d2a8ff' : '#8a8a94'}>⛆ WHAT'S HAPPENING ↓</Text>
+        <Text bold color={focused ? '#d2a8ff' : '#a5b0bc'}>⛆ WHAT'S HAPPENING ↓</Text>
         <Text color={live ? '#3fb950' : '#f5b540'}>{live ? '▼ live' : `⏸ +${offset}`}</Text>
       </Box>
       {visible.length === 0 ? (
         <Box flexDirection="column" marginTop={1}>
-          <Text color="#6e7681" dimColor>quiet…</Text>
-          <Text color="#6e7681" dimColor>events rain here</Text>
-          <Text color="#6e7681" dimColor>as they happen:</Text>
-          <Text color="#6e7681" dimColor>runs · models · gens</Text>
-          <Text color="#6e7681" dimColor>lanes · approvals</Text>
+          <Text color="#8b949e">quiet…</Text>
+          <Text color="#8b949e">events rain here</Text>
+          <Text color="#8b949e">as they happen:</Text>
+          <Text color="#8b949e">runs · models · gens</Text>
+          <Text color="#8b949e">lanes · approvals</Text>
         </Box>
       ) : (
         visible.map((ev, i) => (
-          <Text key={`${offset}-${i}`} color={ev.color} dimColor={i > 9} wrap="truncate">
+          <Text key={`${offset}-${i}`} color={i > 9 ? '#8b949e' : ev.color} wrap="truncate">
             {relTime(ev.ts)} {ev.icon} {ev.text.length > 56 ? ev.text.slice(0, 53) + '…' : ev.text}
           </Text>
         ))
       )}
       {telCount > 0 && (
-        <Text color="#6e7681" dimColor>☁ telemetry ×{telCount} synced (hidden)</Text>
+        <Text color="#8b949e">☁ telemetry ×{telCount} synced (hidden)</Text>
       )}
     </Box>
   );

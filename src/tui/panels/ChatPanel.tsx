@@ -152,7 +152,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         lines.push(chalk.bold.hex('#a98bff')('◀ TIMMY Agent'));
         const parsedStream = renderMarkdown(state.streamingText, textWidth);
         lines.push(...parsedStream.split('\n'));
-        lines.push(chalk.hex('#8a8a94')('▌'));
+        lines.push(chalk.hex('#a5b0bc')('▌'));
       } else {
         lines.push(chalk.hex('#a98bff')('◌ Thinking...'));
       }
@@ -482,7 +482,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         <Box paddingX={1} flexDirection="column" marginBottom={isCompact ? 0 : 1} width={chatWidth - 2}>
           <Box justifyContent="space-between" width="100%">
             <Text bold color="#a98bff">💬 Main Chat</Text>
-            {state.isThinking || state.isStreaming ? <Spinner color="#a98bff" label="thinking" /> : <Text color="#8a8a94">Ready</Text>}
+            {state.isThinking || state.isStreaming ? <Spinner color="#a98bff" label="thinking" /> : <Text color="#a5b0bc">Ready</Text>}
           </Box>
           <Box marginTop={0}>
             <Text bold color="#ffffff">OpenRouter Agent</Text>
@@ -542,13 +542,13 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         {showAutocomplete && matches.length > 0 && (
           <Box paddingX={1} minHeight={1} width={chatWidth - 2} flexDirection="row" flexWrap="wrap" marginBottom={1} flexShrink={0}>
             <Box marginRight={2}>
-              <Text color="#8a8a94">Suggestions: </Text>
+              <Text color="#a5b0bc">Suggestions: </Text>
             </Box>
             {matches.map((m, idx) => {
               const isCurrent = idx === activeSuggestIdx;
               return (
                 <Box key={m.command} marginRight={4}>
-                  <Text color={isCurrent ? '#4f9cff' : '#8a8a94'} bold={isCurrent}>
+                  <Text color={isCurrent ? '#4f9cff' : '#a5b0bc'} bold={isCurrent}>
                     {isCurrent ? `▶ ${m.command}` : m.command}
                   </Text>
                 </Box>
@@ -559,7 +559,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
 
         {/* Input prompt box - Never disappears */}
         <Box borderStyle="single" borderColor={focusSection === 'chat' && focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} width={chatWidth - 2} flexShrink={0} marginTop={1}>
-          <Text color="#8a8a94">[ main-chat ] </Text>
+          <Text color="#a5b0bc">[ main-chat ] </Text>
           <Text color="#4f9cff">{state.isThinking ? '◌ ' : '▶ '} </Text>
           <Text color="#e6edf3" wrap="truncate">{scrollVisibleLeft(input, inputTextWidth)}</Text>
           <Text color="#a98bff">{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
@@ -581,7 +581,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
           <Text color="#8b949e">Model Health: <Text bold color={
             state.modelHealthStatus === 'READY' ? '#3fb950' :
             state.modelHealthStatus === 'FALLBACK READY' ? '#d29922' :
-            state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#8a8a94'
+            state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#a5b0bc'
           }>{state.modelHealthStatus || 'UNTESTED'}</Text></Text>
           <Text color="#8b949e">Provider Status: <Text bold color={
             state.modelHealthStatus === 'READY' ? '#3fb950' :
@@ -593,7 +593,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
             state.modelHealthStatus === 'ERROR' ? 'ERROR 🔴' : 'CHECKING ⏳'
           }</Text></Text>
           {state.modelHealthStatus === 'ERROR' && (agent as any).lastHealthError ? (
-            <Text color="#8b949e" dimColor>  └ {String((agent as any).lastHealthError).slice(0, 70)}</Text>
+            <Text color="#8b949e">  └ {String((agent as any).lastHealthError).slice(0, 70)}</Text>
           ) : null}
         </Box>
 
@@ -658,7 +658,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                   )}
                   {showDescription && priceText && (
                     <Box paddingLeft={2}>
-                      <Text color="#8a8a94" dimColor>{priceText}</Text>
+                      <Text color="#a5b0bc">{priceText}</Text>
                     </Box>
                   )}
                 </Box>
@@ -687,13 +687,13 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
               {wrapVisible(String(dm.description || 'no description'), Math.max(20, railWidth - 6)).slice(0, 7).map((l, i) => (
                 <Text key={i} color="#9aa4b2">{l}</Text>
               ))}
-              <Text color="#8a8a94" dimColor>
+              <Text color="#a5b0bc">
                 {dm.context_length ? `${Math.round(dm.context_length / 1000)}k ctx · ` : ''}{priceOf(dm)}
               </Text>
               {activeModel && activeModel.id !== dm.id && (
-                <Text color="#8a8a94" dimColor wrap="truncate">vs active {String(state.model).split('/').pop()}: {priceOf(activeModel)}</Text>
+                <Text color="#a5b0bc" wrap="truncate">vs active {String(state.model).split('/').pop()}: {priceOf(activeModel)}</Text>
               )}
-              <Text color="#8a8a94" dimColor>[d] close · [o] full page in carbonyl</Text>
+              <Text color="#a5b0bc">[d] close · [o] full page in carbonyl</Text>
             </Box>
           );
         })()}
@@ -702,10 +702,10 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         {!threeCol && <LogRain height={rainHeight} focused={focusSection === 'logRain' && focusArea === 'stage'} />}
 
         <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
-          <Text color="#8b949e" dimColor>Tab·region ↑↓·move Enter·act</Text>
-          <Text color="#8b949e" dimColor>Esc·back ^R·runs ^W·work ^L·logs</Text>
-          <Text color="#8b949e" dimColor>d·model detail o·open page</Text>
-          <Text color="#8b949e" dimColor>^K·palette ?·help(nav)</Text>
+          <Text color="#8b949e">Tab·region ↑↓·move Enter·act</Text>
+          <Text color="#8b949e">Esc·back ^R·runs ^W·work ^L·logs</Text>
+          <Text color="#8b949e">d·model detail o·open page</Text>
+          <Text color="#8b949e">^K·palette ?·help(nav)</Text>
         </Box>
       </Box>
 

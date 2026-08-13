@@ -127,11 +127,11 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
             <Text color={choice === 'both' ? '#3fb950' : '#e6edf3'}>{choice === 'both' ? '  ▶ [b]' : '  ○ [b]'} Both — OpenRouter primary, Ollama fallback (recommended)</Text>
             <Text color={choice === 'ollama' ? '#3fb950' : '#e6edf3'}>{choice === 'ollama' ? '  ▶ [o]' : '  ○ [o]'} Local Ollama only — offline, free, private</Text>
             <Text color={choice === 'key' ? '#3fb950' : '#e6edf3'}>{choice === 'key' ? '  ▶ [k]' : '  ○ [k]'} OpenRouter key only — paste a key (openrouter.ai/keys)</Text>
-            <Text color="#8a8a94" dimColor>  ▶ = current choice — press its key to change it</Text>
+            <Text color="#a5b0bc">  ▶ = current choice — press its key to change it</Text>
           </Box>
         ) : (
           <Box marginTop={1}>
-            <Text color="#8a8a94" dimColor>1 · brain: {choice === 'both' ? 'Both (OpenRouter + Ollama)' : choice === 'ollama' ? 'Local Ollama' : 'OpenRouter key'} ✓</Text>
+            <Text color="#a5b0bc">1 · brain: {choice === 'both' ? 'Both (OpenRouter + Ollama)' : choice === 'ollama' ? 'Local Ollama' : 'OpenRouter key'} ✓</Text>
           </Box>
         )}
 
@@ -165,30 +165,30 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
 
         {step === 'logs' && (
           <Box flexDirection="column" marginTop={1}>
-            <Text color="#8a8a94" dimColor>2 · cloud sync: {pendingCloud === 'default' ? 'your worker' : pendingCloud === 'off' ? 'local-only' : 'custom URL'} ✓</Text>
+            <Text color="#a5b0bc">2 · cloud sync: {pendingCloud === 'default' ? 'your worker' : pendingCloud === 'off' ? 'local-only' : 'custom URL'} ✓</Text>
             {logQ === 'base' ? (
               <>
                 <Text bold color="#e6edf3">3 · LOG ORGANIZATION — question 1 of 2: where should the archive live?</Text>
                 <Text color={logBase === 'repo' ? '#3fb950' : '#e6edf3'}>{logBase === 'repo' ? '  ▶ [1]' : '  ○ [1]'} .timmy/archive in this repo (recommended — stays with the project)</Text>
                 <Text color={logBase === 'home' ? '#3fb950' : '#e6edf3'}>{logBase === 'home' ? '  ▶ [2]' : '  ○ [2]'} ~/TIMMY-archive — survives clones & reinstalls</Text>
-                <Text color="#8a8a94" dimColor>  press 1 or 2 to choose · Enter continues</Text>
+                <Text color="#a5b0bc">  press 1 or 2 to choose · Enter continues</Text>
               </>
             ) : (
               <>
-                <Text color="#8a8a94" dimColor>3a · where: {logBase === 'repo' ? '.timmy/archive' : '~/TIMMY-archive'} ✓</Text>
+                <Text color="#a5b0bc">3a · where: {logBase === 'repo' ? '.timmy/archive' : '~/TIMMY-archive'} ✓</Text>
                 <Text bold color="#e6edf3">3b · question 2 of 2: how should session folders be named?</Text>
                 <Text color={logNaming === 'date' ? '#3fb950' : '#e6edf3'}>{logNaming === 'date' ? '  ▶ [d]' : '  ○ [d]'} folders by date (2026-08-13/session…) — recommended</Text>
                 <Text color={logNaming === 'run' ? '#3fb950' : '#e6edf3'}>{logNaming === 'run' ? '  ▶ [r]' : '  ○ [r]'} folders by run id</Text>
-                <Text color="#8a8a94" dimColor>  press d or r to choose · Enter finishes</Text>
+                <Text color="#a5b0bc">  press d or r to choose · Enter finishes</Text>
               </>
             )}
-            <Text color="#8a8a94" dimColor>  tree: sessions/ generations/ uploads/ skills/ context/ exports/ · change anytime via .timmy/logorg.json</Text>
+            <Text color="#a5b0bc">  tree: sessions/ generations/ uploads/ skills/ context/ exports/ · change anytime via .timmy/logorg.json</Text>
           </Box>
         )}
 
         {note && <Text color="#f5b540">{note}</Text>}
         <Box marginTop={1}>
-          <Text color="#8b949e" dimColor>TIMMY never sells compute: your keys, your Ollama, your worker. We store proofs, not your traffic.</Text>
+          <Text color="#8b949e">TIMMY never sells compute: your keys, your Ollama, your worker. We store proofs, not your traffic.</Text>
         </Box>
       </Box>
     </Box>

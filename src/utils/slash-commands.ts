@@ -32,6 +32,8 @@ import { initProject, listProjects, readProject, saveProject, addGenToProject, a
 import { callSceneForge, sceneForgeUrl } from '../sceneforge/client.js';
 import { LANE_RUNNERS } from '../agent/lanes.js';
 import { verifyChain } from './receipts.js';
+import { detectFleet } from './fleet.js';
+import { writeTemplateSeeds } from './templates.js';
 
 
 export interface SlashCommand {
@@ -911,8 +913,9 @@ document.querySelectorAll(".clip").forEach(function (el) {
     description: 'TIMMY Slate visual project folder — refs + labeled gens + storyboard + site',
     usage: '/project [name] [--template <t>]',
     execute: args => {
+      writeTemplateSeeds();
       const name = args.trim().split(/\s+/)[0];
-      if (!name) return `📁 projects: ${listProjects().join(', ') || '(none)'} — create: /project <name> [--template <t>]`;
+      if (!name) return `📁 projects: ${listProjects().join(', ') || '(none)'} — create: /project <name> [--template <t>]\n• template kinds: storyboard · callsheet · character · moodboard · branching · blocking`;
       initProject(name);
       const tMatch = args.match(/--template\s+(\S+)/);
       if (tMatch?.[1]) {
@@ -946,6 +949,49 @@ document.querySelectorAll(".clip").forEach(function (el) {
       });
       if (!proj) return `✕ no project "${projName}" — /project ${projName} first`;
       return `🎭 cast card ${cid.toUpperCase()} (${fields[0]}) slated into "${projName}"\n• every /gen --project ${projName} now injects the call sheet into the prompt\n• /pose ${projName} renders the blocking diagram (conditioning input)`;
+    }
+  },
+  {
+    command: '/sheet',
+    description: 'Set the call-sheet v2 block: light window, weather, continuity flags, coverage',
+    usage: '/sheet <project> | sunrise 5:51 AM | sunset 8:26 PM | weather 68F partly cloudy | flags wardrobe,hair,injury | hours unshowered 24h, cut scabbed | must get confrontation,wide',
+    execute: args => {
+      const [name, ...restParts] = args.trim().split(/\s+/);
+      const fields = Object.fromEntries(restParts.join(' ').split('|').map(s => s.trim()).filter(Boolean).map(s => {
+        const [k, ...v] = s.split(/\s+/);
+        return [k, v.join(' ')];
+      }));
+      const proj = readProject(name);
+      if (!proj) return `✕ no project "${name}"`;
+      proj.sheet = {
+        ...proj.sheet,
+        sunrise: fields['sunrise'] || proj.sheet?.sunrise,
+        sunset: fields['sunset'] || proj.sheet?.sunset,
+        weather: fields['weather'] || proj.sheet?.weather,
+        continuity: {
+          flags: fields['flags'] ? fields['flags'].split(',').map((s: string) => s.trim()) : proj.sheet?.continuity?.flags,
+          hours_rule: fields['hours'] || proj.sheet?.continuity?.hours_rule
+        },
+        coverage: {
+          must_get: fields['must'] ? fields['must'].split(',').map((s: string) => s.trim()) : proj.sheet?.coverage?.must_get
+        }
+      };
+      saveProject(proj);
+      return `📋 call sheet v2 slated into "${name}" — light window, continuity flags, 24h rule, coverage all inject into /gen prompts`;
+    }
+  },
+  {
+    command: '/branch',
+    description: 'Add a Telltale-style branch: choice with yes/no consequences that ride the prompt',
+    usage: '/branch <project> <b1> :: <choice prompt> :: <consequence>',
+    execute: args => {
+      const [name, bid, ...rest] = args.split('::');
+      const parts = rest.join('::').split('::').map(s => s.trim());
+      const proj = readProject(name.trim());
+      if (!proj || !bid?.trim() || !parts[0]) return 'Usage: /branch <project> <b1> :: <choice> :: <consequence>';
+      proj.branches = [...(proj.branches || []).filter(b => b.id !== bid.trim()), { id: bid.trim(), prompt: parts[0], consequence: parts[1] }];
+      saveProject(proj);
+      return ` branch ${bid.trim()} slated — consequences ride every /gen --project ${name.trim()} prompt; simulations consume branches`;
     }
   },
   {
@@ -1010,10 +1056,12 @@ document.querySelectorAll(".clip").forEach(function (el) {
           .catch((e: any) => deliver(`✕ porter: ${String(e?.message || e).slice(0, 160)}`));
         return '⏳ porter capabilities requested — result lands in chat';
       }
+      const fleet = detectFleet();
+      const fleetLines = fleet.map(f => `${String(f.rank).padStart(2)}. ${f.id.padEnd(18)} [${f.status.padEnd(9)}] ${f.forms.join('+')} — ${f.note}`);
       callSceneForge({ tool: 'sceneforge_project_status' })
-        .then((r: any) => deliver(`🎛️  PORTER — houdini/sceneforge @ ${sceneForgeUrl()}\n${JSON.stringify(r, null, 1).slice(0, 700)}`))
-        .catch((e: any) => deliver(`✕ porter: ${String(e?.message || e).slice(0, 160)}\n• SCENEFORGE_AGENT_KEY (keychain) required · url override: SCENEFORGE_MCP_URL`));
-      return '⏳ porter status requested — result lands in chat';
+        .then((r: any) => deliver(`🎛️  houdini/sceneforge (#1) live @ ${sceneForgeUrl()}:\n${JSON.stringify(r, null, 1).slice(0, 600)}`))
+        .catch((e: any) => deliver(`✕ houdini (#1): ${String(e?.message || e).slice(0, 140)} — SCENEFORGE_AGENT_KEY required`));
+      return `🎛️  PORTER FLEET — "mcp" = sdk + mcp + api + cli\n${fleetLines.join('\n')}\n• #1 live status lands in chat · /porter caps · /porter job <note>`;
     }
   },
   {

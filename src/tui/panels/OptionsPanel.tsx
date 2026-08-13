@@ -320,7 +320,7 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
                 {/* Description (hidden at narrow widths) */}
                 {showDesc && (
                   <Box width={DESC_W} flexShrink={0}>
-                    <Text color={isSelected ? '#8b949e' : '#6e7681'} dimColor={!isSelected}>
+                    <Text color={isSelected ? '#e6edf3' : '#a5b0bc'}>
                       {padRight(descStr, DESC_W)}
                     </Text>
                   </Box>

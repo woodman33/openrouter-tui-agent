@@ -104,20 +104,20 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
     >
       <Box flexDirection="row" flexGrow={1}>
         {/* lane roster */}
-        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor="#21262d">
+        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor="#30363d">
           {lanes.map((l, i) => {
             const isSel = i === selIdx;
             const runner = LANE_RUNNERS[DEFAULT_LANE_BINDINGS[l.id]];
             const isBlocked = blocked?.has(l.id);
             const glyph = isBlocked ? '⚠' : alive[l.id] ? '●' : '○';
-            const color = isBlocked ? '#f5b545' : alive[l.id] ? '#3fb950' : '#6e7681';
+            const color = isBlocked ? '#f5b545' : alive[l.id] ? '#3fb950' : '#8b949e';
             return (
               <Box key={l.id} flexDirection="column" marginBottom={1}>
                 <Text color={isSel ? '#d2a8ff' : color} bold={isSel} wrap="truncate">
                   {isSel ? '▶ ' : '  '}{glyph} {l.name}
                 </Text>
-                <Text color="#6e7681" dimColor wrap="truncate">
-                    {'   '}{runner ? runner.label : 'shell'}{installed[l.id] === false ? ' · not installed' : installed[l.id] === true ? '' : ''}{alive[l.id] ? '' : ' · not running'}
+                <Text color="#a5b0bc" wrap="truncate">
+                    {'   '}{runner?.blurb || runner?.label || 'shell'}{installed[l.id] === false ? ' · not installed' : ''}{alive[l.id] ? '' : ' · not running'}
                 </Text>
               </Box>
             );
@@ -131,7 +131,7 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
               {selBlocked && (
                 <Box flexDirection="column" borderStyle="double" borderColor="#f5b545" paddingX={1} marginTop={1}>
                   <Text bold color="#f5b545">⚠ BLOCKED — waiting on you: {selBlocked}</Text>
-                  <Text color="#8a8a94" dimColor>[g] approve & run · anything else leaves it parked</Text>
+                  <Text color="#a5b0bc">[g] approve & run · anything else leaves it parked</Text>
                 </Box>
               )}
               {alive[sel.id] ? (
@@ -140,8 +140,8 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
                 ))
               ) : (
                 <Box flexDirection="column" marginTop={1}>
-                  <Text color="#6e7681" dimColor>pane not running.</Text>
-                  <Text color="#6e7681" dimColor>[s] spawns it — you'll watch it boot here, live.</Text>
+                  <Text color="#8b949e">pane not running.</Text>
+                  <Text color="#8b949e">[s] spawns it — you'll watch it boot here, live.</Text>
                 </Box>
               )}
               {tasking && (
@@ -151,7 +151,7 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
               )}
             </>
           ) : (
-            <Text color="#6e7681" dimColor>no lanes yet — the chat home screen boots the default five.</Text>
+            <Text color="#8b949e">no lanes yet — the chat home screen boots the default five.</Text>
           )}
         </Box>
       </Box>

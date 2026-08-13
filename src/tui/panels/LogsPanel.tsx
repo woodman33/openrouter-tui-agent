@@ -115,7 +115,7 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
         let color = '#e6e6ea';
         if (l.includes('[ERROR]')) color = '#ff6b6b';
         else if (l.includes('[WARN]')) color = '#f5b545';
-        else if (l.includes('[DEBUG]')) color = '#8a8a94';
+        else if (l.includes('[DEBUG]')) color = '#a5b0bc';
         return { text: l, color };
       });
   const off = Math.min(scrollOffset, Math.max(0, rows.length - visibleHeight));
@@ -186,15 +186,15 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
           })}
         </Box>
         <Box marginTop={1}>
-          <Text color="#8a8a94" dimColor>[1-5] switch file · [H] {human ? 'raw' : 'human'} view · [F] follow ({autoFollow ? 'ON' : 'OFF'}) · [↑↓] scroll</Text>
+          <Text color="#a5b0bc">[1-5] switch file · [H] {human ? 'raw' : 'human'} view · [F] follow ({autoFollow ? 'ON' : 'OFF'}) · [↑↓] scroll</Text>
         </Box>
       </Box>
 
       <Box borderStyle="round" borderColor="#30363d" paddingX={1} width={mainStageWidth - 2} height={visibleHeight + 2} flexDirection="column">
         {logLines.length === 0 ? (
           <Box flexGrow={1} justifyContent="center" alignItems="center" flexDirection="column">
-            <Text color="#8a8a94" bold>● No logs written yet under logs/{activeFile}</Text>
-            <Text color="#8a8a94" dimColor>
+            <Text color="#a5b0bc" bold>● No logs written yet under logs/{activeFile}</Text>
+            <Text color="#a5b0bc">
               {activeFile === 'timmy-tui.log' && '· lane commands, approvals, model/mode events land here while you work'}
               {activeFile === 'agent-events.log' && '· model health + telemetry events land here'}
               {activeFile === 'companion.log' && '· the companion web server writes here on launch'}
@@ -204,7 +204,7 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
           </Box>
         ) : rows.length === 0 ? (
           <Box flexGrow={1} justifyContent="center" alignItems="center">
-            <Text color="#8a8a94" dimColor>· everything in this file is telemetry sync noise — hidden in human view. [H] for raw.</Text>
+            <Text color="#a5b0bc">· everything in this file is telemetry sync noise — hidden in human view. [H] for raw.</Text>
           </Box>
         ) : (
           visibleLines.map((row, idx) => (
@@ -212,18 +212,18 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
           ))
         )}
         {human && humanized && humanized.telemetryCount > 0 && (
-          <Text color="#6e7681" dimColor>☁ {humanized.telemetryCount} telemetry sync lines collapsed</Text>
+          <Text color="#8b949e">☁ {humanized.telemetryCount} telemetry sync lines collapsed</Text>
         )}
       </Box>
 
       <Box marginTop={1} justifyContent="space-between" flexShrink={0}>
-        <Text color="#8a8a94" dimColor>
+        <Text color="#a5b0bc">
           {rows.length === 0
             ? '0 readable lines'
             : `lines ${off + 1}-${Math.min(rows.length, off + visibleHeight)} of ${rows.length}${human ? ' (human view)' : ' (last 100)'}`}
           {fileStat ? ` · ${fileStat.sizeKb} KB · upd ${fileStat.mtime}` : ''}
         </Text>
-        <Text color={atBottom ? '#3fb950' : '#f5b545'} dimColor>
+        <Text color={atBottom ? '#3fb950' : '#f5b545'}>
           {autoFollow ? '▼ following tail' : '↑ paused — [F] to resume'}
         </Text>
       </Box>

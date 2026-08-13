@@ -22,6 +22,31 @@ export interface CharacterCard {
   props?: string[];
 }
 
+export type TemplateKind = 'storyboard' | 'callsheet' | 'character' | 'moodboard' | 'branching' | 'blocking';
+
+// Call-sheet v2 — mirrors the expanded 20-section film template, scoped to
+// what generations need: light window, scenes, continuity flags, coverage.
+export interface CallSheetBlock {
+  day?: number;
+  of?: number;
+  sunrise?: string;
+  sunset?: string;
+  weather?: string;
+  scenes?: { order: number; scene: string; description: string; cast: string[]; int_ext?: string; d_n?: string }[];
+  continuity?: { flags?: string[]; hours_rule?: string };
+  coverage?: { must_get?: string[] };
+}
+
+// Telltale/Supermassive-style branches: choices with consequences that feed
+// simulation runs and re-generation.
+export interface Branch {
+  id: string;
+  prompt: string;
+  if_yes?: string;
+  if_no?: string;
+  consequence?: string;
+}
+
 export interface ProjectGen {
   id: string;
   provider: string;
@@ -43,6 +68,9 @@ export interface SlateProject {
   gens: ProjectGen[];
   cast?: CharacterCard[];
   scene_props?: string[];
+  kind?: TemplateKind;
+  sheet?: CallSheetBlock;
+  branches?: Branch[];
 }
 
 const now = () => new Date().toISOString();
@@ -186,8 +214,59 @@ export function castPromptBlock(proj: SlateProject): string {
     (c.props?.length ? ` props: ${c.props.join(', ')};` : '')
   );
   const propsLine = proj.scene_props?.length ? `SCENE PROPS: ${proj.scene_props.join(', ')}` : '';
-  if (!cast.length && !propsLine) return '';
-  return [`CALL SHEET — ${proj.name}:`, ...cast.map(c => `  ${c}`), propsLine].filter(Boolean).join('\n');
+  const sheet = proj.sheet;
+  const lightLine = sheet?.sunrise || sheet?.sunset ? `LIGHT WINDOW: sunrise ${sheet.sunrise || '?'} · sunset ${sheet.sunset || '?'}${sheet.weather ? ` · ${sheet.weather}` : ''}` : '';
+  const contLine = sheet?.continuity?.flags?.length ? `CONTINUITY FLAGS: ${sheet.continuity.flags.join('; ')}` : '';
+  const hoursLine = sheet?.continuity?.hours_rule ? `24H RULE: ${sheet.continuity.hours_rule}` : '';
+  const covLine = sheet?.coverage?.must_get?.length ? `MUST GET: ${sheet.coverage.must_get.join('; ')}` : '';
+  const branchLine = proj.branches?.length ? `BRANCHES: ${proj.branches.map(b => `${b.id}: ${b.prompt}${b.consequence ? ` → ${b.consequence}` : ''}`).join(' | ')}` : '';
+  const lines = [cast.length ? `CALL SHEET — ${proj.name}:` : '', ...cast.map(c => `  ${c}`), propsLine, lightLine, contLine, hoursLine, covLine, branchLine].filter(Boolean);
+  if (!lines.length) return '';
+  return lines.join('\n');
+}
+
+// tldraw SDK canvas — the Slate visual layer. Polls slate.json every 2s and
+// draws beats as columns + cast as sticky notes. CLI authors on the left;
+// this renders live on the right in a carbonyl pane.
+export function renderCanvasPage(name: string, dir?: string): string | null {
+  const proj = readProject(name, dir);
+  if (!proj) return null;
+  const p = projectDir(name, dir);
+  mkdirSync(join(p, 'site'), { recursive: true });
+  const html = `<!doctype html>
+<html><head><meta charset="utf-8"><title>TIMMY Slate canvas — ${proj.name}</title>
+<link rel="stylesheet" href="https://unpkg.com/tldraw@3.15.0/tldraw.css" />
+<style>html,body,#root{height:100%;margin:0;background:#090b10}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import React from "https://esm.sh/react@18.3.1?bundle";
+import { createRoot } from "https://esm.sh/react-dom@18.3.1/client?bundle";
+import { Tldraw, createShapeId } from "https://esm.sh/tldraw@3.15.0?bundle&deps=react@18.3.1,react-dom@18.3.1";
+let last = "";
+function sync(editor, slate) {
+  editor.selectAll(); editor.deleteShapes(editor.getSelectedShapeIds());
+  let x = 80;
+  (slate.beats || []).forEach((b, i) => {
+    editor.createShape({ id: createShapeId(), type: "geo", x, y: 80, props: { w: Math.max(120, b.dur * 60), h: 140, fill: "semi", color: "#d2a8ff", text: b.at + "s [" + b.label + "]\\n" + (b.text || "") } });
+    x += Math.max(120, b.dur * 60) + 40;
+  });
+  let y = 300;
+  (slate.cast || []).forEach(c => {
+    editor.createShape({ id: createShapeId(), type: "note", x: 80, y, props: { color: "#3fb950", text: c.id + " " + c.name + "\\n" + (c.wardrobe || "") + "\\n" + (c.emotion || "") } });
+    y += 160;
+  });
+}
+createRoot(document.getElementById("root")).render(React.createElement(Tldraw, {
+  onMount: (editor) => {
+    window.editor = editor;
+    const load = () => fetch("../slate.json").then(r => r.ok ? r.json() : null).then(j => { if (!j) return; const s = JSON.stringify(j); if (s !== last) { last = s; sync(editor, j); } }).catch(() => {});
+    load(); setInterval(load, 2000);
+  }
+}));
+</script></body></html>
+`;
+  writeFileSync(join(p, 'site', 'canvas.html'), html, 'utf8');
+  return join(p, 'site', 'canvas.html');
 }
 
 // Director's blocking diagram — usable as a scribble/pose conditioning input.
