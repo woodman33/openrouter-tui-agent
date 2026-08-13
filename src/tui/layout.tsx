@@ -174,9 +174,6 @@ export function Layout({
                     {' '}{m.label}
                   </Text>
                   <Text color={theme.textSecondary}>  {m.sub}</Text>
-                  {focused && SUBMENUS[m.mode].map((s, i) => (
-                    <Text key={i} color={theme.textSecondary}>  · {s}</Text>
-                  ))}
                 </Box>
               );
             })}
@@ -191,6 +188,12 @@ export function Layout({
         <Box flexGrow={1} flexShrink={1} flexDirection="column" paddingX={2} paddingTop={1}>
           {children}
         </Box>
+      </Box>
+
+      {/* ══ DESCRIPTION BAR — reserved space; guidance never covers content ══ */}
+      <Box flexDirection="column" paddingX={2} flexShrink={0}>
+        <Text color={theme.textSecondary} wrap="truncate">· {SUBMENUS[mode][0]}</Text>
+        <Text color={theme.textSecondary} wrap="truncate">· {SUBMENUS[mode][1]}</Text>
       </Box>
 
       {/* ══ BOTTOM BAR ══ */}
