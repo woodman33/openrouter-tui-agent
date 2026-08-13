@@ -39,6 +39,17 @@ const MODES: ModeDef[] = [
   { mode: 'files',  key: '7', label: 'FILES',  sub: 'your disk' },
 ];
 
+// Focused-mode dropdown: what each screen actually does, key by key.
+const SUBMENUS: Record<Mode, string[]> = {
+  brief: ['openrouter main · ollama local · cloud', 'd model detail · o open page'],
+  lanes: ['↑↓ lane · ↵/t delegate · g approve', 's spawn · k kill'],
+  gens: ['p prompt · tab provider · l logs', 'every run ledgered + sealed'],
+  slate: ['projects · templates · canvas', 'n new · p publish · c canvas · w site'],
+  browse: ['b new pane · t type into pane · k kill', 'chromium in terminal via carbonyl'],
+  logs: ['human view · [h] raw · [f] follow', 'sparkline · costs · cross-jump [r]'],
+  files: ['archive · studio · context', 'the ICEBERG vault, browsable']
+};
+
 function telemetryGlyph(status: string, queued: number): { glyph: string; color: string } {
   if (status === 'online')  return queued > 0 ? { glyph: '▲', color: theme.warning } : { glyph: '●', color: theme.success };
   if (status === 'syncing') return { glyph: '◆', color: theme.warning };
@@ -162,7 +173,10 @@ export function Layout({
                     <Text color={focused || active ? theme.accent : theme.textTertiary}>{marker}</Text>
                     {' '}{m.label}
                   </Text>
-                  <Text color={theme.textTertiary} dimColor>  {m.sub}</Text>
+                  <Text color={theme.textSecondary}>  {m.sub}</Text>
+                  {focused && SUBMENUS[m.mode].map((s, i) => (
+                    <Text key={i} color={theme.textSecondary}>  · {s}</Text>
+                  ))}
                 </Box>
               );
             })}

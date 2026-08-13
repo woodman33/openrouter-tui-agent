@@ -14,6 +14,7 @@ import { useModeAgentConfig } from './hooks/useModeAgentConfig.js';
 import { agentLogger, tuiLogger } from '../utils/logger.js';
 
 import { Onboarding } from './Onboarding.js';
+import { condenseSession } from '../utils/iceberg.js';
 
 interface AppProps {
   config: AgentConfig;
@@ -164,6 +165,11 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   const { pipeline, pipelineType } = useGraphicsPipeline(capsState.capabilities, animState, graphicsType);
 
   const safeExit = () => {
+    try {
+      condenseSession(); // ICEBERG: vault stays raw, topics/ gets the summary
+    } catch {
+      // condensing is best-effort on exit
+    }
     try {
       if (pipeline) pipeline.cleanup();
     } catch {

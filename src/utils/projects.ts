@@ -22,7 +22,7 @@ export interface CharacterCard {
   props?: string[];
 }
 
-export type TemplateKind = 'storyboard' | 'callsheet' | 'character' | 'moodboard' | 'branching' | 'blocking';
+export type TemplateKind = 'storyboard' | 'callsheet' | 'character' | 'moodboard' | 'branching' | 'blocking' | 'iceberg';
 
 // Call-sheet v2 — mirrors the expanded 20-section film template, scoped to
 // what generations need: light window, scenes, continuity flags, coverage.

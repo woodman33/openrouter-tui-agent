@@ -6,7 +6,7 @@ import { listTemplates, loadTemplate } from './templates.js';
 import { loadHarness, HARNESS_KINDS } from './harness.js';
 import { loadGenerations } from './generations.js';
 import { detectFleet } from './fleet.js';
-import { appendReceipt } from './receipts.js';
+import { appendReceipt, readChain } from './receipts.js';
 
 // TIMMY ICEBERG — the context funnel. Tiny on top (INDEX.md, always loaded,
 // ≤~2k tokens), condensed mid layer (topics/), massive vault below (the raw
@@ -88,6 +88,29 @@ export function buildIndex(dir?: string): { branches: IceBranch[]; indexPath: st
   const indexPath = join(base, 'INDEX.md');
   writeFileSync(indexPath, index + '\n', 'utf8');
   return { branches, indexPath };
+}
+
+// Session-end condenser — the vault stays raw forever; topics/ gets the
+// summary so the next session's INDEX points at something small and dense.
+export function condenseSession(dir?: string): string {
+  const gens = loadGenerations(dir);
+  const harness = loadHarness(dir);
+  const byProv = new Map<string, number>();
+  for (const g of gens) byProv.set(g.provider, (byProv.get(g.provider) || 0) + 1);
+  const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  const lines = [
+    `# session · ${ts}`,
+    `gens: ${gens.length} (${[...byProv.entries()].map(([p, n]) => `${p}×${n}`).join(', ') || 'none'})`,
+    `harness: ${HARNESS_KINDS.map(k => `${k}:${Object.keys(harness.entries[k]).length}`).join(' ')}`,
+    `receipts: ${['gens', 'harness', 'runs', 'exports', 'context'].map(s => `${s}:${readChain(s, dir).length}`).join(' ')}`,
+    '',
+    'last prompts:',
+    ...gens.slice(0, 8).map(g => `- [${g.provider}] ${String(g.prompt).slice(0, 100)}`)
+  ];
+  const p = join(contextDir(dir), 'topics', `session-${ts}.md`);
+  mkdirSync(dirname(p), { recursive: true });
+  writeFileSync(p, lines.join('\n') + '\n', 'utf8');
+  return p;
 }
 
 export interface RecallResult {

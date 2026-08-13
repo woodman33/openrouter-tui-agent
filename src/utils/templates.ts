@@ -118,6 +118,14 @@ export function writeTemplateSeeds(dir?: string): string[] {
     blocking: {
       name: 'blocking', kind: 'blocking', total: 12, source: 'timmy-default',
       beats: [{ at: 0, dur: 12, label: 'BLOCKING', text: '{brief} — GOD/POV diagrams, marks + facing + emotion' }]
+    },
+    iceberg: {
+      name: 'iceberg', kind: 'iceberg', total: 24, source: 'timmy-default',
+      beats: [
+        { at: 0, dur: 8, label: 'INDEX', text: 'tiny index — always loaded, ≤2k tokens' },
+        { at: 8, dur: 8, label: 'TOPICS', text: 'condensed mid-layer — descend only when relevant' },
+        { at: 16, dur: 8, label: 'VAULT', text: 'massive raw below — logs, receipts, photos, history' }
+      ]
     }
   };
   const written: string[] = [];

@@ -34,7 +34,8 @@ import { LANE_RUNNERS } from '../agent/lanes.js';
 import { verifyChain } from './receipts.js';
 import { detectFleet } from './fleet.js';
 import { writeTemplateSeeds } from './templates.js';
-import { recall, buildIndex } from './iceberg.js';
+import { recall, buildIndex, condenseSession } from './iceberg.js';
+import { loadAgentPass, saveAgentPass, detectProvider, CLEARANCE_LEVELS, type ClearanceProvider } from './agentpass.js';
 
 
 export interface SlashCommand {
@@ -1072,6 +1073,29 @@ document.querySelectorAll(".clip").forEach(function (el) {
     execute: () => {
       const { branches, indexPath } = buildIndex();
       return `🧊 ICEBERG condensed → ${indexPath}\n• ${branches.length} branches: tiny INDEX on top, topics/ mid, vault below\n• retrieval: /recall <query> — enters closest, descends ≤2, stops early, path receipted`;
+    }
+  },
+  {
+    command: '/condense',
+    description: 'Condense this session into the ICEBERG topics layer (also runs automatically on exit)',
+    usage: '/condense',
+    execute: () => `🧊 session condensed → ${condenseSession()}`,
+  },
+  {
+    command: '/agentpass',
+    description: 'Agent clearance: pluggable auth (clerk/workos/auth0/cf-access/local) over T0–T4 tiers',
+    usage: '/agentpass [provider]',
+    execute: args => {
+      const want = args.trim() as ClearanceProvider;
+      const cfg = loadAgentPass();
+      if (want && ['local', 'clerk', 'workos', 'auth0', 'cloudflare-access'].includes(want)) {
+        saveAgentPass({ ...cfg, provider: want });
+      }
+      const det = detectProvider();
+      const active = loadAgentPass();
+      return `🛡️  AGENTPASS — provider: ${active.provider} (detected: ${det.provider} via ${det.via})\n` +
+        CLEARANCE_LEVELS.map(l => `• ${l}`).join('\n') +
+        `\n• lanes default T1 · set per-lane in .timmy/agentpass.json levels{}`;
     }
   },
   {
