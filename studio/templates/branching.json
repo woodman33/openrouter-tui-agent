@@ -1,0 +1,16 @@
+{
+  "name": "branching",
+  "kind": "branching",
+  "total": 0,
+  "source": "timmy-default",
+  "branches": [
+    {
+      "id": "b1",
+      "prompt": "treat the cut with iodine",
+      "if_yes": "clean heal by day 3",
+      "if_no": "infection — pus by nightfall",
+      "consequence": "changes C1 stamina + wardrobe stain"
+    }
+  ],
+  "beats": []
+}

@@ -44,6 +44,7 @@ function clean(line: string, max = 64): string {
   return line
     .replace(TS_RE, '')
     .replace(/\[(INFO|WARN|ERROR|DEBUG)\]\s*/g, '')
+    .replace(/\s*\{[\s\S]*$/, '') // drop JSON blobs — humans get words, not payloads
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, max);
@@ -101,6 +102,10 @@ export function humanizeLine(line: string): HumanEvent | null {
   if (/model\.test\.succeeded/.test(line)) return { ts, icon: '✓', color: '#3fb950', text: 'provider health ok' };
   if (/Ctrl\+C captured/.test(line)) return { ts, icon: '⏻', color: '#8a8a94', text: 'clean exit' };
   if (/browser\.spawned|lane\.spawned|carbonyl/.test(line)) return { ts, icon: '🖥', color: '#d2a8ff', text: 'browser lane opened' };
+  if (/lane\.command\.sent/.test(line)) return { ts, icon: '→', color: '#79c0ff', text: 'task sent to lane' };
+  if (/approval\.granted/.test(line)) return { ts, icon: '✓', color: '#3fb950', text: 'you approved a blocked command' };
+  if (/approval\.(requested|required)|blocked command/i.test(line)) return { ts, icon: '⚠', color: '#f5b545', text: 'command parked — waiting your approval' };
+  if (/Companion port|companion.{0,20}unreachable/i.test(line)) return { ts, icon: '✕', color: '#ff6b6b', text: 'companion unreachable' };
   if (/Companion client connected/.test(line)) return { ts, icon: '☁', color: '#8a8a94', text: 'companion joined' };
   if (/Companion client disconnected/.test(line)) return { ts, icon: '☁', color: '#6e7681', text: 'companion left' };
   if (/\[ERROR\]/.test(line)) return { ts, icon: '✕', color: '#ff6b6b', text: clean(line) };

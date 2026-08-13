@@ -1,0 +1,28 @@
+{
+  "name": "moodboard",
+  "kind": "moodboard",
+  "total": 12,
+  "source": "timmy-default",
+  "refs": [
+    {
+      "role": "palette",
+      "weight": 1
+    },
+    {
+      "role": "lighting",
+      "weight": 1
+    },
+    {
+      "role": "lens",
+      "weight": 0.5
+    }
+  ],
+  "beats": [
+    {
+      "at": 0,
+      "dur": 12,
+      "label": "MOOD",
+      "text": "{brief} — seedance 2.0 reference-to-video"
+    }
+  ]
+}

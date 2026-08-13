@@ -1,0 +1,37 @@
+{
+  "name": "storyboard",
+  "total": 12,
+  "source": "timmy-default",
+  "beats": [
+    {
+      "at": 0,
+      "dur": 2.5,
+      "label": "HOOK",
+      "text": "TIMMY"
+    },
+    {
+      "at": 2.5,
+      "dur": 2.5,
+      "label": "PROBLEM",
+      "text": "{brief}"
+    },
+    {
+      "at": 5,
+      "dur": 3,
+      "label": "DEMO",
+      "text": "chat rises · logs rain · receipts seal"
+    },
+    {
+      "at": 8,
+      "dur": 2.5,
+      "label": "TRUST",
+      "text": "every frame sha256-stamped"
+    },
+    {
+      "at": 10.5,
+      "dur": 1.5,
+      "label": "CTA",
+      "text": "timmytui.com"
+    }
+  ]
+}

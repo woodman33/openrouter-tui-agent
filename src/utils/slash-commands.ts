@@ -40,6 +40,7 @@ import { policyCheck } from './effects.js';
 import { readChain } from './receipts.js';
 import { loadBank, addBankEntry, useBankEntry, randomCharacter } from './promptbank.js';
 import { seedStarter } from './starter.js';
+import { renderComfyWorkflow } from './comfy.js';
 
 
 export interface SlashCommand {
@@ -967,6 +968,18 @@ document.querySelectorAll(".clip").forEach(function (el) {
       });
       if (!proj) return `✕ no project "${projName}" — /project ${projName} first`;
       return `🎭 cast card ${cid.toUpperCase()} (${fields[0]}) slated into "${projName}"\n• every /gen --project ${projName} now injects the call sheet into the prompt\n• /pose ${projName} renders the blocking diagram (conditioning input)`;
+    }
+  },
+  {
+    command: '/controlnet',
+    description: 'Slate blocking diagram → ComfyUI ControlNet workflow (pose conditioning, fixed seed)',
+    usage: '/controlnet <project>',
+    execute: args => {
+      const name = args.trim().split(/\s+/)[0];
+      if (!name) return 'Usage: /controlnet <project>';
+      const wf = renderComfyWorkflow(name);
+      if (!wf) return `✕ no project "${name}"`;
+      return `🕸️  ControlNet workflow → ${wf}\n• conditioning.svg rendered alongside (convert to png for LoadImage)\n• call sheet rides the PROMPT node · negative guards identity/wardrobe drift\n• run: cd lab/comfy && docker compose up — queue via ComfyUI /prompt with this JSON`;
     }
   },
   {

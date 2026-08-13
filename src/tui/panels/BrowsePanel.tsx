@@ -4,6 +4,7 @@ import { execFileSync } from 'child_process';
 import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
 import { EmptyState } from '../components/EmptyState.js';
+import { stripAnsi } from '../utils/text.js';
 
 interface BrowsePanelProps {
   agent: Agent;
@@ -25,6 +26,13 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
   const [urlDraft, setUrlDraft] = useState('');
   const [typing, setTyping] = useState(false);
   const [cmdDraft, setCmdDraft] = useState('');
+  const [noCarb, setNoCarb] = useState(false);
+  const [carbHint, setCarbHint] = useState(false);
+
+  useEffect(() => {
+    try { execFileSync('sh', ['-c', 'command -v carbonyl'], { stdio: 'ignore' }); setNoCarb(false); }
+    catch { setNoCarb(true); }
+  }, []);
 
   const lanes = agent.tmuxSessions.filter(s => s.name.startsWith('Browser:'));
   const sel = lanes[Math.min(idx, Math.max(0, lanes.length - 1))];
@@ -36,7 +44,7 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
       if (!s) { setCapture([]); return; }
       try {
         const out = execFileSync('tmux', ['capture-pane', '-pt', `ortui-${s.id}`], { encoding: 'utf8', stdio: 'pipe' });
-        setCapture(out.split('\n').slice(-20));
+        setCapture(out.split('\n').map(stripAnsi).slice(-20));
       } catch { setCapture(['[pane not running]']); }
     };
     load();
@@ -72,7 +80,12 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
     if (key.upArrow) { setIdx(i => Math.max(0, i - 1)); return; }
     if (key.downArrow) { setIdx(i => Math.min(Math.max(0, lanes.length - 1), i + 1)); return; }
     const c = char.toLowerCase();
-    if (c === 'b') { setSpawning(true); return; }
+    if (c === 'b') {
+      if (noCarb) { setCarbHint(true); return; }
+      setCarbHint(false);
+      setSpawning(true);
+      return;
+    }
     if (c === 't' && sel) { setTyping(true); return; }
     if (c === 'k' && sel) { agent.removeTmuxSession(sel.id); setIdx(i => Math.max(0, i - 1)); return; }
   }, { isActive: !inputLocked });
@@ -90,6 +103,13 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
         { key: 'k', label: 'kill pane' }
       ]}
     >
+      {carbHint && (
+        <Box flexDirection="column" borderStyle="single" borderColor="#f5b545" paddingX={1} marginBottom={1}>
+          <Text bold color="#f5b545">carbonyl (chromium-in-terminal) not found on PATH</Text>
+          <Text color="#a5b0bc">install it and [b] works. Meanwhile: SLATE [c] and any addBrowserPane call</Text>
+          <Text color="#a5b0bc">open browser panes through the agent, and LANES covers CLI agents.</Text>
+        </Box>
+      )}
       {lanes.length === 0 ? (
         <EmptyState
           lines={[

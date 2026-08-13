@@ -1,0 +1,33 @@
+{
+  "name": "character",
+  "kind": "character",
+  "total": 30,
+  "source": "timmy-default",
+  "views": [
+    "front",
+    "side",
+    "back",
+    "other_side",
+    "bottom"
+  ],
+  "variations": {
+    "wardrobe": 3,
+    "moods": 4,
+    "ages": 2,
+    "lightings": [
+      "dawn",
+      "noon",
+      "dusk",
+      "night"
+    ],
+    "ref_cap": 50
+  },
+  "beats": [
+    {
+      "at": 0,
+      "dur": 30,
+      "label": "TURNTABLE",
+      "text": "{brief} — full reference turntable + variations"
+    }
+  ]
+}

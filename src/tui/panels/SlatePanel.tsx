@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
-import { listProjects, readProject, initProject, renderProjectSite, renderCanvasPage } from '../../utils/projects.js';
+import { listProjects, readProject, initProject, saveProject, renderProjectSite, renderCanvasPage, type SlateProject } from '../../utils/projects.js';
 import { listTemplates, loadTemplate } from '../../utils/templates.js';
 import { ensureDashServer } from '../../utils/dash.js';
 import { seedStarter } from '../../utils/starter.js';
@@ -26,6 +26,7 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
   const [items, setItems] = useState<SlateItem[]>([]);
   const [idx, setIdx] = useState(0);
   const [naming, setNaming] = useState(false);
+  const [using, setUsing] = useState(false);
   const [draft, setDraft] = useState('');
 
   useEffect(() => {
@@ -74,9 +75,37 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
       if (char && !key.ctrl && !key.meta) setDraft(d => d + char);
       return;
     }
+    if (using) {
+      if (key.escape) { setUsing(false); setDraft(''); return; }
+      if (key.return && sel) {
+        const idea = draft.trim() || sel.name;
+        const name = idea.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24) || 'proj';
+        initProject(name, { template: sel.kind === 'template' ? sel.name : undefined });
+        if (sel.kind === 'template') {
+          const t = loadTemplate(sel.name, idea);
+          const proj = readProject(name);
+          if (proj) {
+            proj.beats = t.beats;
+            proj.kind = (t as { kind?: SlateProject['kind'] }).kind;
+            saveProject(proj);
+          }
+        }
+        setUsing(false);
+        setDraft('');
+        return;
+      }
+      if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
+      if (char && !key.ctrl && !key.meta) setDraft(d => d + char);
+      return;
+    }
     if (key.upArrow) { setIdx(i => Math.max(0, i - 1)); return; }
     if (key.downArrow) { setIdx(i => Math.min(Math.max(0, items.length - 1), i + 1)); return; }
     const c = char.toLowerCase();
+    if ((key.return || c === 'u') && sel) {
+      if (sel.kind === 'template') { setUsing(true); return; }
+      openCanvas(sel);
+      return;
+    }
     if (c === 'n') { setNaming(true); return; }
     if (c === 'p' && sel?.kind === 'project') {
       const site = renderProjectSite(sel.name);
@@ -96,6 +125,7 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
       explain="Author storyboards + projects in the terminal; watch them live in a carbonyl canvas. One schema → HyperFrames, sites, tldraw."
       hints={[
         { key: '↑↓', label: 'select' },
+        { key: '↵', label: 'use template / open project' },
         { key: 'n', label: 'new project' },
         { key: 'p', label: 'publish site' },
         { key: 'c', label: 'tldraw canvas pane' },
@@ -145,6 +175,13 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
           {naming && (
             <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
               <Text color="#79c0ff">new project name: {draft}█</Text>
+            </Box>
+          )}
+          {using && sel && (
+            <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1} flexDirection="column">
+              <Text color="#79c0ff">use template "{sel.name}" — idea (becomes the project name + brief):</Text>
+              <Text>{draft}█</Text>
+              <Text color="#8b949e">Enter creates the project with the template's beats · Esc cancels</Text>
             </Box>
           )}
         </Box>

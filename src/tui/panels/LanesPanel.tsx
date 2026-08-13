@@ -4,6 +4,7 @@ import { execFileSync } from 'child_process';
 import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
 import { LANE_RUNNERS, DEFAULT_LANE_BINDINGS } from '../../agent/lanes.js';
+import { stripAnsi } from '../utils/text.js';
 
 interface LanesPanelProps {
   agent: Agent;
@@ -48,7 +49,7 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
       if (sel && nextAlive[sel.id]) {
         try {
           const out = execFileSync('tmux', ['capture-pane', '-pt', `ortui-${sel.id}`], { encoding: 'utf8', stdio: 'pipe' });
-          setCapture(out.split('\n').filter((l, i, a) => !(i > a.length - 8 && l.trim() === '')).slice(-20));
+          setCapture(out.split('\n').map(stripAnsi).filter((l, i, a) => !(i > a.length - 8 && l.trim() === '')).slice(-20));
         } catch { setCapture(['[capture failed]']); }
       } else {
         setCapture([]);
@@ -128,6 +129,9 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
           {sel ? (
             <>
               <Text bold color="#d2a8ff" wrap="truncate">live · ortui-{sel.id} · {sel.name}</Text>
+              {/402|Insufficient credits|Internal Server Error/.test(capture.join('\n')) && (
+                <Text color="#f5b545">⚠ lane hit a provider error (credits/500) — raw output below; [g]/resend from chat</Text>
+              )}
               {selBlocked && (
                 <Box flexDirection="column" borderStyle="double" borderColor="#f5b545" paddingX={1} marginTop={1}>
                   <Text bold color="#f5b545">⚠ BLOCKED — waiting on you: {selBlocked}</Text>
