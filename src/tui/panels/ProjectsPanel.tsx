@@ -75,6 +75,7 @@ export function ProjectsPanel({ agent, inputLocked }: ProjectsPanelProps) {
       return;
     }
     if (c === 'i' && sel) { renderProjectIndex(sel); setFiles(projectTree(sel)); setNote('PROJECT.md reindexed'); return; }
+    if (c === 'e' && sel && file) { setNote(`in your terminal: ${process.env.EDITOR || 'nvim'} studio/${sel}/${file.rel}`); return; }
   }, { isActive: !inputLocked });
 
   return (
@@ -90,7 +91,8 @@ export function ProjectsPanel({ agent, inputLocked }: ProjectsPanelProps) {
         { key: 'p', label: 'preview in terminal' },
         { key: 'v', label: 'carbonyl' },
         { key: 's', label: 'sync logs' },
-        { key: 't', label: 'training export' }
+        { key: 't', label: 'training export' },
+        { key: 'e', label: 'edit in $EDITOR' }
       ]}
     >
       {note && <Text color="#3fb950">{note}</Text>}

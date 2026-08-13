@@ -44,6 +44,7 @@ import { renderComfyWorkflow } from './comfy.js';
 import { detectRoboflow, roboflowUpload } from './roboflow.js';
 import { ensureProjectTree, appendChatThread, syncLaneLogs, exportTraining, renderProjectIndex, writePromptRecord } from './projecttree.js';
 import { shareFile, demoTerminal } from './share.js';
+import { fetchWx, wxSheetLine, wxLightLine } from './weather.js';
 
 
 export interface SlashCommand {
@@ -977,6 +978,28 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/weather',
+    description: 'wttr.in → call sheet: weather + light window for the shoot location (no VPN: the city IS the spoof)',
+    usage: '/weather <location> [--project <p>]',
+    execute: args => {
+      const m = args.match(/--project\s+(\S+)/);
+      const projName = m?.[1];
+      const loc = args.replace(/--project\s+\S+/, '').trim();
+      if (!loc) return 'Usage: /weather <location> [--project <p>]  — e.g. /weather "ridge lookout, oregon" --project demo-north';
+      const w = fetchWx(loc);
+      if (!w) return '✕ wttr.in unreachable — check network (location spoofing is just wttr.in/<city>, no VPN needed)';
+      if (projName) {
+        const proj = readProject(projName);
+        if (proj) {
+          proj.sheet = { ...proj.sheet, weather: wxSheetLine(w), sunrise: w.sunrise, sunset: w.sunset };
+          saveProject(proj);
+        }
+      }
+      return `🌤️  ${w.location}: ${wxSheetLine(w)}\n• ${wxLightLine(w)}\n` +
+        (projName ? `• slated into ${projName}.sheet — light window + weather ride every gen` : '• add --project <p> to slate it into a call sheet');
+    }
+  },
+  {
     command: '/share',
     description: 'Send any artifact via croc — encrypted, one-time code, zero infra (rights logs, gens, sites)',
     usage: '/share <path>',
@@ -1479,6 +1502,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n` +
              `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
              `  /ref <p> <img>  — Attach reference image to a project\n` +
+             `  /weather <loc>  — wttr.in → call sheet (weather + light window)\n` +
              `  /share <path>   — croc: encrypted one-time-code file share\n` +
              `  /demo           — ttyd: crew in a browser (auth-gated demos)\n` +
              `  /sync <p>       — Pull chat/lanes/training into the project tree\n` +
