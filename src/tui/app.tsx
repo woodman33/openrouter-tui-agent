@@ -175,8 +175,11 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   const paletteItems = [
     { label: 'Chat', action: () => { setMode('brief'); setFocusedMode('brief'); } },
     { label: 'Lanes', action: () => { setMode('lanes'); setFocusedMode('lanes'); } },
-    { label: 'Files', action: () => { setMode('files'); setFocusedMode('files'); } },
+    { label: 'Gens', action: () => { setMode('gens'); setFocusedMode('gens'); } },
+    { label: 'Slate', action: () => { setMode('slate'); setFocusedMode('slate'); } },
+    { label: 'Browse', action: () => { setMode('browse'); setFocusedMode('browse'); } },
     { label: 'Logs', action: () => { setMode('logs'); setFocusedMode('logs'); } },
+    { label: 'Files', action: () => { setMode('files'); setFocusedMode('files'); } },
     { label: 'Exit Application', action: safeExit }
   ];
 

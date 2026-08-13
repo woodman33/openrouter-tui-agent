@@ -30,10 +30,13 @@ type ModeDef = { mode: Mode; key: string; label: string; sub: string };
 // Labels + one-line plain-English subs so a first-time user knows what each
 // screen is FOR without reading a manual.
 const MODES: ModeDef[] = [
-  { mode: 'brief', key: '1', label: 'CHAT',  sub: 'ask anything' },
-  { mode: 'lanes', key: '2', label: 'LANES', sub: 'live agents' },
-  { mode: 'logs',  key: '3', label: 'LOGS',  sub: 'history' },
-  { mode: 'files', key: '4', label: 'FILES', sub: 'your disk' },
+  { mode: 'brief',  key: '1', label: 'CHAT',   sub: 'ask anything' },
+  { mode: 'lanes',  key: '2', label: 'LANES',  sub: 'live agents' },
+  { mode: 'gens',   key: '3', label: 'GENS',   sub: 'make things' },
+  { mode: 'slate',  key: '4', label: 'SLATE',  sub: 'visual lang' },
+  { mode: 'browse', key: '5', label: 'BROWSE', sub: 'web panes' },
+  { mode: 'logs',   key: '6', label: 'LOGS',   sub: 'history' },
+  { mode: 'files',  key: '7', label: 'FILES',  sub: 'your disk' },
 ];
 
 function telemetryGlyph(status: string, queued: number): { glyph: string; color: string } {
