@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, appendFileSync } from 'fs';
 import { join, dirname } from 'path';
 import crypto from 'crypto';
+import { appendReceipt } from './receipts.js';
 
 // TIMMY Generation Ledger — every prompt → generation → capture → critique
 // cycle lands here as a reviewable, sha256-stamped record. Async by design:
@@ -92,6 +93,13 @@ export function recordGeneration(
   records.push(record);
   saveGenerations(records, dir);
   appendGenEvent(record.id, 'recorded', `${record.provider}/${record.kind}`, dir);
+  appendReceipt('gens', {
+    kind: 'generation',
+    subject: record.id,
+    prompt_hash: record.prompt_hash,
+    cost_usd: record.cost_usd,
+    policy: 'human-gated'
+  }, dir);
   return record;
 }
 

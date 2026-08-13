@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import crypto from 'crypto';
+import { appendReceipt } from './receipts.js';
 
 // TIMMY Continual Harness — durable, reviewable self-improvement state.
 // Adapted from Prime Agent's continual-harness idea, with one addition:
@@ -168,6 +169,7 @@ export function recordHarnessRefinement(
   };
   file.refinements.push(event);
   saveHarness(file, dir);
+  appendReceipt('harness', { kind: 'refinement', subject: event.id, policy: 'auto' }, dir);
   return event;
 }
 

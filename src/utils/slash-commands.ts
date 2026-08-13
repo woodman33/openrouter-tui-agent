@@ -31,6 +31,7 @@ import { loadOrgConfig, exportSession } from './sessionstore.js';
 import { initProject, listProjects, readProject, saveProject, addGenToProject, addRefToProject, renderProjectSite } from './projects.js';
 import { callSceneForge, sceneForgeUrl } from '../sceneforge/client.js';
 import { LANE_RUNNERS } from '../agent/lanes.js';
+import { verifyChain } from './receipts.js';
 
 
 export interface SlashCommand {
@@ -976,6 +977,22 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/verify',
+    description: 'Walk the receipt chains — prove nothing was tampered with (the trust spine)',
+    usage: '/verify',
+    execute: () => {
+      const streams = ['gens', 'harness', 'runs', 'exports'];
+      const lines = streams.map(s => {
+        const r = verifyChain(s);
+        return r.ok
+          ? `⛁ ${s.padEnd(9)} ${String(r.count).padStart(3)} receipts · chain intact`
+          : `✕ ${s.padEnd(9)} BROKEN at ${r.brokenAt} — ${r.reason}`;
+      });
+      const allOk = streams.every(s => verifyChain(s).ok);
+      return `🔐 RECEIPT VERIFICATION — ${allOk ? 'all chains intact' : 'TAMPER DETECTED'}\n${lines.join('\n')}\n• schema v1 · sha256 body hash + prev_hash link · cosign checkpoints next`;
+    }
+  },
+  {
     command: '/remotion',
     description: 'Export a Slate project as a Remotion composition scaffold (same beats, new target)',
     usage: '/remotion <project>',
@@ -1097,7 +1114,8 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /publish <p>    — Render project → HTML site (Instatic/Paper) + pane\n` +
              `  /porter [cmd]   — TIMMY Porter: strict MCP→CLI gateway (status/caps/job)\n` +
              `  /remotion <p>   — Export Slate beats as a Remotion composition scaffold\n` +
-             `  /profiles       — Write Nickel lane profiles + CUE Slate schema\n\n` +
+             `  /profiles       — Write Nickel lane profiles + CUE Slate schema\n` +
+             `  /verify         — Walk receipt chains · prove nothing tampered\n\n` +
              `${boldCyan}⚙️  CONSOLE SETTINGS & LIFE CYCLE${reset}\n` +
              `  /model <id>   — Switch active model dynamically\n` +
              `  /graphics <p> — Set TUI graphics (auto, kitty, iterm2, ansi)\n` +
