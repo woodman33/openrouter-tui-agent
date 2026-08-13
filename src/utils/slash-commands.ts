@@ -30,6 +30,7 @@ import { aggregateGenerations, parseCostFromLog } from './generations.js';
 import { loadOrgConfig, exportSession } from './sessionstore.js';
 import { initProject, listProjects, readProject, saveProject, addGenToProject, addRefToProject, renderProjectSite } from './projects.js';
 import { callSceneForge, sceneForgeUrl } from '../sceneforge/client.js';
+import { LANE_RUNNERS } from '../agent/lanes.js';
 
 
 export interface SlashCommand {
@@ -975,6 +976,57 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/remotion',
+    description: 'Export a Slate project as a Remotion composition scaffold (same beats, new target)',
+    usage: '/remotion <project>',
+    execute: args => {
+      const name = args.trim().split(/\s+/)[0];
+      const proj = name ? readProject(name) : null;
+      const beats = proj?.beats || loadTemplate('storyboard', name || 'brief').beats;
+      const fps = 30;
+      const total = proj?.beats ? Math.max(...proj.beats.map(b => b.at + b.dur)) : 12;
+      const dir = join(process.cwd(), 'studio', name || 'storyboard', 'remotion');
+      mkdirSync(dir, { recursive: true });
+      const seqs = beats.map(b =>
+        `      <Sequence from={${Math.round(b.at * fps)}} durationInFrames={${Math.round(b.dur * fps)}} name="${b.label}">\n` +
+        `        <Beat label="${b.label}" text={${JSON.stringify(b.text)}} />\n` +
+        `      </Sequence>`).join('\n');
+      writeFileSync(join(dir, 'TimmySlate.tsx'),
+        `import React from 'react';\nimport { AbsoluteFill, Sequence, useCurrentFrame, interpolate } from 'remotion';\n\n` +
+        `const Beat: React.FC<{ label: string; text: string }> = ({ label, text }) => {\n` +
+        `  const f = useCurrentFrame();\n` +
+        `  const opacity = interpolate(f, [0, 10], [0, 1], { extrapolateRight: 'clamp' });\n` +
+        `  return (\n    <AbsoluteFill style={{ background: '#090b10', justifyContent: 'center', alignItems: 'center', opacity }}>\n` +
+        `      <div style={{ color: '#d2a8ff', fontFamily: 'monospace', fontSize: 24 }}>[{label}]</div>\n` +
+        `      <div style={{ color: '#e6edf3', fontFamily: 'monospace', fontSize: 42 }}>{text}</div>\n` +
+        `    </AbsoluteFill>\n  );\n};\n\n` +
+        `export const TimmySlate: React.FC = () => (\n  <AbsoluteFill style={{ background: '#090b10' }}>\n${seqs}\n  </AbsoluteFill>\n);\n`, 'utf8');
+      writeFileSync(join(dir, 'Root.tsx'),
+        `import React from 'react';\nimport { Composition } from 'remotion';\nimport { TimmySlate } from './TimmySlate';\n\n` +
+        `export const RemotionRoot: React.FC = () => (\n  <Composition id="TimmySlate" component={TimmySlate} durationInFrames={${Math.round(total * fps)}} fps={${fps}} width={1920} height={1080} />\n);\n`, 'utf8');
+      writeFileSync(join(dir, 'README.md'),
+        `# Remotion export — ${name || 'storyboard'}\n\nGenerated from the TIMMY Slate beat sheet (${beats.length} beats, ${total}s @ ${fps}fps).\n\n` +
+        `\`\`\`bash\nnpx create-video@latest   # once, in a scratch dir; copy TimmySlate.tsx + Root.tsx into src/\nnpx remotion studio        # preview\nnpx remotion render TimmySlate out.mp4\n\`\`\`\n\nSame schema as HyperFrames + site targets: one storyboard, many compilers.\n`, 'utf8');
+      return `🎞️  Remotion scaffold → ${dir}\n• TimmySlate.tsx (${beats.length} Sequences) · Root.tsx (${Math.round(total * fps)} frames @ ${fps}fps) · README\n• next: npx remotion studio`;
+    }
+  },
+  {
+    command: '/profiles',
+    description: 'Write the deterministic command layer: Nickel lane profiles + CUE Slate schema',
+    usage: '/profiles',
+    execute: () => {
+      const dir = join(process.cwd(), '.timmy', 'profiles');
+      mkdirSync(dir, { recursive: true });
+      const lanes = Object.entries(LANE_RUNNERS).map(([k, r]) =>
+        `  ${k} = { cmd = "${r.cmd}", label = "${r.label}", timeout_s = 3600, approval = "human-gated" }`).join(',\n');
+      writeFileSync(join(dir, 'lanes.ncl'),
+        `# TIMMY deterministic command layer — lane profiles (Nickel)\n# nickel export lanes.ncl > lanes.json  (when nickel is installed)\n{\n  version = 1,\n  policy = {\n    risky_prefixes = ["rm ", "sudo ", "git push", "curl ", "chmod "],\n    default = "human-gated",\n  },\n  lanes = {\n${lanes},\n  },\n}\n`, 'utf8');
+      writeFileSync(join(dir, 'slate.cue'),
+        `// TIMMY Slate schema — the contract every template/project/site must satisfy\n// cue vet slate.cue <project>/slate.json  (when cue is installed)\nname: string\ntemplate?: string\ncreated_at?: string\ntotal?: number\nrefs?: [...{ file: string, label: string }]\ngens?: [...{ id: string, provider: string, prompt: string, label: string, artifact?: string, cost_usd?: number }]\nbeats?: [...{ at: number, dur: number, label: string, text: string }]\n`, 'utf8');
+      return `🧾 deterministic layer → ${dir}\n• lanes.ncl — Nickel profiles for every lane (cmd, timeout, human-gated approval)\n• slate.cue — CUE schema for slate.json (templates, projects, sites)\n• validated in TS today; run \`nickel export\` / \`cue vet\` once the CLIs are installed`;
+    }
+  },
+  {
     command: '/export',
     description: 'Export this session into the organized archive tree (configured at onboarding step 3)',
     usage: '/export [name]',
@@ -1043,7 +1095,9 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
              `  /ref <p> <img>  — Attach reference image to a project\n` +
              `  /publish <p>    — Render project → HTML site (Instatic/Paper) + pane\n` +
-             `  /porter [cmd]   — TIMMY Porter: strict MCP→CLI gateway (status/caps/job)\n\n` +
+             `  /porter [cmd]   — TIMMY Porter: strict MCP→CLI gateway (status/caps/job)\n` +
+             `  /remotion <p>   — Export Slate beats as a Remotion composition scaffold\n` +
+             `  /profiles       — Write Nickel lane profiles + CUE Slate schema\n\n` +
              `${boldCyan}⚙️  CONSOLE SETTINGS & LIFE CYCLE${reset}\n` +
              `  /model <id>   — Switch active model dynamically\n` +
              `  /graphics <p> — Set TUI graphics (auto, kitty, iterm2, ansi)\n` +

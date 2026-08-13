@@ -29,6 +29,7 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
   const [pendingCloud, setPendingCloud] = useState<'default' | 'custom' | 'off'>('default');
   const [logBase, setLogBase] = useState<'repo' | 'home'>('repo');
   const [logNaming, setLogNaming] = useState<'date' | 'run'>('date');
+  const [logQ, setLogQ] = useState<'base' | 'naming'>('base');
   const [note, setNote] = useState('');
 
   useEffect(() => {
@@ -86,8 +87,13 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
       return;
     }
     if (step === 'logs') {
-      if (char === '1') setLogBase('repo');
-      if (char === '2') setLogBase('home');
+      if (logQ === 'base') {
+        if (char === '1') setLogBase('repo');
+        if (char === '2') setLogBase('home');
+        if (key.return) setLogQ('naming');
+        if (key.escape) setStep('cloud');
+        return;
+      }
       if (char === 'd') setLogNaming('date');
       if (char === 'r') setLogNaming('run');
       if (key.return) {
@@ -97,7 +103,7 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
         });
         finish(pendingCloud, pendingCloud === 'custom' ? urlInput.trim() : undefined);
       }
-      if (key.escape) setStep('cloud');
+      if (key.escape) setLogQ('base');
       return;
     }
   });
@@ -160,15 +166,23 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
         {step === 'logs' && (
           <Box flexDirection="column" marginTop={1}>
             <Text color="#8a8a94" dimColor>2 · cloud sync: {pendingCloud === 'default' ? 'your worker' : pendingCloud === 'off' ? 'local-only' : 'custom URL'} ✓</Text>
-            <Text bold color="#e6edf3">3 · LOG ORGANIZATION — ONE answer per question, Enter confirms both</Text>
-            <Text color="#8a8a94" dimColor>  Two questions. ▶ = your current choice — press a key to change it, Enter confirms.</Text>
-            <Text color="#e6edf3">  where should the archive live?</Text>
-            <Text color={logBase === 'repo' ? '#3fb950' : '#e6edf3'}>{logBase === 'repo' ? '  ▶ [1]' : '  ○ [1]'} .timmy/archive in this repo (recommended — stays with the project)</Text>
-            <Text color={logBase === 'home' ? '#3fb950' : '#e6edf3'}>{logBase === 'home' ? '  ▶ [2]' : '  ○ [2]'} ~/TIMMY-archive — survives clones & reinstalls</Text>
-            <Text color="#e6edf3">  how should session folders be named?</Text>
-            <Text color={logNaming === 'date' ? '#3fb950' : '#e6edf3'}>{logNaming === 'date' ? '  ▶ [d]' : '  ○ [d]'} folders by date (2026-08-12/session…) — recommended</Text>
-            <Text color={logNaming === 'run' ? '#3fb950' : '#e6edf3'}>{logNaming === 'run' ? '  ▶ [r]' : '  ○ [r]'} folders by run id</Text>
-            <Text color="#8a8a94" dimColor>  tree: sessions/ generations/ uploads/ skills/ context/ exports/ · Enter saves · /export anytime</Text>
+            {logQ === 'base' ? (
+              <>
+                <Text bold color="#e6edf3">3 · LOG ORGANIZATION — question 1 of 2: where should the archive live?</Text>
+                <Text color={logBase === 'repo' ? '#3fb950' : '#e6edf3'}>{logBase === 'repo' ? '  ▶ [1]' : '  ○ [1]'} .timmy/archive in this repo (recommended — stays with the project)</Text>
+                <Text color={logBase === 'home' ? '#3fb950' : '#e6edf3'}>{logBase === 'home' ? '  ▶ [2]' : '  ○ [2]'} ~/TIMMY-archive — survives clones & reinstalls</Text>
+                <Text color="#8a8a94" dimColor>  press 1 or 2 to choose · Enter continues</Text>
+              </>
+            ) : (
+              <>
+                <Text color="#8a8a94" dimColor>3a · where: {logBase === 'repo' ? '.timmy/archive' : '~/TIMMY-archive'} ✓</Text>
+                <Text bold color="#e6edf3">3b · question 2 of 2: how should session folders be named?</Text>
+                <Text color={logNaming === 'date' ? '#3fb950' : '#e6edf3'}>{logNaming === 'date' ? '  ▶ [d]' : '  ○ [d]'} folders by date (2026-08-13/session…) — recommended</Text>
+                <Text color={logNaming === 'run' ? '#3fb950' : '#e6edf3'}>{logNaming === 'run' ? '  ▶ [r]' : '  ○ [r]'} folders by run id</Text>
+                <Text color="#8a8a94" dimColor>  press d or r to choose · Enter finishes</Text>
+              </>
+            )}
+            <Text color="#8a8a94" dimColor>  tree: sessions/ generations/ uploads/ skills/ context/ exports/ · change anytime via .timmy/logorg.json</Text>
           </Box>
         )}
 
