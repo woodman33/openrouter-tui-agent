@@ -41,6 +41,7 @@ import { readChain } from './receipts.js';
 import { loadBank, addBankEntry, useBankEntry, randomCharacter } from './promptbank.js';
 import { seedStarter } from './starter.js';
 import { renderComfyWorkflow } from './comfy.js';
+import { detectRoboflow, roboflowUpload } from './roboflow.js';
 
 
 export interface SlashCommand {
@@ -971,6 +972,25 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/roboflow',
+    description: 'Roboflow connector (#2 in the fleet): status · upload project artifacts to train on real gens',
+    usage: '/roboflow [upload <project>]',
+    execute: (args, agent) => {
+      const [sub, projName] = args.trim().split(/\s+/);
+      const deliver = (msg: string) => {
+        if (agent) agent.emit('message:user' as any, { role: 'assistant', content: `🤖 **[SYSTEM]** ${msg}`, timestamp: Date.now() });
+      };
+      if (sub === 'upload' && projName) {
+        roboflowUpload(projName).then(r =>
+          deliver(r.ok ? `roboflow: uploaded ${r.uploaded} artifacts to dataset timmy-${projName} — training data from REAL receipts` : `roboflow: ${r.reason}`)
+        );
+        return '⏳ roboflow upload dispatched — result lands in chat';
+      }
+      const st = detectRoboflow();
+      return `🤖 ROBOFLOW — fleet #2 · ${st.via}\n• cli: ${st.cli ? 'installed' : 'missing (pip install roboflow)'} · key: ${st.key ? 'set' : 'missing'}\n• /roboflow upload <project> — gens/frames → dataset timmy-<project>\n• the loop: TIMMY generates receipted artifacts → roboflow trains → better models for TIMMY`;
+    }
+  },
+  {
     command: '/market',
     description: 'Template market: curated pro bundles (music-video/ugc-ad/podcast/trailer) → install into your library',
     usage: '/market [install <name>]',
@@ -1414,6 +1434,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n` +
              `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
              `  /ref <p> <img>  — Attach reference image to a project\n` +
+             `  /roboflow [up]  — Roboflow connector: status · upload artifacts to train\n` +
              `  /market [inst]  — Template market: curated pro bundles → install\n` +
              `  /promptbank     — Prompt banking: list/add/use fragments (learns usage)\n` +
              `  /char [p]       — Random character: slatable card + turntable prompt\n` +
