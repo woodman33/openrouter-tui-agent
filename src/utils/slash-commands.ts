@@ -42,6 +42,7 @@ import { loadBank, addBankEntry, useBankEntry, randomCharacter } from './promptb
 import { seedStarter } from './starter.js';
 import { renderComfyWorkflow } from './comfy.js';
 import { detectRoboflow, roboflowUpload } from './roboflow.js';
+import { ensureProjectTree, appendChatThread, syncLaneLogs, exportTraining, renderProjectIndex, writePromptRecord } from './projecttree.js';
 
 
 export interface SlashCommand {
@@ -843,6 +844,9 @@ document.querySelectorAll(".clip").forEach(function (el) {
                   pg.artifact = rel;
                   if (cost !== undefined) pg.cost_usd = cost;
                   saveProject(proj);
+                  // prompt ↔ outcome, matched forever in the project tree
+                  ensureProjectTree(g.project);
+                  writePromptRecord(g.project, { id: g.id, prompt: g.prompt, provider: g.provider, model: g.model, cost_usd: cost, status, artifact: rel });
                 }
               }
             } catch { /* project sync is best-effort */ }
@@ -969,6 +973,22 @@ document.querySelectorAll(".clip").forEach(function (el) {
       });
       if (!proj) return `✕ no project "${projName}" — /project ${projName} first`;
       return `🎭 cast card ${cid.toUpperCase()} (${fields[0]}) slated into "${projName}"\n• every /gen --project ${projName} now injects the call sheet into the prompt\n• /pose ${projName} renders the blocking diagram (conditioning input)`;
+    }
+  },
+  {
+    command: '/sync',
+    description: 'Pull the world into a project tree: chat threads + lane logs + training export + reindex',
+    usage: '/sync <project>',
+    execute: (args, agent, state) => {
+      const name = args.trim().split(/\s+/)[0];
+      if (!name || !readProject(name)) return 'Usage: /sync <project>';
+      ensureProjectTree(name);
+      const msgs = ((state as any)?.messages || []) as { role: string; content: string }[];
+      appendChatThread(name, msgs);
+      const lanes = syncLaneLogs(name, agent.tmuxSessions);
+      const tr = exportTraining(name);
+      renderProjectIndex(name);
+      return `🗂️  synced into studio/${name}/\n• chat threads → logs/chat.md (${msgs.length} msgs)\n• ${lanes} lane logs → logs/lanes/\n• training: ${tr.files} files${tr.labelsPath ? ' + labels.json' : ''}\n• PROJECT.md reindexed`;
     }
   },
   {
@@ -1434,6 +1454,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n` +
              `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
              `  /ref <p> <img>  — Attach reference image to a project\n` +
+             `  /sync <p>       — Pull chat/lanes/training into the project tree\n` +
              `  /roboflow [up]  — Roboflow connector: status · upload artifacts to train\n` +
              `  /market [inst]  — Template market: curated pro bundles → install\n` +
              `  /promptbank     — Prompt banking: list/add/use fragments (learns usage)\n` +

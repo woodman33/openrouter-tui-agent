@@ -5,7 +5,7 @@ import { LanesPanel } from './panels/LanesPanel.js';
 import { GensPanel } from './panels/GensPanel.js';
 import { SlatePanel } from './panels/SlatePanel.js';
 import { BrowsePanel } from './panels/BrowsePanel.js';
-import { FilesPanel } from './panels/FilesPanel.js';
+import { ProjectsPanel } from './panels/ProjectsPanel.js';
 import type { Agent } from '../agent/core.js';
 
 export type Mode = 'brief' | 'lanes' | 'gens' | 'slate' | 'browse' | 'logs' | 'files';
@@ -36,7 +36,7 @@ export function ModeRouter({ mode, agent, setInspector, focusArea, inputLocked }
     case 'logs':
       return <LogsPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
     case 'files':
-      return <FilesPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
+      return <ProjectsPanel agent={agent} setInspector={setInspector} focusArea={focusArea} inputLocked={inputLocked} />;
     default:
       return <ChatPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
   }

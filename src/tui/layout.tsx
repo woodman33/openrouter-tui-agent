@@ -36,7 +36,7 @@ const MODES: ModeDef[] = [
   { mode: 'slate',  key: '4', label: 'SLATE',  sub: 'visual lang' },
   { mode: 'browse', key: '5', label: 'BROWSE', sub: 'web panes' },
   { mode: 'logs',   key: '6', label: 'LOGS',   sub: 'history' },
-  { mode: 'files',  key: '7', label: 'FILES',  sub: 'your disk' },
+  { mode: 'files',  key: '7', label: 'PROJECTS', sub: 'per-project tree' },
 ];
 
 // Focused-mode dropdown: what each screen actually does, key by key.
@@ -47,7 +47,7 @@ const SUBMENUS: Record<Mode, string[]> = {
   slate: ['projects · templates · canvas', 'n new · p publish · c canvas · w site'],
   browse: ['b new pane · t type into pane · k kill', 'chromium in terminal via carbonyl'],
   logs: ['human view · [h] raw · [f] follow', 'sparkline · costs · cross-jump [r]'],
-  files: ['archive · studio · context', 'the ICEBERG vault, browsable']
+  files: ['PROJECT.md index first · descend when relevant', 'p preview · v carbonyl · s sync · t training']
 };
 
 function telemetryGlyph(status: string, queued: number): { glyph: string; color: string } {
