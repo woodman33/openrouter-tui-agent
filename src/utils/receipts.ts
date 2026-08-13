@@ -18,6 +18,11 @@ export interface Receipt {
   artifacts?: string[];
   cost_usd?: number;
   policy: string; // human-gated | auto
+  // receipt v2 (research rulings): OTel-style span tree + PDP decisions ride
+  // inside the sealed body, so the receipt is evidence structure, not just
+  // integrity.
+  spans?: { name: string; kind: 'root' | 'chat' | 'execute_tool' | 'deny' }[];
+  decisions?: { decision: string; effect: string; tier: string; reason: string }[];
   prev_hash: string;
   hash: string;
 }

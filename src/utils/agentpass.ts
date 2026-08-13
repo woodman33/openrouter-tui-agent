@@ -19,6 +19,9 @@ export const CLEARANCE_LEVELS = [
 export interface AgentPassConfig {
   provider: ClearanceProvider;
   levels: Record<string, string>; // agent/lane id → T0..T4
+  // proven rollout pattern: LOG_ONLY first (decisions recorded in receipts),
+  // ENFORCE only once the policy has been dogfooded (denials actually block).
+  enforce?: boolean;
 }
 
 export function agentPassPath(dir: string = process.cwd()): string {

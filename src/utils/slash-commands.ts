@@ -35,7 +35,9 @@ import { verifyChain } from './receipts.js';
 import { detectFleet } from './fleet.js';
 import { writeTemplateSeeds } from './templates.js';
 import { recall, buildIndex, condenseSession } from './iceberg.js';
-import { loadAgentPass, saveAgentPass, detectProvider, CLEARANCE_LEVELS, type ClearanceProvider } from './agentpass.js';
+import { loadAgentPass, saveAgentPass, detectProvider, CLEARANCE_LEVELS, clearanceFor, type ClearanceProvider } from './agentpass.js';
+import { policyCheck } from './effects.js';
+import { readChain } from './receipts.js';
 
 
 export interface SlashCommand {
@@ -751,6 +753,11 @@ document.querySelectorAll(".clip").forEach(function (el) {
         const block = proj ? castPromptBlock(proj) : '';
         if (block) finalPrompt = `${prompt}\n${block}`;
       }
+      const apCfg = loadAgentPass();
+      const pc = policyCheck(provider.kind === 'text' ? 'Invoke<Model>' : 'Generate<Media>', clearanceFor('gens') as 'T0' | 'T1' | 'T2' | 'T3');
+      if (apCfg.enforce && pc.decision === 'deny') {
+        return `⛔ ${pc.reason}\n• ENFORCE is active (/agentpass) — raise clearance in the TUI or replan`;
+      }
       const genDir = locateGenAgent();
       const scriptArgs = buildGenAgentArgs(provider, finalPrompt);
       const launched = Boolean(genDir && scriptArgs);
@@ -761,7 +768,14 @@ document.querySelectorAll(".clip").forEach(function (el) {
         kind: provider.kind,
         transport: provider.transport,
         status: launched ? 'running' : 'queued',
-        project: projName
+        project: projName,
+        spans: [
+          { name: 'invoke_agent', kind: 'root' },
+          { name: `chat ${provider.id}`, kind: 'chat' },
+          { name: 'execute_tool launch', kind: 'execute_tool' },
+          ...(pc.decision === 'deny' ? [{ name: pc.reason, kind: 'deny' as const }] : [])
+        ],
+        decisions: [pc]
       });
       if (projName) {
         initProject(projName);
@@ -1115,6 +1129,35 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/eval',
+    description: 'Trajectory eval lite — read receipts back: cost σ, failures, denials → harness refinement',
+    usage: '/eval',
+    execute: () => {
+      const chain = readChain('gens');
+      const gens = listGenerations({});
+      const failed = gens.filter(g => g.status === 'failed').length;
+      const denied = chain.filter(r => (r.decisions || []).some(d => d.decision === 'deny')).length;
+      const costs = gens.map(g => g.cost_usd || 0);
+      const total = costs.reduce((a, b) => a + b, 0);
+      const avg = costs.length ? total / costs.length : 0;
+      const sigma = costs.length ? Math.sqrt(costs.reduce((a, b) => a + (b - avg) ** 2, 0) / costs.length) : 0;
+      const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+      const lines = [
+        `# eval · ${ts}`,
+        `runs: ${gens.length} · failed: ${failed} · denied: ${denied}`,
+        `cost: total $${total.toFixed(4)} · avg $${avg.toFixed(4)} · σ $${sigma.toFixed(4)}`,
+        failed > 0 ? '→ suggest: route failed providers to fallback' : '→ no failures — routing stable'
+      ];
+      const p = join(process.cwd(), 'context', 'topics', `eval-${ts}.md`);
+      mkdirSync(dirname(p), { recursive: true });
+      writeFileSync(p, lines.join('\n') + '\n', 'utf8');
+      if (failed > 0) {
+        recordHarnessRefinement('eval: failures detected', ['route failed providers to fallback'], `${failed}/${gens.length || 0} failed`, 'pending');
+      }
+      return `📈 EVAL — receipts read back into memory\n${lines.slice(1).join('\n')}\n• → ${p}`;
+    }
+  },
+  {
     command: '/iceberg',
     description: 'Condense everything into the context funnel: INDEX.md (tiny) + topics/ (mid) over the vault (massive)',
     usage: '/iceberg',
@@ -1134,6 +1177,11 @@ document.querySelectorAll(".clip").forEach(function (el) {
     description: 'Agent clearance: pluggable auth (clerk/workos/auth0/cf-access/local) over T0–T4 tiers',
     usage: '/agentpass [provider]',
     execute: args => {
+      if (args.trim().startsWith('enforce')) {
+        const on = args.includes('on');
+        saveAgentPass({ ...loadAgentPass(), enforce: on });
+        return `🛡️  policy mode: ${on ? 'ENFORCE — denials block (T2+ needs TUI approval)' : 'LOG_ONLY — denials recorded in receipts, not blocking'} (proven rollout order)`;
+      }
       const want = args.trim() as ClearanceProvider;
       const cfg = loadAgentPass();
       if (want && ['local', 'clerk', 'workos', 'auth0', 'cloudflare-access'].includes(want)) {
@@ -1304,6 +1352,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /remotion <p>   — Export Slate beats as a Remotion composition scaffold\n` +
              `  /profiles       — Write Nickel lane profiles + CUE Slate schema\n` +
              `  /verify         — Walk receipt chains · prove nothing tampered\n` +
+             `  /eval           — Trajectory eval: receipts → cost σ/failures/denials\n` +
              `  /iceberg        — Condense all knowledge into the context funnel\n` +
              `  /recall <q>     — Funnel retrieval: enter closest, descend ≤2, stop early\n\n` +
              `${boldCyan}⚙️  CONSOLE SETTINGS & LIFE CYCLE${reset}\n` +

@@ -26,6 +26,8 @@ export interface GenerationRecord {
   log?: string;
   project?: string;
   recursion_of?: string;
+  spans?: { name: string; kind: string }[];
+  decisions?: { decision: string; effect: string; tier: string; reason: string }[];
   stamp: string;
   created_at: string;
 }
@@ -98,7 +100,9 @@ export function recordGeneration(
     subject: record.id,
     prompt_hash: record.prompt_hash,
     cost_usd: record.cost_usd,
-    policy: 'human-gated'
+    policy: 'human-gated',
+    spans: record.spans as { name: string; kind: 'root' | 'chat' | 'execute_tool' | 'deny' }[] | undefined,
+    decisions: record.decisions
   }, dir);
   return record;
 }
