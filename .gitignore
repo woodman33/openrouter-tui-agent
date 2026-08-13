@@ -24,6 +24,7 @@ __pycache__/
 .timmy/
 logs/
 receipts/
+context/
 *.receipt.json
 *.receipt.jsonl
 *.pem
