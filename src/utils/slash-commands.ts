@@ -34,6 +34,7 @@ import { LANE_RUNNERS } from '../agent/lanes.js';
 import { verifyChain } from './receipts.js';
 import { detectFleet } from './fleet.js';
 import { writeTemplateSeeds } from './templates.js';
+import { recall, buildIndex } from './iceberg.js';
 
 
 export interface SlashCommand {
@@ -1065,6 +1066,29 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/iceberg',
+    description: 'Condense everything into the context funnel: INDEX.md (tiny) + topics/ (mid) over the vault (massive)',
+    usage: '/iceberg',
+    execute: () => {
+      const { branches, indexPath } = buildIndex();
+      return `🧊 ICEBERG condensed → ${indexPath}\n• ${branches.length} branches: tiny INDEX on top, topics/ mid, vault below\n• retrieval: /recall <query> — enters closest, descends ≤2, stops early, path receipted`;
+    }
+  },
+  {
+    command: '/recall',
+    description: 'Funnel retrieval: INDEX → relevant branches → capped vault hits, early-exit, receipted',
+    usage: '/recall <query>',
+    execute: args => {
+      const q = args.trim();
+      if (!q) return 'Usage: /recall <query>';
+      const r = recall(q);
+      return `🧊 recall "${q}"\n• ${r.reason}\n` +
+        (r.descended.length ? `• descended: ${r.descended.map(d => `${d.id} (${d.topic})`).join(', ')}\n` : '') +
+        (r.vaultHits.length ? `• vault hits:\n${r.vaultHits.map(v => `   ${v}`).join('\n')}\n` : '') +
+        `• path receipted in context/paths.jsonl`;
+    }
+  },
+  {
     command: '/verify',
     description: 'Walk the receipt chains — prove nothing was tampered with (the trust spine)',
     usage: '/verify',
@@ -1205,7 +1229,9 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /porter [cmd]   — TIMMY Porter: strict MCP→CLI gateway (status/caps/job)\n` +
              `  /remotion <p>   — Export Slate beats as a Remotion composition scaffold\n` +
              `  /profiles       — Write Nickel lane profiles + CUE Slate schema\n` +
-             `  /verify         — Walk receipt chains · prove nothing tampered\n\n` +
+             `  /verify         — Walk receipt chains · prove nothing tampered\n` +
+             `  /iceberg        — Condense all knowledge into the context funnel\n` +
+             `  /recall <q>     — Funnel retrieval: enter closest, descend ≤2, stop early\n\n` +
              `${boldCyan}⚙️  CONSOLE SETTINGS & LIFE CYCLE${reset}\n` +
              `  /model <id>   — Switch active model dynamically\n` +
              `  /graphics <p> — Set TUI graphics (auto, kitty, iterm2, ansi)\n` +
