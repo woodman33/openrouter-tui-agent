@@ -38,6 +38,8 @@ import { recall, buildIndex, condenseSession } from './iceberg.js';
 import { loadAgentPass, saveAgentPass, detectProvider, CLEARANCE_LEVELS, clearanceFor, type ClearanceProvider } from './agentpass.js';
 import { policyCheck } from './effects.js';
 import { readChain } from './receipts.js';
+import { loadBank, addBankEntry, useBankEntry, randomCharacter } from './promptbank.js';
+import { seedStarter } from './starter.js';
 
 
 export interface SlashCommand {
@@ -968,6 +970,46 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/promptbank',
+    description: 'Prompt banking: list / add / use reusable prompt fragments (counts learn what gets used)',
+    usage: '/promptbank [add <label> :: <text> | use <id-or-label>]',
+    execute: args => {
+      seedStarter();
+      if (args.startsWith('add')) {
+        const [label, ...rest] = args.replace(/^add\s+/, '').split('::');
+        if (!label.trim() || !rest.join('::').trim()) return 'Usage: /promptbank add <label> :: <text>';
+        const e = addBankEntry({ label: label.trim(), kind: 'full', text: rest.join('::').trim(), tags: ['user'] });
+        return `🏦 banked: ${e.id} — "${e.text.slice(0, 80)}"`;
+      }
+      if (args.startsWith('use')) {
+        const e = useBankEntry(args.replace(/^use\s+/, '').trim());
+        return e ? `🏦 ${e.label} (used ×${e.uses}):\n${e.text}` : '✕ not in the bank — /promptbank add <label> :: <text>';
+      }
+      const bank = loadBank();
+      return `🏦 PROMPT BANK — ${bank.length} entries (most-used first)\n` +
+        bank.slice().sort((a, b) => b.uses - a.uses).map(e => `• ${e.id.padEnd(22)} [${e.kind}] ×${e.uses} ${e.text.slice(0, 60)}`).join('\n') +
+        `\n• /promptbank use <id> · /char <project> for a random character`;
+    }
+  },
+  {
+    command: '/char',
+    description: 'Random character generator — full slatable card + turntable prompt from curated fragments',
+    usage: '/char [project]',
+    execute: args => {
+      seedStarter();
+      const projName = args.trim().split(/\s+/)[0];
+      const nextId = projName ? `C${((readProject(projName)?.cast || []).length + 1)}` : undefined;
+      const { card, prompt } = randomCharacter(nextId);
+      if (projName) {
+        if (!readProject(projName)) return `✕ no project "${projName}" — /project ${projName} first`;
+        addCastToProject(projName, card);
+      }
+      return `🎲 ${card.id} ${card.name} — ${card.age} · hair: ${card.hair} · wardrobe: ${card.wardrobe}\n   emotion: ${card.emotion} · props: ${card.props?.join(', ')}\n` +
+        (projName ? `• slated into "${projName}" — rides every /gen --project ${projName} prompt\n` : '') +
+        `• turntable prompt:\n   ${prompt}`;
+    }
+  },
+  {
     command: '/breakdown',
     description: 'Script → scene breakdown (INT./EXT. headings) → slate scenes + prompts file',
     usage: '/breakdown [--project <p>] <path-or-logline>',
@@ -1343,6 +1385,8 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /template [n]   — List/show Slate storyboard templates (agent-authorable)\n` +
              `  /project [n]    — Slate visual project folder (refs/gens/frames/site)\n` +
              `  /ref <p> <img>  — Attach reference image to a project\n` +
+             `  /promptbank     — Prompt banking: list/add/use fragments (learns usage)\n` +
+             `  /char [p]       — Random character: slatable card + turntable prompt\n` +
              `  /breakdown [p]  — Script → scenes → slate + prompts file\n` +
              `  /rights <p>     — Outsider-verifiable rights/receipts log\n` +
              `  /cast <p> <C1> … — Call-sheet character card (hair/wardrobe/emotion/age/props)\n` +

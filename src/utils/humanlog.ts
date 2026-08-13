@@ -64,6 +64,12 @@ export function humanizeLine(line: string): HumanEvent | null {
         const prov = detail.split('/')[0];
         return { ts, icon: '🎬', color: '#d2a8ff', text: `gen queued${prov ? ` · ${prov}` : ''}` };
       }
+      if (ev === 'status') {
+        if (detail === 'done') return { ts, icon: '✓', color: '#3fb950', text: 'gen done — artifact in ledger' };
+        if (detail === 'failed') return { ts, icon: '✕', color: '#ff6b6b', text: 'gen failed — see /gens' };
+        if (detail === 'running') return { ts, icon: '●', color: '#d29922', text: 'gen running' };
+        return { ts, icon: '◌', color: '#8a8a94', text: `gen ${detail || 'queued'}` };
+      }
       return { ts, icon: '🎬', color: '#8a8a94', text: `gen ${ev}` };
     }
     switch (ev) {

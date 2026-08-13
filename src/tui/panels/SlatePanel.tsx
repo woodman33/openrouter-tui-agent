@@ -5,6 +5,7 @@ import { PanelFrame } from '../components/PanelFrame.js';
 import { listProjects, readProject, initProject, renderProjectSite, renderCanvasPage } from '../../utils/projects.js';
 import { listTemplates, loadTemplate } from '../../utils/templates.js';
 import { ensureDashServer } from '../../utils/dash.js';
+import { seedStarter } from '../../utils/starter.js';
 
 interface SlatePanelProps {
   agent: Agent;
@@ -28,10 +29,13 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
   const [draft, setDraft] = useState('');
 
   useEffect(() => {
-    const load = () => setItems([
-      ...listProjects().map(name => ({ kind: 'project' as const, name })),
-      ...listTemplates().map(name => ({ kind: 'template' as const, name }))
-    ]);
+    const load = () => {
+      seedStarter();
+      setItems([
+        ...listProjects().map(name => ({ kind: 'project' as const, name })),
+        ...listTemplates().map(name => ({ kind: 'template' as const, name }))
+      ]);
+    };
     load();
     const t = setInterval(load, 3000);
     return () => clearInterval(t);

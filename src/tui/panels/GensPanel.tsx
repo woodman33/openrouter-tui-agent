@@ -13,6 +13,8 @@ import {
 import { GENERATION_PROVIDERS } from '../../utils/providers.js';
 import { locateGenAgent, buildGenAgentArgs, launchDetached } from '../../utils/genbridge.js';
 import { clockTime } from '../../utils/humanlog.js';
+import { appendGenEvent } from '../../utils/generations.js';
+import { seedStarter } from '../../utils/starter.js';
 
 interface GensPanelProps {
   agent: Agent;
@@ -38,6 +40,7 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
 
   useEffect(() => {
     const load = () => {
+      seedStarter();
       for (const g of listGenerations({}).slice(0, 40)) {
         if (g.log && existsSync(g.log)) {
           const t = readFileSync(g.log, 'utf8');
@@ -49,7 +52,15 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
           }
         }
       }
-      setGens(listGenerations({}).slice(0, 40));
+      // status flips become live rain events (✓ done / ✕ failed / ● running)
+      setGens(prev => {
+        const next = listGenerations({}).slice(0, 40);
+        for (const g of next) {
+          const old = prev.find(p => p.id === g.id);
+          if (old && old.status !== g.status) appendGenEvent(g.id, 'status', g.status);
+        }
+        return next;
+      });
     };
     load();
     const t = setInterval(load, 2000);
