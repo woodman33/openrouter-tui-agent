@@ -42,6 +42,7 @@ import { loadBank, addBankEntry, useBankEntry, randomCharacter } from './promptb
 import { seedStarter } from './starter.js';
 import { renderComfyWorkflow } from './comfy.js';
 import { detectRoboflow, roboflowUpload } from './roboflow.js';
+import { detectHf, hfPushTraining } from './huggingface.js';
 import { ensureProjectTree, appendChatThread, syncLaneLogs, exportTraining, renderProjectIndex, writePromptRecord } from './projecttree.js';
 import { shareFile, demoTerminal } from './share.js';
 import { fetchWx, wxSheetLine, wxLightLine } from './weather.js';
@@ -1059,6 +1060,25 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/hf',
+    description: 'Hugging Face connector: status · push the training export to a private HF dataset (roboflow annotates, HF hosts)',
+    usage: '/hf [push <project>]',
+    execute: (args, agent) => {
+      const [sub, projName] = args.trim().split(/\s+/);
+      const deliver = (msg: string) => {
+        if (agent) agent.emit('message:user' as any, { role: 'assistant', content: `🤗 **[SYSTEM]** ${msg}`, timestamp: Date.now() });
+      };
+      if (sub === 'push' && projName) {
+        hfPushTraining(projName).then(r =>
+          deliver(r.ok ? `hf: pushed ${r.uploaded} files → ${r.repo} (private dataset)` : `hf: ${r.note}`)
+        );
+        return '⏳ hf push dispatched — result lands in chat';
+      }
+      const st = detectHf();
+      return `🤗 HUGGING FACE — ${st.token ? `token via ${st.source}` : 'no token'}\n• ${st.note ?? '/hf push <project> — training export → private dataset timmy-<project>'}\n• the loop: gens → [e] training export → roboflow annotate + HF host → LoRA weights back to HF`;
+    }
+  },
+  {
     command: '/market',
     description: 'Template market: curated pro bundles (music-video/ugc-ad/podcast/trailer) → install into your library',
     usage: '/market [install <name>]',
@@ -1507,6 +1527,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /demo           — ttyd: crew in a browser (auth-gated demos)\n` +
              `  /sync <p>       — Pull chat/lanes/training into the project tree\n` +
              `  /roboflow [up]  — Roboflow connector: status · upload artifacts to train\n` +
+             `  /hf [push p]    — Hugging Face: status · push training to private dataset\n` +
              `  /market [inst]  — Template market: curated pro bundles → install\n` +
              `  /promptbank     — Prompt banking: list/add/use fragments (learns usage)\n` +
              `  /char [p]       — Random character: slatable card + turntable prompt\n` +
