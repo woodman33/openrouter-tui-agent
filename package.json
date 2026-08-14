@@ -41,6 +41,7 @@
     "timmy:receipt-index": "tsx scripts/timmy-receipt-index.ts",
     "timmy:agent-proof-verify": "tsx scripts/timmy-agent-proof-verify.ts",
     "timmy:snapshot": "tsx scripts/timmy-snapshot.ts",
+    "timmy:drafts": "tsx scripts/preview-drafts.tsx",
     "timmy:generation:intent-pack": "tsx scripts/timmy-generation-intent-pack.ts",
     "timmy:simulate:single": "tsx scripts/timmy-simulate-single.ts",
     "prepublishOnly": "npm run build && npm test",
