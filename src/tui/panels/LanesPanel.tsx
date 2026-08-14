@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { execFileSync } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
@@ -8,6 +8,9 @@ import { PanelFrame } from '../components/PanelFrame.js';
 import { LANE_RUNNERS, DEFAULT_LANE_BINDINGS } from '../../agent/lanes.js';
 import { stripAnsi } from '../utils/text.js';
 import { osc52Copy } from '../../utils/notify.js';
+import { appendReceipt } from '../../utils/receipts.js';
+import { appendEvent } from '../../utils/eventbus.js';
+import { RUN_START, parseRunEnd } from '../../utils/openhands.js';
 
 interface LanesPanelProps {
   agent: Agent;
@@ -32,6 +35,7 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
   const [draft, setDraft] = useState('');
   const [note, setNote] = useState('');
   const [coach, setCoach] = useState(() => !existsSync(join(process.cwd(), '.timmy', '.lanes-coach')));
+  const sealedRuns = useRef<Record<string, number>>({});
 
   // guiding UX: a concrete first task per runner, so nobody stares at six
   // green dots wondering what to do
@@ -65,6 +69,31 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
           try { execFileSync('sh', ['-c', `command -v ${runner.cmd}`], { stdio: 'ignore' }); nextInst[l.id] = true; }
           catch { nextInst[l.id] = false; }
         }
+      }
+      // OpenHands headless runs seal a receipt when the END marker lands.
+      // Headless auto-approves INSIDE its loop — the jailed workspace is the
+      // boundary; the receipt + approval gate stay ours.
+      for (const l of lanes) {
+        if (DEFAULT_LANE_BINDINGS[l.id] !== 'openhands' || !nextAlive[l.id]) continue;
+        try {
+          const raw = execFileSync('tmux', ['capture-pane', '-pt', `ortui-${l.id}`], { encoding: 'utf8', stdio: 'pipe' }).split('\n').map(stripAnsi);
+          const starts = raw.filter(x => x.includes(RUN_START)).length;
+          const end = parseRunEnd(raw);
+          const sealed = sealedRuns.current[l.id] ?? 0;
+          if (end && starts > sealed) {
+            sealedRuns.current[l.id] = starts;
+            appendReceipt('runs', {
+              kind: 'run',
+              subject: `openhands headless · lane ${l.id} · exit ${end.code}`,
+              policy: 'human-gated',
+              spans: [{ name: 'openhands headless', kind: 'execute_tool' }],
+              decisions: [{ decision: 'allow', effect: 'shell.exec', tier: 'T2', reason: 'jailed workspace (TIMMY_WORKSPACE)' }],
+              cost_usd: 0
+            });
+            appendEvent(end.code === 0 ? 'run.completed' : 'run.failed', { lane: l.id, exit: end.code });
+            setNote(`openhands run sealed (exit ${end.code}) — receipt in runs stream`);
+          }
+        } catch { /* capture best-effort */ }
       }
       setAlive(nextAlive);
       setInstalled(nextInst);

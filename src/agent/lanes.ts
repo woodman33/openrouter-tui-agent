@@ -82,7 +82,9 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     install: 'uv tool install openhands --python 3.12',
     model: 'openrouter/auto',
     blurb: 'self-hosted Devin-class autonomous SWE · MIT · sandboxed',
-    task: 'openhands --mode headless --task "{task}"',
+    // jailed workspace = the boundary (headless auto-approves inside its loop);
+    // START/END markers let the TUI seal a receipt when the run finishes
+    task: 'printf \'TIMMY_RUN_START\\n\'; mkdir -p "${TIMMY_WORKSPACE:-$HOME/openhands-workspace}"; cd "${TIMMY_WORKSPACE:-$HOME/openhands-workspace}" && openhands --mode headless --task "{task}"; code=$?; printf \'TIMMY_RUN_END:%s\\n\' "$code"',
   },
 };
 
