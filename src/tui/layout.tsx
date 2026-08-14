@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Text, useWindowSize } from 'ink';
+import { execFileSync } from 'child_process';
+import { loadGenerations } from '../utils/generations.js';
+import { listProjects } from '../utils/projects.js';
 import { theme } from './theme.js';
 import type { Agent } from '../agent/core.js';
 import type { Mode } from './router.js';
@@ -43,7 +46,7 @@ const MODES: ModeDef[] = [
 const SUBMENUS: Record<Mode, string[]> = {
   brief: ['openrouter main · ollama local · cloud', 'd model detail · o open page'],
   lanes: ['↑↓ lane · ↵/t delegate · g approve', 's spawn · k kill'],
-  gens: ['p prompt · tab provider · l logs', 'every run ledgered + sealed'],
+  gens: ['p prompt · ↑↓ provider · [o] options', 'failed? [1] reroute local · [2] top-up note'],
   slate: ['projects · templates · canvas', 'n new · p publish · c canvas · w site'],
   browse: ['b new pane · t type into pane · k kill', 'chromium in terminal via carbonyl'],
   logs: ['human view · [h] raw · [f] follow', 'sparkline · costs · cross-jump [r]'],
@@ -68,6 +71,7 @@ function animGlyph(state: LayoutProps['animState']): { glyph: string; color: str
 }
 
 export function Layout({
+  agent,
   mode,
   focusedMode,
   model,
@@ -83,6 +87,40 @@ export function Layout({
   const W = width || process.stdout.columns || 80;
   const H = height || process.stdout.rows || 24;
   const pulseFrame = usePulse(500);
+
+  // live nav badges — problems surface from ANY tab, not just their own
+  const [badges, setBadges] = useState<Record<string, { text: string; color: string }>>({});
+  useEffect(() => {
+    const load = () => {
+      const b: Record<string, { text: string; color: string }> = {};
+      try {
+        const gens = loadGenerations().slice(0, 60);
+        const failed = gens.filter(g => g.status === 'failed').length;
+        const running = gens.filter(g => g.status === 'running').length;
+        b.gens = failed
+          ? { text: `${gens.length}·${failed}⚠`, color: theme.warning }
+          : running
+            ? { text: `${gens.length}·${running}●`, color: '#d29922' }
+            : { text: `${gens.length}`, color: theme.textTertiary };
+      } catch { /* ledger unreadable */ }
+      try {
+        let alive = 0, blocked = 0;
+        for (const l of agent.tmuxSessions) {
+          try { execFileSync('tmux', ['has-session', '-t', `ortui-${l.id}`], { stdio: 'ignore' }); alive++; } catch { /* dead */ }
+          if ((agent as any).lastBlockedCommands?.has(l.id)) blocked++;
+        }
+        b.lanes = blocked
+          ? { text: `${alive}/${agent.tmuxSessions.length}·⚠`, color: theme.warning }
+          : { text: `${alive}/${agent.tmuxSessions.length}`, color: theme.textTertiary };
+      } catch { /* tmux absent */ }
+      b.browse = { text: `${agent.tmuxSessions.filter((s: { name: string }) => s.name.startsWith('Browser:')).length}`, color: theme.textTertiary };
+      try { b.files = { text: `${listProjects().length}`, color: theme.textTertiary }; } catch { /* no projects */ }
+      setBadges(b);
+    };
+    load();
+    const t = setInterval(load, 3000);
+    return () => clearInterval(t);
+  }, [agent]);
 
   const tel = telemetryGlyph(telemetryStatus, queuedTelemetryCount);
   const anim = animGlyph(animState);
@@ -167,11 +205,13 @@ export function Layout({
               let color = theme.textTertiary;
               if (active) color = theme.accent;
               if (focused) color = pulseFrame % 2 === 0 ? theme.textPrimary : theme.accent;
+              const badge = badges[m.mode];
               return (
                 <Box key={m.mode} marginBottom={1} flexDirection="column">
                   <Text color={color}>
                     <Text color={focused || active ? theme.accent : theme.textTertiary}>{marker}</Text>
                     {' '}{m.label}
+                    {badge ? <Text color={badge.color}> {badge.text}</Text> : null}
                   </Text>
                   <Text color={theme.textSecondary}>  {m.sub}</Text>
                 </Box>

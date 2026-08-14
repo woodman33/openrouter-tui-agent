@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, appendFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
@@ -35,6 +35,7 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
   const [draft, setDraft] = useState('');
   const [provIdx, setProvIdx] = useState(0);
   const [optIdx, setOptIdx] = useState(0);
+  const [note, setNote] = useState('');
 
   const providers = GENERATION_PROVIDERS.filter(p => p.kind === 'image' || p.kind === 'video');
   const prov = providers[provIdx % providers.length];
@@ -107,6 +108,37 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
     }
     if (key.upArrow) { setIdx(i => Math.max(0, i - 1)); return; }
     if (key.downArrow) { setIdx(i => Math.min(Math.max(0, gens.length - 1), i + 1)); return; }
+    // actionable errors: a failure is a decision, not a wall
+    if (sel?.status === 'failed') {
+      if (char.toLowerCase() === '1') {
+        const fallbackId = sel.kind === 'video' ? 'comfyui' : 'ernie-image-turbo';
+        const prov = GENERATION_PROVIDERS.find(p => p.id === fallbackId);
+        if (prov) {
+          const genDir = locateGenAgent();
+          const sargs = buildGenAgentArgs(prov, sel.prompt);
+          const launched = Boolean(genDir && sargs);
+          const rec = recordGeneration({
+            prompt: sel.prompt, provider: prov.id, model: prov.modelId, kind: prov.kind,
+            transport: prov.transport, status: launched ? 'running' : 'queued', recursion_of: sel.id
+          });
+          if (launched) {
+            const log = join(process.cwd(), '.timmy', 'runs', `${rec.id}.log`);
+            updateGeneration(rec.id, { log });
+            launchDetached(genDir as string, sargs as string[], log);
+          }
+          setNote(`rerouted to ${prov.id} (local — no credits needed) · ${rec.id}`);
+        }
+        return;
+      }
+      if (char.toLowerCase() === '2') {
+        try {
+          mkdirSync(join(process.cwd(), '.timmy'), { recursive: true });
+          appendFileSync(join(process.cwd(), '.timmy', 'notes.md'), `- ${new Date().toISOString()} · top up OpenRouter credits (gen ${sel.id} failed: 402)\n`, 'utf8');
+          setNote('note logged to .timmy/notes.md');
+        } catch { setNote('could not write note'); }
+        return;
+      }
+    }
     if (char.toLowerCase() === 'p') { setComposing(true); return; }
     if (char.toLowerCase() === 'l') { agent.emit('mode:change' as any, 'logs'); return; }
   }, { isActive: !inputLocked });
@@ -160,6 +192,14 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
                   ))}
                 </Box>
               )}
+              {sel?.status === 'failed' && (
+                <Box flexDirection="column" borderStyle="single" borderColor="#ff6b6b" paddingX={1} marginTop={1}>
+                  <Text bold color="#ff6b6b">failed — turn it into a decision:</Text>
+                  <Text color="#a5b0bc">[1] reroute same prompt to a local provider (no credits needed)</Text>
+                  <Text color="#a5b0bc">[2] log a top-up note to .timmy/notes.md</Text>
+                </Box>
+              )}
+              {note && <Text color="#3fb950" wrap="truncate">{note}</Text>}
             </>
           ) : (
             <Text color="#8b949e">select a generation, or [p] to queue one.</Text>
