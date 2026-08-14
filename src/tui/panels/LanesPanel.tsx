@@ -7,6 +7,7 @@ import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
 import { LANE_RUNNERS, DEFAULT_LANE_BINDINGS } from '../../agent/lanes.js';
 import { stripAnsi } from '../utils/text.js';
+import { osc52Copy } from '../../utils/notify.js';
 
 interface LanesPanelProps {
   agent: Agent;
@@ -119,6 +120,7 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
     if (c === 'k' && sel) { agent.removeTmuxSession(sel.id); setIdx(i => Math.max(0, i - 1)); return; }
     if (c === 'g' && sel && selBlocked) { agent.sendTmuxCommand(sel.id, selBlocked, true); return; }
     if (c === 'o' && sel) { setNote(`attach in your own terminal: tmux attach -t ortui-${sel.id}  (full control, same session)`); return; }
+    if (c === 'y' && sel) { osc52Copy(`tmux attach -t ortui-${sel.id}`); setNote('attach one-liner copied (OSC-52/pbcopy)'); return; }
     if (c === 'v') {
       // tmux tabs over every lane: one watch session with linked windows
       try {

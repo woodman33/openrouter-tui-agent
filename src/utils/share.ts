@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, createWriteStream } from 'fs';
 import { join, dirname } from 'path';
 import { execFileSync, spawn } from 'child_process';
+import { osc52Copy } from './notify.js';
 
 // Share layer — croc for file sharing (encrypted, peer-to-peer, zero infra),
 // ttyd for terminal-in-browser (client demos). Both degrade honestly.
@@ -31,6 +32,7 @@ export function shareFile(path: string, dir: string = process.cwd()): { ok: bool
   child.stdout.pipe(out);
   child.stderr.pipe(out);
   child.unref();
+  osc52Copy(code); // the code lands in your clipboard — paste it to the recipient
   return { ok: true, code };
 }
 

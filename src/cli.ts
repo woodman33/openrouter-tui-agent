@@ -6,6 +6,8 @@ import path from 'node:path';
 import { computeReceiptHash, Receipt } from './receipt/schema.js';
 import crypto from 'crypto';
 import { VERSION } from './version.js';
+import { readEvents } from './utils/eventbus.js';
+import { receiptsToOtlp } from './utils/otlp.js';
 
 function getPackageMetadata() {
   const possiblePaths = [
@@ -45,6 +47,9 @@ Commands:
   runtimes list   List local, SDK, and remote agent runtime profiles
   runtimes doctor Detect runtime readiness without executing agent tasks
   sceneforge      Use the authenticated Cloudflare control plane via MCPorter
+  events          Stream the TUI's event envelope as NDJSON (--follow, --human, --otlp)
+  doctor deps|network|hardware  Read-only posture checks (never auto-fixes)
+  mcp inspect     Opt-in MCP wire visibility via mcpsnoop
 
 Options:
   --json          Output results in raw JSON format (for demo/proof)
@@ -114,6 +119,33 @@ if (command === 'version' || args.includes('--version') || args.includes('-v')) 
 if (command === 'start') {
   console.log('timmy start — PLANNED alias for npm start');
   process.exit(0);
+}
+
+if (command === 'events') {
+  // Headless parity: the SAME NDJSON envelope the TUI consumes (seals,
+  // approvals, gen status flips) — for CI replay, the companion, the portal.
+  if (args.includes('--otlp')) {
+    // Derived OTLP projection of the receipt spine (otel-tui / Langfuse / Jaeger)
+    console.log(JSON.stringify(receiptsToOtlp(), null, 2));
+    process.exit(0);
+  }
+  const follow = args.includes('--follow') || args.includes('-f');
+  const human = args.includes('--human');
+  let seen = 0;
+  const dump = () => {
+    const evs = readEvents();
+    for (const ev of evs.slice(seen)) {
+      if (human) console.log(`${ev.ts}  ${ev.kind.padEnd(18)} ${JSON.stringify(ev.payload)}`);
+      else console.log(JSON.stringify(ev));
+    }
+    seen = evs.length;
+  };
+  dump();
+  if (follow) {
+    setInterval(dump, 1000);
+  } else {
+    process.exit(0);
+  }
 }
 
 if (command === 'demo') {
@@ -351,6 +383,7 @@ if (
   command !== 'docs' &&
   command !== 'providers' &&
   command !== 'runtimes' &&
+  command !== 'mcp' &&
   command !== 'sceneforge'
 ) {
   printHelp();
@@ -368,6 +401,8 @@ function getScriptPath(cmd: string): string {
           ? 'timmy-providers'
           : cmd === 'runtimes'
             ? 'timmy-runtimes'
+          : cmd === 'mcp'
+            ? 'timmy-mcp'
           : 'timmy-sceneforge';
   const tsPath = fileURLToPath(new URL(`../scripts/${baseName}.ts`, import.meta.url));
   const jsPath = fileURLToPath(new URL(`../scripts/${baseName}.js`, import.meta.url));
@@ -394,7 +429,9 @@ const spawnArgs = isTs
               ? 'list'
             : command === 'sceneforge'
               ? 'status'
-              : 'doctor'),
+              : command === 'mcp'
+                ? 'inspect'
+                : 'doctor'),
       ...args.slice(2)
     ]
   : [
@@ -408,7 +445,9 @@ const spawnArgs = isTs
               ? 'list'
             : command === 'sceneforge'
               ? 'status'
-              : 'doctor'),
+              : command === 'mcp'
+                ? 'inspect'
+                : 'doctor'),
       ...args.slice(2)
     ];
 

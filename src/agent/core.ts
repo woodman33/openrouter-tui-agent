@@ -7,6 +7,7 @@ import type { AgentEvents } from './events.js';
 import type { Message, AgentConfig } from '../types/index.js';
 import { ConversationManager } from './conversation.js';
 import { defaultTools } from './tools.js';
+import { appendEvent } from '../utils/eventbus.js';
 import { execSync, execFileSync } from 'child_process';
 import { classifyCommand } from '../utils/safety.js';
 import fs from 'fs';
@@ -124,6 +125,7 @@ class TmuxManager implements MultiplexerManager {
         riskLevel: safety.riskLevel,
         reason: safety.reason || 'Command requires explicit approval'
       });
+      appendEvent('approval.required', { sessionId: id, command, riskLevel: safety.riskLevel });
 
       const prev = this.lastOutputs.get(id) || [];
       this.lastOutputs.set(id, [
@@ -152,6 +154,7 @@ class TmuxManager implements MultiplexerManager {
           command,
           timestamp: new Date().toISOString()
         });
+        appendEvent('approval.granted', { sessionId: id, command });
       }
 
       // Generate unique command ID

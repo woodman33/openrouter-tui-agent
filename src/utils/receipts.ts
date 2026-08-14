@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, appendFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import crypto from 'crypto';
+import { appendEvent } from './eventbus.js';
 
 // TIMMY receipt chain v1 — the spine. Every effect appends a hash-chained,
 // tamper-evident receipt: plan → policy → effect → artifacts → cost → prev_hash.
@@ -82,6 +83,7 @@ export function appendReceipt(stream: string, input: ReceiptInput, dir?: string)
   const p = receiptsPath(stream, dir);
   mkdirSync(dirname(p), { recursive: true });
   appendFileSync(p, JSON.stringify(rec) + '\n', 'utf8');
+  appendEvent('receipt.sealed', { stream, id: rec.id, hash: rec.hash, kind: rec.kind, subject: rec.subject }, dir);
   return rec;
 }
 

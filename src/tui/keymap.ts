@@ -34,12 +34,14 @@ export const MODE_KEYS: Record<Mode, KeyHint[]> = {
     { key: 'n', label: 'spawn' },
     { key: 'k', label: 'kill' },
     { key: 'o', label: 'attach' },
+    { key: 'y', label: 'yank attach cmd' },
     { key: 'v', label: 'tmux tabs' },
     { key: 'G', label: 'tiled grid' }
   ],
   gens: [
     { key: 'n', label: 'new prompt' },
     { key: ']/[', label: 'option (while typing)' },
+    { key: 'y', label: 'yank gen line' },
     { key: '1/2', label: 'failed → reroute / note' }
   ],
   slate: [

@@ -2,6 +2,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, append
 import { join, dirname } from 'path';
 import crypto from 'crypto';
 import { appendReceipt } from './receipts.js';
+import { appendEvent } from './eventbus.js';
 
 // TIMMY Generation Ledger — every prompt → generation → capture → critique
 // cycle lands here as a reviewable, sha256-stamped record. Async by design:
@@ -114,6 +115,7 @@ export function appendGenEvent(genId: string, event: string, detail: string = ''
     mkdirSync(dirname(path), { recursive: true });
     const line: GenEvent = { ts: now(), genId, event, detail };
     appendFileSync(path, JSON.stringify(line) + '\n', 'utf8');
+    appendEvent(`gen.${event}`, { genId, detail }, dir);
   } catch {
     // event log is best-effort; never block the ledger
   }

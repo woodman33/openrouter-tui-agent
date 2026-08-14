@@ -15,6 +15,7 @@ import { locateGenAgent, buildGenAgentArgs, launchDetached } from '../../utils/g
 import { clockTime } from '../../utils/humanlog.js';
 import { appendGenEvent } from '../../utils/generations.js';
 import { seedStarter } from '../../utils/starter.js';
+import { osc52Copy } from '../../utils/notify.js';
 
 interface GensPanelProps {
   agent: Agent;
@@ -146,6 +147,11 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
         } catch { setNote('could not write note'); }
         return;
       }
+    }
+    if (char.toLowerCase() === 'y' && sel) {
+      osc52Copy(`${sel.id} · ${sel.provider} · ${sel.status} · ${sel.artifact || 'no artifact'} · prompt_hash=${sel.prompt_hash ?? '—'}`);
+      setNote('yanked gen line to clipboard (OSC-52/pbcopy)');
+      return;
     }
     if (char.toLowerCase() === 'n') { setComposing(true); setModalInput?.(true); return; }
   }, { isActive: !inputLocked });

@@ -1,4 +1,5 @@
 import { getWorkspaceEvidenceStatus } from '../src/utils/workspace-evidence.js';
+import { depsDoctor, networkDoctor, hardwareDoctor, printRows } from '../src/utils/doctors.js';
 
 function parseArgs(argv: string[]) {
   const command = argv.find((arg) => !arg.startsWith('-')) || 'doctor';
@@ -43,8 +44,29 @@ function printDoctor(json = false): void {
 
 const { command, json } = parseArgs(process.argv.slice(2));
 
+if (command === 'deps') {
+  const rows = depsDoctor();
+  if (json) console.log(JSON.stringify(rows, null, 2));
+  else printRows('dependency posture', rows);
+  process.exit(0);
+}
+
+if (command === 'network') {
+  const rows = await networkDoctor();
+  if (json) console.log(JSON.stringify(rows, null, 2));
+  else printRows('network layers (dns → tcp → tls → http)', rows);
+  process.exit(0);
+}
+
+if (command === 'hardware') {
+  const rows = hardwareDoctor();
+  if (json) console.log(JSON.stringify(rows, null, 2));
+  else printRows('compute inventory', rows);
+  process.exit(0);
+}
+
 if (command !== 'doctor') {
-  console.error('Usage: timmy doctor [--json]');
+  console.error('Usage: timmy doctor [deps|network|hardware] [--json]');
   process.exit(2);
 }
 

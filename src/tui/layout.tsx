@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Text, useWindowSize } from 'ink';
 import { execFileSync } from 'child_process';
 import { loadGenerations } from '../utils/generations.js';
+import { readEvents } from '../utils/eventbus.js';
 import { listProjects } from '../utils/projects.js';
 import { theme } from './theme.js';
 import type { Agent } from '../agent/core.js';
@@ -82,6 +83,10 @@ export function Layout({
   const H = height || process.stdout.rows || 24;
   const pulseFrame = usePulse(500);
 
+  // ⛁ seal-pulse: the hero moment — a fresh receipt flashes the top bar
+  const [sealPulse, setSealPulse] = useState(0);
+  const seenTs = React.useRef<string>('');
+
   // live nav badges — problems surface from ANY tab, not just their own
   const [badges, setBadges] = useState<Record<string, { text: string; color: string }>>({});
   useEffect(() => {
@@ -109,6 +114,15 @@ export function Layout({
       } catch { /* tmux absent */ }
       b.browse = { text: `${agent.tmuxSessions.filter((s: { name: string }) => s.name.startsWith('Browser:')).length}`, color: theme.textTertiary };
       try { b.files = { text: `${listProjects().length}`, color: theme.textTertiary }; } catch { /* no projects */ }
+      try {
+        const evs = readEvents(10);
+        const maxTs = evs.length ? evs[evs.length - 1].ts : '';
+        if (maxTs && seenTs.current && maxTs > seenTs.current
+          && evs.some(e => e.ts > seenTs.current && e.kind === 'receipt.sealed')) {
+          setSealPulse(Date.now());
+        }
+        if (maxTs) seenTs.current = maxTs;
+      } catch { /* bus unreadable */ }
       setBadges(b);
     };
     load();
@@ -153,6 +167,10 @@ export function Layout({
           )}
         </Box>
         <Box>
+          {/* Seal-pulse — ⛁ flashes for 2.5s when a receipt seals */}
+          {Date.now() - sealPulse < 2500 && (
+            <Text color={pulseFrame % 2 === 0 ? '#d2a8ff' : theme.textTertiary}>⛁ </Text>
+          )}
           {/* Activity glyph — pulses when agent is running */}
           <Text color={isActive && pulseFrame % 2 === 0 ? anim.color : theme.textTertiary}>
             {anim.glyph}
