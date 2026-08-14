@@ -16,28 +16,32 @@ interface ModeRouterProps {
   mode: Mode;
   agent: Agent;
   setInspector: (data: any) => void;
-  focusArea: 'nav' | 'stage';
+  /** -1 = left nav focused; 0..n = stage pane index (panels own their panes). */
+  zone: number;
+  setZone: (z: number) => void;
+  /** Panels report modal text-entry so global Tab/numbers stand down. */
+  setModalInput: (b: boolean) => void;
   /** True while a global overlay (command palette) owns the keyboard. */
   inputLocked?: boolean;
 }
 
-export function ModeRouter({ mode, agent, setInspector, focusArea, inputLocked }: ModeRouterProps) {
+export function ModeRouter({ mode, agent, setInspector, zone, setZone, setModalInput, inputLocked }: ModeRouterProps) {
   switch (mode) {
     case 'brief':
-      return <ChatPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
+      return <ChatPanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} />;
     case 'lanes':
-      return <LanesPanel agent={agent} setInspector={setInspector} focusArea={focusArea} inputLocked={inputLocked} />;
+      return <LanesPanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={inputLocked} />;
     case 'gens':
-      return <GensPanel agent={agent} setInspector={setInspector} focusArea={focusArea} inputLocked={inputLocked} />;
+      return <GensPanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={inputLocked} />;
     case 'slate':
-      return <SlatePanel agent={agent} setInspector={setInspector} focusArea={focusArea} inputLocked={inputLocked} />;
+      return <SlatePanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={inputLocked} />;
     case 'browse':
-      return <BrowsePanel agent={agent} setInspector={setInspector} focusArea={focusArea} inputLocked={inputLocked} />;
+      return <BrowsePanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={inputLocked} />;
     case 'logs':
-      return <LogsPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
+      return <LogsPanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} />;
     case 'files':
-      return <ProjectsPanel agent={agent} setInspector={setInspector} focusArea={focusArea} inputLocked={inputLocked} />;
+      return <ProjectsPanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} inputLocked={inputLocked} />;
     default:
-      return <ChatPanel agent={agent} setInspector={setInspector} focusArea={focusArea} />;
+      return <ChatPanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} />;
   }
 }

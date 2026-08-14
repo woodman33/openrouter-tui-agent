@@ -13,7 +13,8 @@ import { seedStarter } from '../../utils/starter.js';
 interface ProjectsPanelProps {
   agent: Agent;
   setInspector?: (s: string | null) => void;
-  focusArea?: string;
+  zone?: number;
+  setZone?: (z: number) => void;
   inputLocked?: boolean;
 }
 
@@ -22,7 +23,7 @@ interface ProjectsPanelProps {
  * context-optimized tree (PROJECT.md first), with in-terminal previews
  * (chafa/catimg/head) and carbonyl for the real thing.
  */
-export function ProjectsPanel({ agent, inputLocked }: ProjectsPanelProps) {
+export function ProjectsPanel({ agent, zone = 0, setZone, inputLocked }: ProjectsPanelProps) {
   const [projects, setProjects] = useState<string[]>([]);
   const [idx, setIdx] = useState(0);
   const [files, setFiles] = useState<TreeFile[]>([]);
@@ -47,19 +48,29 @@ export function ProjectsPanel({ agent, inputLocked }: ProjectsPanelProps) {
   const file = files[Math.min(fidx, Math.max(0, files.length - 1))];
 
   useInput((char, key) => {
+    if (zone < 0) return; // nav owns the keyboard
     if (preview) {
       if (key.escape || key.return) { setPreview(null); return; }
       return;
     }
-    if (key.upArrow) { setFidx(i => Math.max(0, i - 1)); return; }
-    if (key.downArrow) { setFidx(i => Math.min(Math.max(0, files.length - 1), i + 1)); return; }
-    if (key.leftArrow) { setIdx(i => Math.max(0, i - 1)); setFidx(0); return; }
-    if (key.rightArrow) { setIdx(i => Math.min(Math.max(0, projects.length - 1), i + 1)); setFidx(0); return; }
+    if (key.upArrow) {
+      if (zone === 0) setIdx(i => Math.max(0, i - 1));
+      else setFidx(i => Math.max(0, i - 1));
+      return;
+    }
+    if (key.downArrow) {
+      if (zone === 0) setIdx(i => Math.min(Math.max(0, projects.length - 1), i + 1));
+      else setFidx(i => Math.min(Math.max(0, files.length - 1), i + 1));
+      return;
+    }
+    // ONE GRAMMAR: ←→ move between panes (nav ↔ projects ↔ tree)
+    if (key.leftArrow) { setZone?.(Math.max(-1, zone - 1)); return; }
+    if (key.rightArrow) { setZone?.(Math.min(1, zone + 1)); return; }
     const c = char.toLowerCase();
     if (c === 'p' && sel && file) { setPreview(previewFile(join(projectDir(sel), file.rel))); return; }
     if (c === 'v' && sel && file && (agent as any).addBrowserPane) {
       (agent as any).addBrowserPane(`http://127.0.0.1:4273/studio/${sel}/${file.rel}`);
-      setNote('opened in carbonyl (dash server must be up — [w] in SLATE starts it)');
+      setNote('opened in carbonyl (dash server must be up — [o] in SLATE starts it)');
       return;
     }
     if (c === 's' && sel) {
@@ -69,13 +80,13 @@ export function ProjectsPanel({ agent, inputLocked }: ProjectsPanelProps) {
       setFiles(projectTree(sel));
       return;
     }
-    if (c === 't' && sel) {
+    if (c === 'e' && sel) {
       const r = exportTraining(sel);
       setNote(`training export: ${r.files} files${r.labelsPath ? ' + labels.json' : ''}`);
       return;
     }
     if (c === 'i' && sel) { renderProjectIndex(sel); setFiles(projectTree(sel)); setNote('PROJECT.md reindexed'); return; }
-    if (c === 'e' && sel && file) { setNote(`in your terminal: ${process.env.EDITOR || 'nvim'} studio/${sel}/${file.rel}`); return; }
+    if (c === 'o' && sel && file) { setNote(`in your terminal: ${process.env.EDITOR || 'nvim'} studio/${sel}/${file.rel}`); return; }
   }, { isActive: !inputLocked });
 
   return (
@@ -86,13 +97,13 @@ export function ProjectsPanel({ agent, inputLocked }: ProjectsPanelProps) {
       statusColor="#d2a8ff"
       explain="Context-optimized: PROJECT.md index first, descend only when relevant. Prompts ↔ outcomes ↔ logs ↔ receipts cross-link by gen-id."
       hints={[
-        { key: '↑↓', label: 'file' },
-        { key: '←→', label: 'project' },
+        { key: '←→', label: 'pane' },
+        { key: '↑↓', label: 'move' },
         { key: 'p', label: 'preview in terminal' },
         { key: 'v', label: 'carbonyl' },
+        { key: 'o', label: 'open in $EDITOR' },
         { key: 's', label: 'sync logs' },
-        { key: 't', label: 'training export' },
-        { key: 'e', label: 'edit in $EDITOR' }
+        { key: 'e', label: 'training export' }
       ]}
     >
       {note && <Text color="#3fb950">{note}</Text>}
@@ -105,7 +116,7 @@ export function ProjectsPanel({ agent, inputLocked }: ProjectsPanelProps) {
         </Box>
       ) : (
         <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" width="26%" paddingRight={1} borderStyle="single" borderColor="#30363d">
+          <Box flexDirection="column" width="26%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
             {projects.map((p, i) => (
               <Text key={p} color={i === Math.min(idx, projects.length - 1) ? '#d2a8ff' : '#a5b0bc'} bold={i === Math.min(idx, projects.length - 1)} wrap="truncate">
                 {i === Math.min(idx, projects.length - 1) ? '▶ ' : '  '}📁 {p}

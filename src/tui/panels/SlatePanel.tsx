@@ -10,7 +10,9 @@ import { seedStarter } from '../../utils/starter.js';
 interface SlatePanelProps {
   agent: Agent;
   setInspector?: (s: string | null) => void;
-  focusArea?: string;
+  zone?: number;
+  setZone?: (z: number) => void;
+  setModalInput?: (b: boolean) => void;
   inputLocked?: boolean;
 }
 
@@ -22,7 +24,7 @@ interface SlateItem { kind: 'project' | 'template'; name: string; }
  * carbonyl pane (your tldraw on localhost, or the published project site).
  * The terminal authors; the canvas renders. One schema, many targets.
  */
-export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
+export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocked }: SlatePanelProps) {
   const [items, setItems] = useState<SlateItem[]>([]);
   const [idx, setIdx] = useState(0);
   const [naming, setNaming] = useState(false);
@@ -62,13 +64,15 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
   };
 
   useInput((char, key) => {
+    if (zone < 0) return; // nav owns the keyboard
     if (naming) {
-      if (key.escape) { setNaming(false); setDraft(''); return; }
+      if (key.escape) { setNaming(false); setDraft(''); setModalInput?.(false); return; }
       if (key.return) {
         const name = draft.trim().replace(/[^a-z0-9-]+/gi, '-').toLowerCase();
         if (name) initProject(name);
         setNaming(false);
         setDraft('');
+        setModalInput?.(false);
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -76,7 +80,7 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
       return;
     }
     if (using) {
-      if (key.escape) { setUsing(false); setDraft(''); return; }
+      if (key.escape) { setUsing(false); setDraft(''); setModalInput?.(false); return; }
       if (key.return && sel) {
         const idea = draft.trim() || sel.name;
         const name = idea.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24) || 'proj';
@@ -92,6 +96,7 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
         }
         setUsing(false);
         setDraft('');
+        setModalInput?.(false);
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -100,20 +105,24 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
     }
     if (key.upArrow) { setIdx(i => Math.max(0, i - 1)); return; }
     if (key.downArrow) { setIdx(i => Math.min(Math.max(0, items.length - 1), i + 1)); return; }
+    // ONE GRAMMAR: ←→ move between panes (nav ↔ list ↔ detail)
+    if (key.leftArrow) { setZone?.(Math.max(-1, zone - 1)); return; }
+    if (key.rightArrow) { setZone?.(Math.min(1, zone + 1)); return; }
     const c = char.toLowerCase();
-    if ((key.return || c === 'u') && sel) {
-      if (sel.kind === 'template') { setUsing(true); return; }
+    // Enter ALWAYS selects: use a template, open a project
+    if (key.return && sel) {
+      if (sel.kind === 'template') { setUsing(true); setModalInput?.(true); return; }
       openCanvas(sel);
       return;
     }
-    if (c === 'n') { setNaming(true); return; }
-    if (c === 'p' && sel?.kind === 'project') {
+    if (c === 'n') { setNaming(true); setModalInput?.(true); return; }
+    if (char === 'P' && sel?.kind === 'project') {
       const site = renderProjectSite(sel.name);
       if (site) ensureDashServer();
       return;
     }
-    if (c === 'c' && sel) { openCanvas(sel); return; }
-    if (c === 'w' && sel) { openSite(sel); return; }
+    if (c === 'v' && sel) { openCanvas(sel); return; }
+    if (c === 'o' && sel) { openSite(sel); return; }
   }, { isActive: !inputLocked });
 
   return (
@@ -125,15 +134,15 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
       explain="Author storyboards + projects in the terminal; watch them live in a carbonyl canvas. One schema → HyperFrames, sites, tldraw."
       hints={[
         { key: '↑↓', label: 'select' },
-        { key: '↵', label: 'use template / open project' },
+        { key: '↵', label: 'use template / open' },
         { key: 'n', label: 'new project' },
-        { key: 'p', label: 'publish site' },
-        { key: 'c', label: 'tldraw canvas pane' },
-        { key: 'w', label: 'site pane' }
+        { key: 'P', label: 'publish site' },
+        { key: 'v', label: 'canvas pane' },
+        { key: 'o', label: 'site pane' }
       ]}
     >
       <Box flexDirection="row" flexGrow={1}>
-        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor="#30363d">
+        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
           {items.length === 0 && (
             <Box flexDirection="column">
               <Text color="#8b949e">no projects yet.</Text>
@@ -158,7 +167,7 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
               {proj.gens.slice(-4).map(g => (
                 <Text key={g.id} color="#a5b0bc" wrap="truncate">  🎬 {g.label} · {g.provider}{g.artifact ? ` → ${g.artifact}` : ''}</Text>
               ))}
-              <Text color="#a5b0bc">[p] renders site/ · [c] opens it live</Text>
+              <Text color="#a5b0bc">[P] renders site/ · [v] canvas · [o] site pane</Text>
             </>
           )}
           {tmpl && (
@@ -168,7 +177,7 @@ export function SlatePanel({ agent, inputLocked }: SlatePanelProps) {
                 <Text key={i} color="#9aa4b2" wrap="truncate">• {b.at}s–{b.at + b.dur}s [{b.label}] {b.text}</Text>
               ))}
               <Text color="#a5b0bc">use with /studio --template {tmpl.name} &lt;idea&gt;</Text>
-              <Text color="#a5b0bc">[c] opens your tldraw Slate canvas (TIMMY_SLATE_URL)</Text>
+              <Text color="#a5b0bc">[v] opens your tldraw Slate canvas (TIMMY_SLATE_URL)</Text>
             </>
           )}
           {!proj && !tmpl && <Text color="#8b949e">select a project or template.</Text>}

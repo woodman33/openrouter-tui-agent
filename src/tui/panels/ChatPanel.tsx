@@ -16,7 +16,8 @@ import { LogRain } from './LogRain.js';
 interface ChatPanelProps {
   agent: Agent;
   setInspector: (data: any) => void;
-  focusArea: 'nav' | 'stage';
+  zone?: number;
+  setZone?: (z: number) => void;
 }
 
 const FALLBACK_MODELS = [
@@ -31,7 +32,7 @@ const FALLBACK_MODELS = [
   { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', description: 'top coding open weights assistant' }
 ];
 
-export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
+export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelProps) {
   const { rows: height, columns: width } = useWindowSize();
   const terminalHeight = height || 24;
   const terminalWidth = width || 80;
@@ -56,6 +57,12 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   const [highlightedModelIdx, setHighlightedModelIdx] = useState(0);
   const [focusSection, setFocusSection] = useState<'chat' | 'modelRail' | 'logRain'>('chat');
   const [modelChangedFlash, setModelChangedFlash] = useState(false);
+
+  // ONE GRAMMAR: pane focus lives in the root zone (-1 nav · 0 chat · 1 rail · 2 rain)
+  const focusPane = (s: 'chat' | 'modelRail' | 'logRain') => {
+    setFocusSection(s);
+    setZone?.(s === 'chat' ? 0 : s === 'modelRail' ? 1 : 2);
+  };
 
   useEffect(() => {
     fetchModels().then(models => {
@@ -231,6 +238,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   const visibleModels = filteredModels.slice(startIdx, startIdx + visibleModelCount);
 
   useInput((char, key) => {
+    if (zone < 0) return; // nav owns the keyboard
     if (focusSection === 'chat') {
       if (key.escape) {
         if (showAutocomplete) {
@@ -240,13 +248,18 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
       }
 
       if (key.rightArrow) {
-        setFocusSection('modelRail');
+        focusPane('modelRail');
         setHighlightedModelIdx(0);
+        return;
+      }
+      // ← from chat walks back to the left nav, like every other tab
+      if (key.leftArrow && checkpoints.length > 0) {
+        setZone?.(-1);
         return;
       }
 
       if (key.ctrl && char === 'm') {
-        setFocusSection('modelRail');
+        focusPane('modelRail');
         setHighlightedModelIdx(0);
         return;
       }
@@ -302,13 +315,17 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         return;
       }
 
-      // If starting view, allow tab or left/right navigation of home buttons
+      // Starting view: 1-3 pick a home button (positional rhyme with LOGS 1-5),
+      // ←→ still walk panes
       if (checkpoints.length === 0) {
+        if (char === '1') { setActiveHomeBtnIdx(0); return; }
+        if (char === '2') { setActiveHomeBtnIdx(1); return; }
+        if (char === '3') { setActiveHomeBtnIdx(2); return; }
         if (key.leftArrow) {
           setActiveHomeBtnIdx(prev => prev <= 0 ? 2 : prev - 1);
           return;
         }
-        if (key.rightArrow || key.tab) {
+        if (key.rightArrow) {
           setActiveHomeBtnIdx(prev => prev >= 2 ? 0 : prev + 1);
           return;
         }
@@ -382,19 +399,19 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         setActiveHomeBtnIdx(-1);
       }
     } else if (focusSection === 'logRain') {
-      // LogRain owns ↑↓ while focused; Tab/Esc/Left return to chat
-      if (key.tab || key.leftArrow || key.escape) {
-        setFocusSection('chat');
+      // LogRain owns ↑↓ while focused; ←/Esc return to chat
+      if (key.leftArrow || key.escape) {
+        focusPane('chat');
       }
       return;
     } else {
       // focusSection === 'modelRail'
-      if (key.tab) {
-        setFocusSection('logRain');
+      if (key.rightArrow) {
+        focusPane('logRain');
         return;
       }
       if (key.leftArrow || key.escape) {
-        setFocusSection('chat');
+        focusPane('chat');
         return;
       }
       if (key.upArrow) {
@@ -409,7 +426,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         const selectedModel = filteredModels[highlightedModelIdx];
         if (selectedModel) {
           state.switchModel(selectedModel.id);
-          setFocusSection('chat');
+          focusPane('chat');
           setModelChangedFlash(true);
           setTimeout(() => setModelChangedFlash(false), 1500);
           agent.emit('message:user', {
@@ -508,6 +525,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                   <Text color="#e6edf3"> • <Text bold color="#43d6a0">OpenRouter Agent</Text>: model routing and agent reasoning</Text>
                   <Text color="#e6edf3"> • <Text bold color="#ff7b72">TIMMY Porter</Text>: MCP server ➔ CLI onboarding</Text>
                   <Text color="#e6edf3"> • <Text bold color="#3fb950">carbonyl</Text>: headless Chromium browser lanes in terminal panes</Text>
+                  <Text color="#e6edf3"> • <Text bold color="#d29922">OpenHands</Text>: autonomous headless runner for delegated fixes (lane 4)</Text>
                 </Box>
 
                 {/* Three Buttons - Position Stable Fixed Width */}
@@ -520,10 +538,13 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                     ? <PrimaryButton label="Lanes" selected={true} width={20} /> 
                     : <SecondaryButton label="Lanes" selected={false} width={20} /> 
                   }
-                  {activeHomeBtnIdx === 2 
-                    ? <PrimaryButton label="Files" selected={true} width={20} /> 
-                    : <SecondaryButton label="Files" selected={false} width={20} /> 
+                  {activeHomeBtnIdx === 2
+                    ? <PrimaryButton label="Files" selected={true} width={20} />
+                    : <SecondaryButton label="Files" selected={false} width={20} />
                   }
+                </Box>
+                <Box justifyContent="center" width="100%">
+                  <Text color="#8b949e">[1-3] pick · ↵ runs · → model rail</Text>
                 </Box>
 
               </Box>
@@ -558,7 +579,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         )}
 
         {/* Input prompt box - Never disappears */}
-        <Box borderStyle="single" borderColor={focusSection === 'chat' && focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} width={chatWidth - 2} flexShrink={0} marginTop={1}>
+        <Box borderStyle="single" borderColor={focusSection === 'chat' && zone >= 0 ? "#a98bff" : "#30363d"} paddingX={1} width={chatWidth - 2} flexShrink={0} marginTop={1}>
           <Text color="#a5b0bc">[ main-chat ] </Text>
           <Text color="#4f9cff">{state.isThinking ? '◌ ' : '▶ '} </Text>
           <Text color="#e6edf3" wrap="truncate">{scrollVisibleLeft(input, inputTextWidth)}</Text>
@@ -648,7 +669,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                 <Box key={m.id} flexDirection="column" marginBottom={1}>
                   <Box>
                     <Text bold={isSelected || isActive} color={nameColor}>
-                      {marker}{nameText}
+                      {marker}{m.id.startsWith('ollama') || m.id.includes('local') ? '🏠 ' : '$ '}{nameText}
                     </Text>
                   </Box>
                   {showDescription && descText && (
@@ -699,19 +720,19 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         })()}
 
         {/* Live log rain — newest at top, rains downward (stacked mode) */}
-        {!threeCol && <LogRain height={rainHeight} focused={focusSection === 'logRain' && focusArea === 'stage'} />}
+        {!threeCol && <LogRain height={rainHeight} focused={focusSection === 'logRain' && zone >= 0} />}
 
         <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
-          <Text color="#8b949e">Tab·region ↑↓·move Enter·act</Text>
-          <Text color="#8b949e">Esc·back ^R·runs ^W·work ^L·logs</Text>
+          <Text color="#8b949e">Tab·menu ←→·panes ↑↓·move</Text>
+          <Text color="#8b949e">Enter·select Esc·back ?·keys</Text>
           <Text color="#8b949e">d·model detail o·open page</Text>
-          <Text color="#8b949e">^K·palette ?·help(nav)</Text>
+          <Text color="#8b949e">^K·palette · 1-3 home buttons</Text>
         </Box>
       </Box>
 
       {threeCol && (
         <Box width={rainWidth} flexDirection="column" flexShrink={0}>
-          <LogRain height={terminalHeight - 12} focused={focusSection === 'logRain' && focusArea === 'stage'} />
+          <LogRain height={terminalHeight - 12} focused={focusSection === 'logRain' && zone >= 0} />
         </Box>
       )}
     </Box>

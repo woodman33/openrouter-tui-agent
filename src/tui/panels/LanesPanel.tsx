@@ -11,7 +11,9 @@ import { stripAnsi } from '../utils/text.js';
 interface LanesPanelProps {
   agent: Agent;
   setInspector?: (s: string | null) => void;
-  focusArea?: string;
+  zone?: number;
+  setZone?: (z: number) => void;
+  setModalInput?: (b: boolean) => void;
   inputLocked?: boolean;
 }
 
@@ -20,7 +22,7 @@ interface LanesPanelProps {
  * multiplexer session: you see its actual output, delegate real tasks,
  * approve risky commands, spawn and kill. No simulated states anywhere.
  */
-export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
+export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocked }: LanesPanelProps) {
   const [idx, setIdx] = useState(0);
   const [capture, setCapture] = useState<string[]>([]);
   const [alive, setAlive] = useState<Record<string, boolean>>({});
@@ -40,6 +42,7 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
       pi: 'list the 3 largest files and why they matter',
       jcode: 'review the last commit in one paragraph',
       minds: 'research: receipt-backed AI compliance (EU AI Act Art. 12)',
+      openhands: 'autonomously fix the most recent failing test (headless)',
       systems: 'print the fleet status'
     };
     return map[runner] || 'echo hello from TIMMY';
@@ -92,12 +95,14 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
   const blockedCount = lanes.filter(l => blocked?.has(l.id)).length;
 
   useInput((char, key) => {
+    if (zone < 0) return; // nav owns the keyboard
     if (tasking) {
-      if (key.escape) { setTasking(false); setDraft(''); return; }
+      if (key.escape) { setTasking(false); setDraft(''); setModalInput?.(false); return; }
       if (key.return) {
         if (sel && draft.trim()) agent.sendTmuxCommand(sel.id, draft.trim());
         setTasking(false);
         setDraft('');
+        setModalInput?.(false);
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -106,13 +111,15 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
     }
     if (key.upArrow) { setIdx(i => Math.max(0, i - 1)); return; }
     if (key.downArrow) { setIdx(i => Math.min(Math.max(0, lanes.length - 1), i + 1)); return; }
+    // ONE GRAMMAR: ←→ move between panes (nav ↔ roster ↔ live output)
+    if (key.leftArrow) { setZone?.(Math.max(-1, zone - 1)); return; }
+    if (key.rightArrow) { setZone?.(Math.min(1, zone + 1)); return; }
     const c = char.toLowerCase();
-    if (c === 's' && sel) { agent.addTmuxSession(sel.name, sel.model); return; }
+    if (c === 'n' && sel) { agent.addTmuxSession(sel.name, sel.model); return; }
     if (c === 'k' && sel) { agent.removeTmuxSession(sel.id); setIdx(i => Math.max(0, i - 1)); return; }
     if (c === 'g' && sel && selBlocked) { agent.sendTmuxCommand(sel.id, selBlocked, true); return; }
-    if (c === 'd' && sel) { setDraft(suggested(sel.id)); setTasking(true); return; }
-    if (c === 'a' && sel) { setNote(`attach in your own terminal: tmux attach -t ortui-${sel.id}  (full control, same session)`); return; }
-    if (c === 'w') {
+    if (c === 'o' && sel) { setNote(`attach in your own terminal: tmux attach -t ortui-${sel.id}  (full control, same session)`); return; }
+    if (c === 'v') {
       // tmux tabs over every lane: one watch session with linked windows
       try {
         execFileSync('tmux', ['new-session', '-d', '-s', 'timmy-watch'], { stdio: 'ignore' });
@@ -145,7 +152,13 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
       try { mkdirSync(join(process.cwd(), '.timmy'), { recursive: true }); writeFileSync(join(process.cwd(), '.timmy', '.lanes-coach'), new Date().toISOString(), 'utf8'); } catch { /* best effort */ }
       return;
     }
-    if (c === 't' || key.return) { setTasking(true); return; }
+    // t = type-into, prefilled with the suggested task (delegate = type suggested)
+    if (c === 't' || key.return) {
+      if (sel) setDraft(suggested(sel.id));
+      setTasking(true);
+      setModalInput?.(true);
+      return;
+    }
   }, { isActive: !inputLocked });
 
   return (
@@ -157,26 +170,26 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
       explain="Real multiplexer sessions — you're watching their actual terminals. Delegate a task; risky commands stop for your approval."
       hints={[
         { key: '↑↓', label: 'lane' },
-        { key: 'd', label: 'delegate suggested' },
-        { key: '↵/t', label: 'type task' },
+        { key: 't/↵', label: 'type task' },
         { key: 'g', label: 'approve' },
-        { key: 'w', label: 'tmux tabs' },
-        { key: 'G', label: 'tiled grid' },
-        { key: 'a', label: 'attach' },
-        { key: 's/k', label: 'spawn/kill' }
+        { key: 'n', label: 'spawn' },
+        { key: 'k', label: 'kill' },
+        { key: 'o', label: 'attach' },
+        { key: 'v', label: 'tmux tabs' },
+        { key: 'G', label: 'grid' }
       ]}
     >
       {coach && !tasking && (
         <Box flexDirection="column" borderStyle="single" borderColor="#79c0ff" paddingX={1} marginBottom={1}>
           <Text bold color="#79c0ff">first time here? this is your crew — six real agents, not decorations.</Text>
-          <Text color="#a5b0bc">start small: select a lane, press [d] to delegate the suggested task, watch it work live.</Text>
-          <Text color="#a5b0bc">risky commands park for your approval ([g]). [w] builds tmux tabs over all lanes. [x] dismisses this forever.</Text>
+          <Text color="#a5b0bc">start small: select a lane, press [t] to delegate the suggested task, watch it work live.</Text>
+          <Text color="#a5b0bc">risky commands park for your approval ([g]). [v] builds tmux tabs over all lanes. [x] dismisses this forever.</Text>
         </Box>
       )}
       {note && <Text color="#3fb950" wrap="truncate">{note}</Text>}
       <Box flexDirection="row" flexGrow={1}>
         {/* lane roster */}
-        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor="#30363d">
+        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
           {lanes.map((l, i) => {
             const isSel = i === selIdx;
             const runner = LANE_RUNNERS[DEFAULT_LANE_BINDINGS[l.id]];
@@ -189,11 +202,11 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
                   {isSel ? '▶ ' : '  '}{glyph} {l.name}
                 </Text>
                 <Text color="#a5b0bc" wrap="truncate">
-                    {'   '}{runner?.blurb || runner?.label || 'shell'}{installed[l.id] === false ? ' · not installed' : ''}{alive[l.id] ? '' : ' · not running'}
+                    {'   '}{runner?.blurb || runner?.label || 'shell'}{installed[l.id] === false ? ` · missing ${runner?.cmd} — install: ${runner?.install || 'add to PATH'}` : ''}{alive[l.id] ? '' : ' · not running'}
                 </Text>
                 {isSel && (
                   <Text color="#8b949e" wrap="truncate">
-                    {'   '}try: {suggested(l.id)} · [d] delegates it
+                    {'   '}try: {suggested(l.id)} · [t] delegates it
                   </Text>
                 )}
               </Box>
@@ -221,7 +234,7 @@ export function LanesPanel({ agent, inputLocked }: LanesPanelProps) {
               ) : (
                 <Box flexDirection="column" marginTop={1}>
                   <Text color="#8b949e">pane not running.</Text>
-                  <Text color="#8b949e">[s] spawns it — you'll watch it boot here, live.</Text>
+                  <Text color="#8b949e">[n] spawns it — you'll watch it boot here, live.</Text>
                 </Box>
               )}
               {tasking && (

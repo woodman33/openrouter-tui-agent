@@ -4,6 +4,7 @@ import { createAgent } from '../agent/core.js';
 import type { AgentConfig } from '../types/index.js';
 import { Layout } from './layout.js';
 import { ModeRouter, MODES, type Mode } from './router.js';
+import { GLOBAL_KEYS, MODE_KEYS } from './keymap.js';
 import { useTerminalCapabilities } from './hooks/useTerminalCapabilities.js';
 import { useGraphicsPipeline } from './hooks/useGraphicsPipeline.js';
 import { useAgent } from './hooks/useAgent.js';
@@ -30,8 +31,11 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   
   // V2.0 App Shell navigation and focus states
   const [focusedMode, setFocusedMode] = useState<Mode>(mappedInitialMode);
-  // Drop straight into the chat stage — no Tab+Enter dance to start working
-  const [focusArea, setFocusArea] = useState<'nav' | 'stage'>('stage');
+  // Unified zone model: -1 = left nav, 0..n = stage panes (panels own panes).
+  // Drop straight into the chat stage — no Tab+Enter dance to start working.
+  const [zone, setZone] = useState<number>(0);
+  // A panel is in modal text-entry (composer etc.) — global keys stand down.
+  const [modalInput, setModalInput] = useState(false);
   const [inspectorData, setInspectorData] = useState<any>(null);
   const setInspectorSafe = React.useCallback((data: any) => {
     Promise.resolve().then(() => {
@@ -211,7 +215,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       tuiLogger.info('Ctrl+L captured. Switch to Logs Monitor.');
       setMode('logs');
       setFocusedMode('logs');
-      setFocusArea('stage');
+      setZone(0);
       return;
     }
 
@@ -249,69 +253,68 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
     if (key.ctrl && input === 'r') {
       setMode('lanes');
       setFocusedMode('lanes');
-      setFocusArea('stage');
+      setZone(0);
       return;
     }
     if (key.ctrl && input === 'w') {
       setMode('files');
       setFocusedMode('files');
-      setFocusArea('stage');
+      setZone(0);
       return;
     }
 
-    // 3. Central release commands: Esc returns focus to Nav, Ctrl+G force-releases pane lock
+    const autocompleteActive = Boolean((agent as any).autocompleteActive);
+
+    // ONE GRAMMAR — Tab/⇧Tab walks the left menu from anywhere, unless a
+    // modal text-entry (composer) or the slash autocomplete owns Tab.
+    if (key.tab && !modalInput && !autocompleteActive) {
+      const idx = MODES.indexOf(mode);
+      const next = key.shift
+        ? (idx - 1 + MODES.length) % MODES.length
+        : (idx + 1) % MODES.length;
+      setMode(MODES[next]);
+      setFocusedMode(MODES[next]);
+      return;
+    }
+
+    // ? = the keymap, from anywhere a '?' can't be plain text
+    if (input === '?' && !modalInput && !autocompleteActive && !(mode === 'brief' && zone === 0)) {
+      tuiLogger.info('Help overlay opened.');
+      setHelpOpen(true);
+      return;
+    }
+
+    // Esc = ALWAYS back: stage pane → nav, nav → stage
     if (key.escape) {
-      if (focusArea === 'stage') {
-        // Returns focus to navigation deck
-        setFocusArea('nav');
-        return;
-      }
+      if (!modalInput && !autocompleteActive) setZone(z => (z === -1 ? 0 : -1));
+      return;
     }
 
     if (key.ctrl && input === 'g') {
-      setFocusArea('nav');
+      setZone(-1);
       return;
     }
 
-    // 4. In Navigation Deck Area Focus (focusArea === 'nav')
-    if (focusArea === 'nav') {
-      const allowedModes: Mode[] = MODES;
-
-      if (input === '?') {
-        tuiLogger.info('Help overlay opened from nav.');
-        setHelpOpen(true);
-        return;
-      }
-
-      if (key.tab) {
-        const idx = allowedModes.indexOf(focusedMode);
-        let nextIdx;
-        if (key.shift) {
-          nextIdx = (idx - 1 + allowedModes.length) % allowedModes.length;
-        } else {
-          nextIdx = (idx + 1) % allowedModes.length;
-        }
-        setFocusedMode(allowedModes[nextIdx]);
-        return;
-      }
-
+    // Nav zone: ↑↓ move the highlight, Enter ALWAYS selects, → drops in
+    if (zone === -1) {
       if (key.return || input === '\r' || input === '\n') {
         setMode(focusedMode);
         agent.emit('mode:change' as any, focusedMode);
-        setFocusArea('stage');
+        setZone(0);
         return;
       }
-
       if (key.upArrow) {
-        const idx = allowedModes.indexOf(focusedMode);
-        const nextIdx = (idx - 1 + allowedModes.length) % allowedModes.length;
-        setFocusedMode(allowedModes[nextIdx]);
+        const idx = MODES.indexOf(focusedMode);
+        setFocusedMode(MODES[(idx - 1 + MODES.length) % MODES.length]);
         return;
       }
       if (key.downArrow) {
-        const idx = allowedModes.indexOf(focusedMode);
-        const nextIdx = (idx + 1) % allowedModes.length;
-        setFocusedMode(allowedModes[nextIdx]);
+        const idx = MODES.indexOf(focusedMode);
+        setFocusedMode(MODES[(idx + 1) % MODES.length]);
+        return;
+      }
+      if (key.rightArrow) {
+        setZone(0);
         return;
       }
     }
@@ -337,10 +340,10 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       queuedTelemetryCount={queuedTelemetryCount}
       snapshotStatus={snapshotStatus}
       inspectorData={inspectorData}
-      focusArea={focusArea}
+      zone={zone}
     >
       <Box flexGrow={1} flexShrink={1}>
-        <ModeRouter mode={mode} agent={agent} setInspector={setInspectorSafe} focusArea={focusArea} inputLocked={commandPaletteOpen} />
+        <ModeRouter mode={mode} agent={agent} setInspector={setInspectorSafe} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={commandPaletteOpen} />
 
         {/* Command Palette Overlay */}
         {commandPaletteOpen && (
@@ -383,18 +386,17 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
             flexDirection="column"
             width={52}
           >
-            <Text bold color="#3fb950">❓ TIMMY QUICK HELP</Text>
+            <Text bold color="#3fb950">❓ ONE GRAMMAR — same keys, every tab · {mode.toUpperCase()}</Text>
             <Text color="#8b949e">────────────────────────────────────────────────</Text>
-            <Text color="#e6edf3">TAB / ↑↓    move between panels (nav focus)</Text>
-            <Text color="#e6edf3">ENTER       open the focused panel</Text>
-            <Text color="#e6edf3">ESC         back to nav / release panel focus</Text>
-            <Text color="#e6edf3">Ctrl+K      command palette</Text>
-            <Text color="#e6edf3">Ctrl+L      jump straight to Logs monitor</Text>
-            <Text color="#e6edf3">Ctrl+C      quit TIMMY cleanly</Text>
-            <Text color="#e6edf3">Ctrl+R/W/L  runs / work / full logs</Text>
-            <Text color="#e6edf3">?           this help (in nav)</Text>
+            {GLOBAL_KEYS.map(g => (
+              <Text key={g.key} color="#e6edf3">{g.key.padEnd(10)} {g.label}</Text>
+            ))}
             <Text color="#8b949e">────────────────────────────────────────────────</Text>
-            <Text color="#8b949e" dimColor>Panels: CHAT · RUNS · WORK · LOGS</Text>
+            {MODE_KEYS[mode].map(g => (
+              <Text key={g.key} color="#e6edf3">{g.key.padEnd(10)} {g.label}</Text>
+            ))}
+            <Text color="#8b949e">────────────────────────────────────────────────</Text>
+            <Text color="#e6edf3">Ctrl+K palette · Ctrl+L logs · Ctrl+R lanes · Ctrl+W projects · Ctrl+C quit</Text>
             <Text color="#8b949e" dimColor>Press ? or ESC to close</Text>
           </Box>
         )}

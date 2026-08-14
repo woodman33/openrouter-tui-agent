@@ -19,7 +19,9 @@ import { seedStarter } from '../../utils/starter.js';
 interface GensPanelProps {
   agent: Agent;
   setInspector?: (s: string | null) => void;
-  focusArea?: string;
+  zone?: number;
+  setZone?: (z: number) => void;
+  setModalInput?: (b: boolean) => void;
   inputLocked?: boolean;
 }
 
@@ -28,7 +30,7 @@ interface GensPanelProps {
  * provider, watch statuses flip live, inspect prompts/costs/artifacts.
  * Every run is ledgered and sealed; nothing here is simulated.
  */
-export function GensPanel({ agent, inputLocked }: GensPanelProps) {
+export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked }: GensPanelProps) {
   const [gens, setGens] = useState<GenerationRecord[]>([]);
   const [idx, setIdx] = useState(0);
   const [composing, setComposing] = useState(false);
@@ -72,12 +74,14 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
   const sel = gens[Math.min(idx, Math.max(0, gens.length - 1))];
 
   useInput((char, key) => {
+    if (zone < 0) return; // nav owns the keyboard
     if (composing) {
-      if (key.escape) { setComposing(false); setDraft(''); return; }
+      if (key.escape) { setComposing(false); setDraft(''); setModalInput?.(false); return; }
       // chat-style picker: arrows move the provider list, not the ledger
       if (key.upArrow) { setProvIdx(i => Math.max(0, i - 1)); setOptIdx(0); return; }
       if (key.downArrow) { setProvIdx(i => Math.min(providers.length - 1, i + 1)); setOptIdx(0); return; }
-      if (key.tab || (char && char.toLowerCase() === 'o')) { setOptIdx(o => o + 1); return; }
+      if (char === ']') { setOptIdx(o => o + 1); return; }
+      if (char === '[') { setOptIdx(o => Math.max(0, o - 1)); return; }
       if (key.return) {
         const prompt = draft.trim();
         if (prompt && prov) {
@@ -100,6 +104,7 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
         }
         setComposing(false);
         setDraft('');
+        setModalInput?.(false);
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -108,6 +113,9 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
     }
     if (key.upArrow) { setIdx(i => Math.max(0, i - 1)); return; }
     if (key.downArrow) { setIdx(i => Math.min(Math.max(0, gens.length - 1), i + 1)); return; }
+    // ONE GRAMMAR: ←→ move between panes (nav ↔ ledger ↔ detail)
+    if (key.leftArrow) { setZone?.(Math.max(-1, zone - 1)); return; }
+    if (key.rightArrow) { setZone?.(Math.min(1, zone + 1)); return; }
     // actionable errors: a failure is a decision, not a wall
     if (sel?.status === 'failed') {
       if (char.toLowerCase() === '1') {
@@ -139,8 +147,7 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
         return;
       }
     }
-    if (char.toLowerCase() === 'p') { setComposing(true); return; }
-    if (char.toLowerCase() === 'l') { agent.emit('mode:change' as any, 'logs'); return; }
+    if (char.toLowerCase() === 'n') { setComposing(true); setModalInput?.(true); return; }
   }, { isActive: !inputLocked });
 
   return (
@@ -152,17 +159,17 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
       explain="Queue prompts at any provider; watch statuses flip live; every run ledgered, costed, sealed."
       hints={[
         { key: '↑↓', label: 'select' },
-        { key: 'p', label: 'new prompt' },
-        { key: 'tab', label: 'provider (while typing)' },
-        { key: 'l', label: 'logs' }
+        { key: 'n', label: 'new prompt' },
+        { key: ']/[', label: 'option (while typing)' },
+        { key: '1/2', label: 'failed → reroute / note' }
       ]}
     >
       <Box flexDirection="row" flexGrow={1}>
-        <Box flexDirection="column" width="46%" paddingRight={1} borderStyle="single" borderColor="#30363d">
+        <Box flexDirection="column" width="46%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
           {gens.length === 0 && (
             <Box flexDirection="column">
               <Text color="#8b949e">no generations yet.</Text>
-              <Text color="#8b949e">[p] writes a prompt — tab cycles {providers.length} providers.</Text>
+              <Text color="#8b949e">[n] writes a prompt — ↑↓ picks a provider, ] cycles its options.</Text>
             </Box>
           )}
           {gens.map((g, i) => {
@@ -211,7 +218,7 @@ export function GensPanel({ agent, inputLocked }: GensPanelProps) {
             const opt = opts.length ? opts[optIdx % opts.length] : undefined;
             return (
               <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
-                <Text bold color="#79c0ff">PROVIDER — ↑↓ like the chat model rail · [o]/Tab option</Text>
+                <Text bold color="#79c0ff">PROVIDER — ↑↓ like the chat model rail · ] option</Text>
                 {win.map((p, i) => {
                   const isSel = winStart + i === provIdx;
                   const pOpts = optionsFor(p.id);

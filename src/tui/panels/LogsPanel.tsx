@@ -7,14 +7,15 @@ import { humanizeLines, clockTime } from '../../utils/humanlog.js';
 interface LogsPanelProps {
   agent: any;
   setInspector: (data: any) => void;
-  focusArea: 'nav' | 'stage';
+  zone?: number;
+  setZone?: (z: number) => void;
 }
 
 type LogFile = 'timmy-tui.log' | 'companion.log' | 'browser-launcher.log' | 'workspace-launcher.log' | 'agent-events.log';
 
 const REFRESH_MS = 2000;
 
-export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelProps) {
+export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelProps) {
   const { columns: width, rows: height } = useWindowSize();
   const terminalHeight = height || 24;
   const terminalWidth = width || 80;
@@ -123,12 +124,23 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
   const atBottom = off >= Math.max(0, rows.length - visibleHeight);
 
   useInput((char, key) => {
-    // Only consume keys when the stage owns focus; nav keeps its arrows/numbers-free behavior
-    if (focusArea !== 'stage') return;
+    // Only consume keys when the stage owns focus; nav stays arrow-owned
+    if (zone < 0) return;
 
     const fileByNum = logFiles.find(lf => lf.num === char);
     if (fileByNum) {
       setActiveFile(fileByNum.key);
+      setAutoFollow(true);
+      return;
+    }
+
+    // ONE GRAMMAR: ←→ walk the file tab strip
+    if (key.leftArrow || key.rightArrow) {
+      const i = logFiles.findIndex(lf => lf.key === activeFile);
+      const next = key.leftArrow
+        ? (i - 1 + logFiles.length) % logFiles.length
+        : (i + 1) % logFiles.length;
+      setActiveFile(logFiles[next].key);
       setAutoFollow(true);
       return;
     }
@@ -186,7 +198,7 @@ export function LogsPanel({ agent: _agent, setInspector, focusArea }: LogsPanelP
           })}
         </Box>
         <Box marginTop={1}>
-          <Text color="#a5b0bc">[1-5] switch file · [H] {human ? 'raw' : 'human'} view · [F] follow ({autoFollow ? 'ON' : 'OFF'}) · [↑↓] scroll</Text>
+          <Text color="#a5b0bc">[←→/1-5] switch file · [H] {human ? 'raw' : 'human'} view · [F] follow ({autoFollow ? 'ON' : 'OFF'}) · [↑↓] scroll</Text>
         </Box>
       </Box>
 

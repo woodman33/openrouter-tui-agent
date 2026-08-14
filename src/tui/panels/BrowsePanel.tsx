@@ -9,7 +9,9 @@ import { stripAnsi } from '../utils/text.js';
 interface BrowsePanelProps {
   agent: Agent;
   setInspector?: (s: string | null) => void;
-  focusArea?: string;
+  zone?: number;
+  setZone?: (z: number) => void;
+  setModalInput?: (b: boolean) => void;
   inputLocked?: boolean;
 }
 
@@ -19,7 +21,7 @@ interface BrowsePanelProps {
  * straight into the browser pane; heavier automation (playwright / puppeteer /
  * chrome-devtools CLIs) gets delegated through LANES as deterministic profiles.
  */
-export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
+export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLocked }: BrowsePanelProps) {
   const [idx, setIdx] = useState(0);
   const [capture, setCapture] = useState<string[]>([]);
   const [spawning, setSpawning] = useState(false);
@@ -53,12 +55,14 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
   }, [idx, agent.tmuxSessions.length]);
 
   useInput((char, key) => {
+    if (zone < 0) return; // nav owns the keyboard
     if (spawning) {
-      if (key.escape) { setSpawning(false); setUrlDraft(''); return; }
+      if (key.escape) { setSpawning(false); setUrlDraft(''); setModalInput?.(false); return; }
       if (key.return) {
         agent.addBrowserPane(urlDraft.trim() || 'https://openrouter.ai');
         setSpawning(false);
         setUrlDraft('');
+        setModalInput?.(false);
         return;
       }
       if (key.backspace || key.delete) { setUrlDraft(d => d.slice(0, -1)); return; }
@@ -66,11 +70,12 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
       return;
     }
     if (typing) {
-      if (key.escape) { setTyping(false); setCmdDraft(''); return; }
+      if (key.escape) { setTyping(false); setCmdDraft(''); setModalInput?.(false); return; }
       if (key.return) {
         if (sel && cmdDraft.trim()) agent.sendTmuxCommand(sel.id, cmdDraft.trim(), true);
         setTyping(false);
         setCmdDraft('');
+        setModalInput?.(false);
         return;
       }
       if (key.backspace || key.delete) { setCmdDraft(d => d.slice(0, -1)); return; }
@@ -79,14 +84,18 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
     }
     if (key.upArrow) { setIdx(i => Math.max(0, i - 1)); return; }
     if (key.downArrow) { setIdx(i => Math.min(Math.max(0, lanes.length - 1), i + 1)); return; }
+    // ONE GRAMMAR: ←→ move between panes (nav ↔ list ↔ live pane)
+    if (key.leftArrow) { setZone?.(Math.max(-1, zone - 1)); return; }
+    if (key.rightArrow) { setZone?.(Math.min(1, zone + 1)); return; }
     const c = char.toLowerCase();
-    if (c === 'b') {
+    if (c === 'n') {
       if (noCarb) { setCarbHint(true); return; }
       setCarbHint(false);
       setSpawning(true);
+      setModalInput?.(true);
       return;
     }
-    if (c === 't' && sel) { setTyping(true); return; }
+    if (c === 't' && sel) { setTyping(true); setModalInput?.(true); return; }
     if (c === 'k' && sel) { agent.removeTmuxSession(sel.id); setIdx(i => Math.max(0, i - 1)); return; }
   }, { isActive: !inputLocked });
 
@@ -98,7 +107,7 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
       statusColor="#79c0ff"
       explain="Chromium in the terminal via carbonyl. Type into the pane, or delegate playwright/puppeteer/devtools automation through LANES."
       hints={[
-        { key: 'b', label: 'new pane (url)' },
+        { key: 'n', label: 'new pane (url)' },
         { key: 't', label: 'type into pane' },
         { key: 'k', label: 'kill pane' }
       ]}
@@ -106,7 +115,7 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
       {carbHint && (
         <Box flexDirection="column" borderStyle="single" borderColor="#f5b545" paddingX={1} marginBottom={1}>
           <Text bold color="#f5b545">carbonyl (chromium-in-terminal) not found on PATH</Text>
-          <Text color="#a5b0bc">install it and [b] works. Meanwhile: SLATE [c] and any addBrowserPane call</Text>
+          <Text color="#a5b0bc">install it and [n] works. Meanwhile: SLATE [v] and any addBrowserPane call</Text>
           <Text color="#a5b0bc">open browser panes through the agent, and LANES covers CLI agents.</Text>
         </Box>
       )}
@@ -114,13 +123,13 @@ export function BrowsePanel({ agent, inputLocked }: BrowsePanelProps) {
         <EmptyState
           lines={[
             'no browser panes yet.',
-            '[b] spawns carbonyl on any URL — the browser lives in the terminal,',
+            '[n] spawns carbonyl on any URL — the browser lives in the terminal,',
             'streamed through the multiplexer like any other lane.'
           ]}
         />
       ) : (
         <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" width="34%" paddingRight={1} borderStyle="single" borderColor="#30363d">
+          <Box flexDirection="column" width="34%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
             {lanes.map((l, i) => (
               <Text key={l.id} color={i === Math.min(idx, lanes.length - 1) ? '#d2a8ff' : '#e6edf3'} bold={i === Math.min(idx, lanes.length - 1)} wrap="truncate">
                 {i === Math.min(idx, lanes.length - 1) ? '▶ ' : '  '}🌐 {l.name.replace('Browser: ', '')}

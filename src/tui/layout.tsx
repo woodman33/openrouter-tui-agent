@@ -6,6 +6,7 @@ import { listProjects } from '../utils/projects.js';
 import { theme } from './theme.js';
 import type { Agent } from '../agent/core.js';
 import type { Mode } from './router.js';
+import { submenuLines } from './keymap.js';
 import { truncateVisible } from './utils/text.js';
 import { usePulse } from './hooks/usePulse.js';
 
@@ -25,7 +26,8 @@ export interface LayoutProps {
   queuedTelemetryCount?: number;
   snapshotStatus?: string;
   inspectorData?: any;
-  focusArea: 'nav' | 'stage';
+  /** -1 = left nav focused; 0..n = stage pane index. */
+  zone: number;
 }
 
 type ModeDef = { mode: Mode; key: string; label: string; sub: string };
@@ -42,16 +44,8 @@ const MODES: ModeDef[] = [
   { mode: 'files',  key: '7', label: 'PROJECTS', sub: 'per-project tree' },
 ];
 
-// Focused-mode dropdown: what each screen actually does, key by key.
-const SUBMENUS: Record<Mode, string[]> = {
-  brief: ['openrouter main · ollama local · cloud', 'd model detail · o open page'],
-  lanes: ['↑↓ lane · ↵/t delegate · g approve', 's spawn · k kill'],
-  gens: ['p prompt · ↑↓ provider · [o] options', 'failed? [1] reroute local · [2] top-up note'],
-  slate: ['projects · templates · canvas', 'n new · p publish · c canvas · w site'],
-  browse: ['b new pane · t type into pane · k kill', 'chromium in terminal via carbonyl'],
-  logs: ['human view · [h] raw · [f] follow', 'sparkline · costs · cross-jump [r]'],
-  files: ['PROJECT.md index first · descend when relevant', 'p preview · v carbonyl · s sync · t training']
-};
+// Description-bar lines come from keymap.ts so the bar, the ? overlay and
+// the panel hint bars can never disagree about what a key means.
 
 function telemetryGlyph(status: string, queued: number): { glyph: string; color: string } {
   if (status === 'online')  return queued > 0 ? { glyph: '▲', color: theme.warning } : { glyph: '●', color: theme.success };
@@ -81,7 +75,7 @@ export function Layout({
   activeRunId,
   telemetryStatus = 'online',
   queuedTelemetryCount = 0,
-  focusArea
+  zone
 }: LayoutProps) {
   const { columns: width, rows: height } = useWindowSize();
   const W = width || process.stdout.columns || 80;
@@ -130,8 +124,9 @@ export function Layout({
   const costDisplay = `$${totalCost.toFixed(4)}`;
   const modelDisplay = model.split('/').pop() || model;
 
-  const isFocused = (m: Mode) => focusArea === 'nav' && focusedMode === m;
+  const isFocused = (m: Mode) => zone === -1 && focusedMode === m;
   const isActiveMode = (m: Mode) => mode === m;
+  const [sub1, sub2] = submenuLines(mode);
 
   return (
     <Box flexDirection="column" width={W} height={H}>
@@ -219,7 +214,8 @@ export function Layout({
             })}
             <Box flexGrow={1} />
             <Box marginBottom={0}>
-              <Text color={theme.textTertiary}>TAB·↑↓</Text>
+              <Text color={theme.textTertiary}>TAB·menu</Text>
+              <Text color={theme.textTertiary}>←→·panes</Text>
             </Box>
           </Box>
         )}
@@ -232,8 +228,8 @@ export function Layout({
 
       {/* ══ DESCRIPTION BAR — reserved space; guidance never covers content ══ */}
       <Box flexDirection="column" paddingX={2} flexShrink={0}>
-        <Text color={theme.textSecondary} wrap="truncate">· {SUBMENUS[mode][0]}</Text>
-        <Text color={theme.textSecondary} wrap="truncate">· {SUBMENUS[mode][1]}</Text>
+        <Text color={theme.textSecondary} wrap="truncate">· {sub1}</Text>
+        <Text color={theme.textSecondary} wrap="truncate">· {sub2}</Text>
       </Box>
 
       {/* ══ BOTTOM BAR ══ */}
@@ -251,8 +247,8 @@ export function Layout({
         <Box>
           <Text color={theme.textTertiary}>
             {W >= 90
-              ? 'Tab·region  ↑↓·move  Enter·act  Esc·back  ^R·runs  ^W·work  ^L·logs  ^K·palette  ?·help'
-              : 'Tab·region ↑↓·move Esc·back ^K·palette'}
+              ? 'Tab·menu  ←→·panes  ↑↓·move  Enter·select  Esc·back  ^R·lanes  ^W·projects  ^L·logs  ^K·palette  ?·keys'
+              : 'Tab·menu ←→·panes Enter·select Esc·back ^K·palette'}
           </Text>
         </Box>
         <Box>

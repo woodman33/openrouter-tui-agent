@@ -5,6 +5,8 @@
  * (jcode, minds, carbonyl, etc.) are added in ONE place and propagate to all
  * backends.
  */
+import { mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
 
 export interface LaneRunner {
   /** Binary invoked inside the pane */
@@ -13,6 +15,8 @@ export interface LaneRunner {
   label: string;
   /** Where the binary is expected (for missing-binary guidance) */
   expected: string;
+  /** How to install it (shown when the binary is missing) */
+  install?: string;
   /** Optional env vars injected before launch */
   env?: Record<string, string>;
   /** OpenRouter model associated with the lane (UI metadata) */
@@ -32,6 +36,7 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     cmd: 'opencode',
     label: 'OpenCode CLI',
     expected: '$HOME/.opencode/bin/opencode',
+    install: 'npm i -g opencode-ai',
     model: 'qwen/qwen-2.5-coder-32b',
     blurb: 'open-source coding agent · MIT · 75+ providers',
     task: 'opencode run "{task}"',
@@ -40,6 +45,7 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     cmd: 'hermes',
     label: 'Hermes CLI',
     expected: '$HOME/.local/bin/hermes',
+    install: 'github.com/NousResearch/hermes-agent',
     model: 'nousresearch/hermes-3-llama-3.1-405b',
     blurb: 'governed agent runner · #1 OpenRouter app',
   },
@@ -47,6 +53,7 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     cmd: 'pi',
     label: 'Pi Daemon',
     expected: '$HOME/.local/bin/pi',
+    install: 'npm i -g @earendil-works/pi-coding-agent',
     model: 'inflection/pi-3',
     blurb: 'minimal coding agent: read · bash · edit · write',
     task: 'pi -p "{task}"',
@@ -55,6 +62,7 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     cmd: 'jcode',
     label: 'jcode',
     expected: '$HOME/.local/bin/jcode',
+    install: 'github.com/1jehuang/jcode',
     model: 'jcode/default',
     blurb: 'coding agent on Claude Max / ChatGPT Pro subs · ACP adapter',
     task: 'jcode run "{task}"',
@@ -63,8 +71,18 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     cmd: 'minds',
     label: 'Minds CLI (Animoca Builder)',
     expected: '/opt/homebrew/bin/minds',
+    install: 'Animoca Brands Builder CLI — see your Animoca toolchain access',
     model: 'animoca/builder',
     blurb: 'Animoca Brands Builder CLI · web3 builder toolchain',
+  },
+  openhands: {
+    cmd: 'openhands',
+    label: 'OpenHands',
+    expected: '$HOME/.local/bin/openhands',
+    install: 'uv tool install openhands --python 3.12',
+    model: 'openrouter/auto',
+    blurb: 'self-hosted Devin-class autonomous SWE · MIT · sandboxed',
+    task: 'openhands --mode headless --task "{task}"',
   },
 };
 
@@ -76,15 +94,21 @@ export const DEFAULT_LANE_BINDINGS: Record<string, string> = {
   '1': 'opencode',
   '2': 'hermes',
   '3': 'pi',
+  '4': 'openhands',
   '5': 'jcode',
   '6': 'minds',
 };
 
 /**
  * shell preamble used by every backend — AgentPass banner + PATH.
+ *
+ * The launcher is written to a real file and the pane just runs `bash <file>`:
+ * zero shell escaping, zero embedded one-liners. This kills the whole class
+ * of nested-quoting mangling that leaked raw printf/ANSI into panes (minds).
  */
 export function laneStartupScript(runnerKey: string | undefined, jti: string, visa: string, hash: string): string {
-  const lines = [
+  const script = [
+    '#!/usr/bin/env bash',
     'clear',
     `printf '\\033[38;5;81m============================================================\\n\\033[0m'`,
     `printf '\\033[38;5;81m[TIMMY Core]\\033[0m Cloudflare Durable Storage: SUCCESS (D1/R2)\\n'`,
@@ -97,14 +121,26 @@ export function laneStartupScript(runnerKey: string | undefined, jti: string, vi
 
   const runner = runnerKey ? LANE_RUNNERS[runnerKey] : undefined;
   if (runner) {
-    lines.push(`printf '\\n\\033[38;5;220m⚡ Launching ${runner.label} in 3 seconds...\\n\\033[0m'`);
-    lines.push('sleep 3');
-    lines.push(
-      `if command -v ${runner.cmd} >/dev/null 2>&1; then printf '\\033[38;5;121m[Runner]\\033[0m ${runner.label}: connected (${runner.cmd})\\n'; ${runner.cmd} || printf '\\n\\033[31m[Agent Alert] ${runner.label} exited with code $?\\n\\033[0m'; else printf '\\n\\033[38;5;215m[Runner]\\033[0m ${runner.label}: not found. Expected ${runner.expected}.\\n'; fi`
-    );
+    script.push(`printf '\\n\\033[38;5;220m⚡ Launching ${runner.label} in 3 seconds...\\n\\033[0m'`);
+    script.push('sleep 3');
+    script.push(`if command -v ${runner.cmd} >/dev/null 2>&1; then`);
+    script.push(`  printf '\\033[38;5;121m[Runner]\\033[0m ${runner.label}: connected (${runner.cmd})\\n'`);
+    script.push(`  ${runner.cmd} || printf '\\n\\033[31m[Agent Alert] ${runner.label} exited with code $?\\n\\033[0m'`);
+    script.push('else');
+    script.push(`  printf '\\n\\033[38;5;215m[Runner]\\033[0m ${runner.label}: not found. Install: ${runner.install || runner.expected}\\n'`);
+    script.push('fi');
   } else {
-    lines.push(`printf '\\033[38;5;121m[Runner]\\033[0m Systems MCP shell ready. Type commands below.\\n'`);
+    script.push(`printf '\\033[38;5;121m[Runner]\\033[0m Systems MCP shell ready. Type commands below.\\n'`);
   }
 
-  return lines.join('; ');
+  try {
+    const dir = join(process.cwd(), '.timmy', 'run');
+    mkdirSync(dir, { recursive: true });
+    const path = join(dir, `lane-${runnerKey || 'shell'}.sh`);
+    writeFileSync(path, script.join('\n') + '\n', { mode: 0o755 });
+    return `bash '${path}'`;
+  } catch {
+    // filesystem unavailable — fall back to the old one-liner shape
+    return script.slice(1).join('; ');
+  }
 }
