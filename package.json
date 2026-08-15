@@ -78,6 +78,7 @@
     "@openfeature/server-sdk": "^1.21.0",
     "@openrouter/sdk": "latest",
     "@rive-app/canvas": "^2.36.0",
+    "@theatre/core": "^0.7.2",
     "chalk": "^5.4.0",
     "commander": "^13.0.0",
     "conf": "^13.0.0",

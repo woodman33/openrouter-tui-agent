@@ -12,6 +12,9 @@ import { listClipJobs } from './utils/clip.js';
 import { runClipJob, replayFromEdl } from './utils/cliprunner.js';
 import { listGenerations } from './utils/generations.js';
 import { runOpenDesignGen } from './utils/designrunner.js';
+import { edlToOtio } from './utils/otio.js';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 
 function getPackageMetadata() {
   const possiblePaths = [
@@ -168,6 +171,35 @@ if (command === 'design') {
     process.exit(r.ok ? 0 : 1);
   }
   console.error('Usage: timmy design list | timmy design run <genId>');
+  process.exit(2);
+}
+
+if (command === 'export') {
+  // EDL v1 → OTIO interchange (spec §2.9 amendment): Hollywood speaks timmy.
+  const kind = args[1];
+  if (kind === 'otio' && args[2]) {
+    const manifestPath = join(process.cwd(), '.timmy', 'runs', args[2], 'manifest.json');
+    if (!existsSync(manifestPath)) {
+      console.error(`no run manifest at ${manifestPath}`);
+      process.exit(2);
+    }
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { edl?: any; env_lock?: unknown; job?: string };
+    if (!manifest.edl) {
+      console.error('run manifest has no edl — T0-grade run; T1 runs carry cut-lists');
+      process.exit(2);
+    }
+    const envLockHash = manifest.env_lock
+      ? crypto.createHash('sha256').update(JSON.stringify(manifest.env_lock)).digest('hex')
+      : undefined;
+    const otio = edlToOtio(manifest.edl, { env_lock_hash: envLockHash, model: null });
+    const outDir = join(process.cwd(), '.timmy', 'exports');
+    mkdirSync(outDir, { recursive: true });
+    const outPath = join(outDir, `${args[2]}.otio`);
+    writeFileSync(outPath, JSON.stringify(otio, null, 2));
+    console.log(`otio: ${outPath}`);
+    process.exit(0);
+  }
+  console.error('Usage: timmy export otio <runDirName>');
   process.exit(2);
 }
 
@@ -436,6 +468,7 @@ if (
   command !== 'mcp' &&
   command !== 'clip' &&
   command !== 'design' &&
+  command !== 'export' &&
   command !== 'sceneforge'
 ) {
   printHelp();
