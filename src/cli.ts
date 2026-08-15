@@ -10,6 +10,8 @@ import { readEvents } from './utils/eventbus.js';
 import { receiptsToOtlp } from './utils/otlp.js';
 import { listClipJobs } from './utils/clip.js';
 import { runClipJob, replayFromEdl } from './utils/cliprunner.js';
+import { listGenerations } from './utils/generations.js';
+import { runOpenDesignGen } from './utils/designrunner.js';
 
 function getPackageMetadata() {
   const possiblePaths = [
@@ -51,6 +53,7 @@ Commands:
   sceneforge      Use the authenticated Cloudflare control plane via MCPorter
   events          Stream the TUI's event envelope as NDJSON (--follow, --human, --otlp)
   clip list|run|replay  List · run headless + seal · replay from cut-list alone
+  design list|run       Open Design (MCP) gens: queue in GENS, execute + seal here
   doctor deps|network|hardware  Read-only posture checks (never auto-fixes)
   mcp status|inspect|probe  MCP wire visibility: mcpsnoop + mcp-probe (opt-in)
 
@@ -147,6 +150,24 @@ if (command === 'clip') {
     process.exit(r.verified ? 0 : 1);
   }
   console.error('Usage: timmy clip list | timmy clip run <id> | timmy clip replay <id>');
+  process.exit(2);
+}
+
+if (command === 'design') {
+  // Open Design (MCP) gens: queue in GENS, execute headless here.
+  const sub = args[1];
+  if (sub === 'list') {
+    const gens = listGenerations({}).filter(g => g.provider === 'open-design');
+    for (const g of gens) console.log(`${g.id}  ${(g.status ?? 'queued').padEnd(8)} ${g.prompt.slice(0, 60)}`);
+    if (!gens.length) console.log('no open-design gens yet — pick Open Design (MCP) in the GENS picker ([n])');
+    process.exit(0);
+  }
+  if (sub === 'run') {
+    const r = await runOpenDesignGen(args[2] ?? '');
+    console.log(r.ok ? `done · ${r.note}` : `failed · ${r.note}`);
+    process.exit(r.ok ? 0 : 1);
+  }
+  console.error('Usage: timmy design list | timmy design run <genId>');
   process.exit(2);
 }
 
@@ -414,6 +435,7 @@ if (
   command !== 'runtimes' &&
   command !== 'mcp' &&
   command !== 'clip' &&
+  command !== 'design' &&
   command !== 'sceneforge'
 ) {
   printHelp();

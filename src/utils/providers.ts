@@ -50,6 +50,7 @@ export const GENERATION_PROVIDERS: GenerationProvider[] = [
   P('wavespeed', 'WaveSpeed', 'image', 'wavespeed', { modelId: 'wavespeed-ai/flux-dev-lora-ultra-fast', authEnv: ['WAVESPEED_API_KEY'], aliases: ['wavespeed ai', 'wave speed'], notes: 'also t2v paths e.g. wavespeed-ai/wan-2.2/t2v-480p' }),
   // — Local lanes —
   P('comfyui', 'ComfyUI (local)', 'image', 'local', { aliases: ['comfy ui', 'comfyui local'], notes: 'local WebSocket workflow API' }),
+  P('open-design', 'Open Design (MCP)', 'image', 'local', { aliases: ['open design', 'opendesign'], notes: 'Open Design daemon MCP · queued gens run via timmy design run <id>' }),
   P('comfyui-controlnet', 'ComfyUI ControlNet', 'image', 'local', { aliases: ['controlnet', 'comfy controlnet'], notes: 'pose/scribble conditioning from the Slate blocking diagram' }),
   // — Cloud API lanes (routed, keyed per user) —
   P('comfydeploy', 'ComfyDeploy', 'image', 'cloud-api', { aliases: ['comfy deploy'], notes: 'hosted ComfyUI workflows' }),

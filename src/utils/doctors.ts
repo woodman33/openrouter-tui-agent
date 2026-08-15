@@ -102,6 +102,13 @@ export function hardwareDoctor(): DoctorRow[] {
     rows.push({ label: 'nvidia', ok: true, note: 'no nvidia-smi — Apple/local-CPU inference path' });
   }
   rows.push({ label: 'llmfit', ok: has('llmfit'), note: has('llmfit') ? 'installed — model/fit shortlist available (estimates only; measured TTFT/OOM history routes)' : 'not installed (optional companion for model-fit shortlists)' });
+  rows.push({
+    label: 'framework-tool-tui',
+    ok: has('framework-tool-tui'),
+    note: has('framework-tool-tui')
+      ? (process.platform === 'linux' ? 'installed — Framework hardware monitor live' : 'installed — Linux-only monitor; not applicable on darwin')
+      : 'not installed (cargo install framework-tool-tui · Linux/Framework hardware only)'
+  });
   return rows;
 }
 

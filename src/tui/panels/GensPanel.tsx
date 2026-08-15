@@ -102,6 +102,7 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
             launchDetached(genDir as string, sargs as string[], log);
           }
           agent.emit('run.created' as any, { runId: rec.id, source: 'timmy-gens', provider: prov.id, prompt_hash: rec.prompt_hash, timestamp: Date.now() });
+          if (prov.id === 'open-design') setNote(`queued — run: timmy design run ${rec.id}`);
         }
         setComposing(false);
         setDraft('');
