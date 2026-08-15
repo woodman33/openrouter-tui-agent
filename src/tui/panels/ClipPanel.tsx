@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { PanelFrame } from '../components/PanelFrame.js';
 import { listClipJobs, createClipJob, detectClip, ffmpegCheat, CLIP_INSTALL, type ClipJob } from '../../utils/clip.js';
+import { runClipJob } from '../../utils/cliprunner.js';
 import { listProjects } from '../../utils/projects.js';
 import { BRAND } from '../../utils/brand.js';
 import { osc52Copy } from '../../utils/notify.js';
@@ -73,6 +74,11 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
       setNote('ffmpeg one-liners yanked (probe/cut/compress/audio)');
       return;
     }
+    if (c === 'r' && sel) {
+      const r = runClipJob(sel);
+      setNote(r.ok ? `sealed ${r.receiptHash?.slice(0, 18)} — run dir under .timmy/runs/` : `run failed: ${r.note}`);
+      return;
+    }
   }, { isActive: !inputLocked });
 
   return (
@@ -85,6 +91,7 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
       hints={[
         { key: '↑↓', label: 'job' },
         { key: 'n', label: 'new job' },
+        { key: 'r', label: 'run headless + seal' },
         { key: 'o', label: 'runbook in $EDITOR' },
         { key: 'y', label: 'yank ffmpeg lines' }
       ]}

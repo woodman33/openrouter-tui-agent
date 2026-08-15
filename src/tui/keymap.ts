@@ -53,6 +53,7 @@ export const MODE_KEYS: Record<Mode, KeyHint[]> = {
   ],
   clip: [
     { key: 'n', label: 'new job' },
+    { key: 'r', label: 'run headless + seal' },
     { key: 'o', label: 'runbook in $EDITOR' },
     { key: 'y', label: 'yank ffmpeg lines' }
   ],

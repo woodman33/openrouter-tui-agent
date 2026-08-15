@@ -8,6 +8,8 @@ import crypto from 'crypto';
 import { VERSION } from './version.js';
 import { readEvents } from './utils/eventbus.js';
 import { receiptsToOtlp } from './utils/otlp.js';
+import { listClipJobs } from './utils/clip.js';
+import { runClipJob } from './utils/cliprunner.js';
 
 function getPackageMetadata() {
   const possiblePaths = [
@@ -48,6 +50,7 @@ Commands:
   runtimes doctor Detect runtime readiness without executing agent tasks
   sceneforge      Use the authenticated Cloudflare control plane via MCPorter
   events          Stream the TUI's event envelope as NDJSON (--follow, --human, --otlp)
+  clip list|run   List clip jobs · run one headless (deterministic) + seal receipt
   doctor deps|network|hardware  Read-only posture checks (never auto-fixes)
   mcp inspect     Opt-in MCP wire visibility via mcpsnoop
 
@@ -119,6 +122,24 @@ if (command === 'version' || args.includes('--version') || args.includes('-v')) 
 if (command === 'start') {
   console.log('timmy start — PLANNED alias for npm start');
   process.exit(0);
+}
+
+if (command === 'clip') {
+  // Headless clip runner: list jobs, or run one deterministically and seal it.
+  const sub = args[1];
+  if (sub === 'list') {
+    for (const j of listClipJobs()) console.log(`${j.id}  ${j.project.padEnd(14)} ${j.sources.length} src  ${j.status}`);
+    process.exit(0);
+  }
+  if (sub === 'run') {
+    const job = listClipJobs().find(j => j.id === args[2]);
+    if (!job) { console.error(`no clip job ${args[2] ?? ''} — see timmy clip list`); process.exit(2); }
+    const r = runClipJob(job);
+    console.log(r.ok ? `sealed: ${r.receiptHash}\nrun:  ${r.runDir}\nout:  ${r.output}` : `failed: ${r.note}`);
+    process.exit(r.ok ? 0 : 1);
+  }
+  console.error('Usage: timmy clip list | timmy clip run <id>');
+  process.exit(2);
 }
 
 if (command === 'events') {
@@ -384,6 +405,7 @@ if (
   command !== 'providers' &&
   command !== 'runtimes' &&
   command !== 'mcp' &&
+  command !== 'clip' &&
   command !== 'sceneforge'
 ) {
   printHelp();
