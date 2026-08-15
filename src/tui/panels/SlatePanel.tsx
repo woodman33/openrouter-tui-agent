@@ -6,6 +6,8 @@ import { listProjects, readProject, initProject, saveProject, renderProjectSite,
 import { listTemplates, loadTemplate } from '../../utils/templates.js';
 import { ensureDashServer } from '../../utils/dash.js';
 import { seedStarter } from '../../utils/starter.js';
+import { createClipJob, detectClip } from '../../utils/clip.js';
+import { BRAND } from '../../utils/brand.js';
 
 interface SlatePanelProps {
   agent: Agent;
@@ -29,6 +31,8 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
   const [idx, setIdx] = useState(0);
   const [naming, setNaming] = useState(false);
   const [using, setUsing] = useState(false);
+  const [clipping, setClipping] = useState(false);
+  const [note, setNote] = useState('');
   const [draft, setDraft] = useState('');
 
   useEffect(() => {
@@ -103,6 +107,25 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
       if (char && !key.ctrl && !key.meta) setDraft(d => d + char);
       return;
     }
+    if (clipping) {
+      if (key.escape) { setClipping(false); setDraft(''); setModalInput?.(false); return; }
+      if (key.return && sel?.kind === 'project') {
+        const p = readProject(sel.name);
+        const sources = (p?.gens || [])
+          .filter(g => g.artifact)
+          .map(g => ({ genId: g.id, label: g.label, artifact: g.artifact as string }));
+        const job = createClipJob(sel.name, draft.trim() || 'assemble the beats in order, cut to the call sheet', sources);
+        const st = detectClip();
+        setNote(`${BRAND.clip}: ${job.id} → ${sel.name}/clips/ · ${sources.length} linked gens${st.dir ? '' : ` · open-edit missing (${st.note})`}`);
+        setClipping(false);
+        setDraft('');
+        setModalInput?.(false);
+        return;
+      }
+      if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
+      if (char && !key.ctrl && !key.meta) setDraft(d => d + char);
+      return;
+    }
     if (key.upArrow) { setIdx(i => Math.max(0, i - 1)); return; }
     if (key.downArrow) { setIdx(i => Math.min(Math.max(0, items.length - 1), i + 1)); return; }
     // ONE GRAMMAR: ←→ move between panes (nav ↔ list ↔ detail)
@@ -123,6 +146,7 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
     }
     if (c === 'v' && sel) { openCanvas(sel); return; }
     if (c === 'o' && sel) { openSite(sel); return; }
+    if (c === 'c' && sel?.kind === 'project') { setClipping(true); setModalInput?.(true); return; }
   }, { isActive: !inputLocked });
 
   return (
@@ -137,6 +161,7 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
         { key: '↵', label: 'use template / open' },
         { key: 'n', label: 'new project' },
         { key: 'P', label: 'publish site' },
+        { key: 'c', label: 'TIMMY Clip job' },
         { key: 'v', label: 'canvas pane' },
         { key: 'o', label: 'site pane' }
       ]}
@@ -167,7 +192,8 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
               {proj.gens.slice(-4).map(g => (
                 <Text key={g.id} color="#a5b0bc" wrap="truncate">  🎬 {g.label} · {g.provider}{g.artifact ? ` → ${g.artifact}` : ''}</Text>
               ))}
-              <Text color="#a5b0bc">[P] renders site/ · [v] canvas · [o] site pane</Text>
+              <Text color="#a5b0bc">[P] renders site/ · [c] {BRAND.clip} · [v] canvas · [o] site pane</Text>
+              {note && <Text color="#3fb950" wrap="truncate">{note}</Text>}
             </>
           )}
           {tmpl && (
@@ -184,6 +210,13 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
           {naming && (
             <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
               <Text color="#79c0ff">new project name: {draft}█</Text>
+            </Box>
+          )}
+          {clipping && sel && (
+            <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1} flexDirection="column">
+              <Text color="#79c0ff">{BRAND.clip} — edit instruction (links this project's gens into an open-edit job):</Text>
+              <Text>{draft}█</Text>
+              <Text color="#8b949e">Enter writes clips/&lt;id&gt;.json + .md (receipt-linked sources) · Esc cancels</Text>
             </Box>
           )}
           {using && sel && (

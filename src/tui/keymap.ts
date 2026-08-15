@@ -47,6 +47,7 @@ export const MODE_KEYS: Record<Mode, KeyHint[]> = {
   slate: [
     { key: 'n', label: 'new project' },
     { key: 'P', label: 'publish site' },
+    { key: 'c', label: 'TIMMY Clip job' },
     { key: 'v', label: 'canvas pane' },
     { key: 'o', label: 'site pane' }
   ],
