@@ -2,6 +2,9 @@ import { existsSync, readFileSync, appendFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import crypto from 'crypto';
 import { appendEvent } from './eventbus.js';
+import { signBody, verifyBody } from './signing.js';
+import { captureEnvLock, type EnvLock } from './envlock.js';
+import type { Edl } from './edl.js';
 
 // TIMMY receipt chain v1 — the spine. Every effect appends a hash-chained,
 // tamper-evident receipt: plan → policy → effect → artifacts → cost → prev_hash.
@@ -24,6 +27,18 @@ export interface Receipt {
   // integrity.
   spans?: { name: string; kind: 'root' | 'chat' | 'execute_tool' | 'deny' }[];
   decisions?: { decision: string; effect: string; tier: string; reason: string }[];
+  // T1 (specs/edl-v1.md): env-lock + ed25519 signature + failure variant.
+  // Receipts without env_lock/signature are T0-grade and must not be built upon.
+  env_lock?: EnvLock;
+  edl?: Edl;
+  output_sha256?: string;
+  signer?: string;   // ed25519 public key (SPKI PEM)
+  signature?: string; // base64 over canonical body (minus hash/prev_hash/signature)
+  status?: 'ok' | 'failed';
+  error_class?: 'exec' | 'missing_source' | 'schema' | 'env' | 'replay_drift';
+  exit_code?: number;
+  partial_artifacts?: string[];
+  discrepancies?: string[]; // repo-vs-spec flags, per the T1 work order
   prev_hash: string;
   hash: string;
 }
@@ -76,15 +91,22 @@ export function appendReceipt(stream: string, input: ReceiptInput, dir?: string)
     id: `rc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
     stream,
     ts: new Date().toISOString(),
+    env_lock: input.env_lock ?? captureEnvLock(['ffmpeg', 'ffprobe'], dir),
     ...input,
     prev_hash: prev?.hash ?? 'genesis'
   };
-  const rec: Receipt = { ...base, hash: hashOf({ ...base, hash: '' }) };
+  const { signer, signature } = signBody(base as unknown as Record<string, unknown>, dir);
+  const signed = { ...base, signer, signature };
+  const rec: Receipt = { ...signed, hash: hashOf({ ...signed, hash: '' }) };
   const p = receiptsPath(stream, dir);
   mkdirSync(dirname(p), { recursive: true });
   appendFileSync(p, JSON.stringify(rec) + '\n', 'utf8');
   appendEvent('receipt.sealed', { stream, id: rec.id, hash: rec.hash, kind: rec.kind, subject: rec.subject }, dir);
   return rec;
+}
+
+export function verifySignature(rec: Receipt): boolean {
+  return verifyBody(rec as unknown as Record<string, unknown>);
 }
 
 export interface VerifyResult {

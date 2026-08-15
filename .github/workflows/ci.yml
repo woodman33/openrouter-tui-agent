@@ -2,12 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, feature/hermes-gateway-mvp ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, feature/hermes-gateway-mvp ]
 
 jobs:
-  build-and-test:
+  gate:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,14 +17,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install Dependencies
         run: npm ci
 
-      - name: Compile Code
-        run: npm run build
+      - name: Install ffmpeg (clip runner E2E)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
-      - name: Run Tests
-        run: npm test
+      - name: Type gate (tsc)
+        run: npx tsc --noEmit
+
+      - name: Type gate (tsgo / TS7 native)
+        run: npm run typecheck:native
+
+      - name: Test gate (vitest)
+        run: npx vitest run

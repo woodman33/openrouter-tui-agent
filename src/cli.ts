@@ -9,7 +9,7 @@ import { VERSION } from './version.js';
 import { readEvents } from './utils/eventbus.js';
 import { receiptsToOtlp } from './utils/otlp.js';
 import { listClipJobs } from './utils/clip.js';
-import { runClipJob } from './utils/cliprunner.js';
+import { runClipJob, replayFromEdl } from './utils/cliprunner.js';
 
 function getPackageMetadata() {
   const possiblePaths = [
@@ -50,7 +50,7 @@ Commands:
   runtimes doctor Detect runtime readiness without executing agent tasks
   sceneforge      Use the authenticated Cloudflare control plane via MCPorter
   events          Stream the TUI's event envelope as NDJSON (--follow, --human, --otlp)
-  clip list|run   List clip jobs · run one headless (deterministic) + seal receipt
+  clip list|run|replay  List · run headless + seal · replay from cut-list alone
   doctor deps|network|hardware  Read-only posture checks (never auto-fixes)
   mcp inspect     Opt-in MCP wire visibility via mcpsnoop
 
@@ -138,7 +138,15 @@ if (command === 'clip') {
     console.log(r.ok ? `sealed: ${r.receiptHash}\nrun:  ${r.runDir}\nout:  ${r.output}` : `failed: ${r.note}`);
     process.exit(r.ok ? 0 : 1);
   }
-  console.error('Usage: timmy clip list | timmy clip run <id>');
+  if (sub === 'replay') {
+    // T1 exit criterion: replay from the cut-list ALONE, env-locked + signed.
+    const r = replayFromEdl(args[2] ?? '');
+    console.log(r.verified
+      ? `verified: replay matches sealed output\nreceipt: ${r.receiptHash}`
+      : `not verified: ${r.note ?? 'replay drift'}\nreceipt: ${r.receiptHash}`);
+    process.exit(r.verified ? 0 : 1);
+  }
+  console.error('Usage: timmy clip list | timmy clip run <id> | timmy clip replay <id>');
   process.exit(2);
 }
 
