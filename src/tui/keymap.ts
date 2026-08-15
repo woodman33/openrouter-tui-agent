@@ -51,6 +51,11 @@ export const MODE_KEYS: Record<Mode, KeyHint[]> = {
     { key: 'v', label: 'canvas pane' },
     { key: 'o', label: 'site pane' }
   ],
+  clip: [
+    { key: 'n', label: 'new job' },
+    { key: 'o', label: 'runbook in $EDITOR' },
+    { key: 'y', label: 'yank ffmpeg lines' }
+  ],
   browse: [
     { key: 'n', label: 'new pane' },
     { key: 't', label: 'type into pane' },

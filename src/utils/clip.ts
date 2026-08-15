@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { BRAND } from './brand.js';
@@ -95,6 +95,33 @@ export function createClipJob(project: string, instruction: string, sources: Cli
   ].join('\n');
   writeFileSync(join(clipsDir, `${id}.md`), md + '\n');
   return job;
+}
+
+export function listClipJobs(dir: string = process.cwd()): ClipJob[] {
+  const studio = join(dir, 'studio');
+  if (!existsSync(studio)) return [];
+  const out: ClipJob[] = [];
+  for (const p of readdirSync(studio, { withFileTypes: true })) {
+    if (!p.isDirectory()) continue;
+    const clips = join(studio, p.name, 'clips');
+    if (!existsSync(clips)) continue;
+    for (const f of readdirSync(clips)) {
+      if (!f.endsWith('.json')) continue;
+      try { out.push(JSON.parse(readFileSync(join(clips, f), 'utf8')) as ClipJob); } catch { /* skip corrupt */ }
+    }
+  }
+  return out.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+}
+
+// Deterministic layer (ffmpeg-video-editor skill pattern): honest one-liners
+// for the small edits that don't need an agent loop or Apple Silicon.
+export function ffmpegCheat(artifact: string): string[] {
+  return [
+    `ffprobe -v error -show_entries format=duration -of csv=p=0 '${artifact}'`,
+    `ffmpeg -i '${artifact}' -ss 2 -to 8 -c copy cut.mp4`,
+    `ffmpeg -i '${artifact}' -vf scale=1080:-2 -crf 23 compress.mp4`,
+    `ffmpeg -i '${artifact}' -vn -c:a libmp3lame audio.mp3`
+  ];
 }
 
 function runLines(job: ClipJob): string {

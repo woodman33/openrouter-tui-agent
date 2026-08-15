@@ -1,0 +1,1 @@
+{ "id": "V111", "title": "Compose + Deliver", "domain": "video editing", "caps": ["clip.manifest", "clip.render", "deliver.mux", "deliver.instatic"] }

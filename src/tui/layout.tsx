@@ -40,9 +40,10 @@ const MODES: ModeDef[] = [
   { mode: 'lanes',  key: '2', label: 'LANES',  sub: 'live agents' },
   { mode: 'gens',   key: '3', label: 'GENS',   sub: 'make things' },
   { mode: 'slate',  key: '4', label: 'SLATE',  sub: 'visual lang' },
-  { mode: 'browse', key: '5', label: 'BROWSE', sub: 'web panes' },
-  { mode: 'logs',   key: '6', label: 'LOGS',   sub: 'history' },
-  { mode: 'files',  key: '7', label: 'PROJECTS', sub: 'per-project tree' },
+  { mode: 'clip',   key: '5', label: 'CLIP',   sub: 'video edit' },
+  { mode: 'browse', key: '6', label: 'BROWSE', sub: 'web panes' },
+  { mode: 'logs',   key: '7', label: 'LOGS',   sub: 'history' },
+  { mode: 'files',  key: '8', label: 'PROJECTS', sub: 'per-project tree' },
 ];
 
 // Description-bar lines come from keymap.ts so the bar, the ? overlay and

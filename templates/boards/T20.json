@@ -1,0 +1,1 @@
+{ "id": "T20", "title": "Provider Router", "domain": "media generation", "caps": ["provider.list", "provider.route", "provider.fallback"] }

@@ -1,0 +1,1 @@
+{ "id": "P59", "title": "Mission Control", "domain": "coding/ops", "caps": ["mission.status", "lane.overview", "approval.queue"] }

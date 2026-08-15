@@ -4,13 +4,14 @@ import { LogsPanel } from './panels/LogsPanel.js';
 import { LanesPanel } from './panels/LanesPanel.js';
 import { GensPanel } from './panels/GensPanel.js';
 import { SlatePanel } from './panels/SlatePanel.js';
+import { ClipPanel } from './panels/ClipPanel.js';
 import { BrowsePanel } from './panels/BrowsePanel.js';
 import { ProjectsPanel } from './panels/ProjectsPanel.js';
 import type { Agent } from '../agent/core.js';
 
-export type Mode = 'brief' | 'lanes' | 'gens' | 'slate' | 'browse' | 'logs' | 'files';
+export type Mode = 'brief' | 'lanes' | 'gens' | 'slate' | 'clip' | 'browse' | 'logs' | 'files';
 
-export const MODES: Mode[] = ['brief', 'lanes', 'gens', 'slate', 'browse', 'logs', 'files'];
+export const MODES: Mode[] = ['brief', 'lanes', 'gens', 'slate', 'clip', 'browse', 'logs', 'files'];
 
 interface ModeRouterProps {
   mode: Mode;
@@ -35,6 +36,8 @@ export function ModeRouter({ mode, agent, setInspector, zone, setZone, setModalI
       return <GensPanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={inputLocked} />;
     case 'slate':
       return <SlatePanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={inputLocked} />;
+    case 'clip':
+      return <ClipPanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={inputLocked} />;
     case 'browse':
       return <BrowsePanel agent={agent} setInspector={setInspector} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={inputLocked} />;
     case 'logs':

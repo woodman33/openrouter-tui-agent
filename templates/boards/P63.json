@@ -1,0 +1,1 @@
+{ "id": "P63", "title": "Prompt Lab", "domain": "media generation", "caps": ["prompt.draft", "prompt.variant", "prompt.score"] }

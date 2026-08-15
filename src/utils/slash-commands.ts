@@ -1079,6 +1079,27 @@ document.querySelectorAll(".clip").forEach(function (el) {
     }
   },
   {
+    command: '/boards',
+    description: 'List the basic TIMMY Slate board seeds shipped in-repo (full 62-board gallery stays private)',
+    usage: '/boards',
+    execute: () => {
+      try {
+        const idx = JSON.parse(readFileSync(join(process.cwd(), 'templates', 'boards', 'INDEX.json'), 'utf8')) as { boards: string[] };
+        const lines = idx.boards.map(id => {
+          try {
+            const b = JSON.parse(readFileSync(join(process.cwd(), 'templates', 'boards', `${id}.json`), 'utf8')) as { title: string; domain: string };
+            return `  ${id.padEnd(6)} ${b.title.padEnd(26)} ${b.domain}`;
+          } catch {
+            return `  ${id}`;
+          }
+        });
+        return `🗂 SLATE BOARDS (basic seeds in-repo)\n${lines.join('\n')}\n• full 62-board gallery + W1–W9 loadouts live in the private sceneforge tree`;
+      } catch {
+        return '🗂 no templates/boards/INDEX.json in this checkout';
+      }
+    }
+  },
+  {
     command: '/market',
     description: 'Template market: curated pro bundles (music-video/ugc-ad/podcast/trailer) → install into your library',
     usage: '/market [install <name>]',
@@ -1528,6 +1549,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /sync <p>       — Pull chat/lanes/training into the project tree\n` +
              `  /roboflow [up]  — Roboflow connector: status · upload artifacts to train\n` +
              `  /hf [push p]    — Hugging Face: status · push training to private dataset\n` +
+             `  /boards         — basic TIMMY Slate board seeds shipped in-repo\n` +
              `  /market [inst]  — Template market: curated pro bundles → install\n` +
              `  /promptbank     — Prompt banking: list/add/use fragments (learns usage)\n` +
              `  /char [p]       — Random character: slatable card + turntable prompt\n` +

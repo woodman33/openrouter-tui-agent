@@ -53,7 +53,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/woodman33/openrouter-tui-agent.git"
+    "url": "git+https://github.com/woodman33/timmy-tui.git"
   },
   "keywords": [
     "agentops",
@@ -70,9 +70,9 @@
   "author": "William Meldman",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/woodman33/openrouter-tui-agent/issues"
+    "url": "https://github.com/woodman33/timmy-tui/issues"
   },
-  "homepage": "https://github.com/woodman33/openrouter-tui-agent#readme",
+  "homepage": "https://timmytui.com",
   "dependencies": {
     "@cloudflare/flagship": "^0.3.1",
     "@openfeature/server-sdk": "^1.21.0",

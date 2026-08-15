@@ -1,0 +1,1 @@
+{ "id": "T21", "title": "Agent Monitor", "domain": "coding/ops", "caps": ["agent.live", "agent.cost", "agent.alert"] }
