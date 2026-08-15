@@ -52,7 +52,7 @@ Commands:
   events          Stream the TUI's event envelope as NDJSON (--follow, --human, --otlp)
   clip list|run|replay  List · run headless + seal · replay from cut-list alone
   doctor deps|network|hardware  Read-only posture checks (never auto-fixes)
-  mcp inspect     Opt-in MCP wire visibility via mcpsnoop
+  mcp status|inspect|probe  MCP wire visibility: mcpsnoop + mcp-probe (opt-in)
 
 Options:
   --json          Output results in raw JSON format (for demo/proof)
@@ -460,7 +460,7 @@ const spawnArgs = isTs
             : command === 'sceneforge'
               ? 'status'
               : command === 'mcp'
-                ? 'inspect'
+                ? 'status'
                 : 'doctor'),
       ...args.slice(2)
     ]
@@ -476,7 +476,7 @@ const spawnArgs = isTs
             : command === 'sceneforge'
               ? 'status'
               : command === 'mcp'
-                ? 'inspect'
+                ? 'status'
                 : 'doctor'),
       ...args.slice(2)
     ];
