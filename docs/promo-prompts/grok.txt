@@ -1,0 +1,1 @@
+Sharpen the hook and the three core claims (control/cost/proof) for punch and recall. Propose up to 3 alternative hooks in global.hook_alt (pick best). Keep the honesty split sacred: punch never exceeds proof. Return delta JSON.

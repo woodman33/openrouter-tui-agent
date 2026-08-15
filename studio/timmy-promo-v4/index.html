@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>TIMMY — brand reel v4 (cinematic)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  html, body { margin: 0; background: #000; }
+  .stage {
+    position: relative; width: 100%; height: 100%; overflow: hidden;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; color: #e6edf3;
+    background: #05060a;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .clip { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 0 9%; }
+  /* cinematic grade */
+  .bar { position: absolute; left: 0; right: 0; height: 11%; background: #000; z-index: 40; }
+  .bar.top { top: 0; } .bar.bottom { bottom: 0; }
+  .vignette { position: absolute; inset: 0; z-index: 30; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(0,0,0,.55) 100%); }
+  .grain { position: absolute; inset: 0; z-index: 31; pointer-events: none; opacity: .06;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E"); }
+  /* hook type-on */
+  #hook { font-size: 44px; color: #e6edf3; }
+  #hook .caret { display: inline-block; width: .55ch; height: 1.1em; background: #3fb950; vertical-align: text-bottom; }
+  /* strikethrough primitive (catalog recipe, inlined) */
+  .strike { position: relative; display: inline-grid; grid-auto-flow: column; gap: 18px; align-items: center;
+    font-size: 56px; font-weight: 900; letter-spacing: -0.04em; color: #fafafa; }
+  .strike i { position: absolute; left: 0; width: 44%; height: 6px; border-radius: 999px; background: #a78bfa;
+    transform: scaleX(var(--p, 0)); transform-origin: left center; }
+  .strike strong { opacity: var(--o, 0); color: #a98bff; }
+  /* brand */
+  #brand-wrap { position: absolute; inset: 0; }
+  #brand-wrap .bg { position: absolute; inset: -6%; background: url('poster.png') center/cover; opacity: .42; }
+  .brand { font-size: 120px; font-weight: 800; letter-spacing: .05em; color: #a98bff; text-shadow: 0 0 60px rgba(169,139,255,.45); }
+  .tag { font-size: 34px; }
+  /* lower thirds (broadcast recipe: tight boxes, drop shadows) */
+  .clip.lt { inset: auto; left: 7%; bottom: 15%; top: auto; right: auto; align-items: flex-start; justify-content: flex-start; padding: 0; }
+  .lt { position: absolute; left: 7%; bottom: 15%; z-index: 35; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .lt .h { background: #fafafa; color: #0b0d10; font-weight: 800; font-size: 26px; padding: 6px 14px; box-shadow: 4px 4px 0 rgba(169,139,255,.85); }
+  .lt .s { background: #a98bff; color: #0b0d10; font-weight: 700; font-size: 17px; padding: 4px 12px; box-shadow: 3px 3px 0 rgba(0,0,0,.6); }
+  /* terminal footage */
+  video.clip { object-fit: contain; background: #000; }
+  /* replay console */
+  .console { width: 78%; border: 1px solid rgba(63,185,80,.4); background: rgba(5,8,6,.85); border-radius: 10px; padding: 22px 26px; font-size: 22px; color: #3fb950; text-align: left; }
+  .console .dim { color: #8b949e; }
+  /* chain */
+  #chain-svg path { stroke: #a98bff; stroke-width: 3; fill: none; stroke-linecap: round; }
+  #chain-svg .node { fill: #3fb950; }
+  .keycaps { display: flex; gap: 10px; }
+  .keycaps span { border: 1px solid rgba(255,255,255,.35); border-bottom-width: 3px; border-radius: 8px; padding: 6px 12px; font-size: 16px; color: #e6edf3; background: rgba(255,255,255,.06); }
+  /* lockup */
+  .seal { font-size: 30px; color: #3fb950; }
+  .registry { display: flex; gap: 26px; font-size: 18px; color: #a5b0bc; }
+  .registry b { color: #a98bff; }
+  .url { font-size: 16px; color: #8b949e; }
+</style>
+</head>
+<body>
+<div class="stage" data-composition-id="timmy-promo-v4" data-start="0" data-duration="24" data-width="1280" data-height="720">
+
+  <div class="clip" id="scene-hook" data-start="0" data-duration="3.2" data-track-index="0">
+    <div class="mono" id="hook"><span id="hook-text"></span><span class="caret"></span></div>
+    <div class="strike" id="strike-pair" style="opacity:0">
+      <span>agents lie.</span><i></i><strong>receipts don't.</strong>
+    </div>
+  </div>
+
+  <div id="brand-wrap" class="clip" data-start="3" data-duration="2.2" data-track-index="1">
+    <div class="bg" id="kenburns"></div>
+    <div class="brand" id="brand-title">⛁ TIMMY</div>
+    <div class="tag" id="brand-tag">Receipts for everything.</div>
+  </div>
+
+  <video class="clip" id="term-1" src="terminal-kf.mp4" data-start="5" data-duration="2" data-track-index="2" muted></video>
+  <div class="clip lt" id="lt-lanes" data-start="5" data-duration="2" data-track-index="3" style="opacity:0">
+    <div class="h">LANES</div><div class="s mono">8 agents live · you approve the risky ones</div>
+  </div>
+
+  <video class="clip" id="term-2" src="terminal-kf.mp4" data-start="6.9" data-duration="2" data-track-index="4" muted></video>
+  <div class="clip lt" id="lt-clip" data-start="6.9" data-duration="2" data-track-index="5" style="opacity:0">
+    <div class="h">TIMMY CLIP</div><div class="s mono">prompt→pixel · provenance chained · opens in Premiere / Resolve via OTIO</div>
+  </div>
+
+  <div class="clip" id="scene-replay" data-start="8.8" data-duration="2.2" data-track-index="6">
+    <div class="console mono">
+      <div class="dim">$</div>
+      <div id="replay-cmd">timmy clip replay clip_msuaq007</div>
+      <div id="replay-out" style="opacity:0">verified: replay matches sealed output ⛁</div>
+    </div>
+    <div class="lt" id="lt-replay" style="position:relative; left:0; bottom:0; opacity:0">
+      <div class="h">REPLAY</div><div class="s mono">proof you can re-run · deterministic lanes</div>
+    </div>
+  </div>
+
+  <div class="clip" id="scene-agentpass" data-start="10.9" data-duration="2" data-track-index="7">
+    <div class="seal mono" style="font-size:26px">budgets · wallets · max spends · preferred models</div>
+    <div class="lt" id="lt-ap" style="position:relative; left:0; bottom:0; opacity:0">
+      <div class="h">AgentPass</div><div class="s mono">verified work ÷ time · metered live · auto-settlement</div>
+    </div>
+  </div>
+
+  <div class="clip" id="scene-watch" data-start="12.8" data-duration="2.2" data-track-index="8">
+    <div class="lt" id="lt-mcp" style="position:relative; left:0; bottom:0; opacity:0">
+      <div class="h">MCP WATCHTOWER</div><div class="s mono">every tool call watched by mcpsnoop / mcp-probe · signed</div>
+    </div>
+    <div class="lt" id="lt-fleet" style="position:relative; left:0; bottom:0; opacity:0; margin-top:70px">
+      <div class="h">SOLAR FLEET</div><div class="s mono">DGX Sparks bid on contracts while you sleep · cost ≈ 0</div>
+    </div>
+  </div>
+
+  <div class="clip" id="scene-chain" data-start="14.9" data-duration="3" data-track-index="9">
+    <svg id="chain-svg" width="900" height="180" viewBox="0 0 900 180">
+      <path id="chain-path" d="M 60 90 C 180 20, 300 160, 420 90 S 660 20, 840 90" stroke-dasharray="1000" stroke-dashoffset="1000"></path>
+      <circle class="node" cx="60" cy="90" r="9"></circle>
+      <circle class="node" cx="420" cy="90" r="9"></circle>
+      <circle class="node" cx="840" cy="90" r="9"></circle>
+    </svg>
+    <div class="keycaps mono" id="keycaps" style="opacity:0">
+      <span>Tab</span><span>←→</span><span>↑↓</span><span>↵</span><span>Esc</span><span>?</span>
+    </div>
+    <div class="mono" id="grammar" style="opacity:0; font-size:16px; color:#8b949e">one grammar · eight tabs · every key rhymes</div>
+  </div>
+
+  <div class="clip" id="scene-lockup" data-start="17.8" data-duration="3.2" data-track-index="10">
+    <div class="brand" id="lock-title" style="font-size:96px">⛁ TIMMY</div>
+    <div class="tag">Receipts for everything.</div>
+    <div class="registry mono"><span><b>TIMMY Slate</b> · visual language</span><span><b>TIMMY Clip</b> · video editing</span><span><b>AgentPass</b> · spend rails</span></div>
+    <div class="url mono">woodman33/timmy-tui</div>
+  </div>
+
+  <div class="clip" id="scene-end" data-start="20.8" data-duration="3.2" data-track-index="11">
+    <div class="seal mono" id="end-line">Trust the receipt, not the model.</div>
+  </div>
+
+  <div class="grain"></div>
+  <div class="vignette"></div>
+  <div class="bar top"></div>
+  <div class="bar bottom"></div>
+  <audio id="bed" src="bed.m4a" data-start="0" data-duration="24" data-track-index="12"></audio>
+
+</div>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  const hookText = 'your agents lie.';
+  tl.to({}, { duration: 0.2 })
+    .add(() => { document.getElementById('hook-text').textContent = hookText; }, 0.3)
+    .fromTo('#hook', { opacity: 0 }, { opacity: 1, duration: 0.15 }, 0.3)
+    .fromTo('#hook-text', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 1.1, ease: 'steps(15)' }, 0.35)
+    .to('#hook', { opacity: 0, duration: 0.2 }, 1.7)
+    .to('#strike-pair', { opacity: 1, duration: 0.15 }, 1.8)
+    .fromTo('#strike-pair i', { '--p': 0 }, { '--p': 1, duration: 0.3, ease: 'power2.out' }, 2.0)
+    .fromTo('#strike-pair strong', { '--o': 0, y: 14 }, { '--o': 1, y: 0, duration: 0.35, ease: 'power2.out' }, 2.3)
+    // brand pull-back (camera) + ken burns
+    .fromTo('#brand-wrap', { scale: 1.28, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.4, ease: 'power3.out' }, 3.0)
+    .fromTo('#kenburns', { scale: 1.15 }, { scale: 1.0, duration: 8, ease: 'none' }, 3.0)
+    .fromTo('#brand-title', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, 3.2)
+    .fromTo('#brand-tag', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }, 3.6)
+    // lower thirds slide in
+    .fromTo('#lt-lanes', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, 5.1)
+    .to('#lt-lanes', { opacity: 0, duration: 0.2 }, 6.7)
+    .set('#lt-lanes', { opacity: 0 }, 6.9)
+    .fromTo('#lt-clip', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, 7.0)
+    .to('#lt-clip', { opacity: 0, duration: 0.2 }, 8.6)
+    .set('#lt-clip', { opacity: 0 }, 8.8)
+    // replay console
+    .fromTo('#scene-replay .console', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 8.9)
+    .fromTo('#replay-out', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 9.9)
+    .fromTo('#lt-replay', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, 10.0)
+    .fromTo('#lt-ap', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, 11.1)
+    .fromTo('#lt-mcp', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, 13.0)
+    .fromTo('#lt-fleet', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, 13.9)
+    // chain + grammar
+    .to('#chain-path', { strokeDashoffset: 0, duration: 2.2, ease: 'power1.inOut' }, 15.0)
+    .fromTo('#chain-svg .node', { scale: 0, transformOrigin: 'center' }, { scale: 1, duration: 0.4, stagger: 0.7, ease: 'back.out(2)' }, 15.2)
+    .fromTo('#keycaps', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power3.out' }, 15.8)
+    .fromTo('#grammar', { opacity: 0 }, { opacity: 1, duration: 0.4 }, 16.6)
+    // lockup + end
+    .fromTo('#lock-title', { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.6)' }, 17.9)
+    .fromTo('#scene-lockup .tag, #scene-lockup .registry, #scene-lockup .url', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.2, ease: 'power3.out' }, 18.3)
+    .fromTo('#end-line', { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.7)' }, 21.0);
+  window.__timelines['timmy-promo-v4'] = tl;
+</script>
+</body>
+</html>

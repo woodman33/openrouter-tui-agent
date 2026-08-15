@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>TIMMY — brand reel v3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  html, body { margin: 0; background: #07080c; }
+  .stage {
+    position: relative; width: 100%; height: 100%;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    color: #e6edf3; overflow: hidden;
+    background:
+      radial-gradient(1200px 600px at 70% -10%, rgba(169,139,255,.14), transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, rgba(63,185,80,.10), transparent 60%),
+      repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,.012) 3px 4px),
+      #07080c;
+  }
+  .clip { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 0 8%; }
+  #scene-brand::before { content: ''; position: absolute; inset: 0; background: url('poster.png') center/cover; opacity: .38; }
+  #scene-brand > * { position: relative; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .brand { font-size: 96px; font-weight: 800; letter-spacing: .04em; color: #a98bff; font-variation-settings: 'wght' 300; }
+  .tag { font-size: 30px; color: #e6edf3; }
+  .sub { font-size: 17px; color: #8b949e; letter-spacing: .08em; }
+  .mask { overflow: hidden; }
+  .mask > .inner { will-change: transform; }
+  /* strikethrough-replace primitive (hyperframes catalog, inlined) */
+  .hf-catalog-strikethrough-replace {
+    position: relative; display: inline-grid; grid-auto-flow: column; gap: 18px;
+    align-items: center; font-size: 52px; font-weight: 900; letter-spacing: -0.04em;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--hf-strike-text-color, #fafafa);
+  }
+  .hf-catalog-strikethrough-replace i {
+    position: absolute; left: 0; width: 46%; height: var(--hf-strike-thickness, 6px);
+    border-radius: 999px; background: var(--hf-strike-color, #a78bfa);
+    transform: scaleX(var(--hf-strike-progress, 0)); transform-origin: left center;
+  }
+  .hf-catalog-strikethrough-replace strong { opacity: var(--hf-replace-opacity, 0); }
+  .cards { display: flex; gap: 28px; }
+  .card {
+    width: 300px; padding: 26px 24px; border: 1px solid rgba(169,139,255,.35); border-radius: 14px;
+    background: linear-gradient(180deg, rgba(169,139,255,.10), rgba(7,8,12,.6));
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .card h3 { margin: 0; font-size: 22px; color: #a98bff; }
+  .card p { margin: 0; font-size: 15px; color: #a5b0bc; line-height: 1.5; }
+  .seal { font-size: 26px; color: #3fb950; }
+  .url { font-size: 16px; color: #8b949e; }
+  video.clip { object-fit: contain; background: #000; border: 1px solid rgba(255,255,255,.08); }
+  .strike-host, .trace-host { position: absolute; inset: 0; }
+  #chain-svg path { stroke: #a98bff; stroke-width: 3; fill: none; stroke-linecap: round; }
+  #chain-svg .node { fill: #3fb950; stroke: none; }
+</style>
+</head>
+<body>
+<div class="stage" data-composition-id="timmy-promo-v3" data-start="0" data-duration="20" data-width="1280" data-height="720">
+
+  <div class="clip" id="scene-brand" data-start="0" data-duration="3.6" data-track-index="0">
+    <div class="brand" id="brand-title">TIMMY</div>
+    <div class="mask"><div class="inner tag">Receipts for everything.</div></div>
+    <div class="mask"><div class="inner sub mono">THE AGENT TRUST OS · MADE INSIDE TIMMY</div></div>
+  </div>
+
+  <video class="clip" id="term-1" src="terminal-kf.mp4" data-start="3.4" data-duration="2" data-track-index="1" muted></video>
+
+  <div class="clip" id="scene-strike" data-start="5.2" data-duration="3.4" data-track-index="2">
+    <div class="hf-catalog-strikethrough-replace">
+      <span>trust the model.</span><i></i><strong>trust the receipt.</strong>
+    </div>
+    <div class="sub mono">EVERY RUN HASH-CHAINED · SIGNED · ENV-LOCKED</div>
+  </div>
+
+  <video class="clip" id="term-2" src="terminal-kf.mp4" data-start="8.4" data-duration="2" data-track-index="3" muted></video>
+
+  <div class="clip" id="scene-cards" data-start="10.2" data-duration="4" data-track-index="4">
+    <div class="cards">
+      <div class="card" id="card-otio"><h3>OTIO interchange</h3><p>Every timmy edit opens in Premiere, Resolve, Avid, Nuke — receipts ride inside a format Hollywood trusts.</p></div>
+      <div class="card" id="card-theatre"><h3>theatre.js motion</h3><p>Sequences compile to EDL transform tracks. They describe motion; only lanes render.</p></div>
+      <div class="card" id="card-agentpass"><h3>AgentPass rails</h3><p>Budgets, wallets, max spends, preferred models — verified work ÷ time, metered live.</p></div>
+    </div>
+  </div>
+
+  <div class="clip" id="scene-chain" data-start="14" data-duration="3.2" data-track-index="5">
+    <svg id="chain-svg" width="900" height="220" viewBox="0 0 900 220">
+      <path id="chain-path" d="M 60 110 C 180 30, 300 190, 420 110 S 660 30, 840 110" stroke-dasharray="1000" stroke-dashoffset="1000"></path>
+      <circle class="node" cx="60" cy="110" r="10"></circle>
+      <circle class="node" cx="420" cy="110" r="10"></circle>
+      <circle class="node" cx="840" cy="110" r="10"></circle>
+      <text x="40" y="150" fill="#8b949e" font-size="14" font-family="JetBrains Mono, monospace">prompt</text>
+      <text x="390" y="150" fill="#8b949e" font-size="14" font-family="JetBrains Mono, monospace">execution</text>
+      <text x="800" y="150" fill="#8b949e" font-size="14" font-family="JetBrains Mono, monospace">proof</text>
+    </svg>
+    <div class="sub mono">HASH-CHAINED · ED25519 · ENV-LOCKED</div>
+  </div>
+
+  <div class="clip" id="scene-seal" data-start="17" data-duration="3" data-track-index="6">
+    <div class="seal mono" id="seal-line">⛁ Trust the receipt, not the model.</div>
+    <div class="url mono">woodman33/timmy-tui · solar fleet · replay-verified labor</div>
+  </div>
+
+</div>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  tl.fromTo('#brand-title', { fontVariationSettings: "'wght' 300", opacity: 0 }, { fontVariationSettings: "'wght' 800", opacity: 1, duration: 2.2, ease: 'power2.out' }, 0.2)
+    .fromTo('#scene-brand .mask > .inner', { yPercent: 110 }, { yPercent: 0, duration: 0.9, stagger: 0.25, ease: 'power3.out' }, 0.9)
+    .fromTo('.hf-catalog-strikethrough-replace i', { '--hf-strike-progress': 0 }, { '--hf-strike-progress': 1, duration: 0.28, ease: 'power2.out' }, 5.8)
+    .fromTo('.hf-catalog-strikethrough-replace strong', { '--hf-replace-opacity': 0, y: 14 }, { '--hf-replace-opacity': 1, y: 0, duration: 0.3, ease: 'power2.out' }, 6.1)
+    .fromTo('#card-otio', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 10.4)
+    .fromTo('#card-theatre', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 10.8)
+    .fromTo('#card-agentpass', { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 11.2)
+    .to('#chain-path', { strokeDashoffset: 0, duration: 2.4, ease: 'power1.inOut' }, 14.2)
+    .fromTo('#scene-chain .node', { scale: 0, transformOrigin: 'center' }, { scale: 1, duration: 0.5, stagger: 0.8, ease: 'back.out(2)' }, 14.4)
+    .fromTo('#seal-line', { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.7)' }, 17.2);
+  window.__timelines['timmy-promo-v3'] = tl;
+</script>
+</body>
+</html>

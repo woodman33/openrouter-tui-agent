@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>TIMMY — brand reel v6 (clarity cut)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  html, body { margin: 0; background: #000; }
+  .stage { position: relative; width: 100%; height: 100%; overflow: hidden; background: #05060a;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; color: #e6edf3; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .clip { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 0 10%; text-align: center; }
+  .claim { position: relative; z-index: 3; font-size: 88px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; color: #fafafa; }
+  .claim.violet { color: #a98bff; }
+  .sub { position: relative; z-index: 3; font-size: 27px; line-height: 1.45; color: #c9d1d9; max-width: 900px; }
+  .ev { position: relative; z-index: 3; font-size: 15px; color: #a98bff; letter-spacing: .05em; }
+  .keycaps { position: relative; z-index: 3; }
+  .cost { position: relative; z-index: 3; }
+  .shade { position: absolute; inset: 0; background: rgba(5,6,10,.78); z-index: 1; }
+  video.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55; z-index: 0; }
+  .dip { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 36; }
+  .bar { position: absolute; left: 0; right: 0; height: 8%; background: #000; z-index: 40; }
+  .bar.top { top: 0; } .bar.bottom { bottom: 0; }
+  .vignette { position: absolute; inset: 0; z-index: 30; pointer-events: none;
+    background: radial-gradient(125% 95% at 50% 50%, transparent 60%, rgba(0,0,0,.45) 100%); }
+  .keycaps { display: flex; gap: 12px; }
+  .keycaps span { border: 1px solid rgba(255,255,255,.45); border-bottom-width: 4px; border-radius: 9px; padding: 8px 15px; font-size: 20px; background: rgba(255,255,255,.07); color: #e6edf3; }
+  .cost { font-size: 84px; font-weight: 900; color: #3fb950; }
+  .cost .cur { color: #8b949e; font-size: 42px; }
+  .registry { display: flex; gap: 30px; font-size: 18px; color: #a5b0bc; }
+  .registry b { color: #a98bff; }
+</style>
+</head>
+<body>
+<div class="stage" data-composition-id="timmy-promo-v6" data-start="0" data-duration="30" data-width="1280" data-height="720">
+
+  <div class="clip" id="s-hook1" data-start="0" data-duration="1.6" data-track-index="0">
+    <div class="claim" id="h1" style="font-size:56px">Your AI agent says it did the work.</div>
+  </div>
+
+  <div class="clip" id="s-hook2" data-start="1.6" data-duration="1.3" data-track-index="1">
+    <div class="claim" id="h2">Did it?</div>
+  </div>
+
+  <div class="clip" id="s-turn" data-start="2.9" data-duration="1.5" data-track-index="2">
+    <div class="claim violet" id="t1">⛁ TIMMY proves it.</div>
+  </div>
+
+  <video class="clip bg" id="vid-lanes" src="demo-lanes.mp4" muted data-start="4.4" data-duration="3.2" data-track-index="30"></video>
+  <div class="clip shade" id="shade-lanes" data-start="4.4" data-duration="3.2" data-track-index="31"></div>
+  <div class="clip" id="s-lanes" data-start="4.4" data-duration="3.2" data-track-index="3">
+    <div class="claim" id="c1" style="font-size:76px">See your agents work — live.</div>
+    <div class="sub" id="c1s">Real terminals. Risky commands wait for your yes.</div>
+    <div class="ev mono" id="c1e">LANES · six agents · approvals sealed</div>
+  </div>
+
+  <div class="clip" id="s-cost" data-start="7.6" data-duration="3.2" data-track-index="4">
+    <div class="claim" id="c2" style="font-size:76px">See every cost while it runs.</div>
+    <div class="cost mono"><span class="cur">$</span><span id="cost-num">0.0000</span></div>
+    <div class="sub" id="c2s">Set a cap. TIMMY stops the spend before it hurts.</div>
+    <div class="ev mono" id="c2e">live cost column · AgentPass budgets</div>
+  </div>
+
+  <video class="clip bg" id="vid-replay" src="demo-replay.mp4" muted data-start="10.8" data-duration="3.2" data-track-index="32"></video>
+  <div class="clip shade" id="shade-receipt" data-start="10.8" data-duration="3.2" data-track-index="33"></div>
+  <div class="clip" id="s-receipt" data-start="10.8" data-duration="3.2" data-track-index="5">
+    <div class="claim" id="c3" style="font-size:76px">Every run gets a receipt.</div>
+    <div class="sub" id="c3s">Hashed, signed, replayable. The proof re-runs.</div>
+    <div class="ev mono" id="c3e">timmy clip replay · verified ✓</div>
+  </div>
+
+  <div class="clip" id="s-video" data-start="14" data-duration="3.2" data-track-index="6">
+    <div class="claim" id="c4" style="font-size:76px">Even video.</div>
+    <div class="sub" id="c4s">Every frame traces back to the prompt that made it.<br/>Opens in Premiere, Resolve, Avid, Nuke.</div>
+    <div class="ev mono" id="c4e">TIMMY Clip · OTIO interchange</div>
+  </div>
+
+  <div class="clip" id="s-local" data-start="17.2" data-duration="3.2" data-track-index="7">
+    <div class="claim" id="c5" style="font-size:76px">On your machine.</div>
+    <div class="sub" id="c5s">Your keys. Your models. Works offline.<br/>Nothing leaves unless you say so.</div>
+    <div class="ev mono" id="c5e">local-first · Ollama fallback</div>
+  </div>
+
+  <div class="clip" id="s-grammar" data-start="20.4" data-duration="3.2" data-track-index="8">
+    <div class="claim violet" id="c6" style="font-size:70px">One grammar. Eight tabs.</div>
+    <div class="keycaps mono" id="keys6"><span>Tab</span><span>←→</span><span>↑↓</span><span>↵</span><span>Esc</span><span>?</span></div>
+    <div class="sub" id="c6s">Every key rhymes. Learned in a minute.</div>
+  </div>
+
+  <div class="clip" id="s-lockup" data-start="23.6" data-duration="4" data-track-index="9">
+    <div class="claim violet" id="l1" style="font-size:120px">⛁ TIMMY</div>
+    <div class="claim" id="l2" style="font-size:46px">Trust the receipt, not the model.</div>
+    <div class="sub mono" id="l3" style="font-size:20px">THE AGENT TRUST OS</div>
+    <div class="registry mono" id="l4"><span><b>Slate</b> visual language</span><span><b>Clip</b> provenance video</span><span><b>AgentPass</b> spend rails</span></div>
+    <div class="ev mono" id="l5">woodman33/timmy-tui</div>
+  </div>
+
+  <div class="clip" id="s-end" data-start="27.6" data-duration="2.4" data-track-index="10">
+    <div class="claim violet" id="e1" style="font-size:80px">⛁</div>
+    <div class="ev mono" id="e2">chained to every run before it · sha256_abeb60d4…</div>
+  </div>
+
+  <div class="dip" id="dip1" data-start="1.5" data-duration="0.4" data-track-index="11"></div>
+  <div class="dip" id="dip2" data-start="2.8" data-duration="0.4" data-track-index="12"></div>
+  <div class="dip" id="dip3" data-start="4.3" data-duration="0.4" data-track-index="13"></div>
+  <div class="dip" id="dip4" data-start="7.5" data-duration="0.4" data-track-index="14"></div>
+  <div class="dip" id="dip5" data-start="10.7" data-duration="0.4" data-track-index="15"></div>
+  <div class="dip" id="dip6" data-start="13.9" data-duration="0.4" data-track-index="16"></div>
+  <div class="dip" id="dip7" data-start="17.1" data-duration="0.4" data-track-index="17"></div>
+  <div class="dip" id="dip8" data-start="20.3" data-duration="0.4" data-track-index="18"></div>
+  <div class="dip" id="dip9" data-start="23.5" data-duration="0.4" data-track-index="19"></div>
+  <div class="dip" id="dip10" data-start="27.5" data-duration="0.4" data-track-index="20"></div>
+
+  <div class="vignette"></div>
+  <div class="bar top"></div>
+  <div class="bar bottom"></div>
+  <audio id="bed" src="bed.m4a" data-start="0" data-duration="30" data-track-index="21"></audio>
+</div>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  const enter = (id, at) => tl.fromTo(id, { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, at);
+  tl.fromTo('#h1', { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.2)
+    .fromTo('#h2', { scale: 1.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'power3.out' }, 1.7)
+    .fromTo('#t1', { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.8)' }, 3.0)
+    .add(enter('#c1', 4.6)).add(enter('#c1s', 4.9)).add(enter('#c1e', 5.2))
+    .add(enter('#c2', 7.8))
+    .fromTo('#cost-num', { textContent: 0 }, { textContent: 2.19, duration: 1.6, ease: 'power1.in', snap: { textContent: 0.0001 } }, 8.0)
+    .add(enter('#c2s', 8.4)).add(enter('#c2e', 8.7))
+    .add(enter('#c3', 11.0)).add(enter('#c3s', 11.3)).add(enter('#c3e', 11.6))
+    .add(enter('#c4', 14.2)).add(enter('#c4s', 14.5)).add(enter('#c4e', 14.8))
+    .add(enter('#c5', 17.4)).add(enter('#c5s', 17.7)).add(enter('#c5e', 18.0))
+    .add(enter('#c6', 20.6))
+    .fromTo('#keys6 span', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, stagger: 0.08, ease: 'power3.out' }, 20.9)
+    .add(enter('#c6s', 21.4))
+    .fromTo('#l1', { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.5)' }, 23.8)
+    .add(enter('#l2', 24.3)).add(enter('#l3', 24.7)).add(enter('#l4', 25.0)).add(enter('#l5', 25.4))
+    .fromTo('#e1', { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)' }, 27.7)
+    .add(enter('#e2', 28.1));
+  // dips: consistent 0.4s dip-to-black between beats
+  ['#dip1','#dip2','#dip3','#dip4','#dip5','#dip6','#dip7','#dip8','#dip9','#dip10'].forEach(d => {
+    tl.fromTo(d, { opacity: 0 }, { opacity: 1, duration: 0.18, yoyo: true, repeat: 1, ease: 'power1.inOut' }, parseFloat(document.querySelector(d).dataset.start));
+  });
+  window.__timelines['timmy-promo-v6'] = tl;
+</script>
+</body>
+</html>

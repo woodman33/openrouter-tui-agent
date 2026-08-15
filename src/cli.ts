@@ -156,6 +156,12 @@ if (command === 'clip') {
   process.exit(2);
 }
 
+if (command === 'mcp' && args[1] === 'serve') {
+  // timmy as an MCP server: any MCP-speaking agent drives the trust layer.
+  await import('./mcp/server.js');
+  process.exit(0);
+}
+
 if (command === 'design') {
   // Open Design (MCP) gens: queue in GENS, execute headless here.
   const sub = args[1];
