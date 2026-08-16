@@ -1,0 +1,24 @@
+# TIMMY isolated ComfyUI — the python environment lives in a container,
+# NEVER on the host. Node packs pinned by hash in comfy.lock.json (mounted).
+# GPU host (rtx-5090): deploy.resources reservations apply. Mac: CPU fallback.
+services:
+  comfyui:
+    image: yanwk/comfyui-boot:latest   # pin by digest in prod: @sha256:…
+    ports:
+      - "8188:8188"
+    volumes:
+      - ./workflows:/comfy/user/default/workflows:ro
+      - ./comfy.lock.json:/comfy/comfy.lock.json:ro
+      - comfy-models:/comfy/models
+      - hf-cache:/hf-cache
+    environment:
+      - HF_HUB_CACHE=/hf-cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              count: 1
+volumes:
+  comfy-models:
+  hf-cache:

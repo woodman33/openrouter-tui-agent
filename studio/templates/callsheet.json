@@ -1,0 +1,31 @@
+{
+  "name": "callsheet",
+  "kind": "callsheet",
+  "total": 0,
+  "source": "timmy-default",
+  "sheet": {
+    "day": 17,
+    "of": 32,
+    "sunrise": "5:51 AM",
+    "sunset": "8:26 PM",
+    "weather": "68F/54F partly cloudy",
+    "continuity": {
+      "flags": [
+        "wardrobe",
+        "hair",
+        "props",
+        "weather",
+        "injury"
+      ],
+      "hours_rule": "unshowered 24h · cut scabbed · non-lethal"
+    },
+    "coverage": {
+      "must_get": [
+        "confrontation",
+        "phone insert",
+        "wide establishing"
+      ]
+    }
+  },
+  "beats": []
+}

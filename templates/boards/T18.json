@@ -1,0 +1,1 @@
+{ "id": "T18", "title": "Executor Contract", "domain": "coding/ops", "caps": ["exec.scope", "exec.approve", "exec.receipt"] }

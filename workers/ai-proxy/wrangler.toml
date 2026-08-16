@@ -1,0 +1,10 @@
+name = "timmy-ai-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+# Secrets live HERE as Worker secrets, never on the laptop:
+#   wrangler secret put OPENROUTER_API_KEY   (upstream key)
+#   wrangler secret put TIMMY_EDGE_TOKEN     (caller auth; all routes but /health)
+# Hardened 2026-08-15: /code removed (no eval on Workers), caller auth +
+# model allowlist (ALLOWED_MODELS var) + RATE_LIMIT_PER_MIN + upstream status
+# passthrough. NOTE: the 2026-08-15 live deployment predates this hardening —
+# redeploy (owner's word) or wrangler delete before relying on the edge route.

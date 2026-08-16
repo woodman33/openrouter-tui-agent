@@ -5,10 +5,40 @@ export interface ReceiptArtifact {
   sha256: string;
 }
 
+export interface RuntimeReceipt {
+  id: string;
+  version?: string;
+  transport: 'spawn' | 'sdk' | 'remote';
+  capabilities?: string[];
+  command_sha256?: string;
+  exit_code?: number | null;
+  duration_ms?: number;
+  approval?: {
+    status: 'not_required' | 'required' | 'approved' | 'denied';
+    approved_at?: string;
+    approved_by?: string;
+  };
+  sandbox?: {
+    kind: string;
+    workspace: string;
+  };
+  usage?: {
+    provider?: string;
+    model?: string;
+    input_tokens?: number;
+    output_tokens?: number;
+    cached_tokens?: number;
+    estimated_cost_usd?: number;
+    actual_cost_usd?: number;
+  };
+  policy_sha256?: string;
+  files_changed?: Array<{ path: string; before_sha256?: string; after_sha256?: string }>;
+}
+
 export interface Receipt {
   schema_version: string;
   run_id: string;
-  type: 'demo' | 'proof';
+  type: 'demo' | 'proof' | 'fusion';
   task: string;
   created_at: string;
   cwd: string;
@@ -19,6 +49,15 @@ export interface Receipt {
     version: string;
   };
   status: 'completed' | 'running' | 'failed';
+  runtime?: RuntimeReceipt;
+  plugins_run?: string[];
+  models_used?: Array<{ id: string; weight?: number; tokens?: number }>;
+  rive_state_hash?: string;
+  consensus?: {
+    model: string;
+    tokens: number;
+    latency_ms: number;
+  };
   artifacts: ReceiptArtifact[];
   receipt_sha256: string;
 }

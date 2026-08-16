@@ -33,7 +33,7 @@ function validateRenderedBox(output: string, maxWidth: number, label: string): v
 }
 
 assert(
-  MODES.join('>') === 'brief>files>porter>workspace>proof>options>discovery>teams>logs',
+  MODES.join('>') === 'brief>hermes>workspace>logs',
   `unexpected launch mode order: ${MODES.join('>')}`
 );
 

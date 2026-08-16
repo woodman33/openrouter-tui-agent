@@ -1,6 +1,6 @@
 {
   "name": "timmy-tui",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "TIMMY TUI, a terminal-first Agent Trust OS.",
   "type": "module",
   "main": "dist/cli.js",
@@ -27,6 +27,7 @@
     "dev": "tsx watch cli.tsx",
     "build": "tsc",
     "test": "vitest run",
+    "test:live": "RUN_LIVE_INTEGRATION=1 vitest run tests/list-card.test.ts",
     "companion:dev": "vite",
     "companion:build": "vite build",
     "cf:dev": "npx wrangler dev src/companion/cloudflare-worker.ts",
@@ -40,13 +41,20 @@
     "timmy:receipt-index": "tsx scripts/timmy-receipt-index.ts",
     "timmy:agent-proof-verify": "tsx scripts/timmy-agent-proof-verify.ts",
     "timmy:snapshot": "tsx scripts/timmy-snapshot.ts",
+    "timmy:drafts": "tsx scripts/preview-drafts.tsx",
     "timmy:generation:intent-pack": "tsx scripts/timmy-generation-intent-pack.ts",
     "timmy:simulate:single": "tsx scripts/timmy-simulate-single.ts",
-    "prepublishOnly": "npm run build && npm test"
+    "prepublishOnly": "npm run build && npm test",
+    "version:generate": "tsx scripts/generate-version.ts",
+    "prebuild": "npm run version:generate",
+    "pretest": "npm run version:generate",
+    "prepack": "npm run build",
+    "typecheck:native": "tsgo --noEmit",
+    "typecheck:worker": "tsc -p workers/ai-proxy"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/woodman33/openrouter-tui-agent.git"
+    "url": "git+https://github.com/woodman33/timmy-tui.git"
   },
   "keywords": [
     "agentops",
@@ -63,20 +71,22 @@
   "author": "William Meldman",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/woodman33/openrouter-tui-agent/issues"
+    "url": "https://github.com/woodman33/timmy-tui/issues"
   },
-  "homepage": "https://github.com/woodman33/openrouter-tui-agent#readme",
+  "homepage": "https://timmytui.com",
   "dependencies": {
     "@cloudflare/flagship": "^0.3.1",
     "@openfeature/server-sdk": "^1.21.0",
     "@openrouter/sdk": "latest",
     "@rive-app/canvas": "^2.36.0",
+    "@theatre/core": "^0.7.2",
     "chalk": "^5.4.0",
     "commander": "^13.0.0",
     "conf": "^13.0.0",
     "eventemitter3": "^5.0.0",
     "express": "^4.22.2",
     "ink": "^7.0.3",
+    "mcporter": "^0.12.3",
     "open": "^11.0.0",
     "playwright": "^1.49.0",
     "qrcode-terminal": "^0.12.0",
@@ -91,9 +101,10 @@
     "@types/qrcode-terminal": "^0.12.2",
     "@types/react": "^19.0.0",
     "@types/ws": "^8.5.13",
+    "@typescript/native-preview": "^7.0.0-dev.20260707.2",
     "@vercel/sandbox": "^2.0.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0",
+    "typescript": "^7.0.2",
     "vite": "^6.0.0",
     "vitest": "^3.0.0"
   }

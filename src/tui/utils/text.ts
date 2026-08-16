@@ -42,6 +42,16 @@ export function visibleWidth(value: string): number {
   return Array.from(stripTerminalCodes(value)).reduce((width, char) => width + charWidth(char), 0);
 }
 
+// Terminal captures arrive with escape codes (real ESC sequences AND literal
+// \033 text from uninterpreted printf). Strip both so panes read clean.
+export function stripAnsi(value: string): string {
+  return value
+    .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '')
+    .replace(/\\033\[[0-9;]*[a-zA-Z]/g, '')
+    .replace(/\\n/g, ' ')
+    .replace(/\s+$/, '');
+}
+
 export function truncateVisible(value: string, maxWidth: number, suffix = '...'): string {
   const clean = stripTerminalCodes(value);
   if (maxWidth <= 0) return '';

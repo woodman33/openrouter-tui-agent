@@ -191,7 +191,7 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
 
       {/* 4. Raw manifest expanded if toggled */}
       <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Text color="#8b949e" dimColor>
+        <Text color="#8b949e">
           {showRawManifest 
             ? `Raw JSON Manifest:\n{\n  "runId": "${latestReceipt.runId}",\n  "manifestHash": "${latestReceipt.manifestHash}",\n  "status": "sealed",\n  "scope": "proof.receipt.ledger"\n}` 
             : 'Raw manifest collapsed. Select [Show Raw Manifest] action to expand.'
@@ -204,7 +204,7 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
         <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 EVIDENCE VERIFIER CONSOLE">
           <Box flexDirection="column" paddingX={1} minHeight={4}>
             <Text color="#c9d1d9">{outputLog}</Text>
-            <Text color="#8b949e" dimColor>Status: verified tamper-evident and hash-bound.</Text>
+            <Text color="#8b949e">Status: verified tamper-evident and hash-bound.</Text>
           </Box>
         </GlowBorder>
       </Box>
@@ -214,7 +214,7 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
         <Text color="#8b949e">[ proof ] </Text>
         <Text color="#79c0ff">▶ </Text>
         <Text color="#ffffff">{inputCmd}</Text>
-        <Text color="#8a8a94">█</Text>
+        <Text color="#a5b0bc">█</Text>
       </Box>
     </Box>
   );

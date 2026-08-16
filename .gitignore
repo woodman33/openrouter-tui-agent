@@ -24,6 +24,7 @@ __pycache__/
 .timmy/
 logs/
 receipts/
+context/
 *.receipt.json
 *.receipt.jsonl
 *.pem
@@ -46,3 +47,9 @@ markdown-vault/
 tmp_test_outputs/
 launch-assets/
 outputs/
+
+# Private business / launch material (never push publicly)
+marketing-plan/
+launch/
+README copy.md
+tools/

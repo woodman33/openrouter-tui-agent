@@ -1,0 +1,5 @@
+{
+  "W2": { "workflow": "image → image", "boards": ["P63", "T20"] },
+  "W3": { "workflow": "image → video", "boards": ["V111", "T9", "T20"] },
+  "W8": { "workflow": "voice / sim", "boards": ["V111", "T19", "T21"] }
+}

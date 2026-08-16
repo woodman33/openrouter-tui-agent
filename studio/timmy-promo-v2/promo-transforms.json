@@ -1,0 +1,50 @@
+[
+  {
+    "target": "scene-brand",
+    "at": 0,
+    "prop": "opacity",
+    "value": 0
+  },
+  {
+    "target": "scene-brand",
+    "at": 0,
+    "prop": "y",
+    "value": 24
+  },
+  {
+    "target": "scene-brand",
+    "at": 1.2,
+    "prop": "opacity",
+    "value": 1
+  },
+  {
+    "target": "scene-brand",
+    "at": 1.2,
+    "prop": "y",
+    "value": 0
+  },
+  {
+    "target": "scene-otio",
+    "at": 5,
+    "prop": "opacity",
+    "value": 0
+  },
+  {
+    "target": "scene-otio",
+    "at": 6,
+    "prop": "opacity",
+    "value": 1
+  },
+  {
+    "target": "scene-seal",
+    "at": 12.5,
+    "prop": "scale",
+    "value": 0.9
+  },
+  {
+    "target": "scene-seal",
+    "at": 13.5,
+    "prop": "scale",
+    "value": 1
+  }
+]

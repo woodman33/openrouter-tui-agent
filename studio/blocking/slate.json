@@ -1,0 +1,15 @@
+{
+  "refs": [],
+  "gens": [],
+  "name": "blocking",
+  "created_at": "2026-08-14T05:21:43.831Z",
+  "template": "blocking",
+  "beats": [
+    {
+      "at": 0,
+      "dur": 12,
+      "label": "BLOCKING",
+      "text": "blocking — GOD/POV diagrams, marks + facing + emotion"
+    }
+  ]
+}

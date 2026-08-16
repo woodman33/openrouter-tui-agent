@@ -1,0 +1,14 @@
+{
+  "name": "blocking",
+  "kind": "blocking",
+  "total": 12,
+  "source": "timmy-default",
+  "beats": [
+    {
+      "at": 0,
+      "dur": 12,
+      "label": "BLOCKING",
+      "text": "{brief} — GOD/POV diagrams, marks + facing + emotion"
+    }
+  ]
+}

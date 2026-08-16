@@ -6,16 +6,18 @@ import type { Agent } from '../../agent/core.js';
 import { renderMarkdown } from '../../utils/markdown.js';
 import { theme } from '../theme.js';
 import { SLASH_COMMANDS, handleSlashCommand, getAutocompleteEnabled } from '../../utils/slash-commands.js';
-import { truncateVisible, scrollVisibleLeft, truncateMiddleOrEnd, splitModelNameAndBlurb, getModelColors } from '../utils/text.js';
+import { truncateVisible, scrollVisibleLeft, truncateMiddleOrEnd, splitModelNameAndBlurb, getModelColors, wrapVisible } from '../utils/text.js';
 import { Spinner } from '../components/Motion.js';
 import { useEdgeHealth } from '../hooks/useEdgeHealth.js';
 import { PrimaryButton, SecondaryButton } from '../components/DesignSystem.js';
 import { fetchModels } from '../../agent/openrouter-client.js';
+import { LogRain } from './LogRain.js';
 
 interface ChatPanelProps {
   agent: Agent;
   setInspector: (data: any) => void;
-  focusArea: 'nav' | 'stage';
+  zone?: number;
+  setZone?: (z: number) => void;
 }
 
 const FALLBACK_MODELS = [
@@ -30,7 +32,7 @@ const FALLBACK_MODELS = [
   { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', description: 'top coding open weights assistant' }
 ];
 
-export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
+export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelProps) {
   const { rows: height, columns: width } = useWindowSize();
   const terminalHeight = height || 24;
   const terminalWidth = width || 80;
@@ -51,9 +53,16 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   // OpenRouter Model Rail states
   const [liveModels, setLiveModels] = useState<any[]>([]);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
+  const [showModelDetail, setShowModelDetail] = useState(false);
   const [highlightedModelIdx, setHighlightedModelIdx] = useState(0);
-  const [focusSection, setFocusSection] = useState<'chat' | 'modelRail'>('chat');
+  const [focusSection, setFocusSection] = useState<'chat' | 'modelRail' | 'logRain'>('chat');
   const [modelChangedFlash, setModelChangedFlash] = useState(false);
+
+  // ONE GRAMMAR: pane focus lives in the root zone (-1 nav · 0 chat · 1 rail · 2 rain)
+  const focusPane = (s: 'chat' | 'modelRail' | 'logRain') => {
+    setFocusSection(s);
+    setZone?.(s === 'chat' ? 0 : s === 'modelRail' ? 1 : 2);
+  };
 
   useEffect(() => {
     fetchModels().then(models => {
@@ -65,14 +74,28 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
     });
   }, []);
 
-  const stageWidth = focusArea === 'stage' ? terminalWidth : terminalWidth - 24;
-  const railWidth = Math.min(48, Math.max(32, Math.floor(stageWidth * 0.32)));
-  const chatWidth = Math.max(30, stageWidth - railWidth - 2);
+  // Drawable stage width = terminal minus Layout's NAV column (14 when W>=90) and STAGE paddingX=2.
+  // Sizing from the true width is what keeps the chat from ever sliding under the right rail.
+  const navWidth = terminalWidth >= 90 ? 14 : 0;
+  const stageWidth = Math.max(60, terminalWidth - navWidth - 4);
+  const railWidth = Math.max(30, Math.min(44, Math.floor(stageWidth * 0.28)));
+  const rainWidth = Math.max(34, Math.min(60, Math.floor(stageWidth * 0.24)));
+  // Three full-height columns (chat | rail | rain) only when chat keeps >=44 cols.
+  const threeCol = stageWidth >= 128 && stageWidth - railWidth - rainWidth - 8 >= 44;
+  const chatWidth = Math.max(30, stageWidth - railWidth - (threeCol ? rainWidth : 0) - 4);
 
+  // Chat viewport = measured fill, not a hard cap.
+  // Fixed chrome (Layout): top bar 2 (1 text + 1 border-bottom), bottom bar 1, stage paddingTop 1  → 4
+  // Panel chrome: header 2 + marginBottom 1, border box 2 (round borders), input marginTop 1 + 3 (1 text + 2 borders) → 9
+  // Autocomplete row (when visible): minHeight 1 + marginBottom 1 → +2
   const isCompact = terminalHeight < 36;
-  const visibleHeight = isCompact 
-    ? Math.max(5, terminalHeight - 14) 
-    : Math.max(8, terminalHeight - 16);
+  const railListHeight = Math.max(6, Math.floor((terminalHeight - 20) * 0.55));
+  const rainHeight = Math.max(6, terminalHeight - 20 - railListHeight);
+  const chromeOverhead = 4;
+  const headerOverhead = isCompact ? 2 : 3;
+  const autocompleteOverhead = 0; // refined below once autocomplete is known
+  const visibleHeight = Math.max(6, terminalHeight - chromeOverhead - headerOverhead - 2 - 4 - 2);
+  // = terminalHeight - 12 (compact) / - 13 (normal); the trailing -2 is headroom for autocomplete so the input never gets pushed off-screen.
 
   const updateInspectorData = () => {
     setInspector({
@@ -136,7 +159,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         lines.push(chalk.bold.hex('#a98bff')('◀ TIMMY Agent'));
         const parsedStream = renderMarkdown(state.streamingText, textWidth);
         lines.push(...parsedStream.split('\n'));
-        lines.push(chalk.hex('#8a8a94')('▌'));
+        lines.push(chalk.hex('#a5b0bc')('▌'));
       } else {
         lines.push(chalk.hex('#a98bff')('◌ Thinking...'));
       }
@@ -193,13 +216,14 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   }, [allLines.length, visibleHeight, userScrolledUp]);
 
   // Derive scrollable list of models
-  const rawModels = liveModels.length > 0 
+  const rawModels = liveModels.length > 0
     ? liveModels.map(m => {
         const fb = FALLBACK_MODELS.find(f => f.id === m.id);
         return {
           id: m.id,
           name: m.name || m.id,
-          description: fb ? fb.description : (m.description || 'description unavailable')
+          description: fb ? fb.description : (m.description || 'description unavailable'),
+          pricing: (m as any).pricing
         };
       })
     : FALLBACK_MODELS;
@@ -214,6 +238,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
   const visibleModels = filteredModels.slice(startIdx, startIdx + visibleModelCount);
 
   useInput((char, key) => {
+    if (zone < 0) return; // nav owns the keyboard
     if (focusSection === 'chat') {
       if (key.escape) {
         if (showAutocomplete) {
@@ -223,48 +248,84 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
       }
 
       if (key.rightArrow) {
-        setFocusSection('modelRail');
+        focusPane('modelRail');
         setHighlightedModelIdx(0);
+        return;
+      }
+      // ← from chat walks back to the left nav, like every other tab
+      if (key.leftArrow && checkpoints.length > 0) {
+        setZone?.(-1);
         return;
       }
 
       if (key.ctrl && char === 'm') {
-        setFocusSection('modelRail');
+        focusPane('modelRail');
         setHighlightedModelIdx(0);
         return;
       }
 
-      // Scroll chat history
-      if (key.upArrow && checkpoints.length > 0) {
+      // Scroll chat history — step scroll: default 3 lines (smooth), shift+↑↓ = 1 line (fine)
+      const scrollStep = key.shift ? 1 : 3;
+      if ((key.upArrow || (key.ctrl && char === 'k')) && checkpoints.length > 0) {
         setScrollOffset(prev => {
-          const next = Math.max(0, prev - 1);
+          const next = Math.max(0, prev - scrollStep);
           setUserScrolledUp(true);
           return next;
         });
         return;
       }
-      if (key.downArrow && checkpoints.length > 0) {
+      if ((key.downArrow || (key.ctrl && char === 'j')) && checkpoints.length > 0) {
         const totalLines = allLines.length;
         const maxScroll = Math.max(0, totalLines - visibleHeight);
         setScrollOffset(prev => {
-          const next = Math.min(maxScroll, prev + 1);
-          if (next >= maxScroll) {
-            setUserScrolledUp(false);
-          } else {
-            setUserScrolledUp(true);
-          }
+          const next = Math.min(maxScroll, prev + scrollStep);
+          setUserScrolledUp(next < maxScroll);
           return next;
         });
         return;
       }
+      // Page scroll — full viewport jumps
+      if (key.pageUp && checkpoints.length > 0) {
+        setScrollOffset(prev => {
+          const next = Math.max(0, prev - visibleHeight);
+          setUserScrolledUp(true);
+          return next;
+        });
+        return;
+      }
+      if (key.pageDown && checkpoints.length > 0) {
+        const totalLines = allLines.length;
+        const maxScroll = Math.max(0, totalLines - visibleHeight);
+        setScrollOffset(prev => {
+          const next = Math.min(maxScroll, prev + visibleHeight);
+          setUserScrolledUp(next < maxScroll);
+          return next;
+        });
+        return;
+      }
+      // Home/End
+      if (key.home && checkpoints.length > 0) {
+        setScrollOffset(0);
+        setUserScrolledUp(true);
+        return;
+      }
+      if (key.end && checkpoints.length > 0) {
+        setScrollOffset(Math.max(0, allLines.length - visibleHeight));
+        setUserScrolledUp(false);
+        return;
+      }
 
-      // If starting view, allow tab or left/right navigation of home buttons
+      // Starting view: 1-3 pick a home button (positional rhyme with LOGS 1-5),
+      // ←→ still walk panes
       if (checkpoints.length === 0) {
+        if (char === '1') { setActiveHomeBtnIdx(0); return; }
+        if (char === '2') { setActiveHomeBtnIdx(1); return; }
+        if (char === '3') { setActiveHomeBtnIdx(2); return; }
         if (key.leftArrow) {
           setActiveHomeBtnIdx(prev => prev <= 0 ? 2 : prev - 1);
           return;
         }
-        if (key.rightArrow || key.tab) {
+        if (key.rightArrow) {
           setActiveHomeBtnIdx(prev => prev >= 2 ? 0 : prev + 1);
           return;
         }
@@ -297,11 +358,11 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
               timestamp: Date.now()
             });
           } else if (activeHomeBtnIdx === 1) {
-            // Paste MCP URL
-            agent.emit('mode:change' as any, 'porter');
+            // Open Lanes (live agent panes)
+            agent.emit('mode:change' as any, 'lanes');
           } else if (activeHomeBtnIdx === 2) {
-            // Open Workspace
-            agent.emit('mode:change' as any, 'workspace');
+            // Open Files
+            agent.emit('mode:change' as any, 'files');
           }
           return;
         }
@@ -337,10 +398,20 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         setActiveSuggestIdx(0);
         setActiveHomeBtnIdx(-1);
       }
+    } else if (focusSection === 'logRain') {
+      // LogRain owns ↑↓ while focused; ←/Esc return to chat
+      if (key.leftArrow || key.escape) {
+        focusPane('chat');
+      }
+      return;
     } else {
       // focusSection === 'modelRail'
+      if (key.rightArrow) {
+        focusPane('logRain');
+        return;
+      }
       if (key.leftArrow || key.escape) {
-        setFocusSection('chat');
+        focusPane('chat');
         return;
       }
       if (key.upArrow) {
@@ -355,7 +426,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         const selectedModel = filteredModels[highlightedModelIdx];
         if (selectedModel) {
           state.switchModel(selectedModel.id);
-          setFocusSection('chat');
+          focusPane('chat');
           setModelChangedFlash(true);
           setTimeout(() => setModelChangedFlash(false), 1500);
           agent.emit('message:user', {
@@ -364,6 +435,12 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
             timestamp: Date.now()
           });
         }
+        return;
+      }
+      if (char === 'd') { setShowModelDetail(v => !v); return; }
+      if (char === 'o') {
+        const m = filteredModels[highlightedModelIdx];
+        if (m && (agent as any).addBrowserPane) (agent as any).addBrowserPane(`https://openrouter.ai/${m.id}`);
         return;
       }
       if (char && char !== '\t' && char !== '\r' && char !== '\n' && !key.ctrl && !key.meta) {
@@ -422,7 +499,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         <Box paddingX={1} flexDirection="column" marginBottom={isCompact ? 0 : 1} width={chatWidth - 2}>
           <Box justifyContent="space-between" width="100%">
             <Text bold color="#a98bff">💬 Main Chat</Text>
-            {state.isThinking || state.isStreaming ? <Spinner color="#a98bff" label="thinking" /> : <Text color="#8a8a94">Ready</Text>}
+            {state.isThinking || state.isStreaming ? <Spinner color="#a98bff" label="thinking" /> : <Text color="#a5b0bc">Ready</Text>}
           </Box>
           <Box marginTop={0}>
             <Text bold color="#ffffff">OpenRouter Agent</Text>
@@ -430,11 +507,11 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
           </Box>
         </Box>
 
-        {/* Messages Viewport with sleek Border and Scrollbar */}
-        <Box borderStyle="round" borderColor="#30363d" width={chatWidth - 2} height={visibleHeight + 2} flexDirection="row" paddingX={1} flexShrink={1} flexGrow={1}>
+        {/* Messages Viewport — flex-fills all remaining stage height */}
+        <Box borderStyle="round" borderColor="#30363d" width={chatWidth - 2} flexDirection="row" paddingX={1} flexShrink={1} flexGrow={1}>
           
           {/* Scrollable text region */}
-          <Box flexDirection="column" flexGrow={1} height={visibleHeight} justifyContent="flex-start" overflowY="hidden">
+          <Box flexDirection="column" flexGrow={1} height={visibleHeight} justifyContent={totalLines <= visibleHeight ? 'flex-end' : 'flex-start'} overflowY="hidden">
             {checkpoints.length === 0 ? (
               <Box flexGrow={1} flexDirection="column" paddingX={2} paddingY={1} justifyContent="space-around">
                 
@@ -447,7 +524,8 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                   <Text bold color="#a98bff">⚙️ Core trust chain:</Text>
                   <Text color="#e6edf3"> • <Text bold color="#43d6a0">OpenRouter Agent</Text>: model routing and agent reasoning</Text>
                   <Text color="#e6edf3"> • <Text bold color="#ff7b72">TIMMY Porter</Text>: MCP server ➔ CLI onboarding</Text>
-                  <Text color="#e6edf3"> • <Text bold color="#3fb950">cmux</Text>: visual workspace shell execution surface</Text>
+                  <Text color="#e6edf3"> • <Text bold color="#3fb950">carbonyl</Text>: headless Chromium browser lanes in terminal panes</Text>
+                  <Text color="#e6edf3"> • <Text bold color="#d29922">OpenHands</Text>: autonomous headless runner for delegated fixes (lane 4)</Text>
                 </Box>
 
                 {/* Three Buttons - Position Stable Fixed Width */}
@@ -457,13 +535,16 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
                     : <SecondaryButton label="Run Proof" selected={false} width={20} />
                   }
                   {activeHomeBtnIdx === 1 
-                    ? <PrimaryButton label="MCP ➔ CLI" selected={true} width={20} /> 
-                    : <SecondaryButton label="MCP ➔ CLI" selected={false} width={20} />
+                    ? <PrimaryButton label="Lanes" selected={true} width={20} /> 
+                    : <SecondaryButton label="Lanes" selected={false} width={20} /> 
                   }
-                  {activeHomeBtnIdx === 2 
-                    ? <PrimaryButton label="Open Workspace" selected={true} width={20} /> 
-                    : <SecondaryButton label="Open Workspace" selected={false} width={20} />
+                  {activeHomeBtnIdx === 2
+                    ? <PrimaryButton label="Files" selected={true} width={20} />
+                    : <SecondaryButton label="Files" selected={false} width={20} />
                   }
+                </Box>
+                <Box justifyContent="center" width="100%">
+                  <Text color="#8b949e">[1-3] pick · ↵ runs · → model rail</Text>
                 </Box>
 
               </Box>
@@ -482,13 +563,13 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         {showAutocomplete && matches.length > 0 && (
           <Box paddingX={1} minHeight={1} width={chatWidth - 2} flexDirection="row" flexWrap="wrap" marginBottom={1} flexShrink={0}>
             <Box marginRight={2}>
-              <Text color="#8a8a94">Suggestions: </Text>
+              <Text color="#a5b0bc">Suggestions: </Text>
             </Box>
             {matches.map((m, idx) => {
               const isCurrent = idx === activeSuggestIdx;
               return (
                 <Box key={m.command} marginRight={4}>
-                  <Text color={isCurrent ? '#4f9cff' : '#8a8a94'} bold={isCurrent}>
+                  <Text color={isCurrent ? '#4f9cff' : '#a5b0bc'} bold={isCurrent}>
                     {isCurrent ? `▶ ${m.command}` : m.command}
                   </Text>
                 </Box>
@@ -498,8 +579,8 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         )}
 
         {/* Input prompt box - Never disappears */}
-        <Box borderStyle="single" borderColor={focusSection === 'chat' && focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} width={chatWidth - 2} flexShrink={0} marginTop={1}>
-          <Text color="#8a8a94">[ main-chat ] </Text>
+        <Box borderStyle="single" borderColor={focusSection === 'chat' && zone >= 0 ? "#a98bff" : "#30363d"} paddingX={1} width={chatWidth - 2} flexShrink={0} marginTop={1}>
+          <Text color="#a5b0bc">[ main-chat ] </Text>
           <Text color="#4f9cff">{state.isThinking ? '◌ ' : '▶ '} </Text>
           <Text color="#e6edf3" wrap="truncate">{scrollVisibleLeft(input, inputTextWidth)}</Text>
           <Text color="#a98bff">{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
@@ -521,11 +602,20 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
           <Text color="#8b949e">Model Health: <Text bold color={
             state.modelHealthStatus === 'READY' ? '#3fb950' :
             state.modelHealthStatus === 'FALLBACK READY' ? '#d29922' :
-            state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#8a8a94'
+            state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#a5b0bc'
           }>{state.modelHealthStatus || 'UNTESTED'}</Text></Text>
           <Text color="#8b949e">Provider Status: <Text bold color={
-            (state.modelHealthStatus === 'READY' || state.modelHealthStatus === 'FALLBACK READY') ? '#3fb950' : '#ff7b72'
-          }>{(state.modelHealthStatus === 'READY' || state.modelHealthStatus === 'FALLBACK READY') ? 'ONLINE 🟢' : 'ERROR 🔴'}</Text></Text>
+            state.modelHealthStatus === 'READY' ? '#3fb950' :
+            state.modelHealthStatus === 'FALLBACK READY' ? '#d29922' :
+            state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#d29922'
+          }>{
+            state.modelHealthStatus === 'READY' ? 'ONLINE 🟢' :
+            state.modelHealthStatus === 'FALLBACK READY' ? 'FALLBACK 🟡 ollama' :
+            state.modelHealthStatus === 'ERROR' ? 'ERROR 🔴' : 'CHECKING ⏳'
+          }</Text></Text>
+          {state.modelHealthStatus === 'ERROR' && (agent as any).lastHealthError ? (
+            <Text color="#8b949e">  └ {String((agent as any).lastHealthError).slice(0, 70)}</Text>
+          ) : null}
         </Box>
 
         {/* Model Search Box */}
@@ -536,7 +626,7 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
         </Box>
 
         {/* Scrollable Model List */}
-        <Box flexDirection="column" flexGrow={1} overflowY="hidden" minHeight={8}>
+        <Box flexDirection="column" height={railListHeight} overflowY="hidden">
           {filteredModels.length === 0 ? (
             <Text color="#8b949e" italic>No matching models.</Text>
           ) : (
@@ -556,18 +646,40 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
               const nameText = truncateMiddleOrEnd(cleanName, usableWidth - 2);
               const descText = cleanDesc ? truncateMiddleOrEnd(cleanDesc, usableWidth - 2, true) : '';
 
-              const showDescription = !isCompact || isSelected || isActive;
+              const priceText = (() => {
+                try {
+                  const p = (m as any).pricing;
+                  if (!p) return '';
+                  const inn = parseFloat(p.prompt);
+                  const out = parseFloat(p.completion);
+                  if (!isFinite(inn) && !isFinite(out)) return '';
+                  if (inn === 0 && out === 0) return 'free';
+                  const fmt = (v: number) => (v === 0 ? '$0' : `$${(v * 1e6).toFixed(2)}`);
+                  return `${fmt(inn)}→${fmt(out)} /M tokens`;
+                } catch {
+                  return '';
+                }
+              })();
+
+              // Descriptions only for the highlighted/active model — a rail of
+              // mid-truncated blurbs was noise, not information.
+              const showDescription = isSelected || isActive;
 
               return (
                 <Box key={m.id} flexDirection="column" marginBottom={1}>
                   <Box>
                     <Text bold={isSelected || isActive} color={nameColor}>
-                      {marker}{nameText}
+                      {marker}{m.id.startsWith('ollama') || m.id.includes('local') ? '🏠 ' : '$ '}{nameText}
                     </Text>
                   </Box>
                   {showDescription && descText && (
                     <Box paddingLeft={2}>
                       <Text color={descColor}>{descText}</Text>
+                    </Box>
+                  )}
+                  {showDescription && priceText && (
+                    <Box paddingLeft={2}>
+                      <Text color="#a5b0bc">{priceText}</Text>
                     </Box>
                   )}
                 </Box>
@@ -576,15 +688,53 @@ export function ChatPanel({ agent, setInspector, focusArea }: ChatPanelProps) {
           )}
         </Box>
 
-        <Box flexGrow={1} />
+        {/* Model detail card — ghost-bordered, bottom-docked; the list above stays fully visible */}
+        {showModelDetail && (filteredModels[highlightedModelIdx] as any) && (() => {
+          const dm = filteredModels[highlightedModelIdx] as any;
+          const priceOf = (m: any): string => {
+            try {
+              const p = m?.pricing;
+              if (!p) return '';
+              const i = parseFloat(p.prompt), o = parseFloat(p.completion);
+              if (!isFinite(i) && !isFinite(o)) return '';
+              const f = (v: number) => (v === 0 ? '$0' : `$${(v * 1e6).toFixed(2)}`);
+              return `${f(i)}→${f(o)}/M`;
+            } catch { return ''; }
+          };
+          const activeModel = (rawModels as any[]).find(r => r.id === state.model);
+          return (
+            <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} marginTop={1} flexShrink={0}>
+              <Text bold color="#d2a8ff" wrap="truncate">{dm.name || dm.id}</Text>
+              {wrapVisible(String(dm.description || 'no description'), Math.max(20, railWidth - 6)).slice(0, 7).map((l, i) => (
+                <Text key={i} color="#9aa4b2">{l}</Text>
+              ))}
+              <Text color="#a5b0bc">
+                {dm.context_length ? `${Math.round(dm.context_length / 1000)}k ctx · ` : ''}{priceOf(dm)}
+              </Text>
+              {activeModel && activeModel.id !== dm.id && (
+                <Text color="#a5b0bc" wrap="truncate">vs active {String(state.model).split('/').pop()}: {priceOf(activeModel)}</Text>
+              )}
+              <Text color="#a5b0bc">[d] close · [o] full page in carbonyl</Text>
+            </Box>
+          );
+        })()}
+
+        {/* Live log rain — newest at top, rains downward (stacked mode) */}
+        {!threeCol && <LogRain height={rainHeight} focused={focusSection === 'logRain' && zone >= 0} />}
 
         <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
-          <Text color="#8b949e" dimColor>RightArrow: focus rail</Text>
-          <Text color="#8b949e" dimColor>LeftArrow: return to chat</Text>
-          <Text color="#8b949e" dimColor>Up/Down: scroll models</Text>
-          <Text color="#8b949e" dimColor>Enter: select model</Text>
+          <Text color="#8b949e">Tab·menu ←→·panes ↑↓·move</Text>
+          <Text color="#8b949e">Enter·select Esc·back ?·keys</Text>
+          <Text color="#8b949e">d·model detail o·open page</Text>
+          <Text color="#8b949e">^K·palette · 1-3 home buttons</Text>
         </Box>
       </Box>
+
+      {threeCol && (
+        <Box width={rainWidth} flexDirection="column" flexShrink={0}>
+          <LogRain height={terminalHeight - 12} focused={focusSection === 'logRain' && zone >= 0} />
+        </Box>
+      )}
     </Box>
   );
 }

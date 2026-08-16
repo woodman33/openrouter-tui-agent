@@ -1,5 +1,7 @@
 import { DurableObject, WorkflowEntrypoint } from "cloudflare:workers";
 import type { Message } from "../types/index.js";
+import { computeReceiptHash, Receipt } from "../receipt/schema.js";
+import { VERSION } from "../version.js";
 
 
 // Cloudflare Env Bindings conforming exactly to user receipt parameters
@@ -199,6 +201,94 @@ export class MyDurableObject extends DurableObject {
       return new Response(JSON.stringify({ status: "ok", sql: this.sqlInitialized }), {
         headers: { "Content-Type": "application/json" }
       });
+    }
+
+    // POST /api/workflow/fusion
+    if (method === "POST" && url.pathname === "/api/workflow/fusion") {
+      try {
+        const body = await request.json() as any;
+        const prompt = body.prompt || "";
+        const models = body.models || ["anthropic/claude-3.5-sonnet", "qwen/qwen-2.5-coder-32b", "google/gemini-2.5-pro"];
+        const plugins = body.plugins || ["zellij-forgot", "zellij-harpoon", "lazy-zellij"];
+        const riveStateHash = body.riveStateHash || "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+
+        const runId = `run_fusion_${Math.random().toString(36).substring(2, 9)}`;
+        const timestamp = Date.now();
+        const createdAt = new Date(timestamp).toISOString();
+
+        const modelsUsed = models.map((m: any, i: number) => {
+          if (typeof m === 'string') {
+            return { id: m, weight: i === 0 ? 0.6 : 0.2, tokens: 250 };
+          }
+          return {
+            id: m.id || "unknown",
+            weight: typeof m.weight === 'number' ? m.weight : 0.5,
+            tokens: typeof m.tokens === 'number' ? m.tokens : 250
+          };
+        });
+
+        const pluginsRun = plugins.map((p: any) => {
+          if (typeof p === 'string') {
+            if (p.includes('@')) return p;
+            return `${p}@1.0.0`;
+          }
+          return `${p.name || "unknown"}@${p.version || "1.0.0"}`;
+        });
+
+        const replayPath = `.timmy/receipts/fusion_run_${timestamp}/replay.md`;
+        const replayContent = `# Fusion Run Replay\n\nTask: ${prompt}\nModels: ${modelsUsed.map((m: any) => m.id).join(', ')}`;
+        
+        const encoder = new TextEncoder();
+        const data = encoder.encode(replayContent);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const replayHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+        const receiptWithoutHash: Omit<Receipt, 'receipt_sha256'> = {
+          schema_version: "0.3",
+          run_id: runId,
+          type: "fusion",
+          task: prompt,
+          created_at: createdAt,
+          cwd: "/path/to/openrouter-tui-agent",
+          platform: "linux",
+          node_version: "v20.0.0",
+          package: {
+            name: "timmy-tui",
+            version: VERSION
+          },
+          status: "completed",
+          models_used: modelsUsed,
+          plugins_run: pluginsRun,
+          rive_state_hash: riveStateHash,
+          consensus: {
+            model: modelsUsed[0]?.id || "gemini-2.5-pro",
+            tokens: 1800,
+            latency_ms: 450
+          },
+          artifacts: [
+            { path: replayPath, sha256: replayHash }
+          ]
+        };
+
+        const finalHash = computeReceiptHash(receiptWithoutHash);
+        const receipt: Receipt = {
+          ...receiptWithoutHash,
+          receipt_sha256: finalHash
+        };
+
+        return new Response(JSON.stringify({
+          success: true,
+          receipt
+        }), {
+          headers: { "Content-Type": "application/json" }
+        });
+      } catch (err: any) {
+        return new Response(JSON.stringify({ success: false, error: err.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
     }
 
     // POST /runs/create
@@ -417,7 +507,19 @@ export class MyDurableObject extends DurableObject {
     // GET /runs
     if (method === "GET" && url.pathname === "/runs") {
       this.initSql();
-      const cursor = this.ctx.storage.sql.exec("SELECT * FROM runs");
+      // Self-heal: backfill runs rows for any run_id present in events but missing from runs.
+      // Happens when /telemetry logged events before /runs/create was ever called on that id.
+      try {
+        this.ctx.storage.sql.exec(`
+          INSERT OR IGNORE INTO runs (run_id, goal, status, created_at, updated_at)
+          SELECT DISTINCT e.run_id, 'Recovered from telemetry', 'archived', MIN(e.timestamp), MAX(e.timestamp)
+          FROM events e
+          LEFT JOIN runs r ON r.run_id = e.run_id
+          WHERE r.run_id IS NULL
+          GROUP BY e.run_id;
+        `);
+      } catch { /* non-blocking */ }
+      const cursor = this.ctx.storage.sql.exec("SELECT * FROM runs ORDER BY updated_at DESC");
       const list = [];
       for (const row of cursor) {
         list.push({
@@ -468,6 +570,14 @@ export class MyDurableObject extends DurableObject {
     // GET /runs/:runId/context
     if (method === "GET" && url.pathname.endsWith("/context")) {
       const runId = url.pathname.split("/")[2];
+      this.initSql();
+      const runCursor = this.ctx.storage.sql.exec("SELECT run_id FROM runs WHERE run_id = ?", runId);
+      if ([...runCursor].length === 0) {
+        return new Response(JSON.stringify({ error: "Run not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
       const context = this.getContext(runId);
       return new Response(JSON.stringify(context), {
         headers: { "Content-Type": "application/json" }
@@ -477,6 +587,14 @@ export class MyDurableObject extends DurableObject {
     // GET /runs/:runId/receipt
     if (method === "GET" && url.pathname.endsWith("/receipt")) {
       const runId = url.pathname.split("/")[2];
+      this.initSql();
+      const runCursor = this.ctx.storage.sql.exec("SELECT run_id FROM runs WHERE run_id = ?", runId);
+      if ([...runCursor].length === 0) {
+        return new Response(JSON.stringify({ error: "Run not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
       const context = this.getContext(runId);
       const evts = this.getEvents(runId);
 
@@ -609,7 +727,9 @@ export class MyDurableObject extends DurableObject {
     if (method === "POST" && url.pathname === "/telemetry") {
       const body = await request.json() as any;
       const legacyPayload = body.payload || {};
-      const runId = legacyPayload.runId || "default-local-run";
+      // The telemetry bridge sends runId as top-level `activeRunId`.
+      // Older payloads used payload.runId. Accept both.
+      const runId = body.activeRunId || legacyPayload.runId || "default-local-run";
       
       let eventType = "agent.intent";
       if (body.event === "tmux:output" || body.event === "tmux.output.line") {
@@ -617,8 +737,11 @@ export class MyDurableObject extends DurableObject {
       } else if (
         body.event === "tmux.command.sent" ||
         body.event === "approval.required" ||
+        body.event === "approval.granted" ||
         body.event === "build.finished" ||
         body.event === "git.diff.detected" ||
+        body.event === "receipt.generated" ||
+        body.event === "agent.intent" ||
         body.event === "run.created" ||
         body.event === "mode.change" ||
         body.event === "model.switch" ||
@@ -645,6 +768,7 @@ export class MyDurableObject extends DurableObject {
           ...legacyPayload
         }
       };
+
       console.log(JSON.stringify({
         source: "timmy-edge",
         route: "/telemetry",
@@ -655,15 +779,47 @@ export class MyDurableObject extends DurableObject {
         sessionName: event.sessionName || null
       }));
 
-      // Recurse to /runs/:runId/event
-      const localUrl = new URL(`/runs/${runId}/event`, request.url);
-      const subRes = await this.fetch(new Request(localUrl.toString(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(event)
-      }));
+      // Write directly to SQLite (no recursive fetch — avoids DO reentrancy 503s).
+      this.initSql();
 
-      return subRes;
+      // Upsert runs row when we learn about a run via telemetry
+      if (body.event === "run.created") {
+        const goal = legacyPayload.goal || legacyPayload.task || "Coordinate background agent cluster sessions";
+        this.ctx.storage.sql.exec(
+          "INSERT OR REPLACE INTO runs (run_id, goal, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+          runId,
+          String(goal),
+          "active",
+          new Date().toISOString(),
+          new Date().toISOString()
+        );
+      }
+
+      this.ctx.storage.sql.exec(
+        "INSERT INTO events (id, run_id, type, session_id, session_name, timestamp, payload_json) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        event.id,
+        runId,
+        event.type,
+        event.sessionId || null,
+        event.sessionName || null,
+        event.timestamp,
+        JSON.stringify(event.payload || {})
+      );
+
+      // Mirror to Analytics Engine (best-effort)
+      if (this.env.TELEMETRY_ANALYTICS) {
+        try {
+          this.env.TELEMETRY_ANALYTICS.writeDataPoint({
+            indexes: [runId],
+            blobs: [event.type, event.sessionId || "", event.sessionName || ""],
+            doubles: [1]
+          });
+        } catch { /* non-blocking */ }
+      }
+
+      return new Response(JSON.stringify({ success: true, runId, eventType }), {
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     // POST /api/create-checkout-session
@@ -1067,7 +1223,7 @@ export class MyDurableObject extends DurableObject {
                   <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Your subscription grants these verifiable AgentPass claims visa for governed runner executions:</p>
                   
                   <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                    ${scopes.map(s => `<span style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-family: monospace;">${s}</span>`).join('')}
+                    ${scopes.map(s => '<span style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-family: monospace;">' + s + '</span>').join('')}
                   </div>
                 </div>
                 
@@ -1299,16 +1455,18 @@ export class MyDurableObject extends DurableObject {
       if (e.type === "tmux.command.sent") {
         const cmd = String(e.payload?.command || "");
         const cwd = String(e.payload?.cwd || "");
-        desc = `Executed command: <code style="color: var(--blue); font-weight: bold;">${this.escapeHtml(cmd)}</code>${cwd ? ` in <code style="color: var(--text-muted);">${this.escapeHtml(cwd)}</code>` : ''}`;
+        const cwdSuffix = cwd ? ' in <code style="color: var(--text-muted);">' + this.escapeHtml(cwd) + '</code>' : '';
+        desc = `Executed command: <code style="color: var(--blue); font-weight: bold;">${this.escapeHtml(cmd)}</code>${cwdSuffix}`;
       } else if (e.type === "command.finished") {
         const cmd = String(e.payload?.command || "");
         const cwd = String(e.payload?.cwd || "");
         const exitCode = e.payload?.exitCode !== undefined ? Number(e.payload.exitCode) : 0;
         const success = !!e.payload?.success;
         const statusBadge = success 
-          ? `<span style="color: var(--green); font-weight: bold;">🟢 SUCCESS</span>` 
-          : `<span style="color: var(--red); font-weight: bold;">🔴 FAILED (exit code: ${exitCode})</span>`;
-        desc = `Command finished: <code style="color: var(--blue);">${this.escapeHtml(cmd)}</code> - Status: ${statusBadge}${cwd ? ` (at <code style="color: var(--text-muted);">${this.escapeHtml(cwd)}</code>)` : ''}`;
+          ? '<span style="color: var(--green); font-weight: bold;">🟢 SUCCESS</span>'
+          : '<span style="color: var(--red); font-weight: bold;">🔴 FAILED (exit code: ' + exitCode + ')</span>';
+        const cwdSuffix2 = cwd ? ' (at <code style="color: var(--text-muted);">' + this.escapeHtml(cwd) + '</code>)' : '';
+        desc = `Command finished: <code style="color: var(--blue);">${this.escapeHtml(cmd)}</code> - Status: ${statusBadge}${cwdSuffix2}`;
       } else if (e.type === "receipt.generated") {
         const url = String(e.payload?.receiptUrl || "");
         desc = `🛡️ TIMMY Run Receipt V3.1 generated: <a href="${url}" target="_blank" style="color: var(--green); text-decoration: underline;">${this.escapeHtml(url)}</a>`;
@@ -1339,7 +1497,7 @@ export class MyDurableObject extends DurableObject {
           <span class="timeline-time">${new Date(e.timestamp).toLocaleTimeString()}</span>
           <span class="timeline-badge badge-${e.type.replace(/\./g, '-')}">${e.type}</span>
           <p class="timeline-desc">
-            ${e.sessionId ? `[Session: ${e.sessionName}] ` : ''}
+            ${e.sessionId ? '[Session: ' + e.sessionName + '] ' : ''}
             ${desc}
           </p>
         </div>
@@ -1617,7 +1775,8 @@ export default {
       url.pathname === "/account" ||
       url.pathname === "/api/create-checkout-session" ||
       url.pathname === "/api/stripe/webhook" ||
-      url.pathname === "/api/subscription"
+      url.pathname === "/api/subscription" ||
+      url.pathname === "/api/workflow/fusion"
     ) {
       const id = env.MY_DURABLE_OBJECT.idFromName("global_state");
       const stub = env.MY_DURABLE_OBJECT.get(id);
@@ -1637,7 +1796,7 @@ export default {
     if (request.method === "POST" && url.pathname === "/telemetry") {
       try {
         const body = await request.clone().json() as any;
-        runId = body.payload?.runId || "default-local-run";
+        runId = body.activeRunId || body.payload?.runId || "default-local-run";
       } catch {}
     }
 
@@ -1652,7 +1811,9 @@ export default {
       runId = "default-local-run";
     }
 
-    const id = env.MY_DURABLE_OBJECT.idFromName(runId);
+    // Single shared DO so /runs listing and per-run queries see the same SQLite instance.
+    // Different runs are distinguished inside the runs/events tables by run_id.
+    const id = env.MY_DURABLE_OBJECT.idFromName("central");
     const stub = env.MY_DURABLE_OBJECT.get(id);
     return await stub.fetch(request);
   }

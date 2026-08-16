@@ -8,6 +8,18 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <!-- Tailwind Play CDN: runtime-compiles the Tailwind utility classes emitted by
+       Streamdown's components (no build step on this page). Preflight is disabled
+       so the runtime CSS reset never touches the existing companion styles. -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: 'class',
+        corePlugins: { preflight: false }
+      };
+    }
+  </script>
   <style>
     :root {
       --primary-h: 38;    /* Amber */
@@ -371,6 +383,77 @@
       border-color: #f85149;
       box-shadow: 0 0 10px rgba(248, 81, 73, 0.2);
     }
+
+    /* ---------- ⚡ Streamdown Chat (TMX P3) ---------- */
+
+    #streamdown-root {
+      flex-grow: 1;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #06090e;
+
+      /* shadcn/ui tokens consumed by Streamdown internals (dark theme) */
+      --background: 222 47% 4%;
+      --foreground: 213 31% 91%;
+      --card: 222 47% 6%;
+      --card-foreground: 213 31% 91%;
+      --popover: 222 47% 6%;
+      --popover-foreground: 213 31% 91%;
+      --primary: 253 100% 77%;
+      --primary-foreground: 240 10% 4%;
+      --secondary: 217 33% 17%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 217 33% 17%;
+      --muted-foreground: 215 20% 65%;
+      --accent: 253 40% 20%;
+      --accent-foreground: 253 100% 85%;
+      --destructive: 0 63% 45%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 215 14% 22%;
+      --input: 215 14% 22%;
+      --ring: 253 100% 77%;
+      --radius: 0.6rem;
+    }
+
+    #streamdown-root::-webkit-scrollbar,
+    #streamdown-root *::-webkit-scrollbar { width: 6px; height: 6px; }
+    #streamdown-root::-webkit-scrollbar-track,
+    #streamdown-root *::-webkit-scrollbar-track { background: rgba(13, 17, 23, 0.4); }
+    #streamdown-root::-webkit-scrollbar-thumb,
+    #streamdown-root *::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+    #streamdown-root::-webkit-scrollbar-thumb:hover,
+    #streamdown-root *::-webkit-scrollbar-thumb:hover { background: #a98bff; }
+
+    /* Markdown fallback styling — guarantees a dark, on-brand look even where
+       Streamdown's Tailwind utilities have not been compiled yet. Elements are
+       targeted through Streamdown's stable data attributes. */
+    .sd-island { color: var(--text-main); font-size: 14px; line-height: 1.65; font-family: var(--font-inter); min-width: 0; }
+    .sd-island [data-streamdown="heading-1"] { font-family: var(--font-outfit); font-size: 22px; font-weight: 800; margin: 16px 0 8px; color: #ffffff; letter-spacing: -0.01em; }
+    .sd-island [data-streamdown="heading-2"] { font-family: var(--font-outfit); font-size: 18px; font-weight: 800; margin: 14px 0 6px; color: #a98bff; }
+    .sd-island [data-streamdown="heading-3"] { font-family: var(--font-outfit); font-size: 15px; font-weight: 700; margin: 12px 0 6px; color: var(--text-main); }
+    .sd-island [data-streamdown="heading-4"],
+    .sd-island [data-streamdown="heading-5"],
+    .sd-island [data-streamdown="heading-6"] { font-family: var(--font-outfit); font-size: 13px; font-weight: 700; margin: 10px 0 4px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .sd-island p { margin: 6px 0; }
+    .sd-island [data-streamdown="strong"] { color: #ffffff; font-weight: 700; }
+    .sd-island [data-streamdown="unordered-list"],
+    .sd-island [data-streamdown="ordered-list"] { margin: 6px 0 6px 22px; display: flex; flex-direction: column; gap: 3px; }
+    .sd-island [data-streamdown="inline-code"] { font-family: var(--font-fira); font-size: 12px; background: #161b22; border: 1px solid #30363d; color: #a98bff; padding: 1px 6px; border-radius: 5px; }
+    .sd-island [data-streamdown="code-block"] { background: #0d1117; border: 1px solid #30363d; border-radius: 10px; margin: 10px 0; overflow-x: auto; font-family: var(--font-fira); font-size: 12px; }
+    .sd-island [data-streamdown="code-block"] pre { margin: 0; padding: 12px; overflow-x: auto; background: transparent !important; }
+    .sd-island .shiki { background: transparent !important; margin: 0 !important; }
+    .sd-island [data-streamdown="mermaid-block"] { background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 12px; margin: 10px 0; overflow-x: auto; }
+    .sd-island [data-streamdown="blockquote"] { border-left: 3px solid #a98bff; padding: 4px 12px; color: var(--text-muted); margin: 8px 0; background: rgba(169, 139, 255, 0.05); border-radius: 0 8px 8px 0; }
+    .sd-island [data-streamdown="table-wrapper"] { overflow-x: auto; margin: 10px 0; border: 1px solid #30363d; border-radius: 8px; }
+    .sd-island [data-streamdown="table"] { border-collapse: collapse; font-size: 12px; width: 100%; }
+    .sd-island [data-streamdown="table-header-cell"] { background: rgba(169, 139, 255, 0.08); font-weight: 700; }
+    .sd-island [data-streamdown="table-header-cell"],
+    .sd-island [data-streamdown="table-cell"] { border: 1px solid #30363d; padding: 6px 10px; }
+    .sd-island [data-streamdown="link"] { color: #79c0ff; text-decoration: none; }
+    .sd-island [data-streamdown="link"]:hover { text-decoration: underline; }
+    .sd-island [data-streamdown="horizontal-rule"] { border: none; border-top: 1px solid #30363d; margin: 14px 0; }
   </style>
 </head>
 <body>
@@ -396,6 +479,7 @@
         <button class="tab-btn" id="btn-workspace" onclick="switchTab('workspace')">⚡ WORKSPACE</button>
         <button class="tab-btn" id="btn-logs" onclick="switchTab('logs')">📊 LOGS</button>
         <button class="tab-btn" id="btn-proof" onclick="switchTab('proof')">🧾 PROOF</button>
+        <button class="tab-btn" id="btn-streamdown" onclick="switchTab('streamdown')">⚡ STREAMDOWN CHAT</button>
       </div>
 
       <!-- Tab Panel 1: Chat Mirror -->
@@ -455,22 +539,22 @@
           </div>
           
           <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
-            Choose where work happens. cmux is visual. Browser mirrors TIMMY. tmux is fallback persistence.
+            Choose where work happens. Carbonyl renders a real browser in a terminal pane. Browser Companion mirrors TIMMY. tmux is fallback persistence.
           </p>
 
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px;">
-            <!-- Card 1: cmux Workspace -->
+            <!-- Card 1: Carbonyl In-Pane Browser -->
             <div style="background: #06090e; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; justify-content: space-between; transition: all 0.2s ease;">
               <div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <strong style="color: var(--success-hsl); font-size: 14px; font-family: var(--font-outfit);">cmux Workspace</strong>
+                  <strong style="color: #a98bff; font-size: 14px; font-family: var(--font-outfit);">Carbonyl Browser</strong>
                   <span style="font-size: 10px; font-weight: bold; color: var(--success-hsl);">[ READY ]</span>
                 </div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Purpose: Visual local workspace shell</div>
-                <p style="font-size: 12px; color: var(--text-main); margin-top: 8px; line-height: 1.4;">Opens a clickable local workspace at the current TIMMY root.</p>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Purpose: In-pane Chromium browser lane</div>
+                <p style="font-size: 12px; color: var(--text-main); margin-top: 8px; line-height: 1.4;">Renders this companion UI (real Chromium: JS, WebGL, video) headlessly inside a multiplexer pane.</p>
               </div>
               <div style="margin-top: 12px;">
-                <button class="btn-action success" style="width: 100%; justify-content: center; font-size: 11px; padding: 8px;" onclick="alert('Launch from terminal UI using Open cmux Workspace')">Open cmux</button>
+                <button class="btn-action" style="width: 100%; justify-content: center; font-size: 11px; padding: 8px; border-color: #a98bff; color: #a98bff;" onclick="navigator.clipboard.writeText('carbonyl http://localhost:3001'); alert('Launch command copied! Run it in any tmux/rmux/zellij pane.')">Copy Launch Command</button>
               </div>
             </div>
 
@@ -509,7 +593,7 @@
             <div style="color: var(--primary-hsl); font-weight: bold;">📟 Fallback persistence attach specifications:</div>
             <div>• To attach to the persistent fallback tmux session, run:</div>
             <div style="background: #0f141c; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; color: var(--primary-hsl); font-weight: bold; width: fit-content; margin-left: 12px;">tmux attach -t timmy-run</div>
-            <div style="margin-top: 8px; color: var(--text-muted); font-style: italic;">Use cmux for visual workspace, tmux for fallback terminal persistence.</div>
+            <div style="margin-top: 8px; color: var(--text-muted); font-style: italic;">Use carbonyl for in-pane browsing, tmux for fallback terminal persistence.</div>
           </div>
         </div>
       </div>
@@ -572,6 +656,22 @@
           <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5; font-style: italic;">
             Guarantees: sealed receipts are tamper-evident, hash-bound verifiable proofs generated locally by the AgentPass OS engine.
           </div>
+        </div>
+      </div>
+
+      <!-- Tab Panel 5: Streamdown Chat (TMX P3) -->
+      <div id="tab-streamdown" class="tab-panel">
+        <div class="glass-card" style="flex-grow: 1; border-color: #30363d;">
+          <div class="card-header">
+            <div class="card-title" style="color: #a98bff;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a98bff" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Streamdown Chat
+              <span class="badge-planned" style="border-color: rgba(169, 139, 255, 0.45); color: #a98bff;">TMX P3</span>
+            </div>
+            <span style="font-family: var(--font-fira); font-size: 10px; color: var(--text-muted);">POST /chat → SSE → live React components</span>
+          </div>
+          <!-- React island mount point (no build step; ESM via esm.sh) -->
+          <div id="streamdown-root" class="dark"></div>
         </div>
       </div>
 
@@ -1050,7 +1150,8 @@
         'chat': 'chat',
         'workspace': 'workspace',
         'logs': 'logs',
-        'proof': 'proof'
+        'proof': 'proof',
+        'streamdown': 'streamdown'
       };
       const activeBtn = document.getElementById(`btn-${btnMap[tabId] || tabId}`);
       if (activeBtn) activeBtn.classList.add('active');
@@ -1099,6 +1200,441 @@
     }
     
     connect();
+  </script>
+
+  <!-- ⚡ STREAMDOWN CHAT (TMX P3) — no-build React island.
+       react@18 + react-dom@18/client + streamdown + plugins load as ESM from
+       esm.sh; the importmap pins a single shared React instance. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1",
+      "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+      "react-dom": "https://esm.sh/react-dom@18.3.1?external=react",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?external=react",
+      "streamdown": "https://esm.sh/streamdown@2.5.0?external=react,react-dom",
+      "@streamdown/code": "https://esm.sh/@streamdown/code@1.1.1?external=react",
+      "@streamdown/mermaid": "https://esm.sh/@streamdown/mermaid@1.0.2?external=react"
+    }
+  }
+  </script>
+  <!-- Streamdown's own stylesheet (streaming animation keyframes) -->
+  <link rel="stylesheet" href="https://unpkg.com/streamdown@2.5.0/styles.css">
+
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    import { Streamdown } from 'streamdown';
+    import { code } from '@streamdown/code';
+    import { mermaid } from '@streamdown/mermaid';
+
+    const h = React.createElement;
+    const { useState, useRef, useEffect } = React;
+
+    const MODEL = 'qwen/qwen3.8-max';
+
+    const chip = {
+      fontFamily: 'var(--font-fira)', fontSize: 10, fontWeight: 700,
+      border: '1px solid #30363d', color: 'var(--text-muted)',
+      padding: '3px 10px', borderRadius: 12, letterSpacing: '0.04em', whiteSpace: 'nowrap'
+    };
+    const btnPrimary = {
+      background: '#a98bff', border: '1px solid #a98bff', color: '#0b0d12',
+      borderRadius: 10, padding: '10px 18px', fontWeight: 800, fontSize: 12,
+      cursor: 'pointer', letterSpacing: '0.03em', whiteSpace: 'nowrap'
+    };
+    const btnGhost = {
+      background: 'rgba(169, 139, 255, 0.08)', border: '1px solid rgba(169, 139, 255, 0.45)',
+      color: '#a98bff', borderRadius: 10, padding: '10px 14px', fontWeight: 700,
+      fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap'
+    };
+
+    /* ---------- TMX custom components (allowlisted tags) ---------- */
+
+    // <receipt id="..." sha="..."> — sealed proof card with a Verify button
+    function ReceiptCard(props) {
+      const [verified, setVerified] = useState(false);
+      const id = props.id || 'unknown-run';
+      const sha = props.sha || 'pending-hash';
+      return h('div', {
+        style: {
+          background: 'rgba(169, 139, 255, 0.06)', border: '1px solid rgba(169, 139, 255, 0.45)',
+          borderRadius: 12, padding: '12px 14px', margin: '10px 0',
+          fontFamily: 'var(--font-fira)', fontSize: 12
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+          h('strong', { style: { color: '#a98bff', letterSpacing: '0.06em' } }, '🧾 SEALED RECEIPT'),
+          h('span', {
+            style: { fontWeight: 700, color: verified ? 'var(--success-hsl)' : 'var(--text-muted)' }
+          }, verified ? 'VERIFIED ✓' : 'UNVERIFIED')
+        ),
+        h('div', { style: { marginTop: 8, color: 'var(--text-muted)' } },
+          'Run ID: ', h('span', { style: { color: '#79c0ff' } }, id)),
+        h('div', { style: { marginTop: 4, color: 'var(--text-muted)', wordBreak: 'break-all' } },
+          'SHA-256: ', h('span', { style: { color: 'var(--success-hsl)' } }, sha)),
+        props.children
+          ? h('div', { style: { marginTop: 8, color: 'var(--text-main)', fontFamily: 'var(--font-inter)', fontSize: 13 } }, props.children)
+          : null,
+        h('button', {
+          onClick: () => setVerified(true),
+          disabled: verified,
+          style: {
+            marginTop: 10,
+            background: verified ? 'rgba(63, 185, 80, 0.12)' : 'rgba(169, 139, 255, 0.15)',
+            color: verified ? 'var(--success-hsl)' : '#a98bff',
+            border: '1px solid ' + (verified ? 'rgba(63, 185, 80, 0.5)' : '#a98bff'),
+            borderRadius: 8, padding: '6px 14px', fontSize: 11, fontWeight: 700,
+            cursor: verified ? 'default' : 'pointer', letterSpacing: '0.05em'
+          }
+        }, verified ? 'VERIFIED ✓' : 'Verify')
+      );
+    }
+
+    // <approval command="..."> — command gate with Grant / Deny inline state
+    function ApprovalCard(props) {
+      const [status, setStatus] = useState('pending'); // pending | granted | denied
+      const command = props.command || '(no command provided)';
+      const decided = status !== 'pending';
+      const accent = status === 'granted' ? 'rgba(63, 185, 80, 0.6)'
+        : status === 'denied' ? 'rgba(248, 81, 73, 0.6)' : '#30363d';
+      return h('div', {
+        style: {
+          background: '#0d1117', border: '1px solid ' + accent, borderRadius: 12,
+          padding: '12px 14px', margin: '10px 0', fontFamily: 'var(--font-fira)', fontSize: 12,
+          transition: 'border-color 0.2s ease'
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+          h('strong', { style: { color: '#f5b545', letterSpacing: '0.06em' } }, '🔐 APPROVAL GATE'),
+          h('span', {
+            style: {
+              fontWeight: 700,
+              color: status === 'granted' ? 'var(--success-hsl)' : status === 'denied' ? '#ff7b72' : 'var(--text-muted)'
+            }
+          }, status === 'granted' ? 'GRANTED ✓' : status === 'denied' ? 'DENIED ✕' : 'AWAITING OPERATOR')
+        ),
+        h('pre', {
+          style: {
+            margin: '10px 0 0', background: '#06090e', border: '1px solid #30363d',
+            borderRadius: 8, padding: '8px 10px', color: '#e6edf3', overflowX: 'auto',
+            fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all'
+          }
+        }, '$ ', command),
+        h('div', { style: { display: 'flex', gap: 8, marginTop: 10 } },
+          h('button', {
+            onClick: () => setStatus('granted'), disabled: decided,
+            style: {
+              background: status === 'granted' ? 'rgba(63, 185, 80, 0.15)' : 'rgba(63, 185, 80, 0.05)',
+              border: '1px solid rgba(63, 185, 80, 0.5)', color: 'var(--success-hsl)',
+              borderRadius: 8, padding: '6px 14px', fontSize: 11, fontWeight: 700,
+              cursor: decided ? 'default' : 'pointer', opacity: decided && status !== 'granted' ? 0.4 : 1
+            }
+          }, 'Grant'),
+          h('button', {
+            onClick: () => setStatus('denied'), disabled: decided,
+            style: {
+              background: status === 'denied' ? 'rgba(248, 81, 73, 0.15)' : 'rgba(248, 81, 73, 0.05)',
+              border: '1px solid rgba(248, 81, 73, 0.5)', color: '#ff7b72',
+              borderRadius: 8, padding: '6px 14px', fontSize: 11, fontWeight: 700,
+              cursor: decided ? 'default' : 'pointer', opacity: decided && status !== 'denied' ? 0.4 : 1
+            }
+          }, 'Deny')
+        )
+      );
+    }
+
+    const sdComponents = { receipt: ReceiptCard, approval: ApprovalCard };
+    const sdAllowedTags = { receipt: ['id', 'sha'], approval: ['command'] };
+
+    function Markdown(props) {
+      return h(Streamdown, {
+        plugins: { code, mermaid },
+        allowedTags: sdAllowedTags,
+        components: sdComponents,
+        isAnimating: !!props.animating,
+        caret: props.animating ? 'block' : undefined,
+        linkSafety: { enabled: false }, // local companion; skip the external-link modal
+        className: 'sd-island'
+      }, props.text || '');
+    }
+
+    /* ---------- Sample payload for the ✨ Try it hint button ---------- */
+
+    const SAMPLE = [
+      '## ⚡ TMX P3 — streaming markdown surface',
+      '',
+      'This payload was injected locally and rendered live by **Streamdown** — no model round-trip.',
+      'The allowlisted custom tags below mount real, interactive React components:',
+      '',
+      '<receipt id="run_tmx_demo_001" sha="sha256_7f3c9a1e4b2d8c5f0a6e1d9b7c3f2a8e4d6b1c9f3a7e5d2b8c4f0a6e1d9b3c7f">Sealed by the AgentPass OS engine — tamper-evident, hash-bound proof.</receipt>',
+      '',
+      '<approval command="npm run build && npm test"></approval>',
+      '',
+      'Plugins work too — syntax highlighting and diagrams:',
+      '',
+      '```ts',
+      'export function sealReceipt(runId: string): string {',
+      '  const payload = JSON.stringify({ runId, sealedAt: Date.now() });',
+      '  return `sha256_${sha256(payload)}`;',
+      '}',
+      '```',
+      '',
+      '```mermaid',
+      'graph LR',
+      '  A[User Prompt] --> B[POST /chat SSE]',
+      '  B --> C[Streamdown Parser]',
+      '  C --> D[receipt Card]',
+      '  C --> E[approval Gate]',
+      '  C --> F[Mermaid Diagram]',
+      '```'
+    ].join('\n');
+
+    /* ---------- SSE parsing ---------- */
+
+    function parseSseEvent(raw) {
+      let event = 'message';
+      const dataLines = [];
+      for (const line of raw.split('\n')) {
+        if (line.startsWith('event:')) event = line.slice(6).trim();
+        else if (line.startsWith('data:')) dataLines.push(line.slice(5).replace(/^ /, ''));
+      }
+      if (dataLines.length === 0) return null;
+      const data = dataLines.join('\n');
+      let json = null;
+      try { json = JSON.parse(data); } catch { /* raw text payload */ }
+      return { event, data, json };
+    }
+
+    /* ---------- App ---------- */
+
+    function App() {
+      const [messages, setMessages] = useState([]); // { role: 'user' | 'assistant', content }
+      const [input, setInput] = useState('');
+      const [streaming, setStreaming] = useState(false);
+      const [error, setError] = useState(null);
+      const [tokens, setTokens] = useState(0);
+      const [usage, setUsage] = useState(null);
+      const scrollRef = useRef(null);
+      const demoTimer = useRef(null);
+
+      useEffect(() => {
+        const el = scrollRef.current;
+        if (el) el.scrollTop = el.scrollHeight;
+      }, [messages, streaming, error]);
+
+      useEffect(() => () => {
+        if (demoTimer.current) clearInterval(demoTimer.current);
+      }, []);
+
+      const replaceLastAssistant = (text) => {
+        setMessages((prev) => {
+          const next = prev.slice();
+          for (let i = next.length - 1; i >= 0; i--) {
+            if (next[i].role === 'assistant') {
+              next[i] = { role: 'assistant', content: text };
+              break;
+            }
+          }
+          return next;
+        });
+      };
+
+      async function send() {
+        const text = input.trim();
+        if (!text || streaming) return;
+        setError(null); setUsage(null); setTokens(0);
+
+        const convo = messages.concat([{ role: 'user', content: text }]);
+        setMessages(convo.concat([{ role: 'assistant', content: '' }]));
+        setInput('');
+        setStreaming(true);
+
+        const controller = new AbortController();
+        let acc = '';
+        try {
+          const res = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: convo.map((m) => ({ role: m.role, content: m.content })) }),
+            signal: controller.signal
+          });
+          if (!res.ok || !res.body) throw new Error('Companion /chat responded HTTP ' + res.status);
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
+          for (;;) {
+            const chunk = await reader.read();
+            if (chunk.done) break;
+            buf += decoder.decode(chunk.value, { stream: true });
+            let sep;
+            while ((sep = buf.indexOf('\n\n')) !== -1) {
+              const raw = buf.slice(0, sep);
+              buf = buf.slice(sep + 2);
+              const evt = parseSseEvent(raw);
+              if (!evt) continue;
+              if (evt.event === 'delta') {
+                const piece = typeof evt.json === 'string' ? evt.json : evt.data;
+                acc += piece;
+                replaceLastAssistant(acc);
+                setTokens(Math.max(1, Math.ceil(acc.length / 4))); // live ~4 chars/token estimate
+              } else if (evt.event === 'usage') {
+                setUsage(evt.json);
+              } else if (evt.event === 'error') {
+                setError((evt.json && evt.json.error) || evt.data);
+              } else if (evt.event === 'done') {
+                break;
+              }
+            }
+          }
+        } catch (err) {
+          if (!err || err.name !== 'AbortError') setError((err && err.message) || String(err));
+        } finally {
+          setStreaming(false);
+        }
+      }
+
+      function tryIt() {
+        if (streaming) return;
+        setError(null); setUsage(null); setTokens(0);
+        setMessages((prev) => prev.concat([
+          { role: 'user', content: '✨ Inject TMX demo payload (receipt + approval + code fence + mermaid)' },
+          { role: 'assistant', content: '' }
+        ]));
+        setStreaming(true);
+        let i = 0;
+        const CHUNK = 5;
+        demoTimer.current = setInterval(() => {
+          i += CHUNK;
+          const slice = SAMPLE.slice(0, i);
+          replaceLastAssistant(slice);
+          setTokens(Math.max(1, Math.ceil(slice.length / 4)));
+          if (i >= SAMPLE.length) {
+            clearInterval(demoTimer.current);
+            demoTimer.current = null;
+            setStreaming(false);
+          }
+        }, 16);
+      }
+
+      const measured = usage && (usage.total_tokens || usage.completion_tokens);
+      const tokenLabel = streaming
+        ? '◉ ~' + tokens + ' tokens (streaming)'
+        : measured
+          ? '◉ ' + measured + ' tokens (measured)'
+          : '◉ ~' + tokens + ' tokens';
+
+      return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, flexGrow: 1 } },
+        // Meta bar: model, status, live token counter
+        h('div', {
+          style: {
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10,
+            padding: '10px 20px', borderBottom: '1px solid #30363d',
+            background: 'rgba(22, 27, 34, 0.5)', flexShrink: 0, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+            h('span', { style: chip }, MODEL),
+            h('span', {
+              style: Object.assign({}, chip, {
+                color: streaming ? '#a98bff' : 'var(--text-muted)',
+                borderColor: streaming ? '#a98bff' : '#30363d'
+              })
+            }, streaming ? 'STREAMING…' : 'IDLE')
+          ),
+          h('span', {
+            style: {
+              fontFamily: 'var(--font-fira)', fontSize: 11, fontWeight: 700,
+              color: streaming ? '#a98bff' : 'var(--text-muted)'
+            }
+          }, tokenLabel)
+        ),
+
+        // Message scroll area
+        h('div', {
+          ref: scrollRef,
+          style: {
+            flexGrow: 1, minHeight: 0, overflowY: 'auto', padding: '18px 20px',
+            display: 'flex', flexDirection: 'column', gap: 14, background: '#06090e'
+          }
+        },
+          messages.length === 0
+            ? h('div', {
+                style: {
+                  color: 'var(--text-muted)', fontFamily: 'var(--font-fira)',
+                  textAlign: 'center', marginTop: 48, fontSize: 13, lineHeight: 1.8
+                }
+              },
+              'Send a message to stream ', MODEL, ' through Streamdown,',
+              h('br'),
+              'or press ✨ Try it to inject the TMX demo payload.')
+            : messages.map((m, i) => m.role === 'user'
+              ? h('div', {
+                  key: i,
+                  style: {
+                    alignSelf: 'flex-end', maxWidth: '80%',
+                    background: 'rgba(169, 139, 255, 0.1)', border: '1px solid rgba(169, 139, 255, 0.4)',
+                    color: 'var(--text-main)', padding: '8px 12px',
+                    borderRadius: '12px 12px 2px 12px', fontSize: 13, whiteSpace: 'pre-wrap'
+                  }
+                }, m.content)
+              : h('div', { key: i, style: { alignSelf: 'stretch', minWidth: 0 } },
+                  h(Markdown, {
+                    text: m.content,
+                    animating: streaming && i === messages.length - 1
+                  })
+                )
+            ),
+          error
+            ? h('div', {
+                style: {
+                  border: '1px solid rgba(248, 81, 73, 0.5)', background: 'rgba(248, 81, 73, 0.08)',
+                  color: '#ff7b72', borderRadius: 10, padding: '10px 12px',
+                  fontFamily: 'var(--font-fira)', fontSize: 12, whiteSpace: 'pre-wrap'
+                }
+              }, '⚠ ', error)
+            : null
+        ),
+
+        // Input bar
+        h('div', {
+          style: {
+            display: 'flex', gap: 8, padding: '12px 20px',
+            borderTop: '1px solid #30363d', background: 'rgba(22, 27, 34, 0.5)', flexShrink: 0
+          }
+        },
+          h('input', {
+            value: input,
+            placeholder: 'Message ' + MODEL + ' … (streams back as SSE)',
+            disabled: streaming,
+            onChange: (e) => setInput(e.target.value),
+            onKeyDown: (e) => {
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+            },
+            style: {
+              flexGrow: 1, minWidth: 0, background: '#06090e', border: '1px solid #30363d',
+              color: 'var(--text-main)', borderRadius: 10, padding: '10px 14px',
+              fontSize: 13, fontFamily: 'var(--font-inter)', outline: 'none'
+            }
+          }),
+          h('button', { onClick: tryIt, disabled: streaming, style: btnGhost }, '✨ Try it'),
+          h('button', {
+            onClick: send,
+            disabled: streaming || !input.trim(),
+            style: Object.assign({}, btnPrimary, {
+              opacity: (streaming || !input.trim()) ? 0.5 : 1,
+              cursor: (streaming || !input.trim()) ? 'default' : 'pointer'
+            })
+          }, streaming ? 'Streaming…' : 'Send ⚡')
+        )
+      );
+    }
+
+    const rootEl = document.getElementById('streamdown-root');
+    if (rootEl) {
+      createRoot(rootEl).render(h(App));
+    }
   </script>
 </body>
 </html>

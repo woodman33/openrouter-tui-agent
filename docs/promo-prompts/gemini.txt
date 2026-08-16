@@ -1,0 +1,1 @@
+Audit pacing and motion: no beat under 2.8s with >2 text lines; evidence type-ons start >=0.4s after claim; dips 0.4s; count-up 1.8s. Propose timing + animation deltas for maximum readability at 720p. Return delta JSON (put timing notes in why fields).

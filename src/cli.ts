@@ -5,6 +5,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { computeReceiptHash, Receipt } from './receipt/schema.js';
 import crypto from 'crypto';
+import { VERSION } from './version.js';
+import { readEvents } from './utils/eventbus.js';
+import { receiptsToOtlp } from './utils/otlp.js';
+import { listClipJobs } from './utils/clip.js';
+import { runClipJob, replayFromEdl } from './utils/cliprunner.js';
+import { listGenerations } from './utils/generations.js';
+import { runOpenDesignGen } from './utils/designrunner.js';
+import { edlToOtio } from './utils/otio.js';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 
 function getPackageMetadata() {
   const possiblePaths = [
@@ -17,13 +27,13 @@ function getPackageMetadata() {
     if (fs.existsSync(p)) {
       try {
         const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
-        return { name: pkg.name || 'timmy-tui', version: pkg.version || '0.1.0' };
+        return { name: pkg.name || 'timmy-tui', version: pkg.version || VERSION };
       } catch {
         // ignore
       }
     }
   }
-  return { name: 'timmy-tui', version: '0.1.0' };
+  return { name: 'timmy-tui', version: VERSION };
 }
 
 function printHelp() {
@@ -41,6 +51,16 @@ Commands:
   docs preview    Render and serve local docs preview
   docs publish    Verify GitBook auth and prepare Git Sync publication
   providers audit List provider readiness without printing secrets
+  runtimes list   List local, SDK, and remote agent runtime profiles
+  runtimes doctor Detect runtime readiness without executing agent tasks
+  sceneforge      Use the authenticated Cloudflare control plane via MCPorter
+  events          Stream the TUI's event envelope as NDJSON (--follow, --human, --otlp)
+  logs            Live web companion: event bus + receipt chain + verify (auto-pops browser; --port N)
+  approve <hash>  Mint a single-use, 5-min approval token bound to a gated tool's plan hash
+  clip list|run|replay  List · run headless + seal · replay from cut-list alone
+  design list|run       Open Design (MCP) gens: queue in GENS, execute + seal here
+  doctor deps|network|hardware  Read-only posture checks (never auto-fixes)
+  mcp status|inspect|probe  MCP wire visibility: mcpsnoop + mcp-probe (opt-in)
 
 Options:
   --json          Output results in raw JSON format (for demo/proof)
@@ -110,6 +130,151 @@ if (command === 'version' || args.includes('--version') || args.includes('-v')) 
 if (command === 'start') {
   console.log('timmy start — PLANNED alias for npm start');
   process.exit(0);
+}
+
+if (command === 'clip') {
+  // Headless clip runner: list jobs, or run one deterministically and seal it.
+  const sub = args[1];
+  if (sub === 'list') {
+    for (const j of listClipJobs()) console.log(`${j.id}  ${j.project.padEnd(14)} ${j.sources.length} src  ${j.status}`);
+    process.exit(0);
+  }
+  if (sub === 'run') {
+    const job = listClipJobs().find(j => j.id === args[2]);
+    if (!job) { console.error(`no clip job ${args[2] ?? ''} — see timmy clip list`); process.exit(2); }
+    const r = runClipJob(job);
+    console.log(r.ok ? `sealed: ${r.receiptHash}\nrun:  ${r.runDir}\nout:  ${r.output}` : `failed: ${r.note}`);
+    process.exit(r.ok ? 0 : 1);
+  }
+  if (sub === 'replay') {
+    // T1 exit criterion: replay from the cut-list ALONE, env-locked + signed.
+    const r = replayFromEdl(args[2] ?? '');
+    console.log(r.verified
+      ? `verified: replay matches sealed output\nreceipt: ${r.receiptHash}`
+      : `not verified: ${r.note ?? 'replay drift'}\nreceipt: ${r.receiptHash}`);
+    process.exit(r.verified ? 0 : 1);
+  }
+  console.error('Usage: timmy clip list | timmy clip run <id> | timmy clip replay <id>');
+  process.exit(2);
+}
+
+if (command === 'mcp' && args[1] === 'serve') {
+  // timmy as an MCP server: any MCP-speaking agent drives the trust layer.
+  const { startMcpServer } = await import('./mcp/server.js');
+  startMcpServer();
+  await new Promise(() => {}); // stdio server owns the event loop — never exit
+}
+
+if (command === 'approve') {
+  // Operator surface for the approval gate: mints a single-use, expiring
+  // token bound to the exact plan hash a gated tool returned.
+  const planHash = args[1];
+  if (!planHash) { console.error('usage: timmy approve <planHash>'); process.exit(2); }
+  const { issueApproval } = await import('./utils/approvals.js');
+  const a = issueApproval(planHash);
+  console.log(`approval ${a.token} · plan ${a.planHash} · single-use · expires ${new Date(a.expiresAt).toISOString()}`);
+  process.exit(0);
+}
+
+if (command === 'epoch') {
+  // Atomic release-epoch rotation (write-temp + rename).
+  const n = Number(args[1]);
+  if (!n || n < 1) { console.error('usage: timmy epoch <n> [reason]'); process.exit(2); }
+  const { rotateEpoch } = await import('./utils/receipts.js');
+  rotateEpoch(n, args.slice(2).join(' ') || 'operator rotation');
+  console.log(`epoch rotated to ${n}`);
+  process.exit(0);
+}
+
+if (command === 'logs') {
+  // Live companion for headless MCP/CLI sessions: streams the SAME event bus
+  // the TUI consumes + receipt chain with verify; auto-pops a browser once.
+  const { startLogServer } = await import('./utils/logserver.js');
+  const portIdx = args.indexOf('--port');
+  const port = portIdx >= 0 ? Number(args[portIdx + 1]) : undefined;
+  await startLogServer({ port, open: true });
+  await new Promise(() => {}); // server owns the event loop
+}
+
+if (command === 'design') {
+  // Open Design (MCP) gens: queue in GENS, execute headless here.
+  const sub = args[1];
+  if (sub === 'list') {
+    const gens = listGenerations({}).filter(g => g.provider === 'open-design');
+    for (const g of gens) console.log(`${g.id}  ${(g.status ?? 'queued').padEnd(8)} ${g.prompt.slice(0, 60)}`);
+    if (!gens.length) console.log('no open-design gens yet — pick Open Design (MCP) in the GENS picker ([n])');
+    process.exit(0);
+  }
+  if (sub === 'run') {
+    const r = await runOpenDesignGen(args[2] ?? '');
+    console.log(r.ok ? `done · ${r.note}` : `failed · ${r.note}`);
+    process.exit(r.ok ? 0 : 1);
+  }
+  console.error('Usage: timmy design list | timmy design run <genId>');
+  process.exit(2);
+}
+
+if (command === 'export') {
+  // EDL v1 → OTIO interchange (spec §2.9 amendment): Hollywood speaks timmy.
+  const kind = args[1];
+  if (kind === 'otio' && args[2]) {
+    const manifestPath = join(process.cwd(), '.timmy', 'runs', args[2], 'manifest.json');
+    if (!existsSync(manifestPath)) {
+      console.error(`no run manifest at ${manifestPath}`);
+      process.exit(2);
+    }
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { edl?: any; env_lock?: unknown; job?: string };
+    if (!manifest.edl) {
+      console.error('run manifest has no edl — T0-grade run; T1 runs carry cut-lists');
+      process.exit(2);
+    }
+    const envLockHash = manifest.env_lock
+      ? crypto.createHash('sha256').update(JSON.stringify(manifest.env_lock)).digest('hex')
+      : undefined;
+    const otio = edlToOtio(manifest.edl, { env_lock_hash: envLockHash, model: null });
+    const outDir = join(process.cwd(), '.timmy', 'exports');
+    mkdirSync(outDir, { recursive: true });
+    const outPath = join(outDir, `${args[2]}.otio`);
+    writeFileSync(outPath, JSON.stringify(otio, null, 2));
+    console.log(`otio: ${outPath}`);
+    process.exit(0);
+  }
+  if (kind === 'agentrun' && args[2]) {
+    // v0.5 T1 acceptance artifact: portable sanitized .agentrun bundle.
+    const { exportAgentRun } = await import('./utils/agentrun.js');
+    const exp = exportAgentRun(args[2]);
+    console.log(`agentrun: ${exp.bundle} (${exp.files.length} files, output ${exp.outputSha.slice(0, 16)}…)`);
+    process.exit(0);
+  }
+  console.error('Usage: timmy export otio <runDirName> | timmy export agentrun <jobId>');
+  process.exit(2);
+}
+
+if (command === 'events') {
+  // Headless parity: the SAME NDJSON envelope the TUI consumes (seals,
+  // approvals, gen status flips) — for CI replay, the companion, the portal.
+  if (args.includes('--otlp')) {
+    // Derived OTLP projection of the receipt spine (otel-tui / Langfuse / Jaeger)
+    console.log(JSON.stringify(receiptsToOtlp(), null, 2));
+    process.exit(0);
+  }
+  const follow = args.includes('--follow') || args.includes('-f');
+  const human = args.includes('--human');
+  let seen = 0;
+  const dump = () => {
+    const evs = readEvents();
+    for (const ev of evs.slice(seen)) {
+      if (human) console.log(`${ev.ts}  ${ev.kind.padEnd(18)} ${JSON.stringify(ev.payload)}`);
+      else console.log(JSON.stringify(ev));
+    }
+    seen = evs.length;
+  };
+  dump();
+  if (follow) {
+    setInterval(dump, 1000);
+  } else {
+    process.exit(0);
+  }
 }
 
 if (command === 'demo') {
@@ -342,14 +507,35 @@ if (command === 'setup') {
   }
 }
 
-if (command !== 'doctor' && command !== 'docs' && command !== 'providers') {
+if (
+  command !== 'doctor' &&
+  command !== 'docs' &&
+  command !== 'providers' &&
+  command !== 'runtimes' &&
+  command !== 'mcp' &&
+  command !== 'clip' &&
+  command !== 'design' &&
+  command !== 'export' &&
+  command !== 'sceneforge'
+) {
   printHelp();
   process.exit(2);
 }
 
 // Helper function to resolve script path dynamically for TS and JS environments
 function getScriptPath(cmd: string): string {
-  const baseName = cmd === 'doctor' ? 'timmy-doctor' : cmd === 'docs' ? 'timmy-docs' : 'timmy-providers';
+  const baseName =
+    cmd === 'doctor'
+      ? 'timmy-doctor'
+      : cmd === 'docs'
+        ? 'timmy-docs'
+        : cmd === 'providers'
+          ? 'timmy-providers'
+          : cmd === 'runtimes'
+            ? 'timmy-runtimes'
+          : cmd === 'mcp'
+            ? 'timmy-mcp'
+          : 'timmy-sceneforge';
   const tsPath = fileURLToPath(new URL(`../scripts/${baseName}.ts`, import.meta.url));
   const jsPath = fileURLToPath(new URL(`../scripts/${baseName}.js`, import.meta.url));
   
@@ -363,8 +549,39 @@ const scriptPath = getScriptPath(command);
 const isTs = scriptPath.endsWith('.ts');
 const spawnCmd = isTs ? 'npx' : process.execPath;
 const spawnArgs = isTs 
-  ? ['tsx', scriptPath, args[1] || (command === 'docs' ? 'verify' : command === 'providers' ? 'audit' : 'doctor'), ...args.slice(2)]
-  : [scriptPath, args[1] || (command === 'docs' ? 'verify' : command === 'providers' ? 'audit' : 'doctor'), ...args.slice(2)];
+  ? [
+      'tsx',
+      scriptPath,
+      args[1] ||
+        (command === 'docs'
+          ? 'verify'
+          : command === 'providers'
+            ? 'audit'
+            : command === 'runtimes'
+              ? 'list'
+            : command === 'sceneforge'
+              ? 'status'
+              : command === 'mcp'
+                ? 'status'
+                : 'doctor'),
+      ...args.slice(2)
+    ]
+  : [
+      scriptPath,
+      args[1] ||
+        (command === 'docs'
+          ? 'verify'
+          : command === 'providers'
+            ? 'audit'
+            : command === 'runtimes'
+              ? 'list'
+            : command === 'sceneforge'
+              ? 'status'
+              : command === 'mcp'
+                ? 'status'
+                : 'doctor'),
+      ...args.slice(2)
+    ];
 
 const child = spawn(spawnCmd, spawnArgs, {
   stdio: 'inherit',

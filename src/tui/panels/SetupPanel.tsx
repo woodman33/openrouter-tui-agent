@@ -96,9 +96,9 @@ export function SetupPanel({ agent }: SetupPanelProps) {
         {/* Free Tier */}
         <Box flexDirection="column" width="30%" borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
           <Text bold color={theme.textSecondary}>🤖 Free Tier ($0)</Text>
-          <Text color={theme.textTertiary} dimColor>- Local Session History</Text>
-          <Text color={theme.textTertiary} dimColor>- Standard CLI Sandboxing</Text>
-          <Text color={theme.textTertiary} dimColor>- Local Telemetry Mascot</Text>
+          <Text color={theme.textTertiary}>- Local Session History</Text>
+          <Text color={theme.textTertiary}>- Standard CLI Sandboxing</Text>
+          <Text color={theme.textTertiary}>- Local Telemetry Mascot</Text>
         </Box>
 
         {/* Pro Tier */}

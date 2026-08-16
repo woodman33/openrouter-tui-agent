@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { computeReceiptHash, Receipt } from './src/receipt/schema.js';
 import crypto from 'crypto';
+import { VERSION } from './src/version.js';
 
 function getPackageMetadata() {
   const possiblePaths = [
@@ -16,13 +17,13 @@ function getPackageMetadata() {
     if (fs.existsSync(p)) {
       try {
         const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
-        return { name: pkg.name || 'timmy-tui', version: pkg.version || '0.1.0' };
+        return { name: pkg.name || 'timmy-tui', version: pkg.version || VERSION };
       } catch {
         // ignore
       }
     }
   }
-  return { name: 'timmy-tui', version: '0.1.0' };
+  return { name: 'timmy-tui', version: VERSION };
 }
 
 function printHelp() {
@@ -40,6 +41,7 @@ Commands:
   docs preview    Render and serve local docs preview
   docs publish    Verify GitBook auth and prepare Git Sync publication
   providers audit List provider readiness without printing secrets
+  sceneforge      Use the authenticated Cloudflare control plane via MCPorter
 
 Options:
   --json          Output results in raw JSON format (for demo/proof)
@@ -109,6 +111,13 @@ if (command === 'version' || args.includes('--version') || args.includes('-v')) 
 if (command === 'start') {
   console.log('timmy start — PLANNED alias for npm start');
   process.exit(0);
+}
+
+// Modern CLI surface (mcp serve/logs/approve/events/…) lives in src/cli.ts.
+if (['mcp', 'logs', 'approve', 'events', 'epoch'].includes(command)) {
+  const cliPath = fileURLToPath(new URL('./src/cli.ts', import.meta.url));
+  const r = spawnSync(process.execPath, ['--import', 'tsx', cliPath, ...args], { stdio: 'inherit' });
+  process.exit(r.status ?? 1);
 }
 
 if (command === 'demo') {
@@ -341,14 +350,26 @@ if (command === 'setup') {
   }
 }
 
-if (command !== 'doctor' && command !== 'docs' && command !== 'providers') {
+if (
+  command !== 'doctor' &&
+  command !== 'docs' &&
+  command !== 'providers' &&
+  command !== 'sceneforge'
+) {
   printHelp();
   process.exit(2);
 }
 
 // Helper function to resolve script path dynamically for TS and JS environments
 function getScriptPath(cmd: string): string {
-  const baseName = cmd === 'doctor' ? 'timmy-doctor' : cmd === 'docs' ? 'timmy-docs' : 'timmy-providers';
+  const baseName =
+    cmd === 'doctor'
+      ? 'timmy-doctor'
+      : cmd === 'docs'
+        ? 'timmy-docs'
+        : cmd === 'providers'
+          ? 'timmy-providers'
+          : 'timmy-sceneforge';
   const tsPath = fileURLToPath(new URL(`./scripts/${baseName}.ts`, import.meta.url));
   const jsPath = fileURLToPath(new URL(`./scripts/${baseName}.js`, import.meta.url));
   
@@ -362,8 +383,31 @@ const scriptPath = getScriptPath(command);
 const isTs = scriptPath.endsWith('.ts');
 const spawnCmd = isTs ? 'npx' : process.execPath;
 const spawnArgs = isTs 
-  ? ['tsx', scriptPath, args[1] || (command === 'docs' ? 'verify' : command === 'providers' ? 'audit' : 'doctor'), ...args.slice(2)]
-  : [scriptPath, args[1] || (command === 'docs' ? 'verify' : command === 'providers' ? 'audit' : 'doctor'), ...args.slice(2)];
+  ? [
+      'tsx',
+      scriptPath,
+      args[1] ||
+        (command === 'docs'
+          ? 'verify'
+          : command === 'providers'
+            ? 'audit'
+            : command === 'sceneforge'
+              ? 'status'
+              : 'doctor'),
+      ...args.slice(2)
+    ]
+  : [
+      scriptPath,
+      args[1] ||
+        (command === 'docs'
+          ? 'verify'
+          : command === 'providers'
+            ? 'audit'
+            : command === 'sceneforge'
+              ? 'status'
+              : 'doctor'),
+      ...args.slice(2)
+    ];
 
 const child = spawn(spawnCmd, spawnArgs, {
   stdio: 'inherit',

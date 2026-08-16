@@ -4,6 +4,7 @@ import { createAgent } from '../agent/core.js';
 import type { AgentConfig } from '../types/index.js';
 import { Layout } from './layout.js';
 import { ModeRouter, MODES, type Mode } from './router.js';
+import { GLOBAL_KEYS, MODE_KEYS } from './keymap.js';
 import { useTerminalCapabilities } from './hooks/useTerminalCapabilities.js';
 import { useGraphicsPipeline } from './hooks/useGraphicsPipeline.js';
 import { useAgent } from './hooks/useAgent.js';
@@ -12,6 +13,9 @@ import { useCompanionSync } from './hooks/useCompanionSync.js';
 import { useModeAgentConfig } from './hooks/useModeAgentConfig.js';
 
 import { agentLogger, tuiLogger } from '../utils/logger.js';
+
+import { Onboarding } from './Onboarding.js';
+import { condenseSession } from '../utils/iceberg.js';
 
 interface AppProps {
   config: AgentConfig;
@@ -27,7 +31,11 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   
   // V2.0 App Shell navigation and focus states
   const [focusedMode, setFocusedMode] = useState<Mode>(mappedInitialMode);
-  const [focusArea, setFocusArea] = useState<'nav' | 'stage'>('nav');
+  // Unified zone model: -1 = left nav, 0..n = stage panes (panels own panes).
+  // Drop straight into the chat stage — no Tab+Enter dance to start working.
+  const [zone, setZone] = useState<number>(0);
+  // A panel is in modal text-entry (composer etc.) — global keys stand down.
+  const [modalInput, setModalInput] = useState(false);
   const [inspectorData, setInspectorData] = useState<any>(null);
   const setInspectorSafe = React.useCallback((data: any) => {
     Promise.resolve().then(() => {
@@ -38,6 +46,12 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   // Command Palette State
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [paletteIdx, setPaletteIdx] = useState(0);
+
+  // Help overlay state (the '?·help' hint is now real, not a dead affordance)
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  // First-run onboarding gate (local-first, skippable, persisted)
+  const [showOnboard, setShowOnboard] = useState(() => !(config as any).onboarded);
 
   // Stateful Active Receipt and Snapshot Trackers
   const [activeRunId, setActiveRunId] = useState<string | undefined>(undefined);
@@ -156,6 +170,11 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
 
   const safeExit = () => {
     try {
+      condenseSession(); // ICEBERG: vault stays raw, topics/ gets the summary
+    } catch {
+      // condensing is best-effort on exit
+    }
+    try {
       if (pipeline) pipeline.cleanup();
     } catch {
       // Guard circular graphics reference warnings
@@ -163,20 +182,14 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
     exit();
   };
 
-  const isDev = (agent as any).developerMode === true;
-
   const paletteItems = [
-    { label: 'Main Chat Screen', action: () => { setMode('brief'); setFocusedMode('brief'); } },
-    { label: 'MCP ➔ CLI Screen', action: () => { setMode('porter'); setFocusedMode('porter'); } },
-    { label: 'Workspace Screen', action: () => { setMode('workspace'); setFocusedMode('workspace'); } },
-    { label: 'Proof Screen', action: () => { setMode('proof'); setFocusedMode('proof'); } },
-    { label: 'Options Screen', action: () => { setMode('options'); setFocusedMode('options'); } },
-    ...(isDev ? [
-      { label: 'Local Files Browser', action: () => { setMode('files'); setFocusedMode('files'); } },
-      { label: 'Discovery Screen', action: () => { setMode('discovery'); setFocusedMode('discovery'); } },
-      { label: 'Teams Screen', action: () => { setMode('teams'); setFocusedMode('teams'); } },
-      { label: 'Logs Monitor', action: () => { setMode('logs'); setFocusedMode('logs'); } }
-    ] : []),
+    { label: 'Chat', action: () => { setMode('brief'); setFocusedMode('brief'); } },
+    { label: 'Lanes', action: () => { setMode('lanes'); setFocusedMode('lanes'); } },
+    { label: 'Gens', action: () => { setMode('gens'); setFocusedMode('gens'); } },
+    { label: 'Slate', action: () => { setMode('slate'); setFocusedMode('slate'); } },
+    { label: 'Browse', action: () => { setMode('browse'); setFocusedMode('browse'); } },
+    { label: 'Logs', action: () => { setMode('logs'); setFocusedMode('logs'); } },
+    { label: 'Files', action: () => { setMode('files'); setFocusedMode('files'); } },
     { label: 'Exit Application', action: safeExit }
   ];
 
@@ -202,7 +215,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       tuiLogger.info('Ctrl+L captured. Switch to Logs Monitor.');
       setMode('logs');
       setFocusedMode('logs');
-      setFocusArea('stage');
+      setZone(0);
       return;
     }
 
@@ -227,57 +240,90 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       return;
     }
 
-    // 3. Central release commands: Esc returns focus to Nav, Ctrl+G force-releases pane lock
-    if (key.escape) {
-      if (focusArea === 'stage') {
-        // Returns focus to navigation deck
-        setFocusArea('nav');
-        return;
+    // Help overlay: any Esc or '?' closes it
+    if (helpOpen) {
+      if (key.escape || input === '?') {
+        setHelpOpen(false);
       }
-    }
-
-    if (key.ctrl && input === 'g') {
-      setFocusArea('nav');
       return;
     }
 
-    // 4. In Navigation Deck Area Focus (focusArea === 'nav')
-    if (focusArea === 'nav') {
-      const allowedModes: Mode[] = ['brief', 'porter', 'workspace', 'options'];
+    // Global Ctrl-layer jumps — one dialect everywhere, no nav dance required
+    // (Ink doesn't parse F-keys; Ctrl combos are conflict-free in raw mode)
+    if (key.ctrl && input === 'r') {
+      setMode('lanes');
+      setFocusedMode('lanes');
+      setZone(0);
+      return;
+    }
+    if (key.ctrl && input === 'w') {
+      setMode('files');
+      setFocusedMode('files');
+      setZone(0);
+      return;
+    }
 
-      if (key.tab) {
-        const idx = allowedModes.indexOf(focusedMode);
-        let nextIdx;
-        if (key.shift) {
-          nextIdx = (idx - 1 + allowedModes.length) % allowedModes.length;
-        } else {
-          nextIdx = (idx + 1) % allowedModes.length;
-        }
-        setFocusedMode(allowedModes[nextIdx]);
-        return;
-      }
+    const autocompleteActive = Boolean((agent as any).autocompleteActive);
 
+    // ONE GRAMMAR — Tab/⇧Tab walks the left menu from anywhere, unless a
+    // modal text-entry (composer) or the slash autocomplete owns Tab.
+    if (key.tab && !modalInput && !autocompleteActive) {
+      const idx = MODES.indexOf(mode);
+      const next = key.shift
+        ? (idx - 1 + MODES.length) % MODES.length
+        : (idx + 1) % MODES.length;
+      setMode(MODES[next]);
+      setFocusedMode(MODES[next]);
+      return;
+    }
+
+    // ? = the keymap, from anywhere a '?' can't be plain text
+    if (input === '?' && !modalInput && !autocompleteActive && !(mode === 'brief' && zone === 0)) {
+      tuiLogger.info('Help overlay opened.');
+      setHelpOpen(true);
+      return;
+    }
+
+    // Esc = ALWAYS back: stage pane → nav, nav → stage
+    if (key.escape) {
+      if (!modalInput && !autocompleteActive) setZone(z => (z === -1 ? 0 : -1));
+      return;
+    }
+
+    if (key.ctrl && input === 'g') {
+      setZone(-1);
+      return;
+    }
+
+    // Nav zone: ↑↓ move the highlight, Enter ALWAYS selects, → drops in
+    if (zone === -1) {
       if (key.return || input === '\r' || input === '\n') {
         setMode(focusedMode);
         agent.emit('mode:change' as any, focusedMode);
-        setFocusArea('stage');
+        setZone(0);
         return;
       }
-
       if (key.upArrow) {
-        const idx = allowedModes.indexOf(focusedMode);
-        const nextIdx = (idx - 1 + allowedModes.length) % allowedModes.length;
-        setFocusedMode(allowedModes[nextIdx]);
+        const idx = MODES.indexOf(focusedMode);
+        setFocusedMode(MODES[(idx - 1 + MODES.length) % MODES.length]);
         return;
       }
       if (key.downArrow) {
-        const idx = allowedModes.indexOf(focusedMode);
-        const nextIdx = (idx + 1) % allowedModes.length;
-        setFocusedMode(allowedModes[nextIdx]);
+        const idx = MODES.indexOf(focusedMode);
+        setFocusedMode(MODES[(idx + 1) % MODES.length]);
+        return;
+      }
+      if (key.rightArrow) {
+        setZone(0);
         return;
       }
     }
   });
+
+  // First-run gate: local-first onboarding before the unified screen
+  if (showOnboard) {
+    return <Onboarding agent={agent} onDone={() => setShowOnboard(false)} />;
+  }
 
   return (
     <Layout
@@ -294,10 +340,10 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       queuedTelemetryCount={queuedTelemetryCount}
       snapshotStatus={snapshotStatus}
       inspectorData={inspectorData}
-      focusArea={focusArea}
+      zone={zone}
     >
       <Box flexGrow={1} flexShrink={1}>
-        <ModeRouter mode={mode} agent={agent} setInspector={setInspectorSafe} focusArea={focusArea} />
+        <ModeRouter mode={mode} agent={agent} setInspector={setInspectorSafe} zone={zone} setZone={setZone} setModalInput={setModalInput} inputLocked={commandPaletteOpen} />
 
         {/* Command Palette Overlay */}
         {commandPaletteOpen && (
@@ -325,6 +371,33 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
             })}
             <Text color="#8b949e">─────────────────────────────────────────</Text>
             <Text color="#8b949e" dimColor>Arrows to scroll | Enter to choose | Esc to exit</Text>
+          </Box>
+        )}
+
+        {/* Help Overlay */}
+        {helpOpen && (
+          <Box
+            position="absolute"
+            top={3}
+            left={25}
+            borderStyle="double"
+            borderColor="#3fb950"
+            paddingX={2}
+            flexDirection="column"
+            width={52}
+          >
+            <Text bold color="#3fb950">❓ ONE GRAMMAR — same keys, every tab · {mode.toUpperCase()}</Text>
+            <Text color="#8b949e">────────────────────────────────────────────────</Text>
+            {GLOBAL_KEYS.map(g => (
+              <Text key={g.key} color="#e6edf3">{g.key.padEnd(10)} {g.label}</Text>
+            ))}
+            <Text color="#8b949e">────────────────────────────────────────────────</Text>
+            {MODE_KEYS[mode].map(g => (
+              <Text key={g.key} color="#e6edf3">{g.key.padEnd(10)} {g.label}</Text>
+            ))}
+            <Text color="#8b949e">────────────────────────────────────────────────</Text>
+            <Text color="#e6edf3">Ctrl+K palette · Ctrl+L logs · Ctrl+R lanes · Ctrl+W projects · Ctrl+C quit</Text>
+            <Text color="#8b949e" dimColor>Press ? or ESC to close</Text>
           </Box>
         )}
       </Box>

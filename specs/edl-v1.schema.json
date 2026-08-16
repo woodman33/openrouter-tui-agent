@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://timmytui.com/schemas/edl-v1.json",
+  "title": "TIMMY EDL v1 + env_lock + signed receipt extensions",
+  "type": "object",
+  "$defs": {
+    "mediaFragment": {
+      "type": "string",
+      "pattern": "^.+#t=\\d+(\\.\\d+)?,\\d+(\\.\\d+)?$",
+      "description": "W3C Media Fragments URI: path#t=start,end (seconds)"
+    },
+    "overlay": {
+      "type": "object",
+      "required": ["asset", "at"],
+      "properties": {
+        "asset": { "type": "string" },
+        "at": { "type": "number", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 },
+        "rect": {
+          "type": "object",
+          "required": ["x", "y", "w", "h"],
+          "properties": {
+            "x": { "type": "number" }, "y": { "type": "number" },
+            "w": { "type": "number" }, "h": { "type": "number" }
+          }
+        }
+      }
+    },
+    "clip": {
+      "type": "object",
+      "required": ["src"],
+      "properties": {
+        "src": { "$ref": "#/$defs/mediaFragment" },
+        "filters": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^(scale|crop|fps|loudnorm)=.+" }
+        },
+        "overlays": { "type": "array", "items": { "$ref": "#/$defs/overlay" } }
+      }
+    },
+    "edl": {
+      "type": "object",
+      "required": ["edl_version", "output", "clips"],
+      "properties": {
+        "edl_version": { "const": 1 },
+        "output": { "type": "string" },
+        "clips": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/clip" } },
+        "concat": { "type": "boolean" }
+      }
+    },
+    "toolLock": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "size": { "type": "integer" },
+        "mtime": { "type": "integer" }
+      }
+    },
+    "env_lock": {
+      "type": "object",
+      "required": ["os", "arch", "tools"],
+      "properties": {
+        "os": {
+          "type": "object",
+          "required": ["platform", "build"],
+          "properties": {
+            "platform": { "type": "string" },
+            "build": { "type": "string" },
+            "version": { "type": "string" }
+          }
+        },
+        "arch": { "type": "string" },
+        "tools": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/toolLock" }
+        },
+        "models": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "receiptExt": {
+      "type": "object",
+      "description": "T1 extensions layered onto the T0 receipt record",
+      "properties": {
+        "env_lock": { "$ref": "#/$defs/env_lock" },
+        "signer": { "type": "string", "description": "ed25519 public key (SPKI PEM)" },
+        "signature": { "type": "string", "description": "base64 ed25519 over canonical body (minus hash/prev_hash/signature)" },
+        "status": { "enum": ["ok", "failed"] },
+        "error_class": { "enum": ["exec", "missing_source", "schema", "env", "replay_drift"] },
+        "exit_code": { "type": "integer" },
+        "partial_artifacts": { "type": "array", "items": { "type": "string" } },
+        "edl": { "$ref": "#/$defs/edl" }
+      }
+    }
+  },
+  "allOf": [{ "$ref": "#/$defs/receiptExt" }]
+}

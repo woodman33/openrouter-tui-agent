@@ -1,0 +1,10 @@
+{
+  "name": "brand-reveal-v2",
+  "duration": 16,
+  "tracks": [
+    { "target": "scene-brand", "prop": "opacity", "keyframes": [ { "t": 0, "value": 0 }, { "t": 1.2, "value": 1 } ] },
+    { "target": "scene-brand", "prop": "y", "keyframes": [ { "t": 0, "value": 24 }, { "t": 1.2, "value": 0 } ] },
+    { "target": "scene-otio", "prop": "opacity", "keyframes": [ { "t": 5, "value": 0 }, { "t": 6, "value": 1 } ] },
+    { "target": "scene-seal", "prop": "scale", "keyframes": [ { "t": 12.5, "value": 0.9 }, { "t": 13.5, "value": 1 } ] }
+  ]
+}

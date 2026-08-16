@@ -510,6 +510,92 @@ export const cloudflareSendDurablePulseTool = tool({
   }
 } as any);
 
+export const listCardTool = tool({
+  name: 'list_card',
+  description: 'List a live card for sale on Break Mode Engine / Cloudflare Worker',
+  inputSchema: z.object({
+    username: z.string().optional().describe('Username/Card target to list (defaults to TIMMY_USERNAME env var)'),
+    askPrice: z.number().optional().describe('Optional ask price'),
+  }),
+  outputSchema: z.object({
+    success: z.boolean(),
+    checkoutLink: z.string().optional(),
+    buyLink: z.string().optional(),
+    listReceiptId: z.string().optional(),
+    confidence: z.number().optional(),
+    message: z.string(),
+  }),
+  execute: async ({ username, askPrice }: { username?: string; askPrice?: number }) => {
+    const rawBaseUrl = process.env.BREAK_MODE_API_BASE_URL || process.env.API_BASE_URL;
+    if (!rawBaseUrl) {
+      throw new Error('API_BASE_URL is REQUIRED');
+    }
+
+    const resolvedUser = username || process.env.TIMMY_USERNAME;
+    if (!resolvedUser) {
+      throw new Error('Username is required');
+    }
+
+    const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
+
+    let liveData: any;
+    try {
+      const liveRes = await fetch(`${baseUrl}/api/live/${resolvedUser}`);
+      liveData = await liveRes.json();
+    } catch (err: any) {
+      return {
+        success: false,
+        message: `✕ Network/unreachable error fetching live card: ${err.message}`,
+      };
+    }
+
+    if (liveData.pricingSource !== 'live') {
+      return {
+        success: false,
+        message: 'pricing not live — refusing to list',
+      };
+    }
+
+    const listRes = await fetch(`${baseUrl}/api/list`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: resolvedUser,
+        cardId: liveData.cardId,
+        askPrice: askPrice || liveData.price,
+      }),
+    });
+
+    if (listRes.status === 409) {
+      const confPercent = Math.round((liveData.confidence || 0) * 100);
+      return {
+        success: false,
+        confidence: liveData.confidence,
+        message: `✕ Card needs confirmation. Confidence is only ${confPercent}%. Do NOT retry-force it.`,
+      };
+    }
+
+    if (!listRes.ok) {
+      return {
+        success: false,
+        confidence: liveData.confidence,
+        message: `✕ Listing failed with status ${listRes.status}`,
+      };
+    }
+
+    const resData = (await listRes.json()) as any;
+    const confPercent = Math.round((liveData.confidence || 0) * 100);
+    return {
+      success: true,
+      checkoutLink: resData.checkoutLink,
+      buyLink: resData.buyLink,
+      listReceiptId: resData.listReceiptId,
+      confidence: liveData.confidence,
+      message: `${confPercent}% confident, FMV $${liveData.price} for ${liveData.name} — listing now.\nCheckout: ${resData.checkoutLink}\nBuy: ${resData.buyLink}\nReceipt: ${resData.listReceiptId}\npushed live to overlay`,
+    };
+  },
+} as any);
+
 export const defaultTools = [
   currentTimeTool,
   calculatorTool,
@@ -524,5 +610,7 @@ export const defaultTools = [
   browserClickTool,
   browserScreenshotTool,
   cloudflareGetFeatureFlagTool,
-  cloudflareSendDurablePulseTool
+  cloudflareSendDurablePulseTool,
+  listCardTool
 ];
+

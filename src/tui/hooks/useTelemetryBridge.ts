@@ -85,6 +85,7 @@ export function useTelemetryBridge({
   // Resolve telemetry endpoint URL by priority
   const resolveEndpoint = (): string => {
     if (config.telemetryUrl) return config.telemetryUrl;
+    if (process.env.TIMMY_TELEMETRY_URL === 'off') return '';
     if (process.env.TIMMY_TELEMETRY_URL) return process.env.TIMMY_TELEMETRY_URL;
     return 'https://openrouter-tui-agent.wmeldman33.workers.dev';
   };
@@ -100,6 +101,69 @@ export function useTelemetryBridge({
       fs.appendFileSync(spoolPath, safeStringify(redactedItem) + '\n', 'utf8');
     } catch {
       // Fail silently in background to prevent TUI crashes
+    }
+  };
+
+  // Drain the offline spool once the endpoint is reachable again: replay a
+  // bounded batch per cycle, stop on first failure, rewrite the remainder.
+  const lastDrainAtRef = useRef(0);
+
+  const drainOfflineSpool = async (endpoint: string) => {
+    try {
+      if (!endpoint) return; // telemetry disabled
+      if (Date.now() - lastDrainAtRef.current < 10000) return; // throttle: max 1 drain/10s
+      const spoolPath = path.join(process.cwd(), '.timmy', 'offline-telemetry.jsonl');
+      if (!fs.existsSync(spoolPath)) return;
+      const content = fs.readFileSync(spoolPath, 'utf8');
+      const lines = content.split('\n').filter(Boolean);
+      if (lines.length === 0) return;
+
+      lastDrainAtRef.current = Date.now();
+      const batch = lines.slice(0, 50);
+      const rest = lines.slice(50);
+      let sent = 0;
+
+      for (const line of batch) {
+        try {
+          const parsed = JSON.parse(line);
+          if (!parsed || typeof parsed.event !== 'string') { sent++; continue; } // drop malformed
+          const wirePayload = {
+            event: parsed.event,
+            operator: parsed.operator || operator,
+            timestamp: parsed.timestamp,
+            mode: parsed.mode,
+            model: parsed.model,
+            totalCost: parsed.totalCost,
+            activeRunId: parsed.activeRunId,
+            activeReceiptUrl: parsed.activeReceiptUrl,
+            payload: parsed.payload ?? parsed
+          };
+          const res = await fetch(`${endpoint}/telemetry`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Operator': wirePayload.operator },
+            body: safeStringify(wirePayload)
+          });
+          if (!res.ok) break; // endpoint unhappy — keep everything for later
+          sent++;
+        } catch {
+          break;
+        }
+      }
+
+      const remaining = [...batch.slice(sent), ...rest];
+      fs.writeFileSync(spoolPath, remaining.length > 0 ? remaining.join('\n') + '\n' : '', 'utf8');
+
+      if (sent > 0) {
+        try {
+          fs.appendFileSync(
+            path.join(process.cwd(), 'logs', 'agent-events.log'),
+            `[${new Date().toISOString()}] Telemetry spool drain: ${sent} offline events replayed, ${remaining.length} remaining\n`,
+            'utf8'
+          );
+        } catch { /* ignore */ }
+      }
+    } catch {
+      // Never let background draining crash the TUI
     }
   };
 
@@ -159,6 +223,11 @@ export function useTelemetryBridge({
 
     setTelemetryStatus('syncing');
     const endpoint = resolveEndpoint();
+    if (!endpoint) {
+      // telemetry disabled (TIMMY_TELEMETRY_URL=off) — keep items queued, stay local
+      setTelemetryStatus('offline');
+      return;
+    }
 
     const itemsToProcess = [...currentQueue];
     setQueue([]); // Clear active queue during processing
@@ -227,6 +296,8 @@ export function useTelemetryBridge({
     } else {
       setTelemetryStatus('online');
       setLastTelemetryError(undefined);
+      // Endpoint is healthy — opportunistically replay spooled offline events
+      void drainOfflineSpool(endpoint);
     }
   };
 
@@ -255,6 +326,9 @@ export function useTelemetryBridge({
     const retryTimer = setInterval(() => {
       if (queueRef.current.length > 0) {
         flushTelemetry();
+      } else {
+        // Idle: keep draining the offline spool so it never strands
+        void drainOfflineSpool(resolveEndpoint());
       }
     }, 2000);
 
