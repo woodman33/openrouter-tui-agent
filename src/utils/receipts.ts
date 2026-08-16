@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, appendFileSync, mkdirSync, rmdirSync, statSync, writeFileSync, renameSync, unlinkSync } from 'fs';
+import { existsSync, readFileSync, appendFileSync, mkdirSync, rmdirSync, statSync, writeFileSync, renameSync, unlinkSync, rmSync } from 'fs';
 import { join, dirname } from 'path';
 import { spawnSync } from 'child_process';
 import crypto from 'crypto';
@@ -141,8 +141,8 @@ export function withLockDir<T>(lock: string, fn: () => T): T {
         const pid = Number(readFileSync(join(lock, 'pid'), 'utf8'));
         steal = stale && !pidAlive(pid);
       } catch { steal = false; }
-      if (steal) { try { rmdirSync(lock); } catch { /* raced */ } }
-      if (Date.now() - t0 > 5000) throw new Error(`lock timeout (held by live writer): ${lock}`);
+      if (steal) { try { rmSync(lock, { recursive: true, force: true }); } catch { /* raced */ } }
+      if (Date.now() - t0 > 30000) throw new Error(`lock timeout (held by live writer): ${lock}`);
       spawnSync('sleep', ['0.05']);
     }
   }

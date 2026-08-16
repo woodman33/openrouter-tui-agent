@@ -30,5 +30,7 @@ add-zsh-hook chpwd timmy_chpwd
 bindkey ' ' magic-space
 
 # cmd buffer ergonomics: richer history, no dups, ctrl-r incremental (default)
-setopt HIST_IGNORE_ALL_DUPS HIST_SAVEHIST=5000 HIST_REDUCE_BLANKS
+HISTSIZE=5000
+SAVEHIST=5000
+setopt HIST_IGNORE_ALL_DUPS HIST_REDUCE_BLANKS
 bindkey '^R' history-incremental-search-backward
