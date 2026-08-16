@@ -125,7 +125,7 @@ const genesisOf = (epoch: number): string => (epoch <= 1 ? 'genesis' : `genesis-
 // and waiters time out instead of corrupting the chain.
 const LOCK_STALE_MS = 10000;
 const pidAlive = (pid: number): boolean => {
-  try { process.kill(pid, 0); return true; } catch { return false; }
+  try { process.kill(pid, 0); return true; } catch (err) { return (err as NodeJS.ErrnoException).code !== 'ESRCH'; }
 };
 export function withLockDir<T>(lock: string, fn: () => T): T {
   mkdirSync(dirname(lock), { recursive: true });
@@ -146,12 +146,18 @@ export function withLockDir<T>(lock: string, fn: () => T): T {
       spawnSync('sleep', ['0.05']);
     }
   }
-  try { writeFileSync(join(lock, 'pid'), String(process.pid)); } catch { /* best-effort */ }
+  const ownPid = String(process.pid);
+  let wrotePid = false;
+  try { writeFileSync(join(lock, 'pid'), ownPid); wrotePid = true; } catch { /* best-effort */ }
   try {
     return fn();
   } finally {
-    try { unlinkSync(join(lock, 'pid')); } catch { /* best-effort */ }
-    try { rmdirSync(lock); } catch { /* already released */ }
+    let ownsLock = !wrotePid;
+    try { ownsLock = readFileSync(join(lock, 'pid'), 'utf8') === ownPid; } catch { /* best-effort */ }
+    if (ownsLock) {
+      try { unlinkSync(join(lock, 'pid')); } catch { /* best-effort */ }
+      try { rmdirSync(lock); } catch { /* already released */ }
+    }
   }
 }
 
