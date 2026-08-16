@@ -56,6 +56,7 @@ Commands:
   sceneforge      Use the authenticated Cloudflare control plane via MCPorter
   events          Stream the TUI's event envelope as NDJSON (--follow, --human, --otlp)
   logs            Live web companion: event bus + receipt chain + verify (auto-pops browser; --port N)
+  approve <hash>  Mint a single-use, 5-min approval token bound to a gated tool's plan hash
   clip list|run|replay  List · run headless + seal · replay from cut-list alone
   design list|run       Open Design (MCP) gens: queue in GENS, execute + seal here
   doctor deps|network|hardware  Read-only posture checks (never auto-fixes)
@@ -159,8 +160,20 @@ if (command === 'clip') {
 
 if (command === 'mcp' && args[1] === 'serve') {
   // timmy as an MCP server: any MCP-speaking agent drives the trust layer.
-  await import('./mcp/server.js');
+  const { startMcpServer } = await import('./mcp/server.js');
+  startMcpServer();
   await new Promise(() => {}); // stdio server owns the event loop — never exit
+}
+
+if (command === 'approve') {
+  // Operator surface for the approval gate: mints a single-use, expiring
+  // token bound to the exact plan hash a gated tool returned.
+  const planHash = args[1];
+  if (!planHash) { console.error('usage: timmy approve <planHash>'); process.exit(2); }
+  const { issueApproval } = await import('./utils/approvals.js');
+  const a = issueApproval(planHash);
+  console.log(`approval ${a.token} · plan ${a.planHash} · single-use · expires ${new Date(a.expiresAt).toISOString()}`);
+  process.exit(0);
 }
 
 if (command === 'logs') {

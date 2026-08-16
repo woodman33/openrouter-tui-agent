@@ -87,18 +87,24 @@ describe('TIMMY Receipt System', () => {
       }
     });
 
+    // Direct node --import tsx (no npx resolution) + explicit budget: under
+    // full-suite parallel load the old npx spawn exceeded the 5s default and
+    // read as a flake; the spawn itself was never the contract under test.
+    const tsx = (args: string) =>
+      execSync(`${process.execPath} --import tsx timmy.ts ${args}`, { encoding: 'utf8', timeout: 30000 });
+
     it('should print help information with timmy help', () => {
-      const output = execSync('npx tsx timmy.ts help', { encoding: 'utf8' });
+      const output = tsx('help');
       expect(output).toContain('TIMMY AgentOps');
       expect(output).toContain('Usage: timmy <command>');
       expect(output).toContain('demo');
       expect(output).toContain('proof');
-    });
+    }, 30000);
 
     it('should print version information with timmy version', () => {
-      const output = execSync('npx tsx timmy.ts version', { encoding: 'utf8' });
+      const output = tsx('version');
       expect(output).toContain('timmy-tui v' + VERSION);
-    });
+    }, 30000);
 
     it('should execute demo command and write demo-receipt.json', () => {
       const output = execSync(`npx tsx timmy.ts demo --out ${tempTestDir}`, { encoding: 'utf8' });

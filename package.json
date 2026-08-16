@@ -49,7 +49,8 @@
     "prebuild": "npm run version:generate",
     "pretest": "npm run version:generate",
     "prepack": "npm run build",
-    "typecheck:native": "tsgo --noEmit"
+    "typecheck:native": "tsgo --noEmit",
+    "typecheck:worker": "tsc -p workers/ai-proxy"
   },
   "repository": {
     "type": "git",

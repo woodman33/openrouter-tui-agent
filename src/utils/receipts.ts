@@ -25,8 +25,19 @@ export interface Receipt {
   // receipt v2 (research rulings): OTel-style span tree + PDP decisions ride
   // inside the sealed body, so the receipt is evidence structure, not just
   // integrity.
-  spans?: { name: string; kind: 'root' | 'chat' | 'execute_tool' | 'deny' }[];
+  spans?: { name: string; kind: 'root' | 'chat' | 'execute_tool' | 'deny' | 'invoke_agent' }[];
   decisions?: { decision: string; effect: string; tier: string; reason: string }[];
+  // v2.1 (judge-loop hardening): bind hashes + resolution + economics without
+  // ever sealing raw prompts/responses/secrets.
+  response_hash?: string;
+  model_requested?: string;
+  model_resolved?: string;
+  via?: string;
+  ms?: number;
+  tokens?: number;
+  plan_hash?: string;
+  child_receipts?: string[];
+  executors?: unknown[];
   // T1 (specs/edl-v1.md): env-lock + ed25519 signature + failure variant.
   // Receipts without env_lock/signature are T0-grade and must not be built upon.
   env_lock?: EnvLock;
@@ -34,8 +45,8 @@ export interface Receipt {
   output_sha256?: string;
   signer?: string;   // ed25519 public key (SPKI PEM)
   signature?: string; // base64 over canonical body (minus hash/prev_hash/signature)
-  status?: 'ok' | 'failed';
-  error_class?: 'exec' | 'missing_source' | 'schema' | 'env' | 'replay_drift';
+  status?: 'ok' | 'failed' | 'denied';
+  error_class?: string; // exec|missing_source|schema|env|replay_drift|http_4xx|http_5xx|network|approval|unresolved_model|no_key|…
   exit_code?: number;
   partial_artifacts?: string[];
   discrepancies?: string[]; // repo-vs-spec flags, per the T1 work order

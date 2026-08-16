@@ -26,6 +26,9 @@ jobs:
       - name: Install ffmpeg (clip runner E2E)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
+      - name: Install OpenTimelineIO 0.18.1 (otioconvert, pinned)
+        run: python3 -m pip install --user opentimelineio==0.18.1 && echo "$HOME/.local/bin" >> $GITHUB_PATH
+
       - name: Type gate (tsc)
         run: npx tsc --noEmit
 

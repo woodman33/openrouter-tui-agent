@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -111,6 +111,13 @@ if (command === 'version' || args.includes('--version') || args.includes('-v')) 
 if (command === 'start') {
   console.log('timmy start — PLANNED alias for npm start');
   process.exit(0);
+}
+
+// Modern CLI surface (mcp serve/logs/approve/events/…) lives in src/cli.ts.
+if (['mcp', 'logs', 'approve', 'events'].includes(command)) {
+  const cliPath = fileURLToPath(new URL('./src/cli.ts', import.meta.url));
+  const r = spawnSync(process.execPath, ['--import', 'tsx', cliPath, ...args], { stdio: 'inherit' });
+  process.exit(r.status ?? 1);
 }
 
 if (command === 'demo') {

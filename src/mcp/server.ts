@@ -13,6 +13,8 @@ import { GENERATION_PROVIDERS } from '../utils/providers.js';
 import { existsSync, readFileSync, writeFileSync, mkdirSync, copyFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { spawnSync } from 'child_process';
+import { createHash } from 'crypto';
+import { planHashOf, consumeApproval } from '../utils/approvals.js';
 
 const sleepSync = (ms: number) => spawnSync('sleep', [String(ms / 1000)]);
 
@@ -22,10 +24,13 @@ const TOOLS = [
   { name: 'timmy_receipt_verify', description: 'Walk the hash chain of a receipt stream; returns ok/brokenAt.', inputSchema: { type: 'object', properties: { stream: { type: 'string' } }, required: ['stream'] } },
   { name: 'timmy_clip_replay', description: 'Replay a sealed clip job from its EDL cut-list alone; verifies output sha match.', inputSchema: { type: 'object', properties: { jobId: { type: 'string' } }, required: ['jobId'] } },
   { name: 'timmy_gen_run', description: 'Queue + execute a generation through the gen bridge (OpenRouter/local providers); sealed receipt on completion.', inputSchema: { type: 'object', properties: { provider: { type: 'string' }, model: { type: 'string' }, prompt: { type: 'string' }, kind: { type: 'string' } }, required: ['prompt'] } },
-  { name: 'timmy_promo_apply', description: 'Apply a fused beats delta to the promo comp (v8 → v9): replaces claim/sub/evidence text per beat id.', inputSchema: { type: 'object', properties: { beats: { type: 'array' } }, required: ['beats'] } },
-  { name: 'timmy_llm_call', description: 'Direct chat-completions call through TIMMY: openrouter direct (or the Cloudflare edge proxy when TIMMY_AI_PROXY is set), or the local ollama daemon (bare tags on-device, :cloud tags on ollama cloud; gated by TIMMY_ALLOW_LOCAL_OLLAMA=1). Every call sealed as a receipt with model + usage. Pre-tool hook validates the model (openrouter → ollama) before any call goes out. Bodybuilder-style fan-out = parallel calls; Fusion = one call with the outputs attached.', inputSchema: { type: 'object', properties: { model: { type: 'string' }, prompt: { type: 'string' }, system: { type: 'string' }, requires_approval: { type: 'boolean', description: 'HITL gate: the call refuses until approved:true is passed' }, approved: { type: 'boolean', description: 'human-in-the-loop approval flag for this run' } }, required: ['model', 'prompt'] } },
+  { name: 'timmy_promo_apply', description: 'Apply a fused beats delta to the promo comp: replaces claim/sub/evidence text per beat id. from = source comp (default timmy-promo-v8); output is the next version (v9 → v10 etc).', inputSchema: { type: 'object', properties: { beats: { type: 'array' }, from: { type: 'string', description: 'source comp dir, default timmy-promo-v8' } }, required: ['beats'] } },
+  { name: 'timmy_llm_call', description: 'Direct chat-completions call through TIMMY: openrouter direct (or the Cloudflare edge proxy when TIMMY_AI_PROXY is set), or the local ollama daemon (bare tags on-device, :cloud tags on ollama cloud; gated by TIMMY_ALLOW_LOCAL_OLLAMA=1). Every call sealed as a receipt with model + usage. Pre-tool hook validates the model (openrouter → ollama) before any call goes out. Bodybuilder-style fan-out = parallel calls; Fusion = one call with the outputs attached.', inputSchema: { type: 'object', properties: { model: { type: 'string' }, prompt: { type: 'string' }, system: { type: 'string' }, requires_approval: { type: 'boolean', description: 'HITL gate: requires an operator approval token bound to this call' }, approval: { type: 'string', description: 'operator token from `timmy approve <planHash>` (single-use, 5min). A bare boolean never approves.' } }, required: ['model', 'prompt'] } },
   { name: 'timmy_fusion_plan', description: 'Resolve the owner-picked judge chain (local nemotron-3.5-lightning + qwen3.8:27b-mlx first, then gemini-3.7-flash floor, grok-4.6 frontier, ollama :cloud tags) against openrouter/ollama and return the available-judges list for quick human approval before a fusion run.', inputSchema: { type: 'object', properties: { approved: { type: 'boolean' } } } },
-  { name: 'timmy_promo_judge', description: 'Local-first promo judge loop: two free local judges score the current comp copy, a local fusion synthesizes edits + confidence; a frontier model arbitrates ONLY when confidence < threshold. Seals a receipt ($0 when local agrees). Returns proposed beat edits for human review before timmy_promo_apply.', inputSchema: { type: 'object', properties: { comp: { type: 'string', description: 'studio comp dir, default = latest timmy-promo-vN' }, threshold: { type: 'number', description: 'confidence below which frontier escalation fires (default 0.7)' } } } }
+  { name: 'timmy_promo_judge', description: 'Local-first promo judge loop: two free local judges score the current comp copy, a local fusion synthesizes edits + confidence; a frontier model arbitrates ONLY when confidence < threshold. Seals a receipt ($0 when local agrees). Returns proposed beat edits for human review before timmy_promo_apply.', inputSchema: { type: 'object', properties: { comp: { type: 'string', description: 'studio comp dir, default = latest timmy-promo-vN' }, threshold: { type: 'number', description: 'confidence below which frontier escalation fires (default 0.7)' } } } },
+  { name: 'timmy_allyson_run', description: 'Allyson lane: animate a source SVG into an animated component via allyson-mcp (mcporter stdio). Every use logged to .timmy/runs/mcp-allyson-*.log + sealed receipt. Needs ALLYSON_API_KEY (allyson.ai) for generation; without it returns an honest needs_key.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, svg_path: { type: 'string', description: 'absolute source svg/png path' }, output_path: { type: 'string', description: 'absolute output component path' } }, required: ['prompt', 'svg_path', 'output_path'] } },
+  { name: 'timmy_apify_run', description: 'Apify lane: call any mcp.apify.com tool (scrapers/actors) via mcporter http with bearer from env. Logged to .timmy/runs/mcp-apify-*.log + sealed receipt. Needs a valid APIFY_API_TOKEN from console.apify.com.', inputSchema: { type: 'object', properties: { tool: { type: 'string', description: 'apify MCP tool name, e.g. get-actor-list / call-actor' }, args: { type: 'object' } }, required: ['tool'] } },
+  { name: 'timmy_judge_loop', description: 'One-command judge loop. Phase 1 (no approval): returns the resolved executor/judge plan + plan hash. Phase 2: requires an operator-minted single-use expiring token bound to that exact plan hash (`timmy approve <planHash>`); a bare boolean never approves. Runs 3-5 executors via Promise.allSettled, one configurable judge, child receipts per executor/judge + one parent receipt linking them. Default-deny on unresolved models or missing approval.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, system: { type: 'string' }, executors: { type: 'array', items: { type: 'string' } }, judge: { type: 'string' }, approval: { type: 'string', description: 'operator approval token from `timmy approve <planHash>`' } }, required: ['prompt'] } }
 ];
 
 // Judge chain (owner-picked order): free local first (M5-max optimized),
@@ -89,20 +94,37 @@ const readApiKey = (): string => {
   } catch { return ''; }
 };
 
-async function llmCall(args: { model: string; prompt: string; system?: string; requires_approval?: boolean; approved?: boolean }) {
-  if (args.requires_approval && !args.approved) {
-    appendEvent('run.gated', { model: args.model, note: 'awaiting human approval' });
-    return { ok: false, needs_approval: true, model: args.model, note: 'human-in-the-loop gate: review the model list (timmy_fusion_plan) and re-invoke with approved:true' };
-  }
-  const resolved = await resolveModel(args.model);
-  if (resolved.via === 'none') {
-    appendEvent('run.failed', { model: args.model, note: 'model not resolvable on any permitted provider' });
-    return { ok: false, needs_resolution: true, model: args.model, suggestions: resolved.suggestions, note: 'model not found on openrouter/ollama; pick a suggestion or permit ollama local (TIMMY_ALLOW_LOCAL_OLLAMA=1)' };
-  }
+const sha256 = (s: string): string => createHash('sha256').update(s).digest('hex');
+const errClass = (status?: number, e?: unknown): string =>
+  status ? (status < 500 ? 'http_4xx' : 'http_5xx') : e ? 'network' : 'unknown';
+
+// Receipts v2: bind prompt hash + response hash (never raw content), requested
+// vs resolved model, transport, latency, tokens, reported cost, status and
+// error class. Failed and denied attempts seal too. Returns the receipt hash.
+async function llmCall(args: { model: string; prompt: string; system?: string; requires_approval?: boolean; approved?: boolean; approval?: string }) {
   const messages = [
     ...(args.system ? [{ role: 'system', content: args.system }] : []),
     { role: 'user', content: args.prompt }
   ];
+  const prompt_hash = sha256(JSON.stringify(messages));
+  const base = { model_requested: args.model, prompt_hash };
+  if (args.requires_approval) {
+    // A bare boolean never approves: an operator-minted, single-use, expiring
+    // token bound to this exact call's plan hash is required.
+    const planHash = planHashOf({ tool: 'timmy_llm_call', model: args.model, prompt: args.prompt });
+    const gate = consumeApproval(args.approval ?? '', planHash);
+    if (!gate.ok) {
+      appendEvent('run.gated', { model: args.model, note: gate.note });
+      const rec = appendReceipt('runs', { kind: 'run', subject: `llm ${args.model} DENIED`, policy: 'human-gated', status: 'denied', error_class: 'approval', ...base, spans: [], artifacts: [] });
+      return { ok: false, denied: true, needs_approval: true, planHash, note: `${gate.note} — operator: timmy approve ${planHash}, then re-invoke with approval:<token>`, receipt: rec.hash };
+    }
+  }
+  const resolved = await resolveModel(args.model);
+  if (resolved.via === 'none') {
+    appendEvent('run.failed', { model: args.model, note: 'model not resolvable on any permitted provider' });
+    const rec = appendReceipt('runs', { kind: 'run', subject: `llm ${args.model} UNRESOLVED`, policy: 'auto', status: 'denied', error_class: 'unresolved_model', ...base, spans: [], artifacts: [] });
+    return { ok: false, needs_resolution: true, model: args.model, suggestions: resolved.suggestions, note: 'model not found on openrouter/ollama; pick a suggestion or permit ollama local (TIMMY_ALLOW_LOCAL_OLLAMA=1)', receipt: rec.hash };
+  }
   const t0 = Date.now();
   if (resolved.via === 'ollama') {
     try {
@@ -115,29 +137,41 @@ async function llmCall(args: { model: string; prompt: string; system?: string; r
       if (!r.ok) {
         const raw = await r.text();
         appendEvent('run.failed', { model: resolved.id, status: r.status, ms });
-        return { ok: false, status: r.status, note: redact(raw.slice(0, 300)), ms };
+        const rec = appendReceipt('runs', { kind: 'run', subject: `llm ${resolved.id}`, policy: 'auto', status: 'failed', error_class: errClass(r.status), ...base, model_resolved: resolved.id, via: 'ollama', ms, spans: [{ name: `chat ${resolved.id} via ollama`, kind: 'chat' }], artifacts: [] });
+        return { ok: false, status: r.status, note: redact(raw.slice(0, 300)), ms, receipt: rec.hash };
       }
       const j = await r.json() as any;
       const text = redact(j?.message?.content ?? '');
       const tokens = (j?.eval_count ?? 0) + (j?.prompt_eval_count ?? 0);
-      appendReceipt('runs', {
+      const rec = appendReceipt('runs', {
         kind: 'run',
         subject: `llm ${resolved.id}`,
         policy: args.requires_approval ? 'human-gated' : 'auto',
-        spans: [{ name: `chat ${resolved.id} via ollama`, kind: 'chat' }],
+        status: 'ok',
+        ...base,
+        response_hash: sha256(text),
+        model_resolved: resolved.id,
+        via: 'ollama',
+        ms,
+        tokens,
         cost_usd: 0,
+        spans: [{ name: `chat ${resolved.id} via ollama`, kind: 'chat' }],
         artifacts: []
       });
       appendEvent('run.completed', { model: resolved.id, via: 'ollama', ms, tokens });
-      return { ok: true, model: resolved.id, via: 'ollama', ms, tokens, text };
+      return { ok: true, model: resolved.id, via: 'ollama', ms, tokens, text, receipt: rec.hash };
     } catch (e) {
       appendEvent('run.failed', { model: resolved.id, note: redact((e as Error).message) });
-      return { ok: false, note: redact((e as Error).message) };
+      const rec = appendReceipt('runs', { kind: 'run', subject: `llm ${resolved.id}`, policy: 'auto', status: 'failed', error_class: errClass(undefined, e), ...base, model_resolved: resolved.id, via: 'ollama', spans: [], artifacts: [] });
+      return { ok: false, note: redact((e as Error).message), receipt: rec.hash };
     }
   }
   const proxy = process.env.TIMMY_AI_PROXY;
   const key = readApiKey();
-  if (!proxy && !key) return { ok: false, note: 'no OPENROUTER_API_KEY in env or .env and no TIMMY_AI_PROXY edge route' };
+  if (!proxy && !key) {
+    const rec = appendReceipt('runs', { kind: 'run', subject: `llm ${args.model} DENIED`, policy: 'auto', status: 'denied', error_class: 'no_key', ...base, spans: [], artifacts: [] });
+    return { ok: false, note: 'no OPENROUTER_API_KEY in env or .env and no TIMMY_AI_PROXY edge route', receipt: rec.hash };
+  }
   const body = JSON.stringify({ model: args.model, messages, temperature: 0.7 });
   try {
     const res = proxy
@@ -151,24 +185,33 @@ async function llmCall(args: { model: string; prompt: string; system?: string; r
     if (!res.ok) {
       const raw = await res.text();
       appendEvent('run.failed', { model: args.model, status: res.status, ms });
-      return { ok: false, status: res.status, note: redact(raw.slice(0, 300)), ms };
+      const rec = appendReceipt('runs', { kind: 'run', subject: `llm ${args.model}`, policy: 'auto', status: 'failed', error_class: errClass(res.status), ...base, model_resolved: resolved.id, via: resolved.via, ms, spans: [{ name: `chat ${args.model} via ${resolved.via}`, kind: 'chat' }], artifacts: [] });
+      return { ok: false, status: res.status, note: redact(raw.slice(0, 300)), ms, receipt: rec.hash };
     }
     const j = await res.json() as any;
     const text = redact(j?.choices?.[0]?.message?.content ?? '');
     const usage = j?.usage ?? {};
-    appendReceipt('runs', {
+    const rec = appendReceipt('runs', {
       kind: 'run',
       subject: `llm ${args.model}`,
       policy: args.requires_approval ? 'human-gated' : 'auto',
+      status: 'ok',
+      ...base,
+      response_hash: sha256(text),
+      model_resolved: resolved.id,
+      via: resolved.via,
+      ms,
+      tokens: usage?.total_tokens ?? 0,
+      cost_usd: usage?.cost,
       spans: [{ name: `chat ${args.model} via ${resolved.via}`, kind: 'chat' }],
-      cost_usd: undefined,
       artifacts: []
     });
     appendEvent('run.completed', { model: args.model, via: resolved.via, ms, tokens: usage?.total_tokens ?? 0 });
-    return { ok: true, model: args.model, via: resolved.via, ms, tokens: usage?.total_tokens ?? 0, text };
+    return { ok: true, model: args.model, via: resolved.via, ms, tokens: usage?.total_tokens ?? 0, text, receipt: rec.hash };
   } catch (e) {
     appendEvent('run.failed', { model: args.model, note: redact((e as Error).message) });
-    return { ok: false, note: redact((e as Error).message) };
+    const rec = appendReceipt('runs', { kind: 'run', subject: `llm ${args.model}`, policy: 'auto', status: 'failed', error_class: errClass(undefined, e), ...base, model_resolved: resolved.id, via: resolved.via, spans: [], artifacts: [] });
+    return { ok: false, note: redact((e as Error).message), receipt: rec.hash };
   }
 }
 
@@ -190,6 +233,58 @@ async function fusionPlan(args: { approved?: boolean }) {
     approved: !!args?.approved,
     note: 'quick-approve: pass available (or a subset) back as timmy_llm_call runs with requires_approval:true, approved:true'
   };
+}
+
+// ---- timmy_judge_loop: one-command, plan-hash-gated multi-executor judging ----
+async function judgeLoop(args: { prompt: string; system?: string; executors?: string[]; judge?: string; approval?: string }) {
+  const executors = args.executors ?? ['nemotron-3.5-lightning', 'qwen3.8:27b-mlx', 'google/gemini-3.7-flash'];
+  const judge = args.judge ?? 'qwen3.8:27b-mlx';
+  const plan = { tool: 'timmy_judge_loop', prompt: args.prompt, executors, judge };
+  const planHash = planHashOf(plan);
+  if (!args.approval) {
+    return { phase: 'plan', ok: false, needs_approval: true, plan, planHash, note: `operator: \`timmy approve ${planHash}\` (single-use, 5min), then re-invoke with approval:<token>` };
+  }
+  const gate = consumeApproval(args.approval, planHash);
+  if (!gate.ok) {
+    const rec = appendReceipt('runs', { kind: 'run', subject: 'judge loop DENIED', policy: 'human-gated', status: 'denied', error_class: 'approval', plan_hash: planHash, prompt_hash: sha256(args.prompt), spans: [], artifacts: [] });
+    return { ok: false, denied: true, planHash, note: gate.note, receipt: rec.hash };
+  }
+  const resolvedAll = await Promise.all([...executors, judge].map(async m => ({ m, r: await resolveModel(m) })));
+  const unresolved = resolvedAll.filter(x => x.r.via === 'none');
+  if (unresolved.length > 0) {
+    const rec = appendReceipt('runs', { kind: 'run', subject: 'judge loop DENIED (unresolved models)', policy: 'human-gated', status: 'denied', error_class: 'unresolved_model', plan_hash: planHash, prompt_hash: sha256(args.prompt), spans: [], artifacts: [] });
+    return { ok: false, denied: true, unresolved: unresolved.map(x => ({ model: x.m, suggestions: x.r.suggestions })), receipt: rec.hash };
+  }
+  const settled = await Promise.allSettled(executors.map(m => llmCall({ model: m, prompt: args.prompt, system: args.system })));
+  const results = settled.map((s, i) => s.status === 'fulfilled'
+    ? { executor: executors[i], ...(s.value as object) } as any
+    : { executor: executors[i], ok: false, error_class: 'executor_threw', note: String((s as PromiseRejectedResult).reason) });
+  const successes = results.filter(r => r.ok);
+  const failures = results.filter(r => !r.ok);
+  let judgment: any = null;
+  if (successes.length > 0) {
+    const jr = await llmCall({
+      model: judge,
+      prompt: `Executor outputs:\n${successes.map(s => `${s.executor}: ${s.text}`).join('\n\n')}\n\nJudge: pick the best or synthesize. Output ONLY JSON {"verdict":"...","best":"<executor>","notes":"..."}.`,
+      system: 'You are a judge. Output ONLY valid JSON.'
+    }) as any;
+    judgment = { model: judge, ok: jr.ok, text: jr.text, receipt: jr.receipt };
+  }
+  const childReceipts = [...results.map(r => r.receipt), judgment?.receipt].filter(Boolean) as string[];
+  const parent = appendReceipt('runs', {
+    kind: 'run',
+    subject: `judge loop · ${executors.length} executors · judge ${judge} · ${successes.length} ok / ${failures.length} failed`,
+    policy: 'human-gated',
+    status: successes.length ? 'ok' : 'failed',
+    plan_hash: planHash,
+    prompt_hash: sha256(args.prompt),
+    child_receipts: childReceipts,
+    executors: results.map(r => ({ model: r.model ?? r.executor, ok: r.ok, via: r.via, ms: r.ms, tokens: r.tokens, status: r.ok ? 'ok' : 'failed', error_class: r.ok ? undefined : (r.error_class ?? 'executor_failed') })),
+    spans: [{ name: `judge loop ${planHash.slice(0, 8)}`, kind: 'invoke_agent' as const }],
+    artifacts: []
+  });
+  appendEvent('judge.completed', { planHash, ok: successes.length, failed: failures.length });
+  return { ok: true, planHash, executors: results, failures, judgment, child_receipts: childReceipts, receipt: parent.hash };
 }
 
 // ---- promo judge loop: local-first ($0), frontier ONLY on low confidence ----
@@ -269,6 +364,83 @@ async function promoJudge(args: { comp?: string; threshold?: number }) {
   };
 }
 
+// ---- external MCP lanes via mcporter: allyson (animated SVG) + apify ----
+// Every use is logged to .timmy/runs/mcp-*.log and sealed as a receipt, so the
+// creative loop (prompt → run → review log → vision-compare → re-prompt) has
+// the same provenance as every other TIMMY lane.
+function runMcporter(opts: {
+  lane: string;
+  mode: 'stdio' | 'http';
+  stdioArgs?: string[];            // args after the npx command
+  httpUrl?: string;
+  httpHeaderEnv?: string;          // bearer token sourced from env at spawn
+  selector: string;                // <serverName>.<tool>
+  args: Record<string, unknown>;
+  logName: string;
+}) {
+  const logPath = join(process.cwd(), '.timmy', 'runs', `mcp-${opts.logName}-${Date.now()}.log`);
+  mkdirSync(dirname(logPath), { recursive: true });
+  const margs = ['call'];
+  if (opts.mode === 'stdio') {
+    margs.push('--stdio', 'npx');
+    for (const a of opts.stdioArgs ?? []) margs.push('--stdio-arg', a);
+  } else {
+    margs.push('--http-url', opts.httpUrl ?? '');
+    const tok = process.env[opts.httpHeaderEnv ?? ''] ?? '';
+    if (tok) margs.push('--header', `Authorization=Bearer ${tok}`);
+  }
+  margs.push(opts.selector);
+  for (const [k, v] of Object.entries(opts.args)) margs.push(`${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`);
+  const child = spawnSync('mcporter', margs, { encoding: 'utf8', timeout: 300000 });
+  const out = `${child.stdout ?? ''}\n${child.stderr ?? ''}`;
+  writeFileSync(logPath, out);
+  return { ok: child.status === 0, log: logPath, out: (child.stdout ?? '').slice(0, 2000), note: child.status !== 0 ? redact((child.stderr ?? child.stdout ?? '').slice(0, 300)) : undefined };
+}
+
+async function allysonRun(args: { prompt: string; svg_path: string; output_path: string }) {
+  const key = process.env.ALLYSON_API_KEY ?? process.env.API_KEY ?? '';
+  if (!key) return { ok: false, needs_key: 'ALLYSON_API_KEY — sign up at allyson.ai; the lane is wired, generation needs the key' };
+  const r = runMcporter({
+    lane: 'allyson', mode: 'stdio',
+    stdioArgs: ['allyson-mcp', '--api-key', key],
+    selector: 'npx.generate_svg_animation',
+    args: { prompt: args.prompt, svg_path: args.svg_path, output_path: args.output_path },
+    logName: 'allyson'
+  });
+  appendReceipt('runs', {
+    kind: 'run',
+    subject: `allyson svg animation · ${args.prompt.slice(0, 60)}`,
+    policy: 'auto',
+    spans: [{ name: 'allyson.generate_svg_animation (mcporter)', kind: 'execute_tool' }],
+    cost_usd: undefined,
+    artifacts: r.ok && existsSync(args.output_path) ? [args.output_path] : []
+  });
+  appendEvent(r.ok ? 'allyson.done' : 'allyson.failed', { log: r.log });
+  return { ...r, review: `read the usage log (prompt/result/traffic) at ${r.log}; vision-compare source vs output, then re-prompt` };
+}
+
+async function apifyRun(args: { tool: string; args?: Record<string, unknown> }) {
+  const tok = process.env.APIFY_API_TOKEN ?? process.env.APIFY_API_KEY ?? '';
+  if (!tok) return { ok: false, needs_key: 'APIFY_API_TOKEN from https://console.apify.com/account/integrations' };
+  const r = runMcporter({
+    lane: 'apify', mode: 'http',
+    httpUrl: 'https://mcp.apify.com', httpHeaderEnv: process.env.APIFY_API_TOKEN ? 'APIFY_API_TOKEN' : 'APIFY_API_KEY',
+    selector: `mcp-apify-com.${args.tool}`,
+    args: args.args ?? {},
+    logName: `apify-${args.tool}`
+  });
+  appendReceipt('runs', {
+    kind: 'run',
+    subject: `apify ${args.tool}`,
+    policy: 'auto',
+    spans: [{ name: `apify.${args.tool} (mcporter)`, kind: 'execute_tool' }],
+    cost_usd: undefined,
+    artifacts: []
+  });
+  appendEvent(r.ok ? 'apify.done' : 'apify.failed', { tool: args.tool, log: r.log });
+  return r;
+}
+
 const replaceInnerText = (html: string, id: string, text: string): string => {
   const re = new RegExp('(id="' + id + '"[^>]*>)([^<]*)', 'g');
   return html.replace(re, (_m, pre, old) => pre + text);
@@ -307,10 +479,12 @@ function genRun(args: { provider?: string; model?: string; prompt: string; kind?
   return { id: rec.id, status: ok ? 'done' : 'failed', artifact, logTail: txt.split('\n').slice(-4) };
 }
 
-function promoApply(args: { beats: { id: string; claim?: string; sub?: string; evidence?: string }[] }) {
-  const src = join(process.cwd(), 'studio', 'timmy-promo-v8', 'index.html');
-  const outDir = join(process.cwd(), 'studio', 'timmy-promo-v9');
-  if (!existsSync(src)) return { ok: false, note: 'v8 comp missing' };
+function promoApply(args: { beats: { id: string; claim?: string; sub?: string; evidence?: string }[]; from?: string }) {
+  const fromV = args.from ?? 'timmy-promo-v8';
+  const src = join(process.cwd(), 'studio', fromV, 'index.html');
+  const n = Number((fromV.match(/v(\d+)$/) ?? [])[1] ?? 8);
+  const outDir = join(process.cwd(), 'studio', `timmy-promo-v${n + 1}`);
+  if (!existsSync(src)) return { ok: false, note: `${fromV} comp missing` };
   mkdirSync(outDir, { recursive: true });
   let html = readFileSync(src, 'utf8');
   const idMap: Record<string, { claim?: string; sub?: string; ev?: string }> = {
@@ -348,6 +522,9 @@ const call = (name: string, args: any): unknown => {
     case 'timmy_llm_call': return llmCall(args ?? { model: '', prompt: '' });
     case 'timmy_fusion_plan': return fusionPlan(args ?? {});
     case 'timmy_promo_judge': return promoJudge(args ?? {});
+    case 'timmy_allyson_run': return allysonRun(args ?? { prompt: '', svg_path: '', output_path: '' });
+    case 'timmy_apify_run': return apifyRun(args ?? { tool: '' });
+    case 'timmy_judge_loop': return judgeLoop(args ?? { prompt: '' });
     default: throw new Error(`unknown tool ${name}`);
   }
 };
@@ -355,8 +532,14 @@ const call = (name: string, args: any): unknown => {
 // Headless sessions get eyes: the companion auto-pops once per machine
 // session (reused if already up; TIMMY_LOGS_OPEN=0 opts out of the pop).
 import { ensureLogCompanion } from '../utils/logserver.js';
-ensureLogCompanion().catch(() => {});
+import { pathToFileURL } from 'url';
 
+export function startMcpServer(): void {
+  ensureLogCompanion().catch(() => {});
+  serveStdio();
+}
+
+function serveStdio(): void {
 let buf = '';
 process.stdin.on('data', d => {
   buf += d.toString();
@@ -385,3 +568,9 @@ process.stdin.on('data', d => {
     }
   }
 });
+}
+
+const isMain = !!process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain) startMcpServer();
+
+export { llmCall, judgeLoop, redact };
