@@ -10,7 +10,7 @@ import { replayFromEdl, } from '../utils/cliprunner.js';
 import { listGenerations, recordGeneration, updateGeneration, extractArtifactFromLog } from '../utils/generations.js';
 import { locateGenAgent, buildGenAgentArgs, launchDetached } from '../utils/genbridge.js';
 import { GENERATION_PROVIDERS } from '../utils/providers.js';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, copyFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { spawnSync } from 'child_process';
 
@@ -24,7 +24,8 @@ const TOOLS = [
   { name: 'timmy_gen_run', description: 'Queue + execute a generation through the gen bridge (OpenRouter/local providers); sealed receipt on completion.', inputSchema: { type: 'object', properties: { provider: { type: 'string' }, model: { type: 'string' }, prompt: { type: 'string' }, kind: { type: 'string' } }, required: ['prompt'] } },
   { name: 'timmy_promo_apply', description: 'Apply a fused beats delta to the promo comp (v8 → v9): replaces claim/sub/evidence text per beat id.', inputSchema: { type: 'object', properties: { beats: { type: 'array' } }, required: ['beats'] } },
   { name: 'timmy_llm_call', description: 'Direct chat-completions call through TIMMY: openrouter direct (or the Cloudflare edge proxy when TIMMY_AI_PROXY is set), or the local ollama daemon (bare tags on-device, :cloud tags on ollama cloud; gated by TIMMY_ALLOW_LOCAL_OLLAMA=1). Every call sealed as a receipt with model + usage. Pre-tool hook validates the model (openrouter → ollama) before any call goes out. Bodybuilder-style fan-out = parallel calls; Fusion = one call with the outputs attached.', inputSchema: { type: 'object', properties: { model: { type: 'string' }, prompt: { type: 'string' }, system: { type: 'string' }, requires_approval: { type: 'boolean', description: 'HITL gate: the call refuses until approved:true is passed' }, approved: { type: 'boolean', description: 'human-in-the-loop approval flag for this run' } }, required: ['model', 'prompt'] } },
-  { name: 'timmy_fusion_plan', description: 'Resolve the owner-picked judge chain (local nemotron-3.5-lightning + qwen3.8:27b-mlx first, then gemini-3.7-flash floor, grok-4.6 frontier, ollama :cloud tags) against openrouter/ollama and return the available-judges list for quick human approval before a fusion run.', inputSchema: { type: 'object', properties: { approved: { type: 'boolean' } } } }
+  { name: 'timmy_fusion_plan', description: 'Resolve the owner-picked judge chain (local nemotron-3.5-lightning + qwen3.8:27b-mlx first, then gemini-3.7-flash floor, grok-4.6 frontier, ollama :cloud tags) against openrouter/ollama and return the available-judges list for quick human approval before a fusion run.', inputSchema: { type: 'object', properties: { approved: { type: 'boolean' } } } },
+  { name: 'timmy_promo_judge', description: 'Local-first promo judge loop: two free local judges score the current comp copy, a local fusion synthesizes edits + confidence; a frontier model arbitrates ONLY when confidence < threshold. Seals a receipt ($0 when local agrees). Returns proposed beat edits for human review before timmy_promo_apply.', inputSchema: { type: 'object', properties: { comp: { type: 'string', description: 'studio comp dir, default = latest timmy-promo-vN' }, threshold: { type: 'number', description: 'confidence below which frontier escalation fires (default 0.7)' } } } }
 ];
 
 // Judge chain (owner-picked order): free local first (M5-max optimized),
@@ -191,6 +192,83 @@ async function fusionPlan(args: { approved?: boolean }) {
   };
 }
 
+// ---- promo judge loop: local-first ($0), frontier ONLY on low confidence ----
+const extractPromoCopy = (html: string): string => {
+  const noBlocks = html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '');
+  const text = noBlocks.replace(/<[^>]+>/g, '\n');
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2 && l.length < 120);
+  const out: string[] = [];
+  for (const l of lines) if (l !== out[out.length - 1]) out.push(l);
+  return out.slice(0, 80).join('\n');
+};
+
+const grabJSON = (t: string): any => {
+  const s = t.indexOf('{');
+  const e = t.lastIndexOf('}');
+  if (s < 0 || e <= s) return null;
+  try { return JSON.parse(t.slice(s, e + 1)); } catch { return null; }
+};
+
+async function promoJudge(args: { comp?: string; threshold?: number }) {
+  const threshold = args?.threshold ?? 0.7;
+  const studioDir = join(process.cwd(), 'studio');
+  const comps = existsSync(studioDir)
+    ? readdirSync(studioDir).filter(d => /^timmy-promo-v\d+$/.test(d)).sort()
+    : [];
+  const comp = args?.comp ?? comps[comps.length - 1];
+  const htmlPath = join(studioDir, comp, 'index.html');
+  if (!existsSync(htmlPath)) return { ok: false, note: `comp not found: ${comp}` };
+  const copy = extractPromoCopy(readFileSync(htmlPath, 'utf8'));
+  const judgePrompt = `TIMMY 45s promo comp ${comp}. Visible copy:\n---\n${copy}\n---\nJudge as a conversion marketer AND a trust-skeptic. Score 0-10 (messaging, proof density, honesty). Propose up to 3 beat edits using beat ids: hook1 hook2 turn lanes cost receipt replay envlock clip local connect grammar split lockup end, as {"id","claim"?,"sub"?,"evidence"?}. Output ONLY JSON {"score":n,"confidence":0-1,"edits":[...],"notes":"..."}`;
+  const judgeRuns = await Promise.all(['nemotron-3.5-lightning', 'qwen3.8:27b-mlx'].map(async m => {
+    const r = await llmCall({ model: m, prompt: judgePrompt, system: 'You are a promo judge. Output ONLY valid JSON.' });
+    return { model: m, via: (r as any).via ?? 'none', ok: !!(r as any).ok, ms: (r as any).ms, parsed: (r as any).ok ? grabJSON((r as any).text ?? '') : null };
+  }));
+  const good = judgeRuns.filter(j => j.ok && j.parsed);
+  if (good.length === 0) return { ok: false, note: 'no local judge available — local-first loop refuses to spend', judges: judgeRuns };
+  const fuseModel = good.some(j => j.model === 'qwen3.8:27b-mlx') ? 'qwen3.8:27b-mlx' : 'nemotron-3.5-lightning';
+  const fusedRun = await llmCall({
+    model: fuseModel,
+    prompt: `Judge outputs for the same promo:\n${good.map(j => `${j.model}: ${JSON.stringify(j.parsed)}`).join('\n')}\nFuse into ONE JSON {"score":n,"confidence":0-1,"edits":[up to 3, de-duplicated],"notes":"..."}. confidence = how much the judges agree. Output ONLY JSON.`,
+    system: 'You are a fusion judge. Output ONLY valid JSON.'
+  });
+  const fused = (fusedRun as any).ok ? grabJSON((fusedRun as any).text ?? '') : null;
+  if (!fused) return { ok: false, note: 'local fusion failed', judges: judgeRuns };
+  let escalated = false;
+  let arbitrator: string | null = null;
+  let final = fused;
+  if ((Number(fused.confidence) || 0) < threshold) {
+    escalated = true;
+    for (const m of ['x-ai/grok-4.6', 'google/gemini-3.7-flash']) {
+      const r = await llmCall({ model: m, prompt: `Local judges fused this promo verdict at confidence ${fused.confidence} (< ${threshold}). Arbitrate: keep, cut, or sharpen each edit.\n${JSON.stringify(fused)}\nOutput ONLY JSON {"score":n,"confidence":0-1,"edits":[...],"notes":"..."}.`, system: 'You are a frontier arbitration judge. Output ONLY valid JSON.' });
+      const p = (r as any).ok ? grabJSON((r as any).text ?? '') : null;
+      if (p) { final = p; arbitrator = m; break; }
+    }
+  }
+  const rec = appendReceipt('runs', {
+    kind: 'run',
+    subject: `promo judge ${comp} · local-first · escalated=${escalated}`,
+    policy: 'auto',
+    spans: [
+      ...good.map(j => ({ name: `judge ${j.model} (local $0)`, kind: 'chat' as const })),
+      { name: `fusion ${fuseModel} (local $0)`, kind: 'chat' as const },
+      ...(arbitrator ? [{ name: `arbitration ${arbitrator}`, kind: 'chat' as const }] : [])
+    ],
+    cost_usd: escalated ? undefined : 0,
+    artifacts: [`studio/${comp}/index.html`]
+  });
+  appendEvent('promo.judged', { comp, score: final.score, confidence: final.confidence, escalated });
+  return {
+    ok: true, comp,
+    judges: good.map(j => ({ model: j.model, via: j.via, score: j.parsed.score, ms: j.ms })),
+    local_fusion: { model: fuseModel, score: fused.score, confidence: fused.confidence },
+    escalated, arbitrator,
+    final,
+    receipt: rec.hash,
+    apply_hint: 'human reviews final.edits, then timmy_promo_apply with the chosen beats'
+  };
+}
+
 const replaceInnerText = (html: string, id: string, text: string): string => {
   const re = new RegExp('(id="' + id + '"[^>]*>)([^<]*)', 'g');
   return html.replace(re, (_m, pre, old) => pre + text);
@@ -269,6 +347,7 @@ const call = (name: string, args: any): unknown => {
     case 'timmy_promo_apply': return promoApply(args ?? { beats: [] });
     case 'timmy_llm_call': return llmCall(args ?? { model: '', prompt: '' });
     case 'timmy_fusion_plan': return fusionPlan(args ?? {});
+    case 'timmy_promo_judge': return promoJudge(args ?? {});
     default: throw new Error(`unknown tool ${name}`);
   }
 };

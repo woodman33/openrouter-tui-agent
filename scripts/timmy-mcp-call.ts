@@ -34,4 +34,4 @@ server.stdout.on('data', d => {
 });
 server.on('error', e => { console.error(`server error: ${e.message}`); process.exit(1); });
 send({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'qwen-session', version: '1' } } });
-setTimeout(() => { console.error('timeout'); server.kill(); process.exit(1); }, 180000);
+setTimeout(() => { console.error('timeout'); server.kill(); process.exit(1); }, Number(process.env.TIMMY_MCP_TIMEOUT ?? 180000));
