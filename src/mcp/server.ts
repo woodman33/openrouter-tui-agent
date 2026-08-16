@@ -23,8 +23,61 @@ const TOOLS = [
   { name: 'timmy_clip_replay', description: 'Replay a sealed clip job from its EDL cut-list alone; verifies output sha match.', inputSchema: { type: 'object', properties: { jobId: { type: 'string' } }, required: ['jobId'] } },
   { name: 'timmy_gen_run', description: 'Queue + execute a generation through the gen bridge (OpenRouter/local providers); sealed receipt on completion.', inputSchema: { type: 'object', properties: { provider: { type: 'string' }, model: { type: 'string' }, prompt: { type: 'string' }, kind: { type: 'string' } }, required: ['prompt'] } },
   { name: 'timmy_promo_apply', description: 'Apply a fused beats delta to the promo comp (v8 → v9): replaces claim/sub/evidence text per beat id.', inputSchema: { type: 'object', properties: { beats: { type: 'array' } }, required: ['beats'] } },
-  { name: 'timmy_llm_call', description: 'Direct OpenRouter chat-completions call through TIMMY: every call sealed as a receipt with model + usage. Bodybuilder-style fan-out = parallel calls; Fusion = one call with the outputs attached.', inputSchema: { type: 'object', properties: { model: { type: 'string' }, prompt: { type: 'string' }, system: { type: 'string' } }, required: ['model', 'prompt'] } }
+  { name: 'timmy_llm_call', description: 'Direct chat-completions call through TIMMY: openrouter direct (or the Cloudflare edge proxy when TIMMY_AI_PROXY is set), or the local ollama daemon (bare tags on-device, :cloud tags on ollama cloud; gated by TIMMY_ALLOW_LOCAL_OLLAMA=1). Every call sealed as a receipt with model + usage. Pre-tool hook validates the model (openrouter → ollama) before any call goes out. Bodybuilder-style fan-out = parallel calls; Fusion = one call with the outputs attached.', inputSchema: { type: 'object', properties: { model: { type: 'string' }, prompt: { type: 'string' }, system: { type: 'string' }, requires_approval: { type: 'boolean', description: 'HITL gate: the call refuses until approved:true is passed' }, approved: { type: 'boolean', description: 'human-in-the-loop approval flag for this run' } }, required: ['model', 'prompt'] } },
+  { name: 'timmy_fusion_plan', description: 'Resolve the owner-picked judge chain (local nemotron-3.5-lightning + qwen3.8:27b-mlx first, then gemini-3.7-flash floor, grok-4.6 frontier, ollama :cloud tags) against openrouter/ollama and return the available-judges list for quick human approval before a fusion run.', inputSchema: { type: 'object', properties: { approved: { type: 'boolean' } } } }
 ];
+
+// Judge chain (owner-picked order): free local first (M5-max optimized),
+// cheap openrouter floor + one frontier, then ollama :cloud tags (the daemon routes them).
+export const JUDGE_CHAIN = [
+  'nemotron-3.5-lightning', 'qwen3.8:27b-mlx',
+  'google/gemini-3.7-flash', 'x-ai/grok-4.6',
+  'minimax-m3:cloud', 'kimi-k3:cloud', 'glm-5.2:cloud'
+];
+
+let orModelsCache: { at: number; ids: string[] } | null = null;
+async function openrouterModels(): Promise<string[]> {
+  if (orModelsCache && Date.now() - orModelsCache.at < 600000) return orModelsCache.ids;
+  const proxy = process.env.TIMMY_AI_PROXY;
+  try {
+    const res = proxy
+      ? await fetch(`${proxy}/models`)
+      : await fetch('https://openrouter.ai/api/v1/models', { headers: { Authorization: `Bearer ${readApiKey()}` } });
+    const j = (await res.json()) as any;
+    const ids = Array.isArray(j) ? j.map((m: any) => m.id as string) : (j?.data ?? []).map((m: any) => m.id as string);
+    orModelsCache = { at: Date.now(), ids };
+    return ids;
+  } catch { return orModelsCache?.ids ?? []; }
+}
+
+const localOllamaAllowed = (): boolean => process.env.TIMMY_ALLOW_LOCAL_OLLAMA === '1';
+async function ollamaLocalModels(): Promise<string[]> {
+  if (!localOllamaAllowed()) return [];
+  try {
+    const r = await fetch('http://localhost:11434/api/tags');
+    const j = (await r.json()) as any;
+    return (j?.models ?? []).map((m: any) => m.name as string);
+  } catch { return []; }
+}
+
+// Pre-tool hook: every model id is validated before a call goes out.
+// openrouter → ollama daemon (bare tags run on-device, :cloud tags on ollama
+// cloud — the daemon routes; whole path gated by TIMMY_ALLOW_LOCAL_OLLAMA=1).
+export async function resolveModel(id: string): Promise<{ via: string; id: string; suggestions?: string[] }> {
+  const or = await openrouterModels();
+  if (or.includes(id)) return { via: 'openrouter', id };
+  const loc = await ollamaLocalModels();
+  const tag = loc.find(m => m === id || m === `${id}:latest` || m.startsWith(id + ':'));
+  if (tag) return { via: 'ollama', id: tag };
+  const tail = id.split('/').pop() ?? id;
+  return { via: 'none', id, suggestions: or.filter(m => m.includes(tail)).slice(0, 4) };
+}
+
+// No loose secrets in tool output, ever.
+const redact = (s: string): string => s
+  .replace(/sk-or-[A-Za-z0-9_-]+/g, 'sk-or-REDACTED')
+  .replace(/Bearer [A-Za-z0-9._-]+/g, 'Bearer REDACTED')
+  .replace(/eyJ[A-Za-z0-9_-]{20,}/g, 'JWT-REDACTED');
 
 const readApiKey = (): string => {
   if (process.env.OPENROUTER_API_KEY) return process.env.OPENROUTER_API_KEY;
@@ -35,46 +88,107 @@ const readApiKey = (): string => {
   } catch { return ''; }
 };
 
-async function llmCall(args: { model: string; prompt: string; system?: string }) {
-  const key = readApiKey();
-  if (!key) return { ok: false, note: 'no OPENROUTER_API_KEY in env or .env' };
+async function llmCall(args: { model: string; prompt: string; system?: string; requires_approval?: boolean; approved?: boolean }) {
+  if (args.requires_approval && !args.approved) {
+    appendEvent('run.gated', { model: args.model, note: 'awaiting human approval' });
+    return { ok: false, needs_approval: true, model: args.model, note: 'human-in-the-loop gate: review the model list (timmy_fusion_plan) and re-invoke with approved:true' };
+  }
+  const resolved = await resolveModel(args.model);
+  if (resolved.via === 'none') {
+    appendEvent('run.failed', { model: args.model, note: 'model not resolvable on any permitted provider' });
+    return { ok: false, needs_resolution: true, model: args.model, suggestions: resolved.suggestions, note: 'model not found on openrouter/ollama; pick a suggestion or permit ollama local (TIMMY_ALLOW_LOCAL_OLLAMA=1)' };
+  }
+  const messages = [
+    ...(args.system ? [{ role: 'system', content: args.system }] : []),
+    { role: 'user', content: args.prompt }
+  ];
   const t0 = Date.now();
+  if (resolved.via === 'ollama') {
+    try {
+      const r = await fetch('http://localhost:11434/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: resolved.id, messages, stream: false })
+      });
+      const ms = Date.now() - t0;
+      if (!r.ok) {
+        const raw = await r.text();
+        appendEvent('run.failed', { model: resolved.id, status: r.status, ms });
+        return { ok: false, status: r.status, note: redact(raw.slice(0, 300)), ms };
+      }
+      const j = await r.json() as any;
+      const text = redact(j?.message?.content ?? '');
+      const tokens = (j?.eval_count ?? 0) + (j?.prompt_eval_count ?? 0);
+      appendReceipt('runs', {
+        kind: 'run',
+        subject: `llm ${resolved.id}`,
+        policy: args.requires_approval ? 'human-gated' : 'auto',
+        spans: [{ name: `chat ${resolved.id} via ollama`, kind: 'chat' }],
+        cost_usd: 0,
+        artifacts: []
+      });
+      appendEvent('run.completed', { model: resolved.id, via: 'ollama', ms, tokens });
+      return { ok: true, model: resolved.id, via: 'ollama', ms, tokens, text };
+    } catch (e) {
+      appendEvent('run.failed', { model: resolved.id, note: redact((e as Error).message) });
+      return { ok: false, note: redact((e as Error).message) };
+    }
+  }
+  const proxy = process.env.TIMMY_AI_PROXY;
+  const key = readApiKey();
+  if (!proxy && !key) return { ok: false, note: 'no OPENROUTER_API_KEY in env or .env and no TIMMY_AI_PROXY edge route' };
+  const body = JSON.stringify({ model: args.model, messages, temperature: 0.7 });
   try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}`, 'X-Title': 'TIMMY' },
-      body: JSON.stringify({
-        model: args.model,
-        messages: [
-          ...(args.system ? [{ role: 'system', content: args.system }] : []),
-          { role: 'user', content: args.prompt }
-        ],
-        temperature: 0.7
-      })
-    });
+    const res = proxy
+      ? await fetch(`${proxy}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+      : await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}`, 'X-Title': 'TIMMY' },
+        body
+      });
     const ms = Date.now() - t0;
     if (!res.ok) {
-      const body = await res.text();
+      const raw = await res.text();
       appendEvent('run.failed', { model: args.model, status: res.status, ms });
-      return { ok: false, status: res.status, note: body.slice(0, 300), ms };
+      return { ok: false, status: res.status, note: redact(raw.slice(0, 300)), ms };
     }
     const j = await res.json() as any;
-    const text = j?.choices?.[0]?.message?.content ?? '';
+    const text = redact(j?.choices?.[0]?.message?.content ?? '');
     const usage = j?.usage ?? {};
     appendReceipt('runs', {
       kind: 'run',
       subject: `llm ${args.model}`,
-      policy: 'auto',
-      spans: [{ name: `chat ${args.model}`, kind: 'chat' }],
+      policy: args.requires_approval ? 'human-gated' : 'auto',
+      spans: [{ name: `chat ${args.model} via ${resolved.via}`, kind: 'chat' }],
       cost_usd: undefined,
       artifacts: []
     });
-    appendEvent('run.completed', { model: args.model, ms, tokens: usage?.total_tokens ?? 0 });
-    return { ok: true, model: args.model, ms, tokens: usage?.total_tokens ?? 0, text };
+    appendEvent('run.completed', { model: args.model, via: resolved.via, ms, tokens: usage?.total_tokens ?? 0 });
+    return { ok: true, model: args.model, via: resolved.via, ms, tokens: usage?.total_tokens ?? 0, text };
   } catch (e) {
-    appendEvent('run.failed', { model: args.model, note: (e as Error).message });
-    return { ok: false, note: (e as Error).message };
+    appendEvent('run.failed', { model: args.model, note: redact((e as Error).message) });
+    return { ok: false, note: redact((e as Error).message) };
   }
+}
+
+async function fusionPlan(args: { approved?: boolean }) {
+  const judges = [];
+  for (const id of JUDGE_CHAIN) {
+    const r = await resolveModel(id);
+    judges.push({ model: id, via: r.via, ...(r.suggestions ? { suggestions: r.suggestions } : {}) });
+  }
+  const available = judges.filter(j => j.via !== 'none').map(j => j.model);
+  appendEvent('fusion.planned', { available, approved: !!args?.approved });
+  return {
+    ok: true,
+    chain: JUDGE_CHAIN,
+    judges,
+    available,
+    floor: 'google/gemini-3.7-flash',
+    requires_approval: true,
+    approved: !!args?.approved,
+    note: 'quick-approve: pass available (or a subset) back as timmy_llm_call runs with requires_approval:true, approved:true'
+  };
 }
 
 const replaceInnerText = (html: string, id: string, text: string): string => {
@@ -154,6 +268,7 @@ const call = (name: string, args: any): unknown => {
     case 'timmy_gen_run': return genRun(args ?? { prompt: '' });
     case 'timmy_promo_apply': return promoApply(args ?? { beats: [] });
     case 'timmy_llm_call': return llmCall(args ?? { model: '', prompt: '' });
+    case 'timmy_fusion_plan': return fusionPlan(args ?? {});
     default: throw new Error(`unknown tool ${name}`);
   }
 };

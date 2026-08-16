@@ -1,0 +1,6 @@
+name = "timmy-ai-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+# The OpenRouter key lives HERE as a Worker secret (wrangler secret put
+# OPENROUTER_API_KEY), never on the laptop. timmy_llm_call routes through
+# TIMMY_AI_PROXY when set; local key path remains the offline fallback.
