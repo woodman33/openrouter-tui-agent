@@ -5,6 +5,12 @@
 import { createHash, randomBytes } from 'crypto';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
+import { withLockDir } from './receipts.js';
+
+// v0.5: token mint/consume is atomic across processes (shared PID-aware
+// mkdir lock) so two callers cannot replay one token.
+const withApprovalLock = <T>(fn: () => T): T =>
+  withLockDir(join(dirname(storePath()), 'approvals.lock'), fn);
 
 export interface Approval {
   token: string;
@@ -41,28 +47,32 @@ export const planHashOf = (plan: unknown): string =>
 export const APPROVAL_TTL_MS = 5 * 60 * 1000;
 
 export function issueApproval(planHash: string, ttlMs: number = APPROVAL_TTL_MS): Approval {
-  const a: Approval = {
-    token: randomBytes(16).toString('hex'),
-    planHash,
-    createdAt: Date.now(),
-    expiresAt: Date.now() + ttlMs,
-    used: false
-  };
-  const list = read().filter(x => x.expiresAt > Date.now() || x.used);
-  list.push(a);
-  write(list);
-  return a;
+  return withApprovalLock(() => {
+    const a: Approval = {
+      token: randomBytes(16).toString('hex'),
+      planHash,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + ttlMs,
+      used: false
+    };
+    const list = read().filter(x => x.expiresAt > Date.now() || x.used);
+    list.push(a);
+    write(list);
+    return a;
+  });
 }
 
 export function consumeApproval(token: string, planHash: string): { ok: boolean; note?: string } {
-  const list = read();
-  const a = list.find(x => x.token === token);
-  if (!a) return { ok: false, note: 'unknown approval token' };
-  if (a.used) return { ok: false, note: 'approval already used (single-use; replay denied)' };
-  if (Date.now() > a.expiresAt) return { ok: false, note: 'approval expired' };
-  if (a.planHash !== planHash) return { ok: false, note: 'approval bound to a different plan hash' };
-  a.used = true;
-  a.usedAt = Date.now();
-  write(list);
-  return { ok: true };
+  return withApprovalLock(() => {
+    const list = read();
+    const a = list.find(x => x.token === token);
+    if (!a) return { ok: false, note: 'unknown approval token' };
+    if (a.used) return { ok: false, note: 'approval already used (single-use; replay denied)' };
+    if (Date.now() > a.expiresAt) return { ok: false, note: 'approval expired' };
+    if (a.planHash !== planHash) return { ok: false, note: 'approval bound to a different plan hash' };
+    a.used = true;
+    a.usedAt = Date.now();
+    write(list);
+    return { ok: true };
+  });
 }

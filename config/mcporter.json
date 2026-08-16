@@ -1,0 +1,11 @@
+{
+  "mcpServers": {},
+  "registries": {
+    "@cult-ui-pro": {
+      "url": "https://pro.cult-ui.com/api/registry/{name}",
+      "headers": {
+        "X-API-Key": "${CULT_PRO_TOKEN}"
+      }
+    }
+  }
+}

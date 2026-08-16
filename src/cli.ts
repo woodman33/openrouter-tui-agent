@@ -176,6 +176,16 @@ if (command === 'approve') {
   process.exit(0);
 }
 
+if (command === 'epoch') {
+  // Atomic release-epoch rotation (write-temp + rename).
+  const n = Number(args[1]);
+  if (!n || n < 1) { console.error('usage: timmy epoch <n> [reason]'); process.exit(2); }
+  const { rotateEpoch } = await import('./utils/receipts.js');
+  rotateEpoch(n, args.slice(2).join(' ') || 'operator rotation');
+  console.log(`epoch rotated to ${n}`);
+  process.exit(0);
+}
+
 if (command === 'logs') {
   // Live companion for headless MCP/CLI sessions: streams the SAME event bus
   // the TUI consumes + receipt chain with verify; auto-pops a browser once.
@@ -229,7 +239,14 @@ if (command === 'export') {
     console.log(`otio: ${outPath}`);
     process.exit(0);
   }
-  console.error('Usage: timmy export otio <runDirName>');
+  if (kind === 'agentrun' && args[2]) {
+    // v0.5 T1 acceptance artifact: portable sanitized .agentrun bundle.
+    const { exportAgentRun } = await import('./utils/agentrun.js');
+    const exp = exportAgentRun(args[2]);
+    console.log(`agentrun: ${exp.bundle} (${exp.files.length} files, output ${exp.outputSha.slice(0, 16)}…)`);
+    process.exit(0);
+  }
+  console.error('Usage: timmy export otio <runDirName> | timmy export agentrun <jobId>');
   process.exit(2);
 }
 

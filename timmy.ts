@@ -114,7 +114,7 @@ if (command === 'start') {
 }
 
 // Modern CLI surface (mcp serve/logs/approve/events/…) lives in src/cli.ts.
-if (['mcp', 'logs', 'approve', 'events'].includes(command)) {
+if (['mcp', 'logs', 'approve', 'events', 'epoch'].includes(command)) {
   const cliPath = fileURLToPath(new URL('./src/cli.ts', import.meta.url));
   const r = spawnSync(process.execPath, ['--import', 'tsx', cliPath, ...args], { stdio: 'inherit' });
   process.exit(r.status ?? 1);

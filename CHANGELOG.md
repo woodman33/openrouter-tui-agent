@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-08-16
+
+### Added
+- **One-command judge loop** (`timmy_judge_loop` MCP tool): phase 1 returns the resolved executor/judge plan + plan hash; phase 2 requires an operator-minted single-use 5-min token bound to that exact hash (`timmy approve <planHash>`). Executors run via `Promise.allSettled`; one configurable judge; child receipts per executor/judge plus a parent receipt linking children, plan hash, spend and tier.
+- **AgentPass-named spend policy**: approved plans bind system/user prompts, executor order, judge, transport resolution, parameters, escalation policy and `max_spend`/`tier`/`policy`; paid routes default-deny at `max_spend: 0`; overspend aborts before the judge.
+- **Receipt chain v0.5 integrity**: single-writer mkdir lock serializes read-tail → sign → append across processes; release epochs (`EPOCH.json`) let a clean signed epoch start after an incident while legacy broken streams stay queryable as incident evidence; verifier reports per-epoch segments.
+- **Receipts v2 bindings**: prompt/response hashes (never raw content), requested vs resolved model, transport, latency, tokens, reported cost, status and error class; failed AND denied attempts seal signed receipts too.
+- **Replay integrity enforcement**: replay refuses on active-OS/arch/executable-build-hash or sealed-source-hash mismatch with signed failure receipts; verify records bind EDL + manifest hash + sources + output hash.
+- **Portable `.agentrun` acceptance artifact** (`timmy export agentrun <jobId>`): sanitized bundle (relative paths, no credential material) with EDL, media, hashes, env lock, signer key, original + replay receipts, verification report and the OTIO interchange; replays from a fresh workspace and byte-compares.
+- **Apify + cult/pro lanes**: `timmy_apify_run` (mcporter http, logged + receipted), cult/pro shadcn registry wired via `config/mcporter.json` env-placeholder header for the UI remix.
+- **Parallel-agent git rules** in AGENTS.md (no `git add -A`, stage-only-yours, no resets of foreign work).
+
+### Changed
+- Approval booleans removed everywhere; bare `approved: true` no longer approves anything.
+- `timmy export` gains `agentrun`; `timmy.ts` delegates `mcp|logs|approve|events` to the modern CLI.
+
+### Fixed
+- CI/release pin OpenTimelineIO 0.18.1 (`otioconvert` present); `timmy help`/`version` tests spawn node directly with a real timeout instead of flaking under load.
+
 ## [0.4.0] - 2026-07-14
 
 ### Added

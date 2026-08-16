@@ -54,7 +54,7 @@ describe('receipt chain v1', () => {
   });
 
   it('empty chain verifies', () => {
-    expect(verifyChain('runs', dir)).toEqual({ ok: true, count: 0 });
+    expect(verifyChain('runs', dir)).toEqual({ ok: true, count: 0, current_epoch: 1, segments: [] });
     expect(readChain('runs', dir)).toEqual([]);
   });
 });

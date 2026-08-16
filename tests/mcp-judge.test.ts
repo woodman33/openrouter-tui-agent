@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { resolveModel, redact, llmCall, judgeLoop } from '../src/mcp/server.js';
+import { resolveModel, redact, llmCall, judgeLoop, judgePlanOf } from '../src/mcp/server.js';
 import { issueApproval, planHashOf } from '../src/utils/approvals.js';
 import { readChain, verifyChain } from '../src/utils/receipts.js';
 
@@ -126,7 +126,7 @@ describe('timmy_judge_loop', () => {
   const prompt = 'what is a receipt?';
   const executors = ['google/gemini-3.7-flash', 'x-ai/grok-4.6'];
   const judge = 'nemotron-3.5-lightning';
-  const planHash = planHashOf({ tool: 'timmy_judge_loop', prompt, executors, judge });
+  const planHash = planHashOf(judgePlanOf({ prompt, executors, judge }));
 
   it('phase 1 returns the plan + hash without running anything', async () => {
     const r = await judgeLoop({ prompt, executors, judge }) as any;
@@ -142,18 +142,32 @@ describe('timmy_judge_loop', () => {
     expect(wrong.denied).toBe(true);
   });
 
+  it('default-denies paid routes when max_spend is 0', async () => {
+    process.env.TIMMY_ALLOW_LOCAL_OLLAMA = '1'; // judge resolves local; executors stay paid
+    const a = issueApproval(planHash);
+    const r = await judgeLoop({ prompt, executors, judge, approval: a.token }) as any;
+    delete process.env.TIMMY_ALLOW_LOCAL_OLLAMA;
+    expect(r.ok).toBe(false);
+    expect(r.denied).toBe(true);
+    expect(r.note).toContain('max_spend');
+    const last = readChain('runs').at(-1) as any;
+    expect(last.status).toBe('denied');
+    expect(last.error_class).toBe('spend_policy');
+  });
+
   it('runs executors via allSettled, tolerates partial failure, judges, and links child+parent receipts', async () => {
     process.env.TIMMY_ALLOW_LOCAL_OLLAMA = '1';
     orChatFailures = 1; // one of the two openrouter executors 500s
-    const a = issueApproval(planHash);
-    const r = await judgeLoop({ prompt, executors, judge, approval: a.token }) as any;
+    const budgetHash = planHashOf(judgePlanOf({ prompt, executors, judge, max_spend: 1 }));
+    const a = issueApproval(budgetHash);
+    const r = await judgeLoop({ prompt, executors, judge, max_spend: 1, approval: a.token }) as any;
     expect(r.ok).toBe(true);
     expect(r.failures).toHaveLength(1);
     expect(r.judgment.ok).toBe(true);
     // 2 executor child receipts (ok + failed) + judge child = 3, all linked
     expect(r.child_receipts).toHaveLength(3);
     const parent = readChain('runs').find(x => x.hash === r.receipt) as any;
-    expect(parent.plan_hash).toBe(planHash);
+    expect(parent.plan_hash).toBe(budgetHash);
     expect(parent.child_receipts).toEqual(r.child_receipts);
     expect(parent.status).toBe('ok');
     // replay of the consumed token is denied

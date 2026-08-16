@@ -26,11 +26,11 @@ const TOOLS = [
   { name: 'timmy_gen_run', description: 'Queue + execute a generation through the gen bridge (OpenRouter/local providers); sealed receipt on completion.', inputSchema: { type: 'object', properties: { provider: { type: 'string' }, model: { type: 'string' }, prompt: { type: 'string' }, kind: { type: 'string' } }, required: ['prompt'] } },
   { name: 'timmy_promo_apply', description: 'Apply a fused beats delta to the promo comp: replaces claim/sub/evidence text per beat id. from = source comp (default timmy-promo-v8); output is the next version (v9 → v10 etc).', inputSchema: { type: 'object', properties: { beats: { type: 'array' }, from: { type: 'string', description: 'source comp dir, default timmy-promo-v8' } }, required: ['beats'] } },
   { name: 'timmy_llm_call', description: 'Direct chat-completions call through TIMMY: openrouter direct (or the Cloudflare edge proxy when TIMMY_AI_PROXY is set), or the local ollama daemon (bare tags on-device, :cloud tags on ollama cloud; gated by TIMMY_ALLOW_LOCAL_OLLAMA=1). Every call sealed as a receipt with model + usage. Pre-tool hook validates the model (openrouter → ollama) before any call goes out. Bodybuilder-style fan-out = parallel calls; Fusion = one call with the outputs attached.', inputSchema: { type: 'object', properties: { model: { type: 'string' }, prompt: { type: 'string' }, system: { type: 'string' }, requires_approval: { type: 'boolean', description: 'HITL gate: requires an operator approval token bound to this call' }, approval: { type: 'string', description: 'operator token from `timmy approve <planHash>` (single-use, 5min). A bare boolean never approves.' } }, required: ['model', 'prompt'] } },
-  { name: 'timmy_fusion_plan', description: 'Resolve the owner-picked judge chain (local nemotron-3.5-lightning + qwen3.8:27b-mlx first, then gemini-3.7-flash floor, grok-4.6 frontier, ollama :cloud tags) against openrouter/ollama and return the available-judges list for quick human approval before a fusion run.', inputSchema: { type: 'object', properties: { approved: { type: 'boolean' } } } },
+  { name: 'timmy_fusion_plan', description: 'Resolve the owner-picked judge chain (local nemotron-3.5-lightning + qwen3.8:27b-mlx first, then gemini-3.7-flash floor, grok-4.6 frontier, ollama :cloud tags) against openrouter/ollama and return the available-judges list. Approval is operator-only via `timmy approve <planHash>`.', inputSchema: { type: 'object', properties: {} } },
   { name: 'timmy_promo_judge', description: 'Local-first promo judge loop: two free local judges score the current comp copy, a local fusion synthesizes edits + confidence; a frontier model arbitrates ONLY when confidence < threshold. Seals a receipt ($0 when local agrees). Returns proposed beat edits for human review before timmy_promo_apply.', inputSchema: { type: 'object', properties: { comp: { type: 'string', description: 'studio comp dir, default = latest timmy-promo-vN' }, threshold: { type: 'number', description: 'confidence below which frontier escalation fires (default 0.7)' } } } },
   { name: 'timmy_allyson_run', description: 'Allyson lane: animate a source SVG into an animated component via allyson-mcp (mcporter stdio). Every use logged to .timmy/runs/mcp-allyson-*.log + sealed receipt. Needs ALLYSON_API_KEY (allyson.ai) for generation; without it returns an honest needs_key.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, svg_path: { type: 'string', description: 'absolute source svg/png path' }, output_path: { type: 'string', description: 'absolute output component path' } }, required: ['prompt', 'svg_path', 'output_path'] } },
   { name: 'timmy_apify_run', description: 'Apify lane: call any mcp.apify.com tool (scrapers/actors) via mcporter http with bearer from env. Logged to .timmy/runs/mcp-apify-*.log + sealed receipt. Needs a valid APIFY_API_TOKEN from console.apify.com.', inputSchema: { type: 'object', properties: { tool: { type: 'string', description: 'apify MCP tool name, e.g. get-actor-list / call-actor' }, args: { type: 'object' } }, required: ['tool'] } },
-  { name: 'timmy_judge_loop', description: 'One-command judge loop. Phase 1 (no approval): returns the resolved executor/judge plan + plan hash. Phase 2: requires an operator-minted single-use expiring token bound to that exact plan hash (`timmy approve <planHash>`); a bare boolean never approves. Runs 3-5 executors via Promise.allSettled, one configurable judge, child receipts per executor/judge + one parent receipt linking them. Default-deny on unresolved models or missing approval.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, system: { type: 'string' }, executors: { type: 'array', items: { type: 'string' } }, judge: { type: 'string' }, approval: { type: 'string', description: 'operator approval token from `timmy approve <planHash>`' } }, required: ['prompt'] } }
+  { name: 'timmy_judge_loop', description: 'One-command judge loop. Phase 1 (no approval): returns the resolved executor/judge plan + plan hash. Phase 2: requires an operator-minted single-use expiring token bound to that exact plan hash (`timmy approve <planHash>`); a bare boolean never approves. Runs 3-5 executors via Promise.allSettled, one configurable judge, child receipts per executor/judge + one parent receipt linking them. Default-deny on unresolved models or missing approval.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, system: { type: 'string' }, executors: { type: 'array', items: { type: 'string' } }, judge: { type: 'string' }, approval: { type: 'string', description: 'operator approval token from `timmy approve <planHash>`' }, max_spend: { type: 'number', description: 'approved USD ceiling (AgentPass max_spend); 0 = local/free routes only, paid routes denied' }, tier: { type: 'string', description: 'AgentPass clearance tier (default T0)' } }, required: ['prompt'] } }
 ];
 
 // Judge chain (owner-picked order): free local first (M5-max optimized),
@@ -101,7 +101,7 @@ const errClass = (status?: number, e?: unknown): string =>
 // Receipts v2: bind prompt hash + response hash (never raw content), requested
 // vs resolved model, transport, latency, tokens, reported cost, status and
 // error class. Failed and denied attempts seal too. Returns the receipt hash.
-async function llmCall(args: { model: string; prompt: string; system?: string; requires_approval?: boolean; approved?: boolean; approval?: string }) {
+async function llmCall(args: { model: string; prompt: string; system?: string; requires_approval?: boolean; approval?: string }) {
   const messages = [
     ...(args.system ? [{ role: 'system', content: args.system }] : []),
     { role: 'user', content: args.prompt }
@@ -159,7 +159,7 @@ async function llmCall(args: { model: string; prompt: string; system?: string; r
         artifacts: []
       });
       appendEvent('run.completed', { model: resolved.id, via: 'ollama', ms, tokens });
-      return { ok: true, model: resolved.id, via: 'ollama', ms, tokens, text, receipt: rec.hash };
+      return { ok: true, model: resolved.id, via: 'ollama', ms, tokens, cost_usd: 0, text, receipt: rec.hash };
     } catch (e) {
       appendEvent('run.failed', { model: resolved.id, note: redact((e as Error).message) });
       const rec = appendReceipt('runs', { kind: 'run', subject: `llm ${resolved.id}`, policy: 'auto', status: 'failed', error_class: errClass(undefined, e), ...base, model_resolved: resolved.id, via: 'ollama', spans: [], artifacts: [] });
@@ -207,7 +207,7 @@ async function llmCall(args: { model: string; prompt: string; system?: string; r
       artifacts: []
     });
     appendEvent('run.completed', { model: args.model, via: resolved.via, ms, tokens: usage?.total_tokens ?? 0 });
-    return { ok: true, model: args.model, via: resolved.via, ms, tokens: usage?.total_tokens ?? 0, text, receipt: rec.hash };
+    return { ok: true, model: args.model, via: resolved.via, ms, tokens: usage?.total_tokens ?? 0, cost_usd: usage?.cost ?? 0, text, receipt: rec.hash };
   } catch (e) {
     appendEvent('run.failed', { model: args.model, note: redact((e as Error).message) });
     const rec = appendReceipt('runs', { kind: 'run', subject: `llm ${args.model}`, policy: 'auto', status: 'failed', error_class: errClass(undefined, e), ...base, model_resolved: resolved.id, via: resolved.via, spans: [], artifacts: [] });
@@ -215,34 +215,56 @@ async function llmCall(args: { model: string; prompt: string; system?: string; r
   }
 }
 
-async function fusionPlan(args: { approved?: boolean }) {
+async function fusionPlan(_args: Record<string, never>) {
   const judges = [];
   for (const id of JUDGE_CHAIN) {
     const r = await resolveModel(id);
     judges.push({ model: id, via: r.via, ...(r.suggestions ? { suggestions: r.suggestions } : {}) });
   }
   const available = judges.filter(j => j.via !== 'none').map(j => j.model);
-  appendEvent('fusion.planned', { available, approved: !!args?.approved });
+  appendEvent('fusion.planned', { available });
   return {
     ok: true,
     chain: JUDGE_CHAIN,
     judges,
     available,
     floor: 'google/gemini-3.7-flash',
-    requires_approval: true,
-    approved: !!args?.approved,
-    note: 'quick-approve: pass available (or a subset) back as timmy_llm_call runs with requires_approval:true, approved:true'
+    note: 'approval is operator-only: `timmy approve <planHash>` mints a single-use token; bare booleans are ignored everywhere'
   };
 }
 
 // ---- timmy_judge_loop: one-command, plan-hash-gated multi-executor judging ----
-async function judgeLoop(args: { prompt: string; system?: string; executors?: string[]; judge?: string; approval?: string }) {
+// Exported so tests and operators hash the IDENTICAL plan shape the server
+// binds — no drift between caller and enforcer.
+export function judgePlanOf(args: { prompt: string; system?: string; executors: string[]; judge: string; max_spend?: number; tier?: string }) {
+  return {
+    tool: 'timmy_judge_loop',
+    prompt: args.prompt,
+    system: args.system ?? null,
+    executors: args.executors, // order is bound
+    judge: args.judge,
+    transport: 'resolved-at-run: openrouter | ollama',
+    params: { temperature: 0.7 },
+    escalation: { policy: 'local-first', arbitration: 'none-at-v0.5' },
+    policy: 'human-gated',
+    tier: args.tier ?? 'T0',
+    max_spend: args.max_spend ?? 0
+  };
+}
+
+// v0.5: the approved plan binds EVERYTHING that can drift — system prompt,
+// user prompt, executor order, judge, transport resolution, parameters,
+// escalation policy, and spend (AgentPass field names: policy/tier/max_spend
+// so §7.6 adoption later is a rename, not a migration). Phase-2 args re-hash
+// to the same planHash; any drift = different hash = token mismatch = denied.
+async function judgeLoop(args: { prompt: string; system?: string; executors?: string[]; judge?: string; approval?: string; max_spend?: number; tier?: string }) {
   const executors = args.executors ?? ['nemotron-3.5-lightning', 'qwen3.8:27b-mlx', 'google/gemini-3.7-flash'];
   const judge = args.judge ?? 'qwen3.8:27b-mlx';
-  const plan = { tool: 'timmy_judge_loop', prompt: args.prompt, executors, judge };
+  const max_spend = args.max_spend ?? 0; // default-deny paid spend
+  const plan = judgePlanOf({ prompt: args.prompt, system: args.system, executors, judge, max_spend, tier: args.tier });
   const planHash = planHashOf(plan);
   if (!args.approval) {
-    return { phase: 'plan', ok: false, needs_approval: true, plan, planHash, note: `operator: \`timmy approve ${planHash}\` (single-use, 5min), then re-invoke with approval:<token>` };
+    return { phase: 'plan', ok: false, needs_approval: true, plan, planHash, note: `operator: \`timmy approve ${planHash}\` (single-use, 5min), then re-invoke with approval:<token>; set max_spend>0 to permit paid executors` };
   }
   const gate = consumeApproval(args.approval, planHash);
   if (!gate.ok) {
@@ -255,36 +277,52 @@ async function judgeLoop(args: { prompt: string; system?: string; executors?: st
     const rec = appendReceipt('runs', { kind: 'run', subject: 'judge loop DENIED (unresolved models)', policy: 'human-gated', status: 'denied', error_class: 'unresolved_model', plan_hash: planHash, prompt_hash: sha256(args.prompt), spans: [], artifacts: [] });
     return { ok: false, denied: true, unresolved: unresolved.map(x => ({ model: x.m, suggestions: x.r.suggestions })), receipt: rec.hash };
   }
+  // Default-deny: any paid/remote route with zero approved budget is refused
+  // before a single token is spent.
+  const paid = resolvedAll.filter(x => x.r.via === 'openrouter');
+  if (paid.length > 0 && max_spend <= 0) {
+    const rec = appendReceipt('runs', { kind: 'run', subject: 'judge loop DENIED (spend policy)', policy: 'human-gated', status: 'denied', error_class: 'spend_policy', plan_hash: planHash, prompt_hash: sha256(args.prompt), spans: [], artifacts: [] });
+    return { ok: false, denied: true, note: `paid routes (${paid.map(x => x.m).join(', ')}) require max_spend > 0 in the approved plan`, receipt: rec.hash };
+  }
   const settled = await Promise.allSettled(executors.map(m => llmCall({ model: m, prompt: args.prompt, system: args.system })));
   const results = settled.map((s, i) => s.status === 'fulfilled'
     ? { executor: executors[i], ...(s.value as object) } as any
     : { executor: executors[i], ok: false, error_class: 'executor_threw', note: String((s as PromiseRejectedResult).reason) });
   const successes = results.filter(r => r.ok);
   const failures = results.filter(r => !r.ok);
+  let spent = results.reduce((s, r) => s + (Number(r.cost_usd) || 0), 0);
   let judgment: any = null;
   if (successes.length > 0) {
+    if (spent > max_spend) {
+      const rec = appendReceipt('runs', { kind: 'run', subject: 'judge loop DENIED (overspend before judge)', policy: 'human-gated', status: 'denied', error_class: 'spend_policy', plan_hash: planHash, prompt_hash: sha256(args.prompt), spans: [], artifacts: [] });
+      return { ok: false, denied: true, spent, max_spend, executors: results, note: 'executor spend exceeded approved max_spend; judge not called', receipt: rec.hash };
+    }
     const jr = await llmCall({
       model: judge,
       prompt: `Executor outputs:\n${successes.map(s => `${s.executor}: ${s.text}`).join('\n\n')}\n\nJudge: pick the best or synthesize. Output ONLY JSON {"verdict":"...","best":"<executor>","notes":"..."}.`,
       system: 'You are a judge. Output ONLY valid JSON.'
     }) as any;
+    spent += Number(jr.cost_usd) || 0;
     judgment = { model: judge, ok: jr.ok, text: jr.text, receipt: jr.receipt };
   }
   const childReceipts = [...results.map(r => r.receipt), judgment?.receipt].filter(Boolean) as string[];
   const parent = appendReceipt('runs', {
     kind: 'run',
-    subject: `judge loop · ${executors.length} executors · judge ${judge} · ${successes.length} ok / ${failures.length} failed`,
+    subject: `judge loop · ${executors.length} executors · judge ${judge} · ${successes.length} ok / ${failures.length} failed · spent $${spent.toFixed(6)}`,
     policy: 'human-gated',
+    tier: plan.tier,
+    max_spend,
+    cost_usd: spent,
     status: successes.length ? 'ok' : 'failed',
     plan_hash: planHash,
     prompt_hash: sha256(args.prompt),
     child_receipts: childReceipts,
-    executors: results.map(r => ({ model: r.model ?? r.executor, ok: r.ok, via: r.via, ms: r.ms, tokens: r.tokens, status: r.ok ? 'ok' : 'failed', error_class: r.ok ? undefined : (r.error_class ?? 'executor_failed') })),
+    executors: results.map(r => ({ model: r.model ?? r.executor, ok: r.ok, via: r.via, ms: r.ms, tokens: r.tokens, cost_usd: r.cost_usd, status: r.ok ? 'ok' : 'failed', error_class: r.ok ? undefined : (r.error_class ?? 'executor_failed') })),
     spans: [{ name: `judge loop ${planHash.slice(0, 8)}`, kind: 'invoke_agent' as const }],
     artifacts: []
-  });
-  appendEvent('judge.completed', { planHash, ok: successes.length, failed: failures.length });
-  return { ok: true, planHash, executors: results, failures, judgment, child_receipts: childReceipts, receipt: parent.hash };
+  } as any);
+  appendEvent('judge.completed', { planHash, ok: successes.length, failed: failures.length, spent });
+  return { ok: true, planHash, spent, max_spend, executors: results, failures, judgment, child_receipts: childReceipts, receipt: parent.hash };
 }
 
 // ---- promo judge loop: local-first ($0), frontier ONLY on low confidence ----
