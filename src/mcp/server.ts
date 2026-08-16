@@ -273,6 +273,11 @@ const call = (name: string, args: any): unknown => {
   }
 };
 
+// Headless sessions get eyes: the companion auto-pops once per machine
+// session (reused if already up; TIMMY_LOGS_OPEN=0 opts out of the pop).
+import { ensureLogCompanion } from '../utils/logserver.js';
+ensureLogCompanion().catch(() => {});
+
 let buf = '';
 process.stdin.on('data', d => {
   buf += d.toString();

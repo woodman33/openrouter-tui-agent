@@ -1,8 +1,11 @@
 import chalk from 'chalk';
 
-// Deterministic masculine minimal: one dominant accent, one semantic color set,
-// no purple/pink/violet tones. Amber = precision instrument, terminal-classic.
+// One instrument, one voice (docs/UI-VISION.md): purple = identity ONLY,
+// amber = signal/cost, green = trust/seals, red = fail, blue = info/chrome.
+// No hex values outside this file.
 export const theme = {
+  brand: '#a78bfa',             // TIMMY identity: logo, active nav, companion
+  brandDim: '#5d4a8a',          // brand muted (inactive identity chrome)
   surfaceBase: '#0a0e12',       // near-black, slightly cool
   surfaceRaised: '#101418',     // 1 step up
   surfaceOverlay: '#161c22',    // 2 steps up

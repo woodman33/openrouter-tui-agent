@@ -55,6 +55,7 @@ Commands:
   runtimes doctor Detect runtime readiness without executing agent tasks
   sceneforge      Use the authenticated Cloudflare control plane via MCPorter
   events          Stream the TUI's event envelope as NDJSON (--follow, --human, --otlp)
+  logs            Live web companion: event bus + receipt chain + verify (auto-pops browser; --port N)
   clip list|run|replay  List · run headless + seal · replay from cut-list alone
   design list|run       Open Design (MCP) gens: queue in GENS, execute + seal here
   doctor deps|network|hardware  Read-only posture checks (never auto-fixes)
@@ -159,7 +160,17 @@ if (command === 'clip') {
 if (command === 'mcp' && args[1] === 'serve') {
   // timmy as an MCP server: any MCP-speaking agent drives the trust layer.
   await import('./mcp/server.js');
-  process.exit(0);
+  await new Promise(() => {}); // stdio server owns the event loop — never exit
+}
+
+if (command === 'logs') {
+  // Live companion for headless MCP/CLI sessions: streams the SAME event bus
+  // the TUI consumes + receipt chain with verify; auto-pops a browser once.
+  const { startLogServer } = await import('./utils/logserver.js');
+  const portIdx = args.indexOf('--port');
+  const port = portIdx >= 0 ? Number(args[portIdx + 1]) : undefined;
+  await startLogServer({ port, open: true });
+  await new Promise(() => {}); // server owns the event loop
 }
 
 if (command === 'design') {
