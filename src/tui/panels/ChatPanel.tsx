@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { DispatchRail } from './DispatchRail.js';
 import chalk from 'chalk';
 import { useAgent } from '../hooks/useAgent.js';
 import type { Agent } from '../../agent/core.js';
@@ -49,6 +50,9 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
 
   // Home buttons interactive selection
   const [activeHomeBtnIdx, setActiveHomeBtnIdx] = useState(-1); // -1 = input focus, 0 = Paste URL, 1 = Open Workspace, 2 = View Receipt
+
+  // Command Post v0.1 Dispatch rail (ctrl+d)
+  const [showDispatch, setShowDispatch] = useState(false);
 
   // OpenRouter Model Rail states
   const [liveModels, setLiveModels] = useState<any[]>([]);
@@ -261,6 +265,12 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
       if (key.ctrl && char === 'm') {
         focusPane('modelRail');
         setHighlightedModelIdx(0);
+        return;
+      }
+
+      // Command Post v0.1: compact Dispatch rail (J-BANG), ctrl+d
+      if (key.ctrl && char === 'd') {
+        setShowDispatch(s => !s);
         return;
       }
 
@@ -492,6 +502,7 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
 
   return (
     <Box flexDirection="row" width={stageWidth} flexGrow={1} flexShrink={1}>
+      {showDispatch && <DispatchRail width={36} />}
       {/* 1. Left Box: Chat Panel */}
       <Box flexDirection="column" flexGrow={1} width={chatWidth} paddingX={1}>
         
