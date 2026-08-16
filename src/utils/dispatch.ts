@@ -1,0 +1,243 @@
+// TIMMY Command Post v0.1 — typed dispatch contract + controller.
+// Equip riders; don't ride: this PREPARES, ARMS and LAUNCHES work into
+// existing harness lanes (LANE_RUNNERS + tmux vocabulary). It is not a second
+// scheduler; the later tldraw Mission Map compiles into these same calls.
+import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync } from 'fs';
+import { join, dirname } from 'path';
+import { spawnSync } from 'child_process';
+import { tmpdir } from 'os';
+import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+import { planHashOf, consumeApproval } from './approvals.js';
+import { appendReceipt } from './receipts.js';
+import { appendEvent } from './eventbus.js';
+import { LANE_RUNNERS } from '../agent/lanes.js';
+
+export type Lifecycle =
+  | 'draft' | 'ready' | 'armed' | 'running' | 'needs_approval'
+  | 'judging' | 'passed' | 'failed' | 'promoted' | 'archived';
+
+export interface DispatchPlan {
+  schema_version: 'dispatch/0.1';
+  objective: string;
+  deliverables: string[];
+  acceptance_tests: string[];
+  harnesses: string[];
+  model_policy: { requested: string; allow_paid: boolean; max_spend_usd: number };
+  copies: number;
+  cadence: { mode: 'parallel' | 'sequential'; depends_on: string[] };
+  context_manifest: { path: string; sha256: string }[];
+  repo_ref: string;
+  workspace: { kind: 'docker' | 'host-ephemeral'; image?: string; path?: string };
+  permissions: { filesystem: 'ro' | 'rw-ephemeral'; network: boolean; tools: string[]; secrets: string[] };
+  limits: { tokens?: number; cost_usd: number; steps?: number; wall_ms: number };
+  retry_limit: number;
+  approval: { required: boolean; mode: 'manual' | 'delegated-envelope' };
+  expected_artifacts: string[];
+  telemetry: { redact: boolean; events: boolean };
+}
+
+export interface StoredPlan {
+  id: string;
+  plan: DispatchPlan;
+  plan_hash: string;
+  lifecycle: Lifecycle;
+  approved_hash?: string;
+  session?: string;
+  dispatched_at?: string;
+  blocked?: { state: 'not_configured' | 'blocked'; note: string };
+}
+
+const sha = (p: string): string => crypto.createHash('sha256').update(readFileSync(p)).digest('hex');
+const storeDir = (dir?: string) => join(dir ?? process.cwd(), '.timmy', 'dispatch');
+const planPath = (id: string, dir?: string) => join(storeDir(dir), `${id}.json`);
+const readStored = (id: string, dir?: string): StoredPlan | null => {
+  try { return JSON.parse(readFileSync(planPath(id, dir), 'utf8')) as StoredPlan; } catch { return null; }
+};
+const writeStored = (s: StoredPlan, dir?: string) => {
+  mkdirSync(storeDir(dir), { recursive: true });
+  writeFileSync(planPath(s.id, dir), JSON.stringify(s, null, 2));
+};
+const ev = (kind: string, s: StoredPlan, extra: Record<string, unknown> = {}, dir?: string) =>
+  appendEvent(kind, { plan_id: s.id, plan_hash: s.plan_hash, harness: s.plan.harnesses.join(','), status: s.lifecycle, ...extra }, dir);
+
+// CUE validates structure (owner amendment: CUE only at v0.1, no Nickel).
+export function validatePlanCue(plan: unknown, dir?: string): { ok: boolean; note?: string; error_class?: string } {
+  const cueBin = spawnSync('cue', ['version'], { encoding: 'utf8' });
+  if (cueBin.status !== 0) return { ok: false, error_class: 'not_configured', note: 'cue binary missing (brew install cue)' };
+  // schema lives in the repo, independent of the data dir
+  const schema = fileURLToPath(new URL('../../schemas/dispatch.cue', import.meta.url));
+  const tmp = join(mkdtempSync(join(tmpdir(), 'timmy-cue-')), 'plan.json');
+  writeFileSync(tmp, JSON.stringify(plan));
+  const r = spawnSync('cue', ['vet', '-d', '#Plan', schema, tmp], { encoding: 'utf8' });
+  if (r.status !== 0) return { ok: false, error_class: 'schema', note: (r.stderr || r.stdout || 'cue vet failed').slice(0, 400) };
+  return { ok: true };
+}
+
+export function listLanes(): { id: string; label: string; available: boolean; install?: string; model?: string }[] {
+  return Object.entries(LANE_RUNNERS).map(([id, r]) => ({
+    id, label: r.label, available: spawnSync('command', ['-v', r.cmd], { encoding: 'utf8', shell: true }).status === 0,
+    install: r.install, model: r.model
+  }));
+}
+
+export function createPlan(plan: DispatchPlan, dir?: string): { ok: boolean; id?: string; plan_hash?: string; validation?: unknown; note?: string } {
+  const validation = validatePlanCue(plan, dir);
+  if (!validation.ok) return { ok: false, validation, note: validation.note };
+  if (!plan.harnesses || plan.harnesses.length < 1) return { ok: false, note: 'no harnesses' };
+  for (const h of plan.harnesses) {
+    if (!LANE_RUNNERS[h]) return { ok: false, note: `unknown harness '${h}'`, validation: { available: Object.keys(LANE_RUNNERS) } };
+  }
+  const id = `dp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+  const stored: StoredPlan = { id, plan, plan_hash: planHashOf(plan), lifecycle: plan.approval.required ? 'needs_approval' : 'ready' };
+  writeStored(stored, dir);
+  ev('dispatch.created', stored, {}, dir);
+  return { ok: true, id, plan_hash: stored.plan_hash, validation };
+}
+
+// Approval binds the COMPLETE immutable plan hash; any mutation invalidates.
+export function armPlan(id: string, approval: string, dir?: string): { ok: boolean; note?: string; plan_hash?: string } {
+  const s = readStored(id, dir);
+  if (!s) return { ok: false, note: 'unknown plan' };
+  const gate = consumeApproval(approval, s.plan_hash);
+  if (!gate.ok) {
+    s.lifecycle = 'needs_approval';
+    writeStored(s, dir);
+    ev('dispatch.arm_denied', s, { note: gate.note }, dir);
+    appendReceipt('runs', { kind: 'run', subject: `dispatch ${id} arm DENIED`, policy: 'human-gated', status: 'denied', error_class: 'approval', plan_hash: s.plan_hash, spans: [], artifacts: [] }, dir);
+    return { ok: false, note: gate.note, plan_hash: s.plan_hash };
+  }
+  s.approved_hash = s.plan_hash;
+  s.lifecycle = 'armed';
+  writeStored(s, dir);
+  ev('dispatch.armed', s, {}, dir);
+  return { ok: true, plan_hash: s.plan_hash };
+}
+
+// bounded: a saturated tmux server must stall a dispatch, not hang it
+const tmux = (args: string[]) => spawnSync('tmux', args, { encoding: 'utf8', timeout: 5000 });
+
+// Real sandbox or nothing: docker disposable, or host-ephemeral temp copy.
+// Never the live checkout; never a changed directory as a claimed jail.
+function establishIsolation(s: StoredPlan): { ok: boolean; workdir?: string; note?: string; state?: 'not_configured' | 'blocked' } {
+  const repoRoot = process.cwd();
+  if (s.plan.workspace.kind === 'docker') {
+    const info = spawnSync('docker', ['info'], { encoding: 'utf8', timeout: 15000 });
+    if (info.status !== 0) return { ok: false, state: 'not_configured', note: 'docker daemon unavailable — fail closed' };
+    const workdir = mkdtempSync(join(tmpdir(), `timmy-dp-${s.id}-`));
+    return { ok: true, workdir };
+  }
+  const hinted = s.plan.workspace.path;
+  if (hinted && (hinted === repoRoot || hinted.startsWith(repoRoot + '/'))) {
+    return { ok: false, state: 'blocked', note: 'workspace inside live checkout — refused (isolation law)' };
+  }
+  const workdir = mkdtempSync(join(tmpdir(), `timmy-dp-${s.id}-`));
+  return { ok: true, workdir };
+}
+
+export function dispatchPlan(id: string, dir?: string): { ok: boolean; note?: string; session?: string; blocked?: { state: string; note: string } } {
+  const s = readStored(id, dir);
+  if (!s) return { ok: false, note: 'unknown plan' };
+  if (s.lifecycle !== 'armed') return { ok: false, note: `plan not armed (lifecycle ${s.lifecycle}) — chat prepares, authority launches` };
+  const currentHash = planHashOf(s.plan);
+  if (s.approved_hash !== currentHash || currentHash !== s.plan_hash) {
+    s.plan_hash = currentHash;
+    s.lifecycle = 'needs_approval';
+    writeStored(s, dir);
+    ev('dispatch.mutation_denied', s, {}, dir);
+    appendReceipt('runs', { kind: 'run', subject: `dispatch ${id} DENIED (plan mutated post-approval)`, policy: 'human-gated', status: 'denied', error_class: 'approval', plan_hash: s.plan_hash, spans: [], artifacts: [] }, dir);
+    return { ok: false, note: 'plan mutated after approval — approval invalidated' };
+  }
+  const iso = establishIsolation(s);
+  if (!iso.ok) {
+    s.blocked = { state: iso.state!, note: iso.note! };
+    s.lifecycle = 'failed';
+    writeStored(s, dir);
+    ev('dispatch.isolation_failed', s, { note: iso.note }, dir);
+    appendReceipt('runs', { kind: 'run', subject: `dispatch ${id} isolation FAILED`, policy: 'human-gated', status: 'failed', error_class: iso.state === 'not_configured' ? 'not_configured' : 'env', plan_hash: s.plan_hash, discrepancies: [iso.note!], spans: [], artifacts: [] }, dir);
+    return { ok: false, note: iso.note, blocked: s.blocked };
+  }
+  const runner = LANE_RUNNERS[s.plan.harnesses[0]];
+  const session = `timmy-dp-${s.id}`;
+  const task = s.plan.objective.replace(/"/g, '\\"');
+  const cmd = (runner.task ?? `${runner.cmd} "{task}"`).replace('{task}', task);
+  tmux(['kill-session', '-t', session]);
+  const ns = tmux(['new-session', '-d', '-s', session, '-c', iso.workdir!]);
+  if (ns.status !== 0) {
+    s.lifecycle = 'failed';
+    writeStored(s, dir);
+    return { ok: false, note: 'tmux spawn failed' };
+  }
+  // TIMMY_DISPATCH_DRYRUN=1: exercise session mechanics without launching a
+  // real harness (tests, demos). Isolation + approval gates still apply.
+  const launchCmd = process.env.TIMMY_DISPATCH_DRYRUN === '1'
+    ? `echo TIMMY_DISPATCH_DRYRUN ${s.id}; sleep 30`
+    : `cd ${JSON.stringify(iso.workdir)} && ${cmd}`;
+  tmux(['send-keys', '-t', session, launchCmd, 'Enter']);
+  s.session = session;
+  s.lifecycle = 'running';
+  s.dispatched_at = new Date().toISOString();
+  writeStored(s, dir);
+  ev('dispatch.launched', s, { session, workdir: iso.workdir }, dir);
+  appendReceipt('runs', {
+    kind: 'run', subject: `dispatch ${id} · ${s.plan.harnesses[0]} · ${s.plan.copies}x`,
+    policy: s.plan.approval.mode === 'delegated-envelope' ? 'human-gated' : 'human-gated',
+    status: 'ok', plan_hash: s.plan_hash, max_spend: s.plan.limits.cost_usd,
+    spans: [{ name: `dispatch ${s.plan.harnesses[0]}`, kind: 'invoke_agent' }], artifacts: []
+  }, dir);
+  return { ok: true, session };
+}
+
+export function tailLane(id: string, dir?: string): { ok: boolean; lines?: string[]; note?: string; lifecycle?: Lifecycle } {
+  const s = readStored(id, dir);
+  if (!s?.session) return { ok: false, note: 'no session for plan' };
+  const cap = tmux(['capture-pane', '-p', '-t', s.session]);
+  if (cap.status !== 0) {
+    s.lifecycle = s.lifecycle === 'running' ? 'failed' : s.lifecycle;
+    writeStored(s, dir);
+    return { ok: false, note: 'session gone', lifecycle: s.lifecycle };
+  }
+  return { ok: true, lines: (cap.stdout ?? '').split('\n').slice(-40), lifecycle: s.lifecycle };
+}
+
+export function pauseOrCancelLane(id: string, action: 'hold' | 'cancel', dir?: string): { ok: boolean; note?: string } {
+  const s = readStored(id, dir);
+  if (!s) return { ok: false, note: 'unknown plan' };
+  if (action === 'hold') {
+    if (s.session) tmux(['send-keys', '-t', s.session, 'C-z']);
+    s.lifecycle = 'archived';
+    writeStored(s, dir);
+    ev('dispatch.held', s, {}, dir);
+    return { ok: true };
+  }
+  if (s.session) tmux(['kill-session', '-t', s.session]);
+  s.lifecycle = 'archived';
+  writeStored(s, dir);
+  ev('dispatch.cancelled', s, {}, dir);
+  appendReceipt('runs', { kind: 'run', subject: `dispatch ${id} cancelled`, policy: 'human-gated', status: 'failed', error_class: 'cancelled', plan_hash: s.plan_hash, spans: [], artifacts: [] }, dir);
+  return { ok: true };
+}
+
+export function collectRun(id: string, dir?: string): { ok: boolean; lines?: string[]; over_wall?: boolean; elapsed_ms?: number; receipt?: string; lifecycle?: Lifecycle } {
+  const s = readStored(id, dir);
+  if (!s) return { ok: false } as any;
+  const tail = s.session ? tmux(['capture-pane', '-p', '-t', s.session]) : null;
+  const lines = tail?.status === 0 ? (tail.stdout ?? '').split('\n').slice(-60) : [];
+  const elapsed_ms = s.dispatched_at ? Date.now() - new Date(s.dispatched_at).getTime() : 0;
+  const over_wall = elapsed_ms > s.plan.limits.wall_ms;
+  s.lifecycle = over_wall ? 'failed' : 'judging';
+  writeStored(s, dir);
+  const rec = appendReceipt('runs', {
+    kind: 'run', subject: `dispatch ${id} collect · ${over_wall ? 'WALL EXCEEDED' : 'awaiting judge'}`,
+    policy: 'human-gated', status: over_wall ? 'failed' : 'ok',
+    ...(over_wall ? { error_class: 'wall_time' as const } : {}),
+    plan_hash: s.plan_hash, ms: elapsed_ms,
+    spans: [{ name: `collect ${s.plan.harnesses[0]}`, kind: 'execute_tool' }],
+    artifacts: []
+  }, dir);
+  ev('dispatch.collected', s, { over_wall, elapsed_ms }, dir);
+  return { ok: true, lines, over_wall, elapsed_ms, receipt: rec.hash, lifecycle: s.lifecycle };
+}
+
+export const dispatchHashOf = planHashOf;
+export { sha as dispatchSha };
