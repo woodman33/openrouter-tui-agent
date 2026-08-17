@@ -104,6 +104,9 @@ loadChain();
 </script></body></html>`;
 
 // ---- Command Post survey column (same controller, allowlisted actions) ----
+export const isLocalIp = (ip: string): boolean =>
+  ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip);
+
 const listPlans = () => {
   const dir = join(process.cwd(), '.timmy', 'dispatch');
   try {
@@ -220,7 +223,7 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
     }
     if (url.pathname === '/dispatch/action' && req.method === 'POST') {
       const ip = req.socket.remoteAddress ?? '';
-      if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) {
+      if (!isLocalIp(ip)) {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ ok: false, error: 'localhost only' }));
         return;

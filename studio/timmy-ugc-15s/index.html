@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>TIMMY — 15s UGC command-post ad</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  html, body { margin: 0; background: #000; }
+  .stage { position: relative; width: 100%; height: 100%; overflow: hidden; background: #05060a;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; color: #e6edf3; }
+  /* mobile safe areas: captions live inside 10% top / 12% bottom margins */
+  .cap { position: absolute; left: 8%; right: 8%; top: 10%; bottom: 12%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; }
+  .line { font-size: 64px; font-weight: 800; line-height: 1.15; color: #fafafa; }
+  .line .violet { color: #a98bff; } .line .amber { color: #f5b540; }
+  .caption { position: absolute; left: 10%; right: 10%; bottom: 14%; font-size: 30px; color: #c9d1d9;
+    background: rgba(5,6,10,.75); padding: 10px 16px; border-radius: 8px; }
+  .card { border: 1px solid #2d333b; background: rgba(11,13,16,.92); padding: 18px 24px; font-size: 24px;
+    color: #c9d1d9; border-radius: 10px; text-align: left; }
+  .card .g { color: #3fb950; } .card .k { color: #8b949e; } .card .p { color: #a98bff; }
+  .dip { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 36; }
+</style>
+</head>
+<body>
+<div class="stage" data-composition-id="timmy-ugc-15s" data-start="0" data-duration="15" data-fps="30" data-width="1080" data-height="1920">
+  <div class="cap" id="b-hook" data-start="0" data-duration="2" data-track-index="0">
+    <div class="line">your agent said <span class="violet">“done.”</span></div>
+    <div class="caption">your agent said “done.”</div>
+  </div>
+  <div class="cap" id="b-problem" data-start="2" data-duration="3" data-track-index="1">
+    <div class="line">you have <span class="amber">no idea</span> what it did.</div>
+    <div class="caption">no idea what it actually did</div>
+  </div>
+  <div class="cap" id="b-agitate" data-start="5" data-duration="3" data-track-index="2">
+    <div class="line">no logs · no proof · no replay</div>
+    <div class="caption">no logs · no proof · no replay</div>
+  </div>
+  <div class="cap" id="b-flip" data-start="8" data-duration="3" data-track-index="3">
+    <div class="line"><span class="violet">TIMMY</span> receipts every run.</div>
+    <div class="caption">TIMMY receipts every run</div>
+  </div>
+  <div class="cap" id="b-proof" data-start="11" data-duration="2" data-track-index="4">
+    <div class="card" id="proofcard"><span class="k">hash</span> <span class="g">sha256_72ce64ea…</span><br/><span class="k">sig</span> <span class="g">ed25519 ✓</span> · <span class="k">chain</span> <span class="p">epoch 2 · v0.5</span></div>
+    <div class="caption">verifiable receipt, not a screenshot</div>
+  </div>
+  <div class="cap" id="b-cta" data-start="13" data-duration="2" data-track-index="5">
+    <div class="line">timmy init</div>
+    <div class="caption">github.com/woodman33/timmy-tui</div>
+  </div>
+  <div class="dip" id="dip1"></div><div class="dip" id="dip2"></div><div class="dip" id="dip3"></div>
+  <div class="dip" id="dip4"></div><div class="dip" id="dip5"></div>
+</div>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  window.__timelines['timmy-ugc-15s'] = tl; // register FIRST
+  const pop = (id, at) => tl.fromTo(id, { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'power3.out' }, at);
+  pop('#b-hook', 0.1).pop && 0;
+  pop('#b-problem', 2.1); pop('#b-agitate', 5.1); pop('#b-flip', 8.1);
+  pop('#b-proof', 11.05); pop('#proofcard', 11.3); pop('#b-cta', 13.05);
+  [[ '#dip1',1.9],['#dip2',4.9],['#dip3',7.9],['#dip4',10.9],['#dip5',12.9]].forEach(p => {
+    tl.fromTo(p[0], { opacity: 0 }, { opacity: 1, duration: 0.12, yoyo: true, repeat: 1 }, p[1]);
+  });
+</script>
+</body>
+</html>
