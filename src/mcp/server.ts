@@ -30,6 +30,7 @@ const TOOLS = [
   { name: 'timmy_promo_judge', description: 'Local-first promo judge loop: two free local judges score the current comp copy, a local fusion synthesizes edits + confidence; a frontier model arbitrates ONLY when confidence < threshold. Seals a receipt ($0 when local agrees). Returns proposed beat edits for human review before timmy_promo_apply.', inputSchema: { type: 'object', properties: { comp: { type: 'string', description: 'studio comp dir, default = latest timmy-promo-vN' }, threshold: { type: 'number', description: 'confidence below which frontier escalation fires (default 0.7)' } } } },
   { name: 'timmy_allyson_run', description: 'Allyson lane: animate a source SVG into an animated component via allyson-mcp (mcporter stdio). Every use logged to .timmy/runs/mcp-allyson-*.log + sealed receipt. Needs ALLYSON_API_KEY (allyson.ai) for generation; without it returns an honest needs_key.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, svg_path: { type: 'string', description: 'absolute source svg/png path' }, output_path: { type: 'string', description: 'absolute output component path' } }, required: ['prompt', 'svg_path', 'output_path'] } },
   { name: 'timmy_apify_run', description: 'Apify lane: call any mcp.apify.com tool (scrapers/actors) via mcporter http with bearer from env. Logged to .timmy/runs/mcp-apify-*.log + sealed receipt. Needs a valid APIFY_API_TOKEN from console.apify.com.', inputSchema: { type: 'object', properties: { tool: { type: 'string', description: 'apify MCP tool name, e.g. get-actor-list / call-actor' }, args: { type: 'object' } }, required: ['tool'] } },
+  { name: 'timmy_3minapi_run', description: 'Optional helper lane: 3minapi no-code API builder (create/test/deploy data-capture endpoints, collaborator keys, webhooks, help topics). mcporter http with x-api-key from THREEMINAPI_KEY. Logged to .timmy/runs/mcp-3minapi-*.log + sealed receipt. Never on the critical path.', inputSchema: { type: 'object', properties: { tool: { type: 'string', description: '3minapi MCP tool, e.g. help / endpoints create / api_call / logs / deploy' }, args: { type: 'object' } }, required: ['tool'] } },
   { name: 'timmy_judge_loop', description: 'One-command judge loop. Phase 1 (no approval): returns the resolved executor/judge plan + plan hash. Phase 2: requires an operator-minted single-use expiring token bound to that exact plan hash (`timmy approve <planHash>`); a bare boolean never approves. Runs 3-5 executors via Promise.allSettled, one configurable judge, child receipts per executor/judge + one parent receipt linking them. Default-deny on unresolved models or missing approval.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, system: { type: 'string' }, executors: { type: 'array', items: { type: 'string' } }, judge: { type: 'string' }, approval: { type: 'string', description: 'operator approval token from `timmy approve <planHash>`' }, max_spend: { type: 'number', description: 'approved USD ceiling (AgentPass max_spend); 0 = local/free routes only, paid routes denied' }, tier: { type: 'string', description: 'AgentPass clearance tier (default T0)' } }, required: ['prompt'] } }
 ];
 
@@ -411,7 +412,8 @@ function runMcporter(opts: {
   mode: 'stdio' | 'http';
   stdioArgs?: string[];            // args after the npx command
   httpUrl?: string;
-  httpHeaderEnv?: string;          // bearer token sourced from env at spawn
+  httpHeaderEnv?: string;          // token sourced from env at spawn
+  headerStyle?: 'bearer' | 'x-api-key';
   selector: string;                // <serverName>.<tool>
   args: Record<string, unknown>;
   logName: string;
@@ -425,7 +427,7 @@ function runMcporter(opts: {
   } else {
     margs.push('--http-url', opts.httpUrl ?? '');
     const tok = process.env[opts.httpHeaderEnv ?? ''] ?? '';
-    if (tok) margs.push('--header', `Authorization=Bearer ${tok}`);
+    if (tok) margs.push('--header', opts.headerStyle === 'x-api-key' ? `x-api-key=${tok}` : `Authorization=Bearer ${tok}`);
   }
   margs.push(opts.selector);
   for (const [k, v] of Object.entries(opts.args)) margs.push(`${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`);
@@ -476,6 +478,32 @@ async function apifyRun(args: { tool: string; args?: Record<string, unknown> }) 
     artifacts: []
   });
   appendEvent(r.ok ? 'apify.done' : 'apify.failed', { tool: args.tool, log: r.log });
+  return r;
+}
+
+// Optional helper lane: 3minapi = no-code API builder (create/test/deploy data
+// capture endpoints, collaborator keys, webhooks). Helps with apis/mcps work;
+// never on the critical path.
+async function threeminapiRun(args: { tool: string; args?: Record<string, unknown> }) {
+  const tok = process.env.THREEMINAPI_KEY ?? '';
+  if (!tok) return { ok: false, needs_key: 'THREEMINAPI_KEY (3minapi.com) — optional helper lane' };
+  const r = runMcporter({
+    lane: '3minapi', mode: 'http',
+    httpUrl: 'https://3minapi.com/api/mcp', httpHeaderEnv: 'THREEMINAPI_KEY', headerStyle: 'x-api-key',
+    // config-defined server name (config/mcporter.json) — slug-independent
+    selector: `3minapi.${args.tool}`,
+    args: args.args ?? {},
+    logName: `3minapi-${args.tool}`
+  });
+  appendReceipt('runs', {
+    kind: 'run',
+    subject: `3minapi ${args.tool}`,
+    policy: 'auto',
+    spans: [{ name: `3minapi.${args.tool} (mcporter)`, kind: 'execute_tool' }],
+    cost_usd: undefined,
+    artifacts: []
+  });
+  appendEvent(r.ok ? '3minapi.done' : '3minapi.failed', { tool: args.tool, log: r.log });
   return r;
 }
 
@@ -562,6 +590,7 @@ const call = (name: string, args: any): unknown => {
     case 'timmy_promo_judge': return promoJudge(args ?? {});
     case 'timmy_allyson_run': return allysonRun(args ?? { prompt: '', svg_path: '', output_path: '' });
     case 'timmy_apify_run': return apifyRun(args ?? { tool: '' });
+    case 'timmy_3minapi_run': return threeminapiRun(args ?? { tool: '' });
     case 'timmy_judge_loop': return judgeLoop(args ?? { prompt: '' });
     default: throw new Error(`unknown tool ${name}`);
   }

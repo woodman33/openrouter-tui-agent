@@ -1,5 +1,12 @@
 {
-  "mcpServers": {},
+  "mcpServers": {
+    "3minapi": {
+      "url": "https://3minapi.com/api/mcp",
+      "headers": {
+        "x-api-key": "${THREEMINAPI_KEY}"
+      }
+    }
+  },
   "registries": {
     "@cult-ui-pro": {
       "url": "https://pro.cult-ui.com/api/registry/{name}",

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -90,8 +90,11 @@ describe('TIMMY Receipt System', () => {
     // Direct node --import tsx (no npx resolution) + explicit budget: under
     // full-suite parallel load the old npx spawn exceeded the 5s default and
     // read as a flake; the spawn itself was never the contract under test.
-    const tsx = (args: string) =>
-      execSync(`${process.execPath} --import tsx timmy.ts ${args}`, { encoding: 'utf8', timeout: 30000 });
+    const tsx = (args: string, timeout = 30000) =>
+      execSync(`${process.execPath} --import tsx timmy.ts ${args}`, { encoding: 'utf8', timeout });
+    // CLI-spawn integration file: give every test a real budget; hot-machine
+    // load must not read as failure (runbook gotcha).
+    vi.setConfig({ testTimeout: 60000 });
 
     it('should print help information with timmy help', () => {
       const output = tsx('help');
@@ -107,7 +110,7 @@ describe('TIMMY Receipt System', () => {
     }, 30000);
 
     it('should execute demo command and write demo-receipt.json', () => {
-      const output = execSync(`npx tsx timmy.ts demo --out ${tempTestDir}`, { encoding: 'utf8' });
+      const output = tsx(`demo --out ${tempTestDir}`, 60000);
       expect(output).toContain('TIMMY AgentOps Demo');
       expect(output).toContain('✓ Created');
       expect(output).toContain('✓ Generated receipt hash');
@@ -124,7 +127,7 @@ describe('TIMMY Receipt System', () => {
 
     it('should execute proof command and write manifest, receipt, and replay files', () => {
       const taskDescription = 'create a hello world Cloudflare Worker';
-      const output = execSync(`npx tsx timmy.ts proof "${taskDescription}" --out ${tempTestDir}`, { encoding: 'utf8' });
+      const output = tsx(`proof "${taskDescription}" --out ${tempTestDir}`, 60000);
       expect(output).toContain('TIMMY Proof Run');
       expect(output).toContain('✓ Run created');
       expect(output).toContain('✓ Receipt generated');
@@ -163,14 +166,14 @@ describe('TIMMY Receipt System', () => {
     });
 
     it('should support --json flag on demo command', () => {
-      const output = execSync(`npx tsx timmy.ts demo --json --out ${tempTestDir}`, { encoding: 'utf8' });
+      const output = tsx(`demo --json --out ${tempTestDir}`, 60000);
       const receipt = JSON.parse(output);
       expect(receipt.schema_version).toBe('0.1.0');
       expect(receipt.type).toBe('demo');
     });
 
     it('should support --json flag on proof command', () => {
-      const output = execSync(`npx tsx timmy.ts proof "json task" --json --out ${tempTestDir}`, { encoding: 'utf8' });
+      const output = tsx(`proof "json task" --json --out ${tempTestDir}`, 60000);
       const receipt = JSON.parse(output);
       expect(receipt.schema_version).toBe('0.1.0');
       expect(receipt.type).toBe('proof');
