@@ -3,6 +3,11 @@
 // orthodox MCP SDK client; we spawn it with the request on stdin and read one
 // JSON line back. Sensitive fields masked by the invoker's x-sensitive
 // extensions AND our redact() on the way out.
+// KNOWN UPSTREAM BEHAVIOR (2026-08-17): the invoker is silent:true — a spec
+// its parser can't digest (e.g. api.github.com/openapi.json, ~10MB) yields a
+// zero-tool server and tools/list then 404s (-32601). Parseable specs work
+// end-to-end (verified: file:// spec -> live github /users call, receipted).
+// Remedy for mega-specs: trim first (apisnip-style) or use SPEC_EXTENSION patches.
 import { spawn } from 'child_process';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
