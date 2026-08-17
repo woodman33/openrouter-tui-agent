@@ -17,7 +17,7 @@ export function SetupPanel({ agent }: SetupPanelProps) {
 
   // Generate OSC 8 hyperlinked buttons
   const oauthLink = terminalLink('🔗 Get API Key / OAuth Link', 'https://openrouter.ai/keys');
-  const stripeLink = terminalLink('💳 Subscribe to Premium Edge (Stripe)', 'https://checkout.stripe.com/pay/openrouter-tui-premium');
+  const stripeLink = terminalLink('💳 Subscribe to Premium Edge (Stripe)', 'https://checkout.stripe.com/pay/timmy-tui-premium');
 
   useInput((char, key) => {
     if (success) return; // Wait for transition

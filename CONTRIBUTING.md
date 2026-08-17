@@ -6,8 +6,8 @@ We welcome early open-source contributions to TIMMY! Follow this guide to set up
 
 1. **Fork and Clone** the repository:
    ```bash
-   git clone https://github.com/woodman33/openrouter-tui-agent.git
-   cd openrouter-tui-agent
+   git clone https://github.com/woodman33/timmy-ai-proxy.git
+   cd timmy-ai-proxy
    ```
 
 2. **Install Dependencies**:

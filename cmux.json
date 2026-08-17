@@ -75,7 +75,7 @@
                       {
                         "type": "browser",
                         "name": "Edge Health",
-                        "url": "https://openrouter-tui-agent.wmeldman33.workers.dev/health"
+                        "url": "https://timmy-ai-proxy.wmeldman33.workers.dev/health"
                       }
                     ]
                   }

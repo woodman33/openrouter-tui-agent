@@ -116,7 +116,7 @@ export const SLASH_COMMANDS: SlashCommand[] = [
     command: '/subscribe',
     description: 'Subscribe to Premium Edge Memory & Private VPS Sandboxes (Stripe)',
     execute: () => {
-      const link = terminalLink('👉 Click here to open Stripe Checkout and Subscribe!', 'https://checkout.stripe.com/pay/openrouter-tui-premium');
+      const link = terminalLink('👉 Click here to open Stripe Checkout and Subscribe!', 'https://checkout.stripe.com/pay/timmy-tui-premium');
       return `💳 Premium Edge Storage Tiers:\n- Pro ($5/mo): Persistent edge Durable Object sync\n- Ultra Pro ($45/mo): Private dedicated VPS droplet & vectorized RAG context memory\n\n${link}`;
     }
   },
@@ -1674,7 +1674,7 @@ async function runAgentProofTask(prompt: string, agent: any) {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${apiKey}`,
-          "HTTP-Referer": "https://openrouter-tui-agent.wmeldman33.workers.dev"
+          "HTTP-Referer": "https://timmy-ai-proxy.wmeldman33.workers.dev"
         },
         body: JSON.stringify({
           model,
@@ -1752,7 +1752,7 @@ async function runAgentProofTask(prompt: string, agent: any) {
         phase: 'proof',
         riskLevel: 'low',
         receiptUrl: `file://${manifestPath}`,
-        telemetryUrl: 'https://openrouter-tui-agent.wmeldman33.workers.dev',
+        telemetryUrl: 'https://timmy-ai-proxy.wmeldman33.workers.dev',
         createdAt: timestamp,
         updatedAt: timestamp,
         counters: {

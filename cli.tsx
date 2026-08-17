@@ -39,7 +39,7 @@ if (existsSync('.env')) {
 }
 
 program
-  .name('openrouter-tui')
+  .name('timmy-tui')
   .description('TIMMY TUI, a terminal-first Agent Trust OS.')
   .version(VERSION)
   .option('-m, --model <model>', 'OpenRouter model to use')
@@ -73,7 +73,7 @@ Your mission is to WOW the user by showcasing your exceptional capabilities acro
 
 LIVE CLOUDFLARE PIPELINE:
 You are fully connected to a live deployed Cloudflare Durable Object worker running at:
-🌐 https://openrouter-tui-agent.wmeldman33.workers.dev
+🌐 https://timmy-ai-proxy.wmeldman33.workers.dev
 Every key interaction, message, and tool call in this TUI automatically streams live HTTP telemetry payloads to this Cloudflare Worker in the background. The operator can open their Cloudflare online log explorer and watch their terminal actions update live!
 
 You also have two real-world Cloudflare Edge tools:

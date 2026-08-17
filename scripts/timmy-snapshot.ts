@@ -6,7 +6,7 @@ async function generateSnapshot() {
   const args = process.argv.slice(2);
   let runId = '';
   let receiptUrl = '';
-  let defaultTelemetryUrl = 'https://openrouter-tui-agent.wmeldman33.workers.dev';
+  let defaultTelemetryUrl = 'https://timmy-ai-proxy.wmeldman33.workers.dev';
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--runId' && args[i + 1]) {
@@ -35,7 +35,7 @@ async function generateSnapshot() {
 
   if (!runId) {
     console.error(`\x1b[31m✕ Error: --runId is required to generate a team snapshot.\x1b[0m`);
-    console.error(`  Example: npm run timmy:snapshot -- --runId test_run_45ve3l6 --receiptUrl https://openrouter-tui-agent.wmeldman33.workers.dev/runs/test_run_45ve3l6/receipt`);
+    console.error(`  Example: npm run timmy:snapshot -- --runId test_run_45ve3l6 --receiptUrl https://timmy-ai-proxy.wmeldman33.workers.dev/runs/test_run_45ve3l6/receipt`);
     process.exit(1);
   }
 

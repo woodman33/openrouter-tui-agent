@@ -10,8 +10,8 @@ To initialize your local workspace and verify system compatibility before launch
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/woodman33/openrouter-tui-agent.git
-   cd openrouter-tui-agent
+   git clone https://github.com/woodman33/timmy-ai-proxy.git
+   cd timmy-ai-proxy
    ```
 
 2. **Install Dependencies**:
@@ -48,7 +48,7 @@ To initialize your local workspace and verify system compatibility before launch
 The primary and canonical path to launch the interactive terminal console is:
 
 ```bash
-cd openrouter-tui-agent
+cd timmy-ai-proxy
 npm start
 ```
 

@@ -1,5 +1,5 @@
 # TIMMY shell integration (bash) — context follows you into the terminal.
-# source this from ~/.bashrc:  source /path/to/openrouter-tui/contrib/shell/timmy.bash
+# source this from ~/.bashrc:  source /path/to/timmy-tui/contrib/shell/timmy.bash
 
 # chpwd equivalent: PROMPT_COMMAND detects studio/<project> and loads context
 timmy_chpwd() {

@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>TIMMY — 5s command-post sting</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  html, body { margin: 0; background: #000; }
+  .stage { position: relative; width: 100%; height: 100%; overflow: hidden; background: #05060a;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; color: #e6edf3; }
+  .clip { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 0 8%; text-align: center; }
+  .claim { font-size: 92px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; color: #fafafa; }
+  .claim .violet { color: #a98bff; }
+  .card { border: 1px solid #2d333b; background: rgba(11,13,16,.92); padding: 22px 30px;
+    font-size: 26px; color: #c9d1d9; border-radius: 10px; text-align: left; }
+  .card .g { color: #3fb950; } .card .p { color: #a98bff; } .card .k { color: #8b949e; }
+  .lockup { font-size: 40px; font-weight: 800; color: #a98bff; letter-spacing: .06em; }
+  .dip { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 36; }
+  .vignette { position: absolute; inset: 0; z-index: 30; pointer-events: none;
+    background: radial-gradient(125% 95% at 50% 50%, transparent 62%, rgba(0,0,0,.42) 100%); }
+</style>
+</head>
+<body>
+<div class="stage" data-composition-id="timmy-sting-5s" data-start="0" data-duration="5" data-fps="30" data-width="1080" data-height="1920">
+  <div class="clip" id="s1" data-start="0.2" data-duration="2.2" data-track-index="0">
+    <div class="claim">One command. <span class="violet">Five agents.</span></div>
+  </div>
+  <div class="clip" id="s2" data-start="2.4" data-duration="2.2" data-track-index="1">
+    <div class="claim">Every run, <span class="violet">receipted.</span></div>
+    <div class="card" id="s2card"><span class="k">hash</span> <span class="g">sha256_…</span> · <span class="k">sig</span> <span class="g">ed25519 ✓</span><br/><span class="k">chain</span> <span class="p">v0.5 → sting</span> · <span class="k">epoch</span> 2</div>
+  </div>
+  <div class="clip" id="s3" data-start="4.4" data-duration="0.6" data-track-index="2">
+    <div class="lockup">TIMMY ⛁</div>
+  </div>
+  <div class="dip" id="dip1"></div>
+  <div class="dip" id="dip2"></div>
+  <div class="vignette"></div>
+</div>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  window.__timelines['timmy-sting-5s'] = tl; // register FIRST (house lesson)
+  tl.fromTo('#s1 .claim', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0.2)
+    .fromTo('#s1 .claim', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 1.1, ease: 'steps(28)' }, 0.3)
+    .fromTo('#dip1', { opacity: 0 }, { opacity: 1, duration: 0.15, yoyo: true, repeat: 1 }, 2.25)
+    .fromTo('#s2 .claim', { scale: 1.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'power4.out' }, 2.4)
+    .fromTo('#s2card', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, 2.9)
+    .fromTo('#dip2', { opacity: 0 }, { opacity: 1, duration: 0.15, yoyo: true, repeat: 1 }, 4.3)
+    .fromTo('#s3 .lockup', { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2.2)' }, 4.45);
+</script>
+</body>
+</html>

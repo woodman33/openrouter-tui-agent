@@ -120,7 +120,7 @@ export const daytonaWorkspaceTool = tool({
 
     try {
       // Connect to Daytona REST API to manage persistent agent workspaces
-      const targetWorkspace = workspaceId || 'openrouter-tui-sandbox';
+      const targetWorkspace = workspaceId || 'timmy-tui-sandbox';
       const response = await fetch(`${url}/api/v1/workspaces/${targetWorkspace}/exec`, {
         method: 'POST',
         headers: {
@@ -472,7 +472,7 @@ export const cloudflareSendDurablePulseTool = tool({
     message: z.string(),
   }),
   execute: async ({ metricName, metricValue }: { metricName: string; metricValue: number }) => {
-    const workerUrl = 'https://openrouter-tui-agent.wmeldman33.workers.dev';
+    const workerUrl = 'https://timmy-ai-proxy.wmeldman33.workers.dev';
     try {
       const response = await fetch(`${workerUrl}/pulse`, {
         method: 'POST',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { DispatchRail } from './DispatchRail.js';
 import chalk from 'chalk';
 import { useAgent } from '../hooks/useAgent.js';
 import type { Agent } from '../../agent/core.js';
@@ -49,6 +50,9 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
 
   // Home buttons interactive selection
   const [activeHomeBtnIdx, setActiveHomeBtnIdx] = useState(-1); // -1 = input focus, 0 = Paste URL, 1 = Open Workspace, 2 = View Receipt
+
+  // Command Post v0.1 Dispatch rail (ctrl+d)
+  const [showDispatch, setShowDispatch] = useState(false);
 
   // OpenRouter Model Rail states
   const [liveModels, setLiveModels] = useState<any[]>([]);
@@ -264,6 +268,12 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
         return;
       }
 
+      // Command Post v0.1: compact Dispatch rail (J-BANG), ctrl+d
+      if (key.ctrl && char === 'd') {
+        setShowDispatch(s => !s);
+        return;
+      }
+
       // Scroll chat history — step scroll: default 3 lines (smooth), shift+↑↓ = 1 line (fine)
       const scrollStep = key.shift ? 1 : 3;
       if ((key.upArrow || (key.ctrl && char === 'k')) && checkpoints.length > 0) {
@@ -348,7 +358,7 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
             const newRunId = `run_proof_${Date.now()}`;
             agent.emit('run.created' as any, {
               runId: newRunId,
-              receiptUrl: `https://openrouter-tui-agent.wmeldman33.workers.dev/runs/${newRunId}/receipt`,
+              receiptUrl: `https://timmy-ai-proxy.wmeldman33.workers.dev/runs/${newRunId}/receipt`,
               source: 'timmy-tui-chat-shortcut',
               timestamp: Date.now()
             });
@@ -492,6 +502,7 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
 
   return (
     <Box flexDirection="row" width={stageWidth} flexGrow={1} flexShrink={1}>
+      {showDispatch && <DispatchRail width={36} />}
       {/* 1. Left Box: Chat Panel */}
       <Box flexDirection="column" flexGrow={1} width={chatWidth} paddingX={1}>
         

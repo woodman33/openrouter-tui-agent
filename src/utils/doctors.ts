@@ -60,7 +60,7 @@ const probe = (host: string): Promise<Layer> => new Promise(resolve => {
 });
 
 export async function networkDoctor(dir?: string): Promise<DoctorRow[]> {
-  const targets = ['openrouter.ai', 'openrouter-tui-agent.wmeldman33.workers.dev'];
+  const targets = ['openrouter.ai', 'timmy-ai-proxy.wmeldman33.workers.dev'];
   const rows: DoctorRow[] = [];
   for (const host of targets) {
     const layer = await probe(host);

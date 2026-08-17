@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { performance } from 'node:perf_hooks';
 
-export const EDGE_HEALTH_ENDPOINT = 'https://openrouter-tui-agent.wmeldman33.workers.dev/health';
-export const EDGE_RUNS_ENDPOINT = 'https://openrouter-tui-agent.wmeldman33.workers.dev/runs';
+export const EDGE_HEALTH_ENDPOINT = 'https://timmy-ai-proxy.wmeldman33.workers.dev/health';
+export const EDGE_RUNS_ENDPOINT = 'https://timmy-ai-proxy.wmeldman33.workers.dev/runs';
 
 export interface EdgeHealthStatus {
   state: 'checking' | 'online' | 'offline';

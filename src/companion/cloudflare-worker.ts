@@ -250,7 +250,7 @@ export class MyDurableObject extends DurableObject {
           type: "fusion",
           task: prompt,
           created_at: createdAt,
-          cwd: "/path/to/openrouter-tui-agent",
+          cwd: "/path/to/timmy-ai-proxy",
           platform: "linux",
           node_version: "v20.0.0",
           package: {
@@ -609,7 +609,7 @@ export class MyDurableObject extends DurableObject {
           timestamp: generatedAt,
           payload: {
             runId,
-            receiptUrl: `https://openrouter-tui-agent.wmeldman33.workers.dev/runs/${runId}/receipt`,
+            receiptUrl: `https://timmy-ai-proxy.wmeldman33.workers.dev/runs/${runId}/receipt`,
             generatedAt
           }
         };
@@ -642,7 +642,7 @@ export class MyDurableObject extends DurableObject {
             headers: {
               "Authorization": `Bearer ${this.env.OPENROUTER_API_KEY}`,
               "Content-Type": "application/json",
-              "HTTP-Referer": "https://openrouter-tui-agent.wmeldman33.workers.dev"
+              "HTTP-Referer": "https://timmy-ai-proxy.wmeldman33.workers.dev"
             },
             body: JSON.stringify({
               model: "google/gemini-2.5-flash",

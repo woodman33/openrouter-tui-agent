@@ -4,7 +4,8 @@
 // the TUI consumes, plus the receipt chain with a verify button.
 // SSE tail of .timmy/runs/timmy-events.jsonl; no dependencies, no secrets.
 import { createServer, ServerResponse } from 'http';
-import { existsSync, readFileSync, statSync, openSync, readSync, closeSync } from 'fs';
+import { existsSync, readFileSync, statSync, openSync, readSync, closeSync, readdirSync } from 'fs';
+import { armPlan, dispatchPlan, pauseOrCancelLane, collectRun } from './dispatch.js';
 import { join } from 'path';
 import { spawn } from 'child_process';
 import { pathToFileURL } from 'url';
@@ -102,6 +103,58 @@ fetch('/health').then(r=>r.json()).then(h => { document.getElementById('cwd').te
 loadChain();
 </script></body></html>`;
 
+// ---- Command Post survey column (same controller, allowlisted actions) ----
+export const isLocalIp = (ip: string): boolean =>
+  ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip);
+
+const listPlans = () => {
+  const dir = join(process.cwd(), '.timmy', 'dispatch');
+  try {
+    return readdirSync(dir).filter(f => f.endsWith('.json')).map(f => {
+      const s = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+      return {
+        id: s.id, lifecycle: s.lifecycle, plan_hash: s.plan_hash,
+        harness: (s.plan?.harnesses ?? []).join(','), objective: (s.plan?.objective ?? '').slice(0, 60),
+        blocked: s.blocked ?? null
+      };
+    });
+  } catch { return []; }
+};
+
+const DISPATCH_HTML = `
+<div style="border-top:1px solid #1f2937;padding:12px 16px">
+  <h2>DISPATCH · COMMAND POST</h2>
+  <div id="plans" style="display:flex;flex-direction:column;gap:6px"></div>
+</div>
+<script>
+async function act(id, action) {
+  let token;
+  if (action === 'arm') { token = prompt('operator approval token (timmy approve <planHash>):'); if (!token) return; }
+  const r = await fetch('/dispatch/action', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action, token }) });
+  const j = await r.json();
+  alert(JSON.stringify(j).slice(0, 300));
+  loadPlans();
+}
+async function loadPlans() {
+  const r = await fetch('/dispatch');
+  const plans = await r.json();
+  document.getElementById('plans').innerHTML = plans.length ? plans.map(p =>
+    '<div style="border:1px solid #1f2937;border-radius:6px;padding:6px 10px;background:#0d0f12">'
+    + '<span style="color:#a78bfa">' + p.id + '</span> '
+    + '<span style="color:#4ade80">' + p.lifecycle + '</span> '
+    + '<span style="color:#9ca3af">' + p.harness + ' · ' + p.objective + '</span> '
+    + '<span style="color:#4b5563">hash ' + (p.plan_hash || '').slice(0, 12) + '…</span>'
+    + (p.blocked ? ' <span style="color:#f87171">' + p.blocked.state + ': ' + p.blocked.note + '</span>' : '')
+    + ' <button onclick="act(\\'' + p.id + '\\',\\'arm\\')">arm</button>'
+    + ' <button onclick="act(\\'' + p.id + '\\',\\'launch\\')">launch</button>'
+    + ' <button onclick="act(\\'' + p.id + '\\',\\'hold\\')">hold</button>'
+    + ' <button onclick="act(\\'' + p.id + '\\',\\'cancel\\')">cancel</button>'
+    + ' <button onclick="act(\\'' + p.id + '\\',\\'collect\\')">collect</button>'
+    + '</div>').join('') : '<div style="color:#5a6470">no plans — prepare one from chat (ctrl+d rail) or timmy_plan_dispatch</div>';
+}
+loadPlans(); setInterval(loadPlans, 3000);
+</script>`;
+
 interface SseClient { res: ServerResponse }
 let clients: SseClient[] = [];
 let tailOffset = 0;
@@ -161,8 +214,37 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
       res.end(JSON.stringify(verifyChain(stream)));
       return;
     }
+    // Command Post survey surface: same controller, same allowlist. Browser
+    // state is never sufficient — every mutation goes through the controller.
+    if (url.pathname === '/dispatch') {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(listPlans()));
+      return;
+    }
+    if (url.pathname === '/dispatch/action' && req.method === 'POST') {
+      const ip = req.socket.remoteAddress ?? '';
+      if (!isLocalIp(ip)) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ ok: false, error: 'localhost only' }));
+        return;
+      }
+      let body: any = {};
+      req.on('data', d => { try { body = JSON.parse(d.toString()); } catch { /* ignore */ } });
+      req.on('end', () => {
+        const { id, action, token } = body;
+        let r: unknown = { ok: false, error: 'unknown action' };
+        if (action === 'arm' && token) r = armPlan(String(id), String(token));
+        else if (action === 'launch') r = dispatchPlan(String(id));
+        else if (action === 'hold') r = pauseOrCancelLane(String(id), 'hold');
+        else if (action === 'cancel') r = pauseOrCancelLane(String(id), 'cancel');
+        else if (action === 'collect') r = collectRun(String(id));
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(r));
+      });
+      return;
+    }
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.end(PAGE);
+    res.end(PAGE + DISPATCH_HTML);
   });
   return new Promise((resolve, reject) => {
     server.once('error', reject);
