@@ -51,7 +51,8 @@
     "typecheck:native": "tsgo --noEmit",
     "typecheck:worker": "tsc -p workers/ai-proxy",
     "agent": "tsx src/mcp/agent-server.ts",
-    "cmcp": "tsx src/mcp/cmcp-bridge.ts"
+    "cmcp": "tsx src/mcp/cmcp-bridge.ts",
+    "oapi": "deno run --allow-all --node-modules-dir=auto jsr:@mcpc/oapi-invoker-mcp/bin"
   },
   "repository": {
     "type": "git",

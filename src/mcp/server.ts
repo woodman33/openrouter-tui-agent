@@ -18,6 +18,7 @@ import { planHashOf, consumeApproval } from '../utils/approvals.js';
 import { listLanes, createPlan, armPlan, dispatchPlan, tailLane, pauseOrCancelLane, collectRun, type DispatchPlan } from '../utils/dispatch.js';
 import { runOpenHandsTask, openHandsPlanHash, type OpenHandsOpts } from '../utils/openhands-adapter.js';
 import { roboflowRun, type RoboflowReq } from '../utils/roboflow-adapter.js';
+import { oapiRun, type OapiReq } from '../utils/oapi-adapter.js';
 
 const sleepSync = (ms: number) => spawnSync('sleep', [String(ms / 1000)]);
 
@@ -35,6 +36,7 @@ const TOOLS = [
   { name: 'timmy_apify_run', description: 'Apify lane: call any mcp.apify.com tool (scrapers/actors) via mcporter http with bearer from env. Logged to .timmy/runs/mcp-apify-*.log + sealed receipt. Needs a valid APIFY_API_TOKEN from console.apify.com.', inputSchema: { type: 'object', properties: { tool: { type: 'string', description: 'apify MCP tool name, e.g. get-actor-list / call-actor' }, args: { type: 'object' } }, required: ['tool'] } },
   { name: 'timmy_3minapi_run', description: 'Optional helper lane: 3minapi no-code API builder (create/test/deploy data-capture endpoints, collaborator keys, webhooks, help topics). mcporter http with x-api-key from THREEMINAPI_KEY. Logged to .timmy/runs/mcp-3minapi-*.log + sealed receipt. Never on the critical path.', inputSchema: { type: 'object', properties: { tool: { type: 'string', description: '3minapi MCP tool, e.g. help / endpoints create / api_call / logs / deploy' }, args: { type: 'object' } }, required: ['tool'] } },
   { name: 'timmy_openhands_run', description: 'Command Post first slide: OpenHands headless in a disposable workspace (ephemeral repo copy, docker-backed runtime, scoped limits, deterministic acceptance tests). Real sandbox or nothing — fails closed not_configured. Paid work default-deny: operator token bound to the complete task hash. Returns patch + acceptance record + artifact hashes + child/parent receipts.', inputSchema: { type: 'object', properties: { task: { type: 'string' }, acceptance: { type: 'array', items: { type: 'string' } }, fixture_repo: { type: 'string' }, ref: { type: 'string' }, wall_ms: { type: 'number' }, max_iterations: { type: 'number' }, approval: { type: 'string' } }, required: ['task', 'acceptance'] } },
+  { name: 'timmy_oapi_run', description: 'OpenAPI lane: any OpenAPI spec becomes invocable tools via @mcpc/oapi-invoker-mcp (stdio, SPEC_URL env). list=true lists the spec tools; otherwise calls one. Sensitive fields masked by invoker extensions + timmy redact. Receipted.', inputSchema: { type: 'object', properties: { spec_url: { type: 'string' }, tool: { type: 'string' }, args: { type: 'object' }, list: { type: 'boolean' } }, required: ['spec_url'] } },
   { name: 'timmy_roboflow_run', description: 'Roboflow lane (SDK in project venv .timmy/venv-roboflow): upload images, run detection, or sample video frames as observer evidence (sample = ffmpeg frames -> upload). Key-gated: honest not_configured without ROBOFLOW_API_KEY. Every use receipted.', inputSchema: { type: 'object', properties: { action: { type: 'string', description: 'upload | detect | sample' }, project: { type: 'string' }, path: { type: 'string' }, video: { type: 'string' }, frames: { type: 'number' }, every: { type: 'number' }, version: { type: 'number' }, confidence: { type: 'number' }, workspace: { type: 'string' } }, required: ['action', 'project'] } },
   { name: 'timmy_list_lanes', description: 'Command Post: list harness lanes (OpenHands/OpenCode/Pi/jcode/minds/…) with availability + install hints.', inputSchema: { type: 'object', properties: {} } },
   { name: 'timmy_plan_dispatch', description: 'Command Post: validate a full DispatchPlan (CUE) and store it ready/needs_approval. Returns plan id + immutable plan hash. Chat prepares; authority launches.', inputSchema: { type: 'object', properties: { plan: { type: 'object' } }, required: ['plan'] } },
@@ -605,6 +607,7 @@ const call = (name: string, args: any): unknown => {
     case 'timmy_judge_loop': return judgeLoop(args ?? { prompt: '' });
     case 'timmy_openhands_run': return runOpenHandsTask((args ?? {}) as OpenHandsOpts);
     case 'timmy_roboflow_run': return roboflowRun((args ?? {}) as RoboflowReq);
+    case 'timmy_oapi_run': return oapiRun((args ?? {}) as OapiReq);
     case 'timmy_list_lanes': return { ok: true, lanes: listLanes() };
     case 'timmy_plan_dispatch': return createPlan((args?.plan ?? {}) as DispatchPlan);
     case 'timmy_dispatch_plan': {
