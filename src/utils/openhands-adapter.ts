@@ -85,9 +85,9 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
     spawnSync('git', ['-c', 'user.email=timmy@local', '-c', 'user.name=timmy', 'commit', '-q', '-m', 'red fixture'], { cwd: work });
   }
   const t0 = Date.now();
-  const run = spawnSync('openhands', ['--mode', 'headless', '--task', o.task, '--max-iterations', String(o.max_iterations ?? 4)], {
+  const run = spawnSync('openhands', ['--headless', '-t', o.task, '--max-iterations', String(o.max_iterations ?? 4), '--always-approve', '--json'], {
     cwd: work, encoding: 'utf8', timeout: o.wall_ms ?? 300000,
-    env: { ...process.env, TIMMY_WORKSPACE: work }
+    env: { ...process.env, TIMMY_WORKSPACE: work, OPENHANDS_SUPPRESS_BANNER: '1' }
   });
   const duration_ms = Date.now() - t0;
   const acceptance = (o.acceptance ?? []).map(cmd => ({
@@ -114,7 +114,9 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
     artifacts: []
   }, dir);
   appendEvent('openhands.completed', { plan_hash: planHash, green: allGreen, duration_ms }, dir);
-  return { ok: run.status === 0 && allGreen, plan_hash: planHash, workdir: work, patch, patch_sha256: sha(patch), acceptance, duration_ms, receipt: parent.hash };
+  // failure evidence rides on the result (work order: never swallow why)
+  const output_tail = (run.status === 0 && allGreen) ? undefined : `${(run.stderr ?? '')}${(run.stdout ?? '')}`.slice(-600);
+  return { ok: run.status === 0 && allGreen, plan_hash: planHash, workdir: work, patch, patch_sha256: sha(patch), acceptance, duration_ms, receipt: parent.hash, note: output_tail };
 }
 
 export { readFileSync as _ohRead, existsSync as _ohExists, mkdirSync as _ohMkdir };
