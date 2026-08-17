@@ -1,5 +1,5 @@
 # TIMMY shell integration (zsh) — context follows you into the terminal.
-# source this from ~/.zshrc:  source /path/to/openrouter-tui/contrib/shell/timmy.zsh
+# source this from ~/.zshrc:  source /path/to/timmy-tui/contrib/shell/timmy.zsh
 
 # chpwd hook: cd into studio/<project> auto-loads its context (ICEBERG tip)
 timmy_chpwd() {

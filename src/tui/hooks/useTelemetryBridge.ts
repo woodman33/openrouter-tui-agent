@@ -87,7 +87,7 @@ export function useTelemetryBridge({
     if (config.telemetryUrl) return config.telemetryUrl;
     if (process.env.TIMMY_TELEMETRY_URL === 'off') return '';
     if (process.env.TIMMY_TELEMETRY_URL) return process.env.TIMMY_TELEMETRY_URL;
-    return 'https://openrouter-tui-agent.wmeldman33.workers.dev';
+    return 'https://timmy-ai-proxy.wmeldman33.workers.dev';
   };
 
   const writeToOfflineSpool = (item: TelemetryQueueItem) => {

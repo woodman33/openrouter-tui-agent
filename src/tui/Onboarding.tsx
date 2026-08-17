@@ -148,7 +148,7 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
         {step === 'cloud' && (
           <Box flexDirection="column" marginTop={1}>
             <Text bold color="#e6edf3">2 · CLOUDFLARE LOG SYNC (sealed receipts + companion mirror)</Text>
-            <Text color="#3fb950">  [Enter] Sync to your worker (openrouter-tui-agent.wmeldman33.workers.dev)</Text>
+            <Text color="#3fb950">  [Enter] Sync to your worker (timmy-ai-proxy.wmeldman33.workers.dev)</Text>
             <Text color="#e6edf3">  [c] Custom worker URL</Text>
             <Text color="#e6edf3">  [l] Local-only logs — nothing leaves this machine</Text>
           </Box>

@@ -98,7 +98,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
       agentLogger.info(`run.created: ${JSON.stringify(data)}`);
       if (data && data.runId) {
         setActiveRunId(data.runId);
-        setActiveReceiptUrl(`https://openrouter-tui-agent.wmeldman33.workers.dev/runs/${data.runId}/receipt`);
+        setActiveReceiptUrl(`https://timmy-ai-proxy.wmeldman33.workers.dev/runs/${data.runId}/receipt`);
       }
     };
     const handleReceiptGenerated = (data: any) => {
@@ -136,7 +136,7 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
   // Emit run.created on mount
   useEffect(() => {
     const startupRunId = `run_${Math.random().toString(36).substring(2, 9)}`;
-    const receiptUrl = `https://openrouter-tui-agent.wmeldman33.workers.dev/runs/${startupRunId}/receipt`;
+    const receiptUrl = `https://timmy-ai-proxy.wmeldman33.workers.dev/runs/${startupRunId}/receipt`;
     agent.emit('run.created' as any, {
       runId: startupRunId,
       receiptUrl,

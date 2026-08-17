@@ -1,5 +1,5 @@
 {
-  "name": "openrouter-tui-agent",
+  "name": "timmy-ai-proxy",
   "main": "src/companion/cloudflare-worker.ts",
   "compatibility_date": "2025-10-08",
   "compatibility_flags": ["nodejs_compat"],
@@ -45,7 +45,7 @@
   "d1_databases": [
     {
       "binding": "OPENROUTER-TUI-AGENT-D1",
-      "database_name": "openrouter-tui-agent-d1",
+      "database_name": "timmy-ai-proxy-d1",
       "database_id": "4bf52fae-2df3-4885-90d1-215b632587e8"
     }
   ],
@@ -74,13 +74,13 @@
     "OPENROUTER_TUI_AGENT_METADATA": "v1.0.0",
     "OPENROUTER_TUI_AGENT_VPC_SERVICE": "vpc-service-1",
     "OPENROUTER_TUI_AGENT_SECRET": "OPENROUTER_API_KEY",
-    "openrouter-tui-agent-dispatch-namespace": "my-dispatch-namespace",
+    "timmy-ai-proxy-dispatch-namespace": "my-dispatch-namespace",
     "OPENROUTER-TUI-AGENT-DYNAMIC-WORKERS": "dynamic-workers-pool"
   },
   "services": [
     {
       "binding": "OPENROUTER_TUI_AGENT_SERVICE_BINDING",
-      "service": "openrouter-tui-agent"
+      "service": "timmy-ai-proxy"
     }
   ]
 }

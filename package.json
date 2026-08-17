@@ -5,7 +5,6 @@
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
-    "openrouter-tui": "dist/cli.js",
     "timmy": "dist/timmy.js",
     "timmy-tui": "dist/timmy.js",
     "timmy-agentops": "dist/timmy.js"

@@ -131,7 +131,7 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
         // Notify companion sync systems
         agent.emit('run.created', {
           runId: newRunId,
-          receiptUrl: `https://openrouter-tui-agent.wmeldman33.workers.dev/runs/${newRunId}/receipt`,
+          receiptUrl: `https://timmy-ai-proxy.wmeldman33.workers.dev/runs/${newRunId}/receipt`,
           source: 'timmy-tui-manual-proof',
           timestamp: Date.now()
         });

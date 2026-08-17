@@ -15,7 +15,7 @@ interface __BaseEnv_Env {
 	OPENROUTER_TUI_AGENT_METADATA: "v1.0.0";
 	OPENROUTER_TUI_AGENT_VPC_SERVICE: "vpc-service-1";
 	OPENROUTER_TUI_AGENT_SECRET: "OPENROUTER_API_KEY";
-	"openrouter-tui-agent-dispatch-namespace": "my-dispatch-namespace";
+	"timmy-ai-proxy-dispatch-namespace": "my-dispatch-namespace";
 	"OPENROUTER-TUI-AGENT-DYNAMIC-WORKERS": "dynamic-workers-pool";
 	OPENROUTER_API_KEY: string;
 	OPENROUTER_MODEL: string;
@@ -210,7 +210,7 @@ interface __BaseEnv_Env {
 	KINTONE_SUBDOMAIN: string;
 	KINTONE_API_TOKEN: string;
 	MY_DURABLE_OBJECT: DurableObjectNamespace /* MyDurableObject */;
-	OPENROUTER_TUI_AGENT_SERVICE_BINDING: Fetcher /* openrouter-tui-agent */;
+	OPENROUTER_TUI_AGENT_SERVICE_BINDING: Fetcher /* timmy-ai-proxy */;
 	OPENROUTER_TUI_AGENT_WORKFLOW: Workflow /* HelloWorldWorkflow */;
 }
 declare namespace Cloudflare {

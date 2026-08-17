@@ -358,7 +358,7 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
             const newRunId = `run_proof_${Date.now()}`;
             agent.emit('run.created' as any, {
               runId: newRunId,
-              receiptUrl: `https://openrouter-tui-agent.wmeldman33.workers.dev/runs/${newRunId}/receipt`,
+              receiptUrl: `https://timmy-ai-proxy.wmeldman33.workers.dev/runs/${newRunId}/receipt`,
               source: 'timmy-tui-chat-shortcut',
               timestamp: Date.now()
             });

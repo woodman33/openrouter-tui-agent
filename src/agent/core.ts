@@ -573,7 +573,7 @@ export class Agent extends EventEmitter<AgentEvents> {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://github.com/woodman33/openrouter-tui',
+          'HTTP-Referer': 'https://github.com/woodman33/timmy-tui',
           'X-Title': 'TIMMYTUI'
         },
         body: JSON.stringify({

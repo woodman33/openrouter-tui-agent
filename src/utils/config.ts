@@ -68,14 +68,14 @@ const DEFAULT_CONFIG: TuiConfig = {
 };
 
 const store = new Conf<TuiConfig>({
-  projectName: 'openrouter-tui',
+  projectName: 'timmy-tui',
   defaults: DEFAULT_CONFIG,
 });
 
 export function loadConfig(): TuiConfig {
   let config = store.store;
 
-  const localPath = resolve(process.cwd(), 'openrouter-tui.config.json');
+  const localPath = resolve(process.cwd(), 'timmy-tui.config.json');
   if (existsSync(localPath)) {
     try {
       const localConfig = JSON.parse(readFileSync(localPath, 'utf-8'));

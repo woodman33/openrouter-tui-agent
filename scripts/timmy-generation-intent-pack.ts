@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 async function generateIntentPack() {
-  const telemetryUrl = 'https://openrouter-tui-agent.wmeldman33.workers.dev';
+  const telemetryUrl = 'https://timmy-ai-proxy.wmeldman33.workers.dev';
   const runId = `intent_pack_${Math.random().toString(36).substring(2, 9)}`;
   const goal = 'Generate TIMMY V3.2 Agent Intent Event Design Pack';
 
