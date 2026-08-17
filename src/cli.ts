@@ -176,6 +176,19 @@ if (command === 'approve') {
   process.exit(0);
 }
 
+if (command === 'q') {
+  // dasel passthrough: one query grammar for json/yaml/toml/xml/csv configs
+  const [file, ...expr] = args[0] === 'q' ? args.slice(1) : args;
+  if (!file) { console.error('usage: timmy q <file> <dasel-expression>'); process.exit(2); }
+  const { spawnSync } = await import('child_process');
+  const { readFileSync } = await import('fs');
+  const ext = (file.split('.').pop() ?? 'json').replace(/ya?ml/, 'yaml');
+  const r = spawnSync('dasel', ['query', '-i', ext, ...(expr.length ? expr : ['.'])], {
+    input: readFileSync(file), stdio: ['pipe', 'inherit', 'inherit']
+  });
+  process.exit(r.status ?? 1);
+}
+
 if (command === 'epoch') {
   // Atomic release-epoch rotation (write-temp + rename).
   const n = Number(args[1]);

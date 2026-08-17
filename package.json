@@ -49,7 +49,8 @@
     "pretest": "npm run version:generate",
     "prepack": "npm run build",
     "typecheck:native": "tsgo --noEmit",
-    "typecheck:worker": "tsc -p workers/ai-proxy"
+    "typecheck:worker": "tsc -p workers/ai-proxy",
+    "agent": "tsx src/mcp/agent-server.ts"
   },
   "repository": {
     "type": "git",
@@ -75,6 +76,7 @@
   "homepage": "https://timmytui.com",
   "dependencies": {
     "@cloudflare/flagship": "^0.3.1",
+    "@mcpc/core": "npm:@jsr/mcpc__core@^0.3.48",
     "@openfeature/server-sdk": "^1.21.0",
     "@openrouter/sdk": "latest",
     "@rive-app/canvas": "^2.36.0",
@@ -106,5 +108,8 @@
     "typescript": "^7.0.2",
     "vite": "^6.0.0",
     "vitest": "^3.0.0"
-  }
+  },
+  "allowScripts": [
+    "@jsr/mcpc__core"
+  ]
 }
