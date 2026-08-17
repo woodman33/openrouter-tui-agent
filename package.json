@@ -50,7 +50,8 @@
     "prepack": "npm run build",
     "typecheck:native": "tsgo --noEmit",
     "typecheck:worker": "tsc -p workers/ai-proxy",
-    "agent": "tsx src/mcp/agent-server.ts"
+    "agent": "tsx src/mcp/agent-server.ts",
+    "cmcp": "tsx src/mcp/cmcp-bridge.ts"
   },
   "repository": {
     "type": "git",
@@ -76,6 +77,7 @@
   "homepage": "https://timmytui.com",
   "dependencies": {
     "@cloudflare/flagship": "^0.3.1",
+    "@mcpc-tech/cmcp": "^0.0.15",
     "@mcpc/core": "npm:@jsr/mcpc__core@^0.3.48",
     "@openfeature/server-sdk": "^1.21.0",
     "@openrouter/sdk": "latest",

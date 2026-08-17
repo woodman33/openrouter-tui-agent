@@ -115,6 +115,15 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
     spans: [{ name: 'acceptance tests', kind: 'execute_tool' }],
     artifacts: []
   }, dir);
+  // structured events from --json stdout land on the bus (SDK-grade evidence)
+  for (const line of (run.stdout ?? '').split('\n')) {
+    const t = line.trim();
+    if (!t.startsWith('{')) continue;
+    try {
+      const e = JSON.parse(t);
+      if (e && typeof e === 'object') appendEvent('openhands.event', { plan_hash: planHash, kind: e.kind ?? e.type ?? 'event', ...e }, dir);
+    } catch { /* non-event json line */ }
+  }
   appendEvent('openhands.completed', { plan_hash: planHash, green: allGreen, duration_ms }, dir);
   // failure evidence rides on the result (work order: never swallow why)
   const output_tail = (run.status === 0 && allGreen) ? undefined : `${(run.stderr ?? '')}${(run.stdout ?? '')}`.slice(-600);
