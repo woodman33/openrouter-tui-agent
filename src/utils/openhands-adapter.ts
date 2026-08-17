@@ -85,7 +85,9 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
     spawnSync('git', ['-c', 'user.email=timmy@local', '-c', 'user.name=timmy', 'commit', '-q', '-m', 'red fixture'], { cwd: work });
   }
   const t0 = Date.now();
-  const run = spawnSync('openhands', ['--headless', '-t', o.task, '--max-iterations', String(o.max_iterations ?? 4), '--always-approve', '--json'], {
+  // NB: --max-iterations is NOT a top-level flag in this CLI; iterations are
+  // bounded by the wall-clock timeout instead.
+  const run = spawnSync('openhands', ['--headless', '-t', o.task, '--always-approve', '--json'], {
     cwd: work, encoding: 'utf8', timeout: o.wall_ms ?? 300000,
     env: { ...process.env, TIMMY_WORKSPACE: work, OPENHANDS_SUPPRESS_BANNER: '1' }
   });
