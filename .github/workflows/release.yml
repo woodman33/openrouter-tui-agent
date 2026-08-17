@@ -19,12 +19,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
       - name: Install Dependencies
         run: npm ci
+
+      - name: Install ffmpeg (clip runner E2E)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
       - name: Install OpenTimelineIO 0.18.1 (otioconvert, pinned)
         run: python3 -m pip install --user opentimelineio==0.18.1 && echo "$HOME/.local/bin" >> $GITHUB_PATH

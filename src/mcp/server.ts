@@ -32,6 +32,7 @@ const TOOLS = [
   { name: 'timmy_promo_judge', description: 'Local-first promo judge loop: two free local judges score the current comp copy, a local fusion synthesizes edits + confidence; a frontier model arbitrates ONLY when confidence < threshold. Seals a receipt ($0 when local agrees). Returns proposed beat edits for human review before timmy_promo_apply.', inputSchema: { type: 'object', properties: { comp: { type: 'string', description: 'studio comp dir, default = latest timmy-promo-vN' }, threshold: { type: 'number', description: 'confidence below which frontier escalation fires (default 0.7)' } } } },
   { name: 'timmy_allyson_run', description: 'Allyson lane: animate a source SVG into an animated component via allyson-mcp (mcporter stdio). Every use logged to .timmy/runs/mcp-allyson-*.log + sealed receipt. Needs ALLYSON_API_KEY (allyson.ai) for generation; without it returns an honest needs_key.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, svg_path: { type: 'string', description: 'absolute source svg/png path' }, output_path: { type: 'string', description: 'absolute output component path' } }, required: ['prompt', 'svg_path', 'output_path'] } },
   { name: 'timmy_apify_run', description: 'Apify lane: call any mcp.apify.com tool (scrapers/actors) via mcporter http with bearer from env. Logged to .timmy/runs/mcp-apify-*.log + sealed receipt. Needs a valid APIFY_API_TOKEN from console.apify.com.', inputSchema: { type: 'object', properties: { tool: { type: 'string', description: 'apify MCP tool name, e.g. get-actor-list / call-actor' }, args: { type: 'object' } }, required: ['tool'] } },
+  { name: 'timmy_3minapi_run', description: 'Optional helper lane: 3minapi no-code API builder (create/test/deploy data-capture endpoints, collaborator keys, webhooks, help topics). mcporter http with x-api-key from THREEMINAPI_KEY. Logged to .timmy/runs/mcp-3minapi-*.log + sealed receipt. Never on the critical path.', inputSchema: { type: 'object', properties: { tool: { type: 'string', description: '3minapi MCP tool, e.g. help / endpoints create / api_call / logs / deploy' }, args: { type: 'object' } }, required: ['tool'] } },
   { name: 'timmy_openhands_run', description: 'Command Post first slide: OpenHands headless in a disposable workspace (ephemeral repo copy, docker-backed runtime, scoped limits, deterministic acceptance tests). Real sandbox or nothing — fails closed not_configured. Paid work default-deny: operator token bound to the complete task hash. Returns patch + acceptance record + artifact hashes + child/parent receipts.', inputSchema: { type: 'object', properties: { task: { type: 'string' }, acceptance: { type: 'array', items: { type: 'string' } }, fixture_repo: { type: 'string' }, ref: { type: 'string' }, wall_ms: { type: 'number' }, max_iterations: { type: 'number' }, approval: { type: 'string' } }, required: ['task', 'acceptance'] } },
   { name: 'timmy_list_lanes', description: 'Command Post: list harness lanes (OpenHands/OpenCode/Pi/jcode/minds/…) with availability + install hints.', inputSchema: { type: 'object', properties: {} } },
   { name: 'timmy_plan_dispatch', description: 'Command Post: validate a full DispatchPlan (CUE) and store it ready/needs_approval. Returns plan id + immutable plan hash. Chat prepares; authority launches.', inputSchema: { type: 'object', properties: { plan: { type: 'object' } }, required: ['plan'] } },
@@ -420,7 +421,8 @@ function runMcporter(opts: {
   mode: 'stdio' | 'http';
   stdioArgs?: string[];            // args after the npx command
   httpUrl?: string;
-  httpHeaderEnv?: string;          // bearer token sourced from env at spawn
+  httpHeaderEnv?: string;          // token sourced from env at spawn
+  headerStyle?: 'bearer' | 'x-api-key';
   selector: string;                // <serverName>.<tool>
   args: Record<string, unknown>;
   logName: string;
@@ -434,7 +436,7 @@ function runMcporter(opts: {
   } else {
     margs.push('--http-url', opts.httpUrl ?? '');
     const tok = process.env[opts.httpHeaderEnv ?? ''] ?? '';
-    if (tok) margs.push('--header', `Authorization=Bearer ${tok}`);
+    if (tok) margs.push('--header', opts.headerStyle === 'x-api-key' ? `x-api-key=${tok}` : `Authorization=Bearer ${tok}`);
   }
   margs.push(opts.selector);
   for (const [k, v] of Object.entries(opts.args)) margs.push(`${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`);
@@ -485,6 +487,32 @@ async function apifyRun(args: { tool: string; args?: Record<string, unknown> }) 
     artifacts: []
   });
   appendEvent(r.ok ? 'apify.done' : 'apify.failed', { tool: args.tool, log: r.log });
+  return r;
+}
+
+// Optional helper lane: 3minapi = no-code API builder (create/test/deploy data
+// capture endpoints, collaborator keys, webhooks). Helps with apis/mcps work;
+// never on the critical path.
+async function threeminapiRun(args: { tool: string; args?: Record<string, unknown> }) {
+  const tok = process.env.THREEMINAPI_KEY ?? '';
+  if (!tok) return { ok: false, needs_key: 'THREEMINAPI_KEY (3minapi.com) — optional helper lane' };
+  const r = runMcporter({
+    lane: '3minapi', mode: 'http',
+    httpUrl: 'https://3minapi.com/api/mcp', httpHeaderEnv: 'THREEMINAPI_KEY', headerStyle: 'x-api-key',
+    // config-defined server name (config/mcporter.json) — slug-independent
+    selector: `3minapi.${args.tool}`,
+    args: args.args ?? {},
+    logName: `3minapi-${args.tool}`
+  });
+  appendReceipt('runs', {
+    kind: 'run',
+    subject: `3minapi ${args.tool}`,
+    policy: 'auto',
+    spans: [{ name: `3minapi.${args.tool} (mcporter)`, kind: 'execute_tool' }],
+    cost_usd: undefined,
+    artifacts: []
+  });
+  appendEvent(r.ok ? '3minapi.done' : '3minapi.failed', { tool: args.tool, log: r.log });
   return r;
 }
 
@@ -571,6 +599,7 @@ const call = (name: string, args: any): unknown => {
     case 'timmy_promo_judge': return promoJudge(args ?? {});
     case 'timmy_allyson_run': return allysonRun(args ?? { prompt: '', svg_path: '', output_path: '' });
     case 'timmy_apify_run': return apifyRun(args ?? { tool: '' });
+    case 'timmy_3minapi_run': return threeminapiRun(args ?? { tool: '' });
     case 'timmy_judge_loop': return judgeLoop(args ?? { prompt: '' });
     case 'timmy_openhands_run': return runOpenHandsTask((args ?? {}) as OpenHandsOpts);
     case 'timmy_list_lanes': return { ok: true, lanes: listLanes() };

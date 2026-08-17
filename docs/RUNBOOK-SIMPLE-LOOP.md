@@ -53,6 +53,10 @@ Baseline iterations cost $0; escalation budget is the only spend.
 
 ## Gotchas recorded
 
+- Machine at load ~40+ starves the 5s receipt-lock timeout and ffmpeg spawns →
+  parallel vitest files flake. Gates are sound; run
+  `npx vitest run --no-file-parallelism` when the box is hot (CI is idle, unaffected).
+
 - qwen MLX tag listed but "not found" → missing blob; `ollama pull <tag>` refetches delta.
 - Repo ROOT has a wrangler.jsonc (owner's other CF project) — always
   `--config ./wrangler.toml` inside workers/ai-proxy.
