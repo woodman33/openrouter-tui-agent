@@ -490,7 +490,8 @@ async function threeminapiRun(args: { tool: string; args?: Record<string, unknow
   const r = runMcporter({
     lane: '3minapi', mode: 'http',
     httpUrl: 'https://3minapi.com/api/mcp', httpHeaderEnv: 'THREEMINAPI_KEY', headerStyle: 'x-api-key',
-    selector: `3minapi-com-mcp.${args.tool}`,
+    // config-defined server name (config/mcporter.json) — slug-independent
+    selector: `3minapi.${args.tool}`,
     args: args.args ?? {},
     logName: `3minapi-${args.tool}`
   });
