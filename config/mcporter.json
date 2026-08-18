@@ -5,6 +5,10 @@
       "headers": {
         "x-api-key": "${THREEMINAPI_KEY}"
       }
+    },
+    "roboflow": {
+      "command": "/Users/williammeldman/Desktop/Code-Projects/timmy-tui/node_modules/.bin/tsx",
+      "args": ["/Users/williammeldman/Desktop/Code-Projects/timmy-tui/scripts/roboflow-mcp-server.ts"]
     }
   },
   "registries": {

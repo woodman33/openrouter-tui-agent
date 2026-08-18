@@ -106,25 +106,34 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
     spans: [{ name: 'openhands headless (docker runtime)', kind: 'invoke_agent' }],
     artifacts: []
   }, dir);
-  const parent = appendReceipt('runs', {
-    kind: 'verify', subject: `openhands acceptance · ${acceptance.filter(a => a.code === 0).length}/${acceptance.length} green`,
-    policy: 'human-gated', status: allGreen ? 'ok' : 'failed',
-    ...(allGreen ? {} : { error_class: 'acceptance_red' as string }),
-    plan_hash: planHash, output_sha256: sha(patch),
-    child_receipts: [child.hash],
-    spans: [{ name: 'acceptance tests', kind: 'execute_tool' }],
-    artifacts: []
-  }, dir);
-  // structured events from --json stdout land on the bus (SDK-grade evidence)
+  // structured events from --json stdout land on the bus (SDK-grade evidence);
+  // usage/cost ride up onto the parent receipt (loop runs BEFORE the parent)
+  let evCost = 0;
+  let evTokens = 0;
   for (const line of (run.stdout ?? '').split('\n')) {
     const t = line.trim();
     if (!t.startsWith('{')) continue;
     try {
       const e = JSON.parse(t);
-      if (e && typeof e === 'object') appendEvent('openhands.event', { plan_hash: planHash, kind: e.kind ?? e.type ?? 'event', ...e }, dir);
+      if (e && typeof e === 'object') {
+        evCost += Number(e.cost ?? e.usage?.cost ?? 0) || 0;
+        evTokens += Number(e.usage?.total_tokens ?? e.tokens ?? 0) || 0;
+        appendEvent('openhands.event', { plan_hash: planHash, kind: e.kind ?? e.type ?? 'event', ...e }, dir);
+      }
     } catch { /* non-event json line */ }
   }
   appendEvent('openhands.completed', { plan_hash: planHash, green: allGreen, duration_ms }, dir);
+  const parent = appendReceipt('runs', {
+    kind: 'verify', subject: `openhands acceptance · ${acceptance.filter(a => a.code === 0).length}/${acceptance.length} green`,
+    policy: 'human-gated', status: allGreen ? 'ok' : 'failed',
+    ...(allGreen ? {} : { error_class: 'acceptance_red' as string }),
+    plan_hash: planHash, output_sha256: sha(patch),
+    ...(evCost > 0 ? { cost_usd: evCost } : {}),
+    ...(evTokens > 0 ? { tokens: evTokens } : {}),
+    child_receipts: [child.hash],
+    spans: [{ name: 'acceptance tests', kind: 'execute_tool' }],
+    artifacts: []
+  }, dir);
   // failure evidence rides on the result (work order: never swallow why)
   const output_tail = (run.status === 0 && allGreen) ? undefined : `${(run.stderr ?? '')}${(run.stdout ?? '')}`.slice(-600);
   return { ok: run.status === 0 && allGreen, plan_hash: planHash, workdir: work, patch, patch_sha256: sha(patch), acceptance, duration_ms, receipt: parent.hash, note: output_tail };

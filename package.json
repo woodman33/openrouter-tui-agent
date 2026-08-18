@@ -52,7 +52,9 @@
     "typecheck:worker": "tsc -p workers/ai-proxy",
     "agent": "tsx src/mcp/agent-server.ts",
     "cmcp": "tsx src/mcp/cmcp-bridge.ts",
-    "oapi": "deno run --allow-all --node-modules-dir=auto jsr:@mcpc/oapi-invoker-mcp/bin"
+    "oapi": "deno run --allow-all --node-modules-dir=auto jsr:@mcpc/oapi-invoker-mcp/bin",
+    "roboflow-mcp": "tsx scripts/roboflow-mcp-server.ts",
+    "mission-map": "python3 -m http.server 4321 -d studio/tldraw-mission-map"
   },
   "repository": {
     "type": "git",

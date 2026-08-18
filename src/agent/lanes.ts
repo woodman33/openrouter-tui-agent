@@ -25,6 +25,8 @@ export interface LaneRunner {
   blurb?: string;
   /** One-shot delegation template; {task} replaced at delegate time */
   task?: string;
+  /** For API lanes: env var holding the key; absence = not_configured */
+  key?: string;
 }
 
 /**
@@ -103,6 +105,75 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     // jailed workspace = the boundary (headless auto-approves inside its loop);
     // START/END markers let the TUI seal a receipt when the run finishes
     task: 'printf \'TIMMY_RUN_START\\n\'; mkdir -p "${TIMMY_WORKSPACE:-$HOME/openhands-workspace}"; cd "${TIMMY_WORKSPACE:-$HOME/openhands-workspace}" && openhands --headless -t "{task}" --always-approve; code=$?; printf \'TIMMY_RUN_END:%s\\n\' "$code"',
+  },
+  // ---- 3D workflows (queue item 5) ----
+  cocos: {
+    cmd: 'cocos', label: 'Cocos Creator CLI', expected: 'cocos',
+    install: 'https://www.cocos.com/en/creator-download',
+    blurb: '2D/3D engine CLI · build + publish headless',
+    task: 'cocos {task}',
+  },
+  defold: {
+    cmd: 'defold', label: 'Defold', expected: 'defold',
+    install: 'https://defold.com/download/',
+    blurb: 'game engine · headless bob/bundle builds',
+    task: 'defold --headless {task}',
+  },
+  godot: {
+    cmd: 'godot', label: 'Godot', expected: 'godot',
+    install: 'brew install godot',
+    blurb: 'open 2D/3D engine · --headless scripting',
+    task: 'godot --headless --quit --script {task}',
+  },
+  blender: {
+    cmd: 'blender', label: 'Blender', expected: 'blender',
+    install: 'brew install blender',
+    blurb: 'modeling/render/sim · -b --python-expr',
+    task: 'blender -b --python-expr "{task}"',
+  },
+  unity: {
+    cmd: 'unity-editor', label: 'Unity CLI', expected: 'unity-editor',
+    install: 'unity hub → editor; alias unity-editor',
+    blurb: 'batchmode -nographics -executeMethod',
+    task: 'unity-editor -batchmode -nographics -executeMethod {task}',
+  },
+  'unreal-mcp': {
+    cmd: 'mcporter', label: 'Unreal MCP', expected: 'mcporter',
+    install: 'npm i -g mcporter',
+    blurb: 'Unreal editor control via MCP · 2-call code-mode surface',
+    task: 'mcporter call unreal-mcp.{task}',
+  },
+  'houdini-mcp': {
+    cmd: 'hython', label: 'Houdini MCP', expected: 'hython',
+    install: 'sidefx houdini (hython ships with it)',
+    blurb: 'procedural 3D · hython headless + MCP bridge',
+    task: 'hython {task}',
+  },
+  // ---- stored-key API lanes (queue item 7) ----
+  webcontainers: {
+    cmd: 'curl', label: 'WebContainers', expected: 'curl', key: 'WEBCONTAINERS_CLIENT_ID',
+    blurb: 'browser-native runtime API · client-id gated',
+    task: 'curl -s -H "Authorization: Bearer $WEBCONTAINERS_CLIENT_ID" https://webcontainers.io/api/v1/{task}',
+  },
+  retool: {
+    cmd: 'curl', label: 'Retool', expected: 'curl', key: 'RETOOL_API_KEY',
+    blurb: 'internal tools API · workflow triggers',
+    task: 'curl -s -H "Authorization: Bearer $RETOOL_API_KEY" https://api.retool.com/v1/{task}',
+  },
+  anythingllm: {
+    cmd: 'curl', label: 'AnythingLLM', expected: 'curl', key: 'ANYTHINGLLM_API_KEY',
+    blurb: 'local RAG workspace API (localhost:3001)',
+    task: 'curl -s -H "Authorization: Bearer $ANYTHINGLLM_API_KEY" http://localhost:3001/api/{task}',
+  },
+  langsmith: {
+    cmd: 'curl', label: 'LangSmith', expected: 'curl', key: 'LANGSMITH_API_KEY',
+    blurb: 'trace/run observability API',
+    task: 'curl -s -H "x-api-key: $LANGSMITH_API_KEY" https://api.smith.langchain.com/{task}',
+  },
+  abacus: {
+    cmd: 'curl', label: 'Abacus', expected: 'curl', key: 'ABACUS_API_KEY_1',
+    blurb: 'financial data API · dual-key rotation',
+    task: 'curl -s -H "Authorization: Bearer $ABACUS_API_KEY_1" https://api.abacus.ai/v1/{task}',
   },
 };
 
