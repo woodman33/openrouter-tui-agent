@@ -155,6 +155,12 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     blurb: 'OTIO timeline editor on the film spine; emits modified EDL for re-verify',
     task: 'openedit edit --instruction "{task}"',
   },
+  hyperframes: {
+    cmd: 'npx', label: 'HyperFrames renderer', expected: 'npx',
+    install: 'npx --yes hyperframes',
+    blurb: 'terminal-native video renderer for studio comps; {task} = comp path + flags',
+    task: 'npx --yes hyperframes render {task}',
+  },
   // ---- stored-key API lanes (queue item 7) ----
   webcontainers: {
     cmd: 'curl', label: 'WebContainers', expected: 'curl', key: 'WEBCONTAINERS_CLIENT_ID',
