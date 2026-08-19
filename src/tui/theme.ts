@@ -1,29 +1,37 @@
 import chalk from 'chalk';
 
-// One instrument, one voice (docs/UI-VISION.md): purple = identity ONLY,
-// amber = signal/cost, green = trust/seals, red = fail, blue = info/chrome.
+// One instrument, one voice (docs/UI-VISION.md): Tokyo Night tokens ONLY.
+// magenta = identity/DAG nodes ONLY · cyan = active focus/live ·
+// green = verified receipts/seals · yellow = warning/queued/fuzz ·
+// red = fail/denied · orange = signal/cost · blue = info/chrome.
 // No hex values outside this file.
 export const theme = {
-  brand: '#a78bfa',             // TIMMY identity: logo, active nav, companion
-  brandDim: '#5d4a8a',          // brand muted (inactive identity chrome)
-  surfaceBase: '#0a0e12',       // near-black, slightly cool
-  surfaceRaised: '#101418',     // 1 step up
-  surfaceOverlay: '#161c22',    // 2 steps up
-  textPrimary: '#e8ecf0',       // bright neutral
-  textSecondary: '#8892a0',     // mid grey-blue
-  textTertiary: '#5a6470',      // dim
-  borderDefault: '#1c232c',     // hairline, barely-there
-  accent: '#ffaa33',            // AMBER — the signal color (singular, dominant)
-  accentDim: '#7a5a20',         // amber muted (inactive chrome)
-  success: '#3ddc84',           // mint green — sharp, not yellow-green
-  warning: '#e6b800',           // deep yellow (distinct from amber accent)
-  error: '#ff4444',             // hard red, no pink
-  info: '#4aa8ff',              // cool blue (info/links)
-  userColor: '#ffc966',         // warm mid-amber for user text
-  assistantColor: '#d0d6dd',    // neutral for assistant
-  toolColor: '#8f9aa8',         // greyed tool output
-  reasoningColor: '#5a6470',    // very dim mono
+  brand: '#bb9af7',             // TIMMY identity: logo, active nav, DAG nodes
+  brandDim: '#9d7cd8',          // brand muted (inactive identity chrome)
+  focus: '#7dcfff',             // active focus · live/streaming
+  surfaceBase: '#1a1b26',       // Tokyo Night field
+  surfaceRaised: '#1f2337',     // 1 step up
+  surfaceOverlay: '#24283b',    // 2 steps up
+  textPrimary: '#c0caf5',       // bright neutral
+  textSecondary: '#a9b1d6',     // mid
+  textTertiary: '#565f89',      // dim
+  borderDefault: '#3b4261',     // hairline, barely-there
+  accent: '#ff9e64',            // ORANGE — the signal color (cost, singular)
+  accentDim: '#565f89',         // muted chrome
+  success: '#9ece6a',           // verified receipts · seals · ok
+  warning: '#e0af68',           // warning · queued · fuzz
+  error: '#f7768e',             // fail · denied
+  info: '#7aa2f7',              // cool blue (info/links)
+  userColor: '#ff9e64',         // warm orange for user text
+  assistantColor: '#c0caf5',    // neutral for assistant
+  toolColor: '#a9b1d6',         // greyed tool output
+  reasoningColor: '#565f89',    // very dim mono
 };
+
+// TrueColor vs ANSI-256: Ink/chalk down-convert these hex tokens automatically
+// when COLORTERM!=truecolor (bare SSH, CI). Exposed so the status bar can say
+// which mode is live; no separate 256 palette to keep in sync.
+export const colorLevel: number = chalk.level;
 
 // Named color wrappers for quick use
 export const colors = {

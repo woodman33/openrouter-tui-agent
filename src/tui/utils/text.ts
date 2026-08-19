@@ -1,3 +1,4 @@
+import { theme } from '../theme.js';
 const ANSI_PATTERN = /[\u001b\u009b][[\]()#;?]*(?:(?:[a-zA-Z\d]*(?:;[a-zA-Z\d]*)*)?\u0007|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~]))/g;
 const OSC_PATTERN = /\u001b\][^\u0007]*(?:\u0007|\u001b\\)/g;
 
@@ -231,15 +232,15 @@ export function splitModelNameAndBlurb(name: string, fallbackDesc?: string): { c
  */
 export function getModelColors(isSelected: boolean, isActive: boolean, isUnavailable = false): { nameColor: string; descColor: string } {
   if (isUnavailable) {
-    return { nameColor: '#8a8a94', descColor: '#8a8a94' };
+    return { nameColor: theme.textTertiary, descColor: theme.textTertiary };
   }
   if (isSelected) {
-    return { nameColor: '#fec240', descColor: '#e6edf3' }; // Bright yellow / light gray
+    return { nameColor: theme.warning, descColor: theme.textPrimary }; // Bright yellow / light gray
   }
   if (isActive) {
-    return { nameColor: '#33d6ff', descColor: '#8b949e' }; // Bright cyan / dim gray
+    return { nameColor: theme.focus, descColor: theme.textSecondary }; // Bright cyan / dim gray
   }
-  return { nameColor: '#ffffff', descColor: '#8b949e' }; // Bright white / dim gray
+  return { nameColor: theme.textPrimary, descColor: theme.textSecondary }; // Bright white / dim gray
 }
 
 

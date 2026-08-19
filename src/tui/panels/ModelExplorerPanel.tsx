@@ -149,32 +149,32 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
       {/* 1. Header Banner & One-Line Explainer */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Text bold color="#a98bff">🧾  TIMMY Sealed Receipt Proof</Text>
-        <Text color="#8b949e">View the latest sealed TIMMY receipt.</Text>
+      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text bold color={theme.brand}>🧾  TIMMY Sealed Receipt Proof</Text>
+        <Text color={theme.textSecondary}>View the latest sealed TIMMY receipt.</Text>
       </Box>
 
       {/* 2. Plain English Receipt details */}
-      <Box borderStyle="round" borderColor={sealedFlash ? "#3fb950" : copiedFlash ? "#79c0ff" : "#58a6ff"} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+      <Box borderStyle="round" borderColor={sealedFlash ? theme.success : copiedFlash ? theme.info : theme.info} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
         <Box justifyContent="space-between" flexDirection="row">
-          <Text bold color={sealedFlash ? "#3fb950" : copiedFlash ? "#79c0ff" : "#58a6ff"}>Latest TIMMY Receipt</Text>
-          {sealedFlash && <Text bold color="#3fb950"> [ 🔐 RECEIPT SEALED & SECURED ] </Text>}
-          {copiedFlash && <Text bold color="#79c0ff"> [ 📋 MANIFEST HASH COPIED ] </Text>}
+          <Text bold color={sealedFlash ? theme.success : copiedFlash ? theme.info : theme.info}>Latest TIMMY Receipt</Text>
+          {sealedFlash && <Text bold color={theme.success}> [ 🔐 RECEIPT SEALED & SECURED ] </Text>}
+          {copiedFlash && <Text bold color={theme.info}> [ 📋 MANIFEST HASH COPIED ] </Text>}
         </Box>
         <Box flexDirection="column" marginTop={1}>
-          <Text color="#e6edf3">◈ - Run:           <Text color="#79c0ff" bold>{latestReceipt.runId}</Text></Text>
-          <Text color="#e6edf3">◈ - Prompt:        <Text color="#ffffff">{latestReceipt.prompt}</Text></Text>
-          <Text color="#e6edf3">◈ - Agent:         <Text color="#d2a8ff">{latestReceipt.agent}</Text></Text>
-          <Text color="#e6edf3">◈ - Tools:         <Text color="#f5b545">{latestReceipt.tools}</Text></Text>
-          <Text color="#e6edf3">◈ - What changed:  <Text color="#a78bfa">{latestReceipt.changed}</Text></Text>
-          <Text color="#e6edf3">◈ - Manifest hash: <Text color="#3fb950" bold>{latestReceipt.manifestHash}</Text></Text>
-          <Text color="#e6edf3">◈ - Receipt file:  <Text color="#8b949e" wrap="truncate">{latestReceipt.receiptPath}</Text></Text>
-          <Text color="#e6edf3">◈ - Status:        <Text color="#3fb950" bold>{latestReceipt.status}</Text></Text>
+          <Text color={theme.textPrimary}>◈ - Run:           <Text color={theme.info} bold>{latestReceipt.runId}</Text></Text>
+          <Text color={theme.textPrimary}>◈ - Prompt:        <Text color={theme.textPrimary}>{latestReceipt.prompt}</Text></Text>
+          <Text color={theme.textPrimary}>◈ - Agent:         <Text color={theme.brand}>{latestReceipt.agent}</Text></Text>
+          <Text color={theme.textPrimary}>◈ - Tools:         <Text color={theme.warning}>{latestReceipt.tools}</Text></Text>
+          <Text color={theme.textPrimary}>◈ - What changed:  <Text color={theme.brand}>{latestReceipt.changed}</Text></Text>
+          <Text color={theme.textPrimary}>◈ - Manifest hash: <Text color={theme.success} bold>{latestReceipt.manifestHash}</Text></Text>
+          <Text color={theme.textPrimary}>◈ - Receipt file:  <Text color={theme.textSecondary} wrap="truncate">{latestReceipt.receiptPath}</Text></Text>
+          <Text color={theme.textPrimary}>◈ - Status:        <Text color={theme.success} bold>{latestReceipt.status}</Text></Text>
         </Box>
       </Box>
 
       {/* 3. Action Button Deck (Stable slots, no reflow) */}
-      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+      <Box borderStyle="round" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
         <Box flexDirection="row" justifyContent="space-between" width={mainStageWidth - 8} flexWrap="wrap">
           {buttons.map((btn, idx) => {
             const isFocused = idx === activeBtnIdx;
@@ -190,8 +190,8 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
       </Box>
 
       {/* 4. Raw manifest expanded if toggled */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Text color="#8b949e">
+      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text color={theme.textSecondary}>
           {showRawManifest 
             ? `Raw JSON Manifest:\n{\n  "runId": "${latestReceipt.runId}",\n  "manifestHash": "${latestReceipt.manifestHash}",\n  "status": "sealed",\n  "scope": "proof.receipt.ledger"\n}` 
             : 'Raw manifest collapsed. Select [Show Raw Manifest] action to expand.'
@@ -203,18 +203,18 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
       <Box flexGrow={1} flexShrink={1}>
         <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 EVIDENCE VERIFIER CONSOLE">
           <Box flexDirection="column" paddingX={1} minHeight={4}>
-            <Text color="#c9d1d9">{outputLog}</Text>
-            <Text color="#8b949e">Status: verified tamper-evident and hash-bound.</Text>
+            <Text color={theme.textSecondary}>{outputLog}</Text>
+            <Text color={theme.textSecondary}>Status: verified tamper-evident and hash-bound.</Text>
           </Box>
         </GlowBorder>
       </Box>
 
       {/* 6. Universal bottom input prompt */}
-      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} width={mainStageWidth - 2} flexShrink={0}>
-        <Text color="#8b949e">[ proof ] </Text>
-        <Text color="#79c0ff">▶ </Text>
-        <Text color="#ffffff">{inputCmd}</Text>
-        <Text color="#a5b0bc">█</Text>
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? theme.brand : theme.borderDefault} paddingX={1} width={mainStageWidth - 2} flexShrink={0}>
+        <Text color={theme.textSecondary}>[ proof ] </Text>
+        <Text color={theme.info}>▶ </Text>
+        <Text color={theme.textPrimary}>{inputCmd}</Text>
+        <Text color={theme.textSecondary}>█</Text>
       </Box>
     </Box>
   );

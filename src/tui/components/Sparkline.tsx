@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text } from 'ink';
+import { theme } from '../theme.js';
 
 // btop-style activity sparkline. Pure bucketing + block-char rendering,
 // unit-tested separately from the component.
@@ -27,5 +28,5 @@ export function sparkString(buckets: number[]): string {
 }
 
 export function Sparkline({ timestamps, nowMs, width, color }: { timestamps: string[]; nowMs: number; width?: number; color?: string }) {
-  return <Text color={color || '#3fb950'}>{sparkString(sparkBuckets(timestamps, nowMs, width))}</Text>;
+  return <Text color={color || theme.success}>{sparkString(sparkBuckets(timestamps, nowMs, width))}</Text>;
 }

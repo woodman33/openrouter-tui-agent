@@ -6,6 +6,7 @@ import type { Agent } from '../agent/core.js';
 import { saveConfig } from '../utils/config.js';
 import { probeOllama } from '../agent/providers.js';
 import { saveOrgConfig } from '../utils/sessionstore.js';
+import { theme } from './theme.js';
 
 interface OnboardingProps {
   agent: Agent;
@@ -116,79 +117,79 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
 
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1}>
-      <Box borderStyle="double" borderColor="#a98bff" paddingX={2} flexDirection="column">
-        <Text bold color="#d2a8ff">⚡ TIMMY FIRST RUN — 60-second setup</Text>
-        <Text color="#8b949e">Local-first: everything works with zero accounts. The rest is enhancement.</Text>
+      <Box borderStyle="double" borderColor={theme.brand} paddingX={2} flexDirection="column">
+        <Text bold color={theme.brand}>⚡ TIMMY FIRST RUN — 60-second setup</Text>
+        <Text color={theme.textSecondary}>Local-first: everything works with zero accounts. The rest is enhancement.</Text>
 
         {step === 'provider' ? (
           <Box flexDirection="column" marginTop={1}>
-            <Text bold color="#e6edf3">1 · PICK A BRAIN — choose ONE, Enter continues</Text>
-            <Text color="#8b949e">  {ollamaLine}</Text>
-            <Text color={choice === 'both' ? '#3fb950' : '#e6edf3'}>{choice === 'both' ? '  ▶ [b]' : '  ○ [b]'} Both — OpenRouter primary, Ollama fallback (recommended)</Text>
-            <Text color={choice === 'ollama' ? '#3fb950' : '#e6edf3'}>{choice === 'ollama' ? '  ▶ [o]' : '  ○ [o]'} Local Ollama only — offline, free, private</Text>
-            <Text color={choice === 'key' ? '#3fb950' : '#e6edf3'}>{choice === 'key' ? '  ▶ [k]' : '  ○ [k]'} OpenRouter key only — paste a key (openrouter.ai/keys)</Text>
-            <Text color="#a5b0bc">  ▶ = current choice — press its key to change it</Text>
+            <Text bold color={theme.textPrimary}>1 · PICK A BRAIN — choose ONE, Enter continues</Text>
+            <Text color={theme.textSecondary}>  {ollamaLine}</Text>
+            <Text color={choice === 'both' ? theme.success : theme.textPrimary}>{choice === 'both' ? '  ▶ [b]' : '  ○ [b]'} Both — OpenRouter primary, Ollama fallback (recommended)</Text>
+            <Text color={choice === 'ollama' ? theme.success : theme.textPrimary}>{choice === 'ollama' ? '  ▶ [o]' : '  ○ [o]'} Local Ollama only — offline, free, private</Text>
+            <Text color={choice === 'key' ? theme.success : theme.textPrimary}>{choice === 'key' ? '  ▶ [k]' : '  ○ [k]'} OpenRouter key only — paste a key (openrouter.ai/keys)</Text>
+            <Text color={theme.textSecondary}>  ▶ = current choice — press its key to change it</Text>
           </Box>
         ) : (
           <Box marginTop={1}>
-            <Text color="#a5b0bc">1 · brain: {choice === 'both' ? 'Both (OpenRouter + Ollama)' : choice === 'ollama' ? 'Local Ollama' : 'OpenRouter key'} ✓</Text>
+            <Text color={theme.textSecondary}>1 · brain: {choice === 'both' ? 'Both (OpenRouter + Ollama)' : choice === 'ollama' ? 'Local Ollama' : 'OpenRouter key'} ✓</Text>
           </Box>
         )}
 
         {step === 'key' && (
           <Box flexDirection="column" marginTop={1}>
-            <Text bold color="#e6edf3">2 · OPENROUTER KEY (Enter to continue, Esc back)</Text>
-            <Box borderStyle="single" borderColor="#30363d" paddingX={1}>
-              <Text color="#a98bff">sk-or-… </Text>
-              <Text color="#e6edf3">{keyInput || 'paste key (optional — Enter skips)'}</Text>
+            <Text bold color={theme.textPrimary}>2 · OPENROUTER KEY (Enter to continue, Esc back)</Text>
+            <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+              <Text color={theme.brand}>sk-or-… </Text>
+              <Text color={theme.textPrimary}>{keyInput || 'paste key (optional — Enter skips)'}</Text>
             </Box>
           </Box>
         )}
 
         {step === 'cloud' && (
           <Box flexDirection="column" marginTop={1}>
-            <Text bold color="#e6edf3">2 · CLOUDFLARE LOG SYNC (sealed receipts + companion mirror)</Text>
-            <Text color="#3fb950">  [Enter] Sync to your worker (timmy-ai-proxy.wmeldman33.workers.dev)</Text>
-            <Text color="#e6edf3">  [c] Custom worker URL</Text>
-            <Text color="#e6edf3">  [l] Local-only logs — nothing leaves this machine</Text>
+            <Text bold color={theme.textPrimary}>2 · CLOUDFLARE LOG SYNC (sealed receipts + companion mirror)</Text>
+            <Text color={theme.success}>  [Enter] Sync to your worker (timmy-ai-proxy.wmeldman33.workers.dev)</Text>
+            <Text color={theme.textPrimary}>  [c] Custom worker URL</Text>
+            <Text color={theme.textPrimary}>  [l] Local-only logs — nothing leaves this machine</Text>
           </Box>
         )}
 
         {step === 'cloudUrl' && (
           <Box flexDirection="column" marginTop={1}>
-            <Text bold color="#e6edf3">Worker URL (Enter to save)</Text>
-            <Box borderStyle="single" borderColor="#30363d" paddingX={1}>
-              <Text color="#e6edf3">{urlInput || 'https://your-worker.workers.dev'}</Text>
+            <Text bold color={theme.textPrimary}>Worker URL (Enter to save)</Text>
+            <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+              <Text color={theme.textPrimary}>{urlInput || 'https://your-worker.workers.dev'}</Text>
             </Box>
           </Box>
         )}
 
         {step === 'logs' && (
           <Box flexDirection="column" marginTop={1}>
-            <Text color="#a5b0bc">2 · cloud sync: {pendingCloud === 'default' ? 'your worker' : pendingCloud === 'off' ? 'local-only' : 'custom URL'} ✓</Text>
+            <Text color={theme.textSecondary}>2 · cloud sync: {pendingCloud === 'default' ? 'your worker' : pendingCloud === 'off' ? 'local-only' : 'custom URL'} ✓</Text>
             {logQ === 'base' ? (
               <>
-                <Text bold color="#e6edf3">3 · LOG ORGANIZATION — question 1 of 2: where should the archive live?</Text>
-                <Text color={logBase === 'repo' ? '#3fb950' : '#e6edf3'}>{logBase === 'repo' ? '  ▶ [1]' : '  ○ [1]'} .timmy/archive in this repo (recommended — stays with the project)</Text>
-                <Text color={logBase === 'home' ? '#3fb950' : '#e6edf3'}>{logBase === 'home' ? '  ▶ [2]' : '  ○ [2]'} ~/TIMMY-archive — survives clones & reinstalls</Text>
-                <Text color="#a5b0bc">  press 1 or 2 to choose · Enter continues</Text>
+                <Text bold color={theme.textPrimary}>3 · LOG ORGANIZATION — question 1 of 2: where should the archive live?</Text>
+                <Text color={logBase === 'repo' ? theme.success : theme.textPrimary}>{logBase === 'repo' ? '  ▶ [1]' : '  ○ [1]'} .timmy/archive in this repo (recommended — stays with the project)</Text>
+                <Text color={logBase === 'home' ? theme.success : theme.textPrimary}>{logBase === 'home' ? '  ▶ [2]' : '  ○ [2]'} ~/TIMMY-archive — survives clones & reinstalls</Text>
+                <Text color={theme.textSecondary}>  press 1 or 2 to choose · Enter continues</Text>
               </>
             ) : (
               <>
-                <Text color="#a5b0bc">3a · where: {logBase === 'repo' ? '.timmy/archive' : '~/TIMMY-archive'} ✓</Text>
-                <Text bold color="#e6edf3">3b · question 2 of 2: how should session folders be named?</Text>
-                <Text color={logNaming === 'date' ? '#3fb950' : '#e6edf3'}>{logNaming === 'date' ? '  ▶ [d]' : '  ○ [d]'} folders by date (2026-08-13/session…) — recommended</Text>
-                <Text color={logNaming === 'run' ? '#3fb950' : '#e6edf3'}>{logNaming === 'run' ? '  ▶ [r]' : '  ○ [r]'} folders by run id</Text>
-                <Text color="#a5b0bc">  press d or r to choose · Enter finishes</Text>
+                <Text color={theme.textSecondary}>3a · where: {logBase === 'repo' ? '.timmy/archive' : '~/TIMMY-archive'} ✓</Text>
+                <Text bold color={theme.textPrimary}>3b · question 2 of 2: how should session folders be named?</Text>
+                <Text color={logNaming === 'date' ? theme.success : theme.textPrimary}>{logNaming === 'date' ? '  ▶ [d]' : '  ○ [d]'} folders by date (2026-08-13/session…) — recommended</Text>
+                <Text color={logNaming === 'run' ? theme.success : theme.textPrimary}>{logNaming === 'run' ? '  ▶ [r]' : '  ○ [r]'} folders by run id</Text>
+                <Text color={theme.textSecondary}>  press d or r to choose · Enter finishes</Text>
               </>
             )}
-            <Text color="#a5b0bc">  tree: sessions/ generations/ uploads/ skills/ context/ exports/ · change anytime via .timmy/logorg.json</Text>
+            <Text color={theme.textSecondary}>  tree: sessions/ generations/ uploads/ skills/ context/ exports/ · change anytime via .timmy/logorg.json</Text>
           </Box>
         )}
 
-        {note && <Text color="#f5b540">{note}</Text>}
+        {note && <Text color={theme.warning}>{note}</Text>}
         <Box marginTop={1}>
-          <Text color="#8b949e">TIMMY never sells compute: your keys, your Ollama, your worker. We store proofs, not your traffic.</Text>
+          <Text color={theme.textSecondary}>TIMMY never sells compute: your keys, your Ollama, your worker. We store proofs, not your traffic.</Text>
         </Box>
       </Box>
     </Box>

@@ -74,14 +74,21 @@ ever show imports from theme.ts.
 ## Color-consistency law (owner directive, 2026-08-19)
 
 "The color matching from logs and ui and commands — make sure that stays
-throughout development." One semantic palette across EVERY surface:
+throughout development." One semantic palette across EVERY surface — strict
+Tokyo Night tokens, single source in `src/tui/theme.ts` (no hex elsewhere):
 
-- violet/brand `#a98bff` — identity, active nav, plan hashes
-- cyan `#4aa8ff` — live/streaming, info, READY
-- green `#3fb950` — ok/sealed/verified, RUNNING health, cost-ok
-- amber `#f5b540` — queued/approval-pending/warning
-- red `#f87171` — failed/denied/rec
-- greys `#e6edf3 / #8b949e / #5a6470` — text tiers
+- magenta/brand `#bb9af7` — identity, active nav, DAG nodes, plan chrome
+- cyan/focus `#7dcfff` — active focus, live/streaming
+- green `#9ece6a` — ok/sealed/verified receipts, RUNNING health
+- yellow `#e0af68` — queued/approval-pending/warning/fuzz
+- red `#f7768e` — failed/denied/rec
+- orange `#ff9e64` — signal/cost column
+- blue `#7aa2f7` — info/links/chrome
+- field/text `#1a1b26` bg · `#c0caf5 / #a9b1d6 / #565f89` text tiers · `#3b4261` hairline
+
+TrueColor vs ANSI-256: Ink/chalk down-convert the hex tokens automatically
+when `COLORTERM!=truecolor` (bare SSH, CI) — `colorLevel` in theme.ts exposes
+the live mode; there is no second palette to keep in sync.
 
 The same token means the same state in: TUI panels, LogRain/event bus,
 companion pages (:3001/:4310/:4321), CLI output, receipts' status/error_class,

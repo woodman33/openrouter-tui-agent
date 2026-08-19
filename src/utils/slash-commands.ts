@@ -499,9 +499,9 @@ import React from 'react';
 
 export default function DemoDashboard() {
   return (
-    <div className="p-8 bg-[#090b10] text-[#e6edf3] font-sans border border-[#30363d] rounded-2xl max-w-md mx-auto shadow-2xl">
-      <h1 className="text-2xl font-bold bg-gradient-to-r from-[#d2a8ff] to-[#5e6ad2] bg-clip-text text-transparent">TIMMY Live Viewport</h1>
-      <p className="mt-2 text-sm text-[#8b949e]">William Meldman Creator Attribution Stamp Verified.</p>
+    <div className="p-8 bg-[${theme.surfaceBase}] text-[${theme.textPrimary}] font-sans border border-[${theme.borderDefault}] rounded-2xl max-w-md mx-auto shadow-2xl">
+      <h1 className="text-2xl font-bold bg-gradient-to-r from-[${theme.brand}] to-[${theme.info}] bg-clip-text text-transparent">TIMMY Live Viewport</h1>
+      <p className="mt-2 text-sm text-[${theme.textSecondary}]">William Meldman Creator Attribution Stamp Verified.</p>
     </div>
   );
 }`;
@@ -638,11 +638,11 @@ export default function DemoDashboard() {
 <meta charset="utf-8">
 <title>TIMMY Studios — ${esc(slugId)}</title>
 <style>
-body{margin:0;background:#090b10;color:#e6edf3;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;overflow:hidden}
+body{margin:0;background:${theme.surfaceBase};color:${theme.textPrimary};font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;overflow:hidden}
 #stage{position:relative;width:100vw;height:100vh}
 .clip{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:0;animation:beat var(--dur) linear var(--at) forwards}
-.label{color:#3fb950;letter-spacing:.3em;font-size:12px}
-h1{margin:0;color:#d2a8ff;font-size:28px;text-align:center;max-width:80%}
+.label{color:${theme.success};letter-spacing:.3em;font-size:12px}
+h1{margin:0;color:${theme.brand};font-size:28px;text-align:center;max-width:80%}
 @keyframes beat{0%{opacity:0}12%{opacity:1}88%{opacity:1}100%{opacity:0}}
 </style>
 </head>
@@ -1445,11 +1445,11 @@ document.querySelectorAll(".clip").forEach(function (el) {
         `const Beat: React.FC<{ label: string; text: string }> = ({ label, text }) => {\n` +
         `  const f = useCurrentFrame();\n` +
         `  const opacity = interpolate(f, [0, 10], [0, 1], { extrapolateRight: 'clamp' });\n` +
-        `  return (\n    <AbsoluteFill style={{ background: '#090b10', justifyContent: 'center', alignItems: 'center', opacity }}>\n` +
-        `      <div style={{ color: '#d2a8ff', fontFamily: 'monospace', fontSize: 24 }}>[{label}]</div>\n` +
-        `      <div style={{ color: '#e6edf3', fontFamily: 'monospace', fontSize: 42 }}>{text}</div>\n` +
+        `  return (\n    <AbsoluteFill style={{ background: theme.surfaceBase, justifyContent: 'center', alignItems: 'center', opacity }}>\n` +
+        `      <div style={{ color: theme.brand, fontFamily: 'monospace', fontSize: 24 }}>[{label}]</div>\n` +
+        `      <div style={{ color: theme.textPrimary, fontFamily: 'monospace', fontSize: 42 }}>{text}</div>\n` +
         `    </AbsoluteFill>\n  );\n};\n\n` +
-        `export const TimmySlate: React.FC = () => (\n  <AbsoluteFill style={{ background: '#090b10' }}>\n${seqs}\n  </AbsoluteFill>\n);\n`, 'utf8');
+        `export const TimmySlate: React.FC = () => (\n  <AbsoluteFill style={{ background: theme.surfaceBase }}>\n${seqs}\n  </AbsoluteFill>\n);\n`, 'utf8');
       writeFileSync(join(dir, 'Root.tsx'),
         `import React from 'react';\nimport { Composition } from 'remotion';\nimport { TimmySlate } from './TimmySlate';\n\n` +
         `export const RemotionRoot: React.FC = () => (\n  <Composition id="TimmySlate" component={TimmySlate} durationInFrames={${Math.round(total * fps)}} fps={${fps}} width={1920} height={1080} />\n);\n`, 'utf8');
@@ -1629,6 +1629,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
 import crypto from 'crypto';
 import { join } from 'path';
 import { redactString } from './redact.js';
+import { theme } from '../tui/theme.js';
 
 async function runAgentProofTask(prompt: string, agent: any) {
   const runId = `run_proof_${Date.now()}`;

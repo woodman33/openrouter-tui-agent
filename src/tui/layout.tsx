@@ -100,7 +100,7 @@ export function Layout({
         b.gens = failed
           ? { text: `${gens.length}·${failed}⚠`, color: theme.warning }
           : running
-            ? { text: `${gens.length}·${running}●`, color: '#d29922' }
+            ? { text: `${gens.length}·${running}●`, color: theme.warning }
             : { text: `${gens.length}`, color: theme.textTertiary };
       } catch { /* ledger unreadable */ }
       try {
@@ -170,7 +170,7 @@ export function Layout({
         <Box>
           {/* Seal-pulse — ⛁ flashes for 2.5s when a receipt seals */}
           {Date.now() - sealPulse < 2500 && (
-            <Text color={pulseFrame % 2 === 0 ? '#d2a8ff' : theme.textTertiary}>⛁ </Text>
+            <Text color={pulseFrame % 2 === 0 ? theme.brand : theme.textTertiary}>⛁ </Text>
           )}
           {/* Activity glyph — pulses when agent is running */}
           <Text color={isActive && pulseFrame % 2 === 0 ? anim.color : theme.textTertiary}>

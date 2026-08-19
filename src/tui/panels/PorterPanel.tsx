@@ -264,20 +264,20 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
       {/* 1. Headline & Explainer */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
-        <Text bold color="#a98bff">🔌 MCP ➔ CLI</Text>
-        <Text bold color="#ffffff">Turn an MCP server into a CLI.</Text>
+      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
+        <Text bold color={theme.brand}>🔌 MCP ➔ CLI</Text>
+        <Text bold color={theme.textPrimary}>Turn an MCP server into a CLI.</Text>
         {!isCompact && (
-          <Text color="#8b949e" wrap="truncate">Paste a URL. TIMMY scans it, proposes generated files, assigns a Visa, and prepares a receipt.</Text>
+          <Text color={theme.textSecondary} wrap="truncate">Paste a URL. TIMMY scans it, proposes generated files, assigns a Visa, and prepares a receipt.</Text>
         )}
       </Box>
 
       {/* 2. Main Input Slot */}
-      <Box borderStyle="round" borderColor={activeElement === 'url' ? "#a98bff" : "#30363d"} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
-        <Text color="#e6edf3" bold>Paste MCP Server URL:</Text>
-        <Box borderStyle="single" borderColor={activeElement === 'url' ? "#4f9cff" : "#30363d"} paddingX={1} marginY={1}>
-          <Text color="#ffffff" wrap="truncate">{isCompact ? truncateVisible(urlInput, mainStageWidth - 10) : urlInput}</Text>
-          {activeElement === 'url' && <Text color="#a98bff">█</Text>}
+      <Box borderStyle="round" borderColor={activeElement === 'url' ? theme.brand : theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
+        <Text color={theme.textPrimary} bold>Paste MCP Server URL:</Text>
+        <Box borderStyle="single" borderColor={activeElement === 'url' ? theme.info : theme.borderDefault} paddingX={1} marginY={1}>
+          <Text color={theme.textPrimary} wrap="truncate">{isCompact ? truncateVisible(urlInput, mainStageWidth - 10) : urlInput}</Text>
+          {activeElement === 'url' && <Text color={theme.brand}>█</Text>}
         </Box>
         
         {/* Primary Action Button (Fixed Width, Verb-First) */}
@@ -291,16 +291,16 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
       </Box>
 
       {/* 3. Ingest Pipeline */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
-        <Text color="#8b949e" bold>Pipeline Track Map:</Text>
+      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
+        <Text color={theme.textSecondary} bold>Pipeline Track Map:</Text>
         {isCompact ? (
           <Box flexDirection="column" paddingX={1} marginY={1}>
             {pipelineSteps.map((step, idx) => {
               const isCurrent = idx === activeStep;
               const isPast = idx < activeStep;
-              let color = '#8b949e';
-              if (isCurrent) color = '#d29922';
-              else if (isPast) color = '#3fb950';
+              let color = theme.textSecondary;
+              if (isCurrent) color = theme.warning;
+              else if (isPast) color = theme.success;
               const prefix = isPast ? '✔ ' : isCurrent ? '● ' : '○ ';
               return (
                 <Text key={step} bold={isCurrent} color={color}>
@@ -310,24 +310,24 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
             })}
           </Box>
         ) : (
-          <StepPipeline steps={pipelineSteps} activeIdx={activeStep} activeColor="#d29922" />
+          <StepPipeline steps={pipelineSteps} activeIdx={activeStep} activeColor={theme.warning} />
         )}
       </Box>
 
       {/* 4. Dynamic Simple Result Card */}
       {scanResult && (
-        <GlowBorder color={scanResult === 'success' ? '#3fb950' : theme.borderDefault} width={Math.max(20, mainStageWidth - 2)} label="📂 MCP ➔ CLI EVIDENCE SAVED">
+        <GlowBorder color={scanResult === 'success' ? theme.success : theme.borderDefault} width={Math.max(20, mainStageWidth - 2)} label="📂 MCP ➔ CLI EVIDENCE SAVED">
           {scanResult === 'success' ? (
             <Box flexDirection="column" paddingX={2} paddingY={1}>
-              <Text color="#3fb950" bold>✓ MCP ➔ CLI Scan Complete. Evidence Saved Locally!</Text>
+              <Text color={theme.success} bold>✓ MCP ➔ CLI Scan Complete. Evidence Saved Locally!</Text>
               <Box flexDirection="column" marginTop={1} marginBottom={1}>
-                <Text color="#e6edf3" wrap="truncate">◈ Folder:   <Text color="#79c0ff" bold>mcp-cli/{getSlug()}/</Text></Text>
-                <Text color="#e6edf3" wrap="truncate">◈ README:   <Text color="#ffffff">mcp-cli/{getSlug()}/README.md</Text></Text>
+                <Text color={theme.textPrimary} wrap="truncate">◈ Folder:   <Text color={theme.info} bold>mcp-cli/{getSlug()}/</Text></Text>
+                <Text color={theme.textPrimary} wrap="truncate">◈ README:   <Text color={theme.textPrimary}>mcp-cli/{getSlug()}/README.md</Text></Text>
                 {!isCompact && (
                   <>
-                    <Text color="#e6edf3" wrap="truncate">◈ CLI Plan: <Text color="#ffffff">mcp-cli/{getSlug()}/cli-plan.md</Text></Text>
-                    <Text color="#e6edf3" wrap="truncate">◈ Visa:     <Text color="#ffffff">mcp-cli/{getSlug()}/agentpass-visa.md</Text></Text>
-                    <Text color="#e6edf3" wrap="truncate">◈ Commands: <Text color="#ffffff">mcp-cli/{getSlug()}/commands.txt</Text></Text>
+                    <Text color={theme.textPrimary} wrap="truncate">◈ CLI Plan: <Text color={theme.textPrimary}>mcp-cli/{getSlug()}/cli-plan.md</Text></Text>
+                    <Text color={theme.textPrimary} wrap="truncate">◈ Visa:     <Text color={theme.textPrimary}>mcp-cli/{getSlug()}/agentpass-visa.md</Text></Text>
+                    <Text color={theme.textPrimary} wrap="truncate">◈ Commands: <Text color={theme.textPrimary}>mcp-cli/{getSlug()}/commands.txt</Text></Text>
                   </>
                 )}
               </Box>
@@ -347,7 +347,7 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
             </Box>
           ) : (
             <Box flexDirection="column" paddingX={2} paddingY={1} height={6} justifyContent="center" alignItems="center">
-              <Text color="#79c0ff">◌ Compiling server schemas and testing sandboxes...</Text>
+              <Text color={theme.info}>◌ Compiling server schemas and testing sandboxes...</Text>
             </Box>
           )}
         </GlowBorder>
@@ -355,20 +355,20 @@ npx mcporter generate-cli ${urlInput.trim()} --bundle mcp-cli/${slug}/generated-
 
       {/* 5. Secondary command reference */}
       {!isCompact && (
-        <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginY={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
-          <Text bold color="#8b949e">Secondary command reference:</Text>
-          <Text color="#8b949e" wrap="truncate"> • npx mcporter list</Text>
-          <Text color="#8b949e" wrap="truncate"> • npx mcporter emit-ts &lt;server&gt; --mode client --out &lt;path&gt;</Text>
-          <Text color="#8b949e" wrap="truncate"> • npx mcporter generate-cli &lt;server&gt; --bundle &lt;path&gt;</Text>
+        <Box borderStyle="round" borderColor={theme.borderDefault} paddingX={2} marginY={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
+          <Text bold color={theme.textSecondary}>Secondary command reference:</Text>
+          <Text color={theme.textSecondary} wrap="truncate"> • npx mcporter list</Text>
+          <Text color={theme.textSecondary} wrap="truncate"> • npx mcporter emit-ts &lt;server&gt; --mode client --out &lt;path&gt;</Text>
+          <Text color={theme.textSecondary} wrap="truncate"> • npx mcporter generate-cli &lt;server&gt; --bundle &lt;path&gt;</Text>
         </Box>
       )}
 
       {/* 6. Universal bottom input prompt */}
-      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} marginTop={0} flexShrink={0}>
-        <Text color="#8b949e">[ mcp-cli ] </Text>
-        <Text color="#79c0ff">▶ </Text>
-        <Text color="#ffffff" wrap="truncate">{isCompact ? truncateVisible(inputCmd, mainStageWidth - 20) : inputCmd}</Text>
-        <Text color="#8b949e">█</Text>
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? theme.brand : theme.borderDefault} paddingX={1} marginTop={0} flexShrink={0}>
+        <Text color={theme.textSecondary}>[ mcp-cli ] </Text>
+        <Text color={theme.info}>▶ </Text>
+        <Text color={theme.textPrimary} wrap="truncate">{isCompact ? truncateVisible(inputCmd, mainStageWidth - 20) : inputCmd}</Text>
+        <Text color={theme.textSecondary}>█</Text>
       </Box>
     </Box>
   );

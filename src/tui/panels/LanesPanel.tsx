@@ -11,6 +11,7 @@ import { osc52Copy } from '../../utils/notify.js';
 import { appendReceipt } from '../../utils/receipts.js';
 import { appendEvent } from '../../utils/eventbus.js';
 import { RUN_START, parseRunEnd } from '../../utils/openhands.js';
+import { theme } from '../theme.js';
 
 interface LanesPanelProps {
   agent: Agent;
@@ -197,7 +198,7 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
       icon="🧑🤝‍🧑"
       title="LANES — LIVE AGENT PANES"
       status={`${aliveCount}/${lanes.length} alive${blockedCount ? ` · ${blockedCount} waiting on you` : ''}`}
-      statusColor={blockedCount ? '#f5b545' : '#3fb950'}
+      statusColor={blockedCount ? theme.warning : theme.success}
       explain="Real multiplexer sessions — you're watching their actual terminals. Delegate a task; risky commands stop for your approval."
       hints={[
         { key: '↑↓', label: 'lane' },
@@ -211,32 +212,32 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
       ]}
     >
       {coach && !tasking && (
-        <Box flexDirection="column" borderStyle="single" borderColor="#79c0ff" paddingX={1} marginBottom={1}>
-          <Text bold color="#79c0ff">first time here? this is your crew — six real agents, not decorations.</Text>
-          <Text color="#a5b0bc">start small: select a lane, press [t] to delegate the suggested task, watch it work live.</Text>
-          <Text color="#a5b0bc">risky commands park for your approval ([g]). [v] builds tmux tabs over all lanes. [x] dismisses this forever.</Text>
+        <Box flexDirection="column" borderStyle="single" borderColor={theme.info} paddingX={1} marginBottom={1}>
+          <Text bold color={theme.info}>first time here? this is your crew — six real agents, not decorations.</Text>
+          <Text color={theme.textSecondary}>start small: select a lane, press [t] to delegate the suggested task, watch it work live.</Text>
+          <Text color={theme.textSecondary}>risky commands park for your approval ([g]). [v] builds tmux tabs over all lanes. [x] dismisses this forever.</Text>
         </Box>
       )}
-      {note && <Text color="#3fb950" wrap="truncate">{note}</Text>}
+      {note && <Text color={theme.success} wrap="truncate">{note}</Text>}
       <Box flexDirection="row" flexGrow={1}>
         {/* lane roster */}
-        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
+        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
           {lanes.map((l, i) => {
             const isSel = i === selIdx;
             const runner = LANE_RUNNERS[DEFAULT_LANE_BINDINGS[l.id]];
             const isBlocked = blocked?.has(l.id);
             const glyph = isBlocked ? '⚠' : alive[l.id] ? '●' : '○';
-            const color = isBlocked ? '#f5b545' : alive[l.id] ? '#3fb950' : '#8b949e';
+            const color = isBlocked ? theme.warning : alive[l.id] ? theme.success : theme.textSecondary;
             return (
               <Box key={l.id} flexDirection="column" marginBottom={1}>
-                <Text color={isSel ? '#d2a8ff' : color} bold={isSel} wrap="truncate">
+                <Text color={isSel ? theme.brand : color} bold={isSel} wrap="truncate">
                   {isSel ? '▶ ' : '  '}{glyph} {l.name}
                 </Text>
-                <Text color="#a5b0bc" wrap="truncate">
+                <Text color={theme.textSecondary} wrap="truncate">
                     {'   '}{runner?.blurb || runner?.label || 'shell'}{installed[l.id] === false ? ` · missing ${runner?.cmd} — install: ${runner?.install || 'add to PATH'}` : ''}{alive[l.id] ? '' : ' · not running'}
                 </Text>
                 {isSel && (
-                  <Text color="#8b949e" wrap="truncate">
+                  <Text color={theme.textSecondary} wrap="truncate">
                     {'   '}try: {suggested(l.id)} · [t] delegates it
                   </Text>
                 )}
@@ -248,34 +249,34 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
         <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
           {sel ? (
             <>
-              <Text bold color="#d2a8ff" wrap="truncate">live · ortui-{sel.id} · {sel.name}</Text>
+              <Text bold color={theme.brand} wrap="truncate">live · ortui-{sel.id} · {sel.name}</Text>
               {/402|Insufficient credits|Internal Server Error/.test(capture.join('\n')) && (
-                <Text color="#f5b545">⚠ lane hit a provider error (credits/500) — raw output below; [g]/resend from chat</Text>
+                <Text color={theme.warning}>⚠ lane hit a provider error (credits/500) — raw output below; [g]/resend from chat</Text>
               )}
               {selBlocked && (
-                <Box flexDirection="column" borderStyle="double" borderColor="#f5b545" paddingX={1} marginTop={1}>
-                  <Text bold color="#f5b545">⚠ BLOCKED — waiting on you: {selBlocked}</Text>
-                  <Text color="#a5b0bc">[g] approve & run · anything else leaves it parked</Text>
+                <Box flexDirection="column" borderStyle="double" borderColor={theme.warning} paddingX={1} marginTop={1}>
+                  <Text bold color={theme.warning}>⚠ BLOCKED — waiting on you: {selBlocked}</Text>
+                  <Text color={theme.textSecondary}>[g] approve & run · anything else leaves it parked</Text>
                 </Box>
               )}
               {alive[sel.id] ? (
                 capture.map((line, i) => (
-                  <Text key={i} color="#9aa4b2" wrap="truncate">{line || ' '}</Text>
+                  <Text key={i} color={theme.textSecondary} wrap="truncate">{line || ' '}</Text>
                 ))
               ) : (
                 <Box flexDirection="column" marginTop={1}>
-                  <Text color="#8b949e">pane not running.</Text>
-                  <Text color="#8b949e">[n] spawns it — you'll watch it boot here, live.</Text>
+                  <Text color={theme.textSecondary}>pane not running.</Text>
+                  <Text color={theme.textSecondary}>[n] spawns it — you'll watch it boot here, live.</Text>
                 </Box>
               )}
               {tasking && (
                 <Box marginTop={1}>
-                  <Text color="#79c0ff">task → {sel.name}: {draft}█</Text>
+                  <Text color={theme.info}>task → {sel.name}: {draft}█</Text>
                 </Box>
               )}
             </>
           ) : (
-            <Text color="#8b949e">no lanes yet — the chat home screen boots the default five.</Text>
+            <Text color={theme.textSecondary}>no lanes yet — the chat home screen boots the default five.</Text>
           )}
         </Box>
       </Box>

@@ -5,6 +5,7 @@ import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
 import { EmptyState } from '../components/EmptyState.js';
 import { stripAnsi } from '../utils/text.js';
+import { theme } from '../theme.js';
 
 interface BrowsePanelProps {
   agent: Agent;
@@ -104,7 +105,7 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
       icon="🌐"
       title="BROWSE — DUAL-PANE WEB WORKSPACE"
       status={`${lanes.length} browser pane${lanes.length === 1 ? '' : 's'}`}
-      statusColor="#79c0ff"
+      statusColor={theme.info}
       explain="Chromium in the terminal via carbonyl. Type into the pane, or delegate playwright/puppeteer/devtools automation through LANES."
       hints={[
         { key: 'n', label: 'new pane (url)' },
@@ -113,10 +114,10 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
       ]}
     >
       {carbHint && (
-        <Box flexDirection="column" borderStyle="single" borderColor="#f5b545" paddingX={1} marginBottom={1}>
-          <Text bold color="#f5b545">carbonyl (chromium-in-terminal) not found on PATH</Text>
-          <Text color="#a5b0bc">install it and [n] works. Meanwhile: SLATE [v] and any addBrowserPane call</Text>
-          <Text color="#a5b0bc">open browser panes through the agent, and LANES covers CLI agents.</Text>
+        <Box flexDirection="column" borderStyle="single" borderColor={theme.warning} paddingX={1} marginBottom={1}>
+          <Text bold color={theme.warning}>carbonyl (chromium-in-terminal) not found on PATH</Text>
+          <Text color={theme.textSecondary}>install it and [n] works. Meanwhile: SLATE [v] and any addBrowserPane call</Text>
+          <Text color={theme.textSecondary}>open browser panes through the agent, and LANES covers CLI agents.</Text>
         </Box>
       )}
       {lanes.length === 0 ? (
@@ -129,26 +130,26 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
         />
       ) : (
         <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" width="34%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
+          <Box flexDirection="column" width="34%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
             {lanes.map((l, i) => (
-              <Text key={l.id} color={i === Math.min(idx, lanes.length - 1) ? '#d2a8ff' : '#e6edf3'} bold={i === Math.min(idx, lanes.length - 1)} wrap="truncate">
+              <Text key={l.id} color={i === Math.min(idx, lanes.length - 1) ? theme.brand : theme.textPrimary} bold={i === Math.min(idx, lanes.length - 1)} wrap="truncate">
                 {i === Math.min(idx, lanes.length - 1) ? '▶ ' : '  '}🌐 {l.name.replace('Browser: ', '')}
               </Text>
             ))}
           </Box>
           <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
-            <Text bold color="#79c0ff" wrap="truncate">live · {sel?.name}</Text>
+            <Text bold color={theme.info} wrap="truncate">live · {sel?.name}</Text>
             {capture.map((line, i) => (
-              <Text key={i} color="#9aa4b2" wrap="truncate">{line || ' '}</Text>
+              <Text key={i} color={theme.textSecondary} wrap="truncate">{line || ' '}</Text>
             ))}
             {spawning && (
-              <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
-                <Text color="#79c0ff">url: {urlDraft || 'https://'}█</Text>
+              <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1}>
+                <Text color={theme.info}>url: {urlDraft || 'https://'}█</Text>
               </Box>
             )}
             {typing && (
-              <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
-                <Text color="#79c0ff">→ pane: {cmdDraft}█</Text>
+              <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1}>
+                <Text color={theme.info}>→ pane: {cmdDraft}█</Text>
               </Box>
             )}
           </Box>

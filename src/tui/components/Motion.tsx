@@ -75,7 +75,7 @@ export function StatusPill({
 
   return (
     <Box borderStyle="single" borderColor={active ? color : theme.borderDefault} paddingX={1} width={safeWidth}>
-      <Text color="#e6edf3">{truncateVisible(label, labelWidth)}</Text>
+      <Text color={theme.textPrimary}>{truncateVisible(label, labelWidth)}</Text>
       <Text color={theme.textTertiary}> </Text>
       <Text color={color} bold={active} wrap="truncate">{truncateVisible(value, valueWidth)}</Text>
     </Box>

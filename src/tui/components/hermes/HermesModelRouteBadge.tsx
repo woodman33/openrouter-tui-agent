@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import type { HermesModelUsage } from '../../../hermes/events.js';
 import type { HermesConnectionStatus } from '../../../hermes/client.js';
+import { theme } from '../../theme.js';
 
 interface HermesModelRouteBadgeProps {
   status: HermesConnectionStatus;
@@ -12,11 +13,11 @@ interface HermesModelRouteBadgeProps {
 }
 
 const STATUS_COLORS: Record<HermesConnectionStatus, string> = {
-  disconnected: '#8b949e',
-  connecting: '#d29922',
-  ready: '#3fb950',
-  closed: '#8b949e',
-  error: '#f85149',
+  disconnected: theme.textSecondary,
+  connecting: theme.warning,
+  ready: theme.success,
+  closed: theme.textSecondary,
+  error: theme.error,
 };
 
 export function HermesModelRouteBadge({
@@ -37,25 +38,25 @@ export function HermesModelRouteBadge({
       <Text bold color={STATUS_COLORS[status]}>
         ● {status.toUpperCase()}
       </Text>
-      <Text color="#8b949e"> | </Text>
-      <Text color="#a5d6ff" wrap="truncate">
+      <Text color={theme.textSecondary}> | </Text>
+      <Text color={theme.info} wrap="truncate">
         {model ?? 'model: n/a'}
       </Text>
       {provider && (
         <>
-          <Text color="#8b949e"> via </Text>
-          <Text color="#79c0ff">{provider}</Text>
+          <Text color={theme.textSecondary}> via </Text>
+          <Text color={theme.info}>{provider}</Text>
         </>
       )}
-      <Text color="#8b949e"> | </Text>
-      <Text color="#e6edf3">
+      <Text color={theme.textSecondary}> | </Text>
+      <Text color={theme.textPrimary}>
         {tokens !== undefined ? `${tokens} tok` : 'usage n/a'}
         {usage.costUsd !== undefined ? ` $${usage.costUsd.toFixed(4)}` : ''}
       </Text>
       {sessionId && (
         <>
-          <Text color="#8b949e"> | sess </Text>
-          <Text color="#d2a8ff">{sessionId.slice(0, 8)}</Text>
+          <Text color={theme.textSecondary}> | sess </Text>
+          <Text color={theme.brand}>{sessionId.slice(0, 8)}</Text>
         </>
       )}
     </Box>

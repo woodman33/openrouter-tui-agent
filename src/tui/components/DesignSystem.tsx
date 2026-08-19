@@ -11,27 +11,25 @@ interface ButtonProps {
   width?: number;
 }
 
-export function PrimaryButton({ label, selected = false, color = '#3fb950', width }: ButtonProps) {
+// Pulse = dim toggle on the SAME token (palette-strict: no second hex).
+export function PrimaryButton({ label, selected = false, color = theme.success, width }: ButtonProps) {
   const pulse = usePulse(400);
   const displayLabel = label.startsWith('[') && label.endsWith(']') ? label : `[${label}]`;
-  const activeColor = selected ? (pulse % 2 === 0 ? '#3fb950' : '#47d65c') : '#30363d';
   return (
-    <Box borderStyle="single" borderColor={activeColor} paddingX={2} marginX={1} width={width}>
-      <Text bold={selected} color={selected ? activeColor : '#8b949e'}>
+    <Box borderStyle="single" borderColor={selected ? color : theme.borderDefault} paddingX={2} marginX={1} width={width}>
+      <Text bold={selected} dimColor={selected && pulse % 2 === 1} color={selected ? color : theme.textSecondary}>
         {selected ? '▶ ' : '  '}{displayLabel}
       </Text>
     </Box>
   );
 }
 
-export function SecondaryButton({ label, selected = false, color = '#30363d', width }: ButtonProps) {
+export function SecondaryButton({ label, selected = false, color = theme.info, width }: ButtonProps) {
   const pulse = usePulse(400);
   const displayLabel = label.startsWith('[') && label.endsWith(']') ? label : `[${label}]`;
-  const activeColor = selected ? (pulse % 2 === 0 ? '#58a6ff' : '#79c0ff') : '#30363d';
-  const textColor = selected ? activeColor : '#8b949e';
   return (
-    <Box borderStyle="single" borderColor={activeColor} paddingX={2} marginX={1} width={width}>
-      <Text color={textColor} bold={selected}>
+    <Box borderStyle="single" borderColor={selected ? color : theme.borderDefault} paddingX={2} marginX={1} width={width}>
+      <Text dimColor={selected && pulse % 2 === 1} color={selected ? color : theme.textSecondary} bold={selected}>
         {selected ? '▶ ' : '  '}{displayLabel}
       </Text>
     </Box>
@@ -41,11 +39,9 @@ export function SecondaryButton({ label, selected = false, color = '#30363d', wi
 export function DangerButton({ label, selected = false, width }: ButtonProps) {
   const pulse = usePulse(400);
   const displayLabel = label.startsWith('[') && label.endsWith(']') ? label : `[${label}]`;
-  const activeColor = selected ? (pulse % 2 === 0 ? '#f85149' : '#ff7b72') : '#30363d';
-  const textColor = selected ? activeColor : '#8b949e';
   return (
-    <Box borderStyle="single" borderColor={activeColor} paddingX={2} marginX={1} width={width}>
-      <Text bold={selected} color={textColor}>
+    <Box borderStyle="single" borderColor={selected ? theme.error : theme.borderDefault} paddingX={2} marginX={1} width={width}>
+      <Text bold={selected} dimColor={selected && pulse % 2 === 1} color={selected ? theme.error : theme.textSecondary}>
         {selected ? '▶ ' : '  '}{displayLabel}
       </Text>
     </Box>
@@ -55,11 +51,9 @@ export function DangerButton({ label, selected = false, width }: ButtonProps) {
 export function WarningButton({ label, selected = false, width }: ButtonProps) {
   const pulse = usePulse(400);
   const displayLabel = label.startsWith('[') && label.endsWith(']') ? label : `[${label}]`;
-  const activeColor = selected ? (pulse % 2 === 0 ? '#d29922' : '#f5b545') : '#30363d';
-  const textColor = selected ? activeColor : '#8b949e';
   return (
-    <Box borderStyle="single" borderColor={activeColor} paddingX={2} marginX={1} width={width}>
-      <Text bold={selected} color={textColor}>
+    <Box borderStyle="single" borderColor={selected ? theme.warning : theme.borderDefault} paddingX={2} marginX={1} width={width}>
+      <Text bold={selected} dimColor={selected && pulse % 2 === 1} color={selected ? theme.warning : theme.textSecondary}>
         {selected ? '▶ ' : '  '}{displayLabel}
       </Text>
     </Box>
@@ -69,8 +63,8 @@ export function WarningButton({ label, selected = false, width }: ButtonProps) {
 export function DisabledButton({ label }: ButtonProps) {
   const displayLabel = label.startsWith('[') && label.endsWith(']') ? label : `[${label}]`;
   return (
-    <Box borderStyle="single" borderColor="#30363d" paddingX={1} marginX={1}>
-      <Text color="#484f58">
+    <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={1} marginX={1}>
+      <Text color={theme.textTertiary}>
         {displayLabel} (Planned)
       </Text>
     </Box>
@@ -86,13 +80,13 @@ interface TextInputBarProps {
 }
 
 export function TextInputBar({ label, value, focused = false, width = 60 }: TextInputBarProps) {
-  const borderCol = focused ? '#a98bff' : '#30363d';
+  const borderCol = focused ? theme.focus : theme.borderDefault;
   return (
     <Box borderStyle="single" borderColor={borderCol} paddingX={1} width={width} flexShrink={0}>
-      <Text color="#8b949e">[{label}] </Text>
-      <Text color="#4f9cff">▶ </Text>
-      <Text color="#e6edf3" wrap="truncate">{scrollVisibleLeft(value, Math.max(1, width - label.length - 8))}</Text>
-      <Text color="#a98bff">█</Text>
+      <Text color={theme.textSecondary}>[{label}] </Text>
+      <Text color={theme.focus}>▶ </Text>
+      <Text color={theme.textPrimary} wrap="truncate">{scrollVisibleLeft(value, Math.max(1, width - label.length - 8))}</Text>
+      <Text color={theme.brand}>█</Text>
     </Box>
   );
 }
@@ -103,15 +97,15 @@ interface StepPipelineProps {
   activeColor?: string;
 }
 
-export function StepPipeline({ steps, activeIdx, activeColor = '#d29922' }: StepPipelineProps) {
+export function StepPipeline({ steps, activeIdx, activeColor = theme.warning }: StepPipelineProps) {
   return (
     <Box flexDirection="row" paddingX={1} marginY={1}>
       {steps.map((step, idx) => {
         const isCurrent = idx === activeIdx;
         const isPast = idx < activeIdx;
-        let color = '#8b949e';
+        let color = theme.textTertiary;
         if (isCurrent) color = activeColor;
-        else if (isPast) color = '#3fb950';
+        else if (isPast) color = theme.success;
 
         const prefix = isPast ? '✔ ' : isCurrent ? '● ' : '○ ';
 
@@ -121,7 +115,7 @@ export function StepPipeline({ steps, activeIdx, activeColor = '#d29922' }: Step
               {prefix}{step}
             </Text>
             {idx < steps.length - 1 && (
-              <Text color="#30363d"> ➔ </Text>
+              <Text color={theme.borderDefault}> ➔ </Text>
             )}
           </Box>
         );
@@ -136,12 +130,12 @@ interface InfoCardProps {
   color?: string;
 }
 
-export function InfoCard({ title, details, color = '#5e6ad2' }: InfoCardProps) {
+export function InfoCard({ title, details, color = theme.brand }: InfoCardProps) {
   return (
-    <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={2} paddingY={1} marginBottom={1}>
+    <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={2} paddingY={1} marginBottom={1}>
       <Text bold color={color}>{title}</Text>
       {details.map((line, idx) => (
-        <Text key={idx} color="#e6edf3">{line}</Text>
+        <Text key={idx} color={theme.textPrimary}>{line}</Text>
       ))}
     </Box>
   );
@@ -153,13 +147,13 @@ interface ResultCardProps {
   color?: string;
 }
 
-export function ResultCard({ title, fields, color = '#58a6ff' }: ResultCardProps) {
+export function ResultCard({ title, fields, color = theme.info }: ResultCardProps) {
   return (
-    <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={2} paddingY={1} marginBottom={1}>
+    <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={2} paddingY={1} marginBottom={1}>
       <Text bold color={color}>{title}</Text>
       {Object.entries(fields).map(([k, v]) => (
-        <Text key={k} color="#8b949e">
-          {k}: <Text color="#e6edf3">{v}</Text>
+        <Text key={k} color={theme.textSecondary}>
+          {k}: <Text color={theme.textPrimary}>{v}</Text>
         </Text>
       ))}
     </Box>
@@ -172,10 +166,10 @@ interface CompactInspectorProps {
 
 export function CompactInspector({ fields }: CompactInspectorProps) {
   return (
-    <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1}>
+    <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
       {Object.entries(fields).slice(0, 6).map(([k, v]) => (
-        <Text key={k} color="#8b949e">
-          {k}: <Text color="#e6edf3" wrap="truncate">{v}</Text>
+        <Text key={k} color={theme.textSecondary}>
+          {k}: <Text color={theme.textPrimary} wrap="truncate">{v}</Text>
         </Text>
       ))}
     </Box>
@@ -185,7 +179,7 @@ export function CompactInspector({ fields }: CompactInspectorProps) {
 export function EmptyState({ message }: { message: string }) {
   return (
     <Box flexGrow={1} flexDirection="column" justifyContent="center" alignItems="center" paddingY={2}>
-      <Text color="#8b949e">◌ {message}</Text>
+      <Text color={theme.textTertiary}>◌ {message}</Text>
     </Box>
   );
 }
@@ -199,8 +193,8 @@ export function ActionRow({ actions }: ActionRowProps) {
     <Box flexDirection="row" flexWrap="wrap" paddingX={1} marginY={1}>
       {actions.map((act, idx) => (
         <Box key={act.key} marginRight={4}>
-          <Text color="#8b949e">
-            <Text bold color="#79c0ff">{act.key}</Text>: {act.desc}
+          <Text color={theme.textSecondary}>
+            <Text bold color={theme.info}>{act.key}</Text>: {act.desc}
           </Text>
         </Box>
       ))}

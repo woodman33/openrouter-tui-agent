@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { theme } from '../theme.js';
 
 interface Draft2Props {
   activeTab: number;
@@ -65,33 +66,33 @@ export function Draft2Swarm({ activeTab, setActiveTab, width = 120, height = 34 
   const rightPaneW = Math.max(30, width - 24 - leftPaneW - 4);
 
   return (
-    <Box flexDirection="column" width={width} height={height} borderStyle="round" borderColor="#3ddc84">
+    <Box flexDirection="column" width={width} height={height} borderStyle="round" borderColor={theme.success}>
       {/* Top Segmented Selector Ribbon for Swarm Filters */}
-      <Box justifyContent="space-between" paddingX={1} borderStyle="single" borderColor="#1c232c">
+      <Box justifyContent="space-between" paddingX={1} borderStyle="single" borderColor={theme.borderDefault}>
         <Box gap={1}>
-          <Text color="#3ddc84" bold>☷ SWARM COMMANDER</Text>
-          <Text color="#5a6470">|</Text>
-          <Text color="#8892a0">Filter:</Text>
+          <Text color={theme.success} bold>☷ SWARM COMMANDER</Text>
+          <Text color={theme.textTertiary}>|</Text>
+          <Text color={theme.textSecondary}>Filter:</Text>
           {laneFilters.map((f, idx) => (
-            <Text key={f} color={activeLaneFilter === idx ? '#3ddc84' : '#5a6470'} bold={activeLaneFilter === idx}>
+            <Text key={f} color={activeLaneFilter === idx ? theme.success : theme.textTertiary} bold={activeLaneFilter === idx}>
               {f}
             </Text>
           ))}
         </Box>
         <Box gap={1}>
-          <Text color="#8892a0">Lanes Alive:</Text>
-          <Text color="#3ddc84">3/3</Text>
-          <Text color="#5a6470">|</Text>
-          <Text color="#e6b800">Gates: 1 Pending</Text>
+          <Text color={theme.textSecondary}>Lanes Alive:</Text>
+          <Text color={theme.success}>3/3</Text>
+          <Text color={theme.textTertiary}>|</Text>
+          <Text color={theme.warning}>Gates: 1 Pending</Text>
         </Box>
       </Box>
 
       {/* Main Dual-Pane Matrix with Left Standing Rail */}
       <Box flexGrow={1} flexDirection="row">
         {/* Left Standing Menu (6 Tabs) */}
-        <Box flexDirection="column" width={22} borderStyle="single" borderColor="#1c232c" paddingX={1}>
+        <Box flexDirection="column" width={22} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
           <Box marginBottom={1}>
-            <Text color="#5a6470" bold>── AGENT BUS ──</Text>
+            <Text color={theme.textTertiary} bold>── AGENT BUS ──</Text>
           </Box>
           {tabs.map((tab, idx) => {
             const isSelected = activeTab === idx;
@@ -101,29 +102,29 @@ export function Draft2Swarm({ activeTab, setActiveTab, width = 120, height = 34 
                 justifyContent="space-between"
                 paddingX={1}
                 borderStyle={isSelected ? 'single' : undefined}
-                borderColor={isSelected ? '#3ddc84' : undefined}
+                borderColor={isSelected ? theme.success : undefined}
               >
-                <Text color={isSelected ? '#3ddc84' : '#8892a0'} bold={isSelected}>
+                <Text color={isSelected ? theme.success : theme.textSecondary} bold={isSelected}>
                   [{tab.key}] {tab.icon} {tab.label}
                 </Text>
-                <Text color={isSelected ? '#3ddc84' : '#5a6470'}>
+                <Text color={isSelected ? theme.success : theme.textTertiary}>
                   {tab.badge}
                 </Text>
               </Box>
             );
           })}
-          <Box marginTop={1} flexDirection="column" borderStyle="single" borderColor="#161c22" padding={1}>
-            <Text color="#5a6470">MUX: tmux 3.4</Text>
-            <Text color="#5a6470">ROUTER: round-robin</Text>
-            <Text color="#3ddc84">POLICY: balanced</Text>
+          <Box marginTop={1} flexDirection="column" borderStyle="single" borderColor={theme.surfaceOverlay} padding={1}>
+            <Text color={theme.textTertiary}>MUX: tmux 3.4</Text>
+            <Text color={theme.textTertiary}>ROUTER: round-robin</Text>
+            <Text color={theme.success}>POLICY: balanced</Text>
           </Box>
         </Box>
 
         {/* Left Pane: Multi-Agent Swimlanes & Kanban Pipeline */}
-        <Box flexDirection="column" width={leftPaneW} borderStyle="single" borderColor="#1c232c" paddingX={1}>
-          <Box justifyContent="space-between" borderStyle="single" borderColor="#161c22" paddingX={1}>
-            <Text color="#e8ecf0" bold>▼ AGENT WORKFLOW PIPELINE (TOP-DOWN CARDS)</Text>
-            <Text color="#8892a0">[↑↓] Select Task</Text>
+        <Box flexDirection="column" width={leftPaneW} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
+            <Text color={theme.textPrimary} bold>▼ AGENT WORKFLOW PIPELINE (TOP-DOWN CARDS)</Text>
+            <Text color={theme.textSecondary}>[↑↓] Select Task</Text>
           </Box>
 
           <Box flexDirection="column" flexGrow={1} gap={1} marginTop={1}>
@@ -134,22 +135,22 @@ export function Draft2Swarm({ activeTab, setActiveTab, width = 120, height = 34 
                   key={task.id}
                   flexDirection="column"
                   borderStyle="single"
-                  borderColor={isSelected ? '#3ddc84' : '#2c3540'}
+                  borderColor={isSelected ? theme.success : theme.surfaceOverlay}
                   paddingX={1}
                 >
                   <Box justifyContent="space-between">
-                    <Text color="#3ddc84" bold>{task.id} · [{task.agent}]</Text>
-                    <Text color={task.status === 'GATE BLOCKED' ? '#e6b800' : task.status === 'RUNNING' ? '#4aa8ff' : '#3ddc84'} bold>
+                    <Text color={theme.success} bold>{task.id} · [{task.agent}]</Text>
+                    <Text color={task.status === 'GATE BLOCKED' ? theme.warning : task.status === 'RUNNING' ? theme.info : theme.success} bold>
                       {task.status} ({task.progress})
                     </Text>
                   </Box>
-                  <Text color="#e8ecf0">{task.title}</Text>
+                  <Text color={theme.textPrimary}>{task.title}</Text>
                   {isSelected && task.status === 'GATE BLOCKED' && (
-                    <Box marginTop={1} borderStyle="single" borderColor="#e6b800" paddingX={1} justifyContent="space-between">
-                      <Text color="#e6b800">⚠️ Risk: Deploying without sealed receipt</Text>
+                    <Box marginTop={1} borderStyle="single" borderColor={theme.warning} paddingX={1} justifyContent="space-between">
+                      <Text color={theme.warning}>⚠️ Risk: Deploying without sealed receipt</Text>
                       <Box gap={1}>
-                        <Text color="#3ddc84" bold>[A] Approve</Text>
-                        <Text color="#ff4444" bold>[K] Deny</Text>
+                        <Text color={theme.success} bold>[A] Approve</Text>
+                        <Text color={theme.error} bold>[K] Deny</Text>
                       </Box>
                     </Box>
                   )}
@@ -158,53 +159,53 @@ export function Draft2Swarm({ activeTab, setActiveTab, width = 120, height = 34 
             })}
           </Box>
 
-          <Box borderStyle="single" borderColor="#2c3540" paddingX={1}>
-            <Text color="#8892a0">Quick Action: </Text>
-            <Text color="#3ddc84">[S] Spawn Lane </Text>
-            <Text color="#ffaa33">[D] Delegate Task </Text>
-            <Text color="#4aa8ff">[T] Attach Terminal </Text>
+          <Box borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
+            <Text color={theme.textSecondary}>Quick Action: </Text>
+            <Text color={theme.success}>[S] Spawn Lane </Text>
+            <Text color={theme.accent}>[D] Delegate Task </Text>
+            <Text color={theme.info}>[T] Attach Terminal </Text>
           </Box>
         </Box>
 
         {/* Right Pane: Logs Flowing Upward (Bottom-Up Daemon Output Stream) */}
-        <Box flexDirection="column" width={rightPaneW} borderStyle="single" borderColor="#1c232c" paddingX={1}>
-          <Box justifyContent="space-between" borderStyle="single" borderColor="#161c22" paddingX={1}>
-            <Text color="#e8ecf0" bold>▲ UNIFIED DAEMON TAIL</Text>
-            <Text color={tailLocked ? '#3ddc84' : '#e6b800'}>{tailLocked ? '[LOCKED ⇊]' : '[FREE SCROLL]'}</Text>
+        <Box flexDirection="column" width={rightPaneW} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
+            <Text color={theme.textPrimary} bold>▲ UNIFIED DAEMON TAIL</Text>
+            <Text color={tailLocked ? theme.success : theme.warning}>{tailLocked ? '[LOCKED ⇊]' : '[FREE SCROLL]'}</Text>
           </Box>
 
           <Box marginTop={1} flexDirection="column" flexGrow={1} justifyContent="flex-end" gap={0}>
             {upwardLogs.map((log, i) => (
               <Box key={i} marginY={0}>
-                <Text color="#5a6470">{log.seq} </Text>
-                <Text color={log.ok ? '#3ddc84' : '#e6b800'} wrap="truncate-end">
+                <Text color={theme.textTertiary}>{log.seq} </Text>
+                <Text color={log.ok ? theme.success : theme.warning} wrap="truncate-end">
                   {log.txt}
                 </Text>
               </Box>
             ))}
           </Box>
 
-          <Box flexDirection="row" justifyContent="space-between" borderStyle="round" borderColor="#1c232c" paddingX={1} marginTop={1}>
-            <Text color="#8892a0">Stdout Rate: <Text color="#3ddc84">14.8 KB/s</Text></Text>
-            <Text color="#ffaa33">[L] Toggle Tail Lock</Text>
+          <Box flexDirection="row" justifyContent="space-between" borderStyle="round" borderColor={theme.borderDefault} paddingX={1} marginTop={1}>
+            <Text color={theme.textSecondary}>Stdout Rate: <Text color={theme.success}>14.8 KB/s</Text></Text>
+            <Text color={theme.accent}>[L] Toggle Tail Lock</Text>
           </Box>
         </Box>
       </Box>
 
       {/* Bottom Contextual Descriptor */}
-      <Box flexDirection="column" borderStyle="single" borderColor="#1c232c" paddingX={1}>
+      <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
         <Box justifyContent="space-between">
           <Box gap={1}>
-            <Text color="#8892a0" bold>HOTKEYS:</Text>
-            <Text color="#3ddc84">[A] Approve Gate</Text>
-            <Text color="#ff4444">[K] Kill Session</Text>
-            <Text color="#4aa8ff">[Tab] Cycle Filters</Text>
+            <Text color={theme.textSecondary} bold>HOTKEYS:</Text>
+            <Text color={theme.success}>[A] Approve Gate</Text>
+            <Text color={theme.error}>[K] Kill Session</Text>
+            <Text color={theme.info}>[Tab] Cycle Filters</Text>
           </Box>
-          <Text color="#3ddc84">[H] {showDescriptor ? 'Hide Help' : 'Show Help'}</Text>
+          <Text color={theme.success}>[H] {showDescriptor ? 'Hide Help' : 'Show Help'}</Text>
         </Box>
         {showDescriptor && (
           <Box marginTop={0}>
-            <Text color="#5a6470" italic>
+            <Text color={theme.textTertiary} italic>
               💡 Tab 2 Swarm: Top filter ribbon updates active agent view. Left pane shows task cards; right pane streams live tmux stdout upward.
             </Text>
           </Box>
