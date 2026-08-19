@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- MCP tool `timmy_mission_compile`: the Mission Map compiler exposed to any
+  MCP-speaking agent and the :4321 companion — a tldraw mission doc in,
+  typed CUE-validated DispatchPlans out; the map still never launches.
+- Studio runtime (`src/utils/theatre-runtime.ts`): loads native Theatre.js
+  on-disk state (definition `0.4.0`, sheets keyed by id — the exact shape
+  `@theatre/core@0.7.2` validates) from compiled project folders, plays it
+  back deterministically via cubic-Bézier sampling (`sampleTrack` /
+  `sampleSequence`), and hands the identical state to the browser path
+  (`getProject(id, {state})`, CJS-interop safe).
+- End-to-end mission verification (`tests/mission-e2e.test.ts`): multi-stage
+  Slate map → CUE DispatchPlans → controller store → sanitized multi-track
+  OTIO → Theatre state round-trip + playback → signed parent/child receipt
+  chain verifies clean.
+
+## [0.7.2] - 2026-08-19
+
+### Added
 - Mission Map → DispatchPlan compiler (`src/utils/slate-compiler.ts`): the
   tldraw node vocabulary (capsule / harness-slide / gate / artifact / result
   + dependency edges) compiles into typed CUE DispatchPlans — emitted in

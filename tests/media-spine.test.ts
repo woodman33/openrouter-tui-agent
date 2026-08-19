@@ -150,12 +150,12 @@ describe('Theatre.js native sheets with Bézier states', () => {
     ]
   };
 
-  it('emits theatrejs v1 sheet/sequence/track state', () => {
+  it('emits native on-disk state (definition 0.4.0, sheets keyed by id)', () => {
     const s = theatreStateFromSequence(seq);
-    expect(s.theatrejs).toBe('v1');
-    const sheet = s.sheets[0];
-    expect(sheet.id).toBe('sting');
-    expect(sheet.type).toBe('Theatre_Sheet');
+    expect(s.definitionVersion).toBe('0.4.0');
+    expect(s.revision).toBe(0);
+    const sheet = s.sheets['sting'];
+    expect(sheet).toBeTruthy();
     expect(sheet.sequence.type).toBe('Theatre_Sequence');
     expect(sheet.sequence.length).toBe(5);
     const track = sheet.sequence.tracks['clip-0.position.x'];
@@ -164,7 +164,7 @@ describe('Theatre.js native sheets with Bézier states', () => {
   });
 
   it('keyframes carry cubic-bézier interpolation (default + custom handles)', () => {
-    const track = theatreStateFromSequence(seq).sheets[0].sequence.tracks['clip-0.position.x'];
+    const track = theatreStateFromSequence(seq).sheets['sting'].sequence.tracks['clip-0.position.x'];
     expect(track.keyframes[0].interpolation).toEqual({ type: 'CubicBezier', config: { handles: [0.42, 0, 0.58, 1] } });
     expect(track.keyframes[1].interpolation.config.handles).toEqual([0.16, 1, 0.3, 1]);
     expect(track.keyframes[1].position).toBe(1.5);
