@@ -78,6 +78,31 @@ C3. Receipt browser v1: deep links from receipt → run workspace manifest.
    receipts prove it."
 7. Hosted receipt portal (paid tier) — verify links for outsiders.
 
+## Phase A verification record (2026-08-19) — Demo C closes RED, honestly
+
+Guards shipped (a79b24e+): seeded OPENHANDS_WORK_DIR per run, generic
+fail-fast (no_tool_activity), spend guard (auto only under max_spend),
+host-path scan at seal (isolation_violation).
+
+Evidence chain (all receipted):
+1. Workspace seeding WORKS: agent terminal executed a command referencing the
+   seeded workspace (tsx ENOENT proof); OPENHANDS_WORK_DIR respected.
+2. Tools present in agent_settings (terminal, file_editor, task_tracker).
+3. Local qwen3.8:27b-mlx returns valid tool_calls in isolation (curl proof);
+   nemotron's simpler format executes via litellm; qwen-mlx thinking+tool_calls
+   format does not survive litellm/openhands parsing (1-message conversations).
+4. Frontier openrouter/auto under max_spend 0.5: same 1-message exit, no patch.
+   → model capability ruled out; openhands CLI v1.16 headless does NOT wire the
+   tool-execution loop against a local workspace in this environment.
+
+Acceptance verdict: (1) partial (terminal touched seeded copy once, no
+file_editor action) · (2) FAIL (no patch) · (3) ✓ receipts sealed, cf72f858
+preserved · (4) ✓ host-path scan active, zero violations.
+
+Next rung (Phase A2): drive OpenHands via the python SDK Conversation API with
+LocalWorkspace (tools execute in-process) or ACP mode (editor-hosted), NOT the
+headless CLI. Keep the CLI path as watch/attach per §1.
+
 ## Honesty clause (unchanged)
 
 Anything unavailable reports not_configured | blocked and seals a receipt
