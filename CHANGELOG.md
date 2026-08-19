@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Mission Map → DispatchPlan compiler (`src/utils/slate-compiler.ts`): the
+  tldraw node vocabulary (capsule / harness-slide / gate / artifact / result
+  + dependency edges) compiles into typed CUE DispatchPlans — emitted in
+  dependency order with `cadence.depends_on` wiring, sha256-pinned
+  `context_manifest` entries from artifact handoffs, and gate-driven
+  approval/acceptance; every plan passes `validatePlanCue`; cycles, unknown
+  harnesses and missing artifacts fail closed with explicit errors. The map
+  still never spawns work — compiled plans go through the controller.
+- OTIO media-spine hardening: explicit timebases on every RationalTime (EDL
+  `timebase`, default 24), multi-track audio stems (one Audio track per
+  music/vo/sfx kind with ducking metadata), and `sanitizeMediaUrl`
+  bundle-relative exports — absolute/home paths never leave the machine
+  unless the caller opts out.
+- Theatre.js native motion state: keyframes carry cubic-Bézier handles and
+  `theatreStateFromSequence` emits theatrejs-v1 sheet/sequence/track JSON
+  the studio loads verbatim via `@theatre/core`; the EDL transform compile
+  (compile-to-EDL law) is unchanged.
+
+## [0.7.1] - 2026-08-19
+
+### Added
 - Phase C — true sandbox isolation for the OpenHands runner: `engine: docker`
   (default) executes the agent loop AND its tools inside an ephemeral
   `timmy-oh-runner` container (`--cap-drop=ALL`, `no-new-privileges`, pids/
