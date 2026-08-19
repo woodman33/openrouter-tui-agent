@@ -5,7 +5,7 @@
 // PTY/tmux is watch/attach/recovery only — structured spawn here.
 import { existsSync, mkdirSync, writeFileSync, readFileSync, mkdtempSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
-import { tmpdir } from 'os';
+import { tmpdir, homedir } from 'os';
 import { spawnSync, spawn } from 'child_process';
 import crypto from 'crypto';
 import { appendReceipt } from './receipts.js';
@@ -25,6 +25,7 @@ export interface OpenHandsOpts {
   max_spend?: number;            // A3: required >0 when llm==='auto'
   llm?: 'local' | 'auto';        // default local (ollama), $0-first
   local_model?: string;          // default ollama/qwen3.8:27b-mlx (capable local)
+  engine?: 'sdk' | 'cli';        // A2: sdk = SDK Conversation API (tools in-process)
   approval?: string;             // operator token bound to this task's plan hash
   dir?: string;
 }
@@ -43,7 +44,7 @@ export interface OpenHandsResult {
 }
 
 export const openHandsPlanHash = (o: OpenHandsOpts): string =>
-  planHashOf({ tool: 'timmy_openhands_run', task: o.task, acceptance: o.acceptance, ref: o.ref ?? null, wall_ms: o.wall_ms ?? 300000, max_iterations: o.max_iterations ?? 4, llm: o.llm ?? 'local', local_model: o.local_model ?? 'ollama/qwen3.8:27b-mlx', no_activity_ms: o.no_activity_ms ?? 90000, max_spend: o.max_spend ?? 0 });
+  planHashOf({ tool: 'timmy_openhands_run', task: o.task, acceptance: o.acceptance, ref: o.ref ?? null, wall_ms: o.wall_ms ?? 300000, max_iterations: o.max_iterations ?? 4, llm: o.llm ?? 'local', local_model: o.local_model ?? 'ollama/qwen3.8:27b-mlx', no_activity_ms: o.no_activity_ms ?? 90000, max_spend: o.max_spend ?? 0, engine: o.engine ?? 'sdk' });
 
 const HOST_PATH_RE = /\/Users\/|\/home\/|C:\\/;
 
@@ -96,9 +97,13 @@ export async function runOpenHandsTask(o: OpenHandsOpts): Promise<OpenHandsResul
     spawnSync('git', ['-c', 'user.email=timmy@local', '-c', 'user.name=timmy', 'commit', '-q', '-m', 'red fixture'], { cwd: work });
   }
   const t0 = Date.now();
-  // A1: seeded disposable workspace via OPENHANDS_WORK_DIR — never shared/live.
+  // A1: seeded disposable workspace — never shared/live. A2: sdk engine runs
+  // tools in-process against the workspace (closes the headless-CLI gap).
   const llmLocal = (o.llm ?? 'local') === 'local';
-  const child = spawn('openhands', ['--headless', '-t', o.task, '--always-approve', '--override-with-envs'], {
+  const UV_PY = join(homedir(), '.local', 'share', 'uv', 'tools', 'openhands', 'bin', 'python');
+  const useSdk = (o.engine ?? 'sdk') === 'sdk' && existsSync(UV_PY);
+  const child = spawn(useSdk ? UV_PY : 'openhands',
+    useSdk ? [join(dir, 'scripts', 'openhands-sdk-bridge.py')] : ['--headless', '-t', o.task, '--always-approve', '--override-with-envs'], {
     cwd: work,
     env: {
       ...process.env,
@@ -110,6 +115,10 @@ export async function runOpenHandsTask(o: OpenHandsOpts): Promise<OpenHandsResul
       LLM_BASE_URL: llmLocal ? 'http://localhost:11434' : 'https://openrouter.ai/api/v1'
     }
   });
+  if (useSdk) {
+    child.stdin?.write(JSON.stringify({ task: o.task, workspace: work }));
+    child.stdin?.end();
+  }
   let tail = '';
   let killed: string | null = null;
   const snap = (): string => {
