@@ -8,6 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Vision Register (`docs/VISION-REGISTER.md`, spec §11): the four unverified
+  north-star targets (Hierarchical Context Cone, Tri-modal 3D USD stack,
+  AgentPass escrow clearinghouse, ComfyUI federation) codified with
+  receipt-grade exit criteria. Targets are not receipts: nothing in the
+  register gates runtime behavior; graduation is a CHANGELOG event.
+- Mission Studio on the logs companion (`:4310/mission`): survey surface that
+  consumes the compiler via `POST /mission/compile` (localhost-only), renders
+  dependency-ordered CUE-valid plan cards, plays compiled mission stages
+  frame-accurately (Bézier sampler mirroring `theatre-runtime`, 30fps
+  timebase) plus W3C media-fragment video stems; `GET /mission/theatre`
+  serves compiled-folder state with path-escape checks; the :4321 Mission
+  Map links across. Compiles only — launching stays with the controller.
+- Media Fabric local blueprint spike (V-04 first rung):
+  `src/utils/comfy-adapter.ts` — deterministic comfy-cli execution adapter
+  for local headless 5s golden runs: every seed pinned (`GOLDEN_SEED`),
+  checkpoints discovered at runtime and injected at the `DISCOVER` sentinel
+  (never hardcoded), fail-closed `not_configured` / `missing_source` /
+  `server_not_running`, every outcome receipted. `scripts/comfy-golden-5s.json`
+  is the pinned core-node spine.
+
+## [0.7.3] - 2026-08-19
+
+### Added
 - MCP tool `timmy_mission_compile`: the Mission Map compiler exposed to any
   MCP-speaking agent and the :4321 companion — a tldraw mission doc in,
   typed CUE-validated DispatchPlans out; the map still never launches.
