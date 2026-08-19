@@ -87,9 +87,16 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
   const t0 = Date.now();
   // NB: --max-iterations is NOT a top-level flag in this CLI; iterations are
   // bounded by the wall-clock timeout instead.
-  const run = spawnSync('openhands', ['--headless', '-t', o.task, '--always-approve', '--json'], {
+  const run = spawnSync('openhands', ['--headless', '-t', o.task, '--always-approve', '--json', '--override-with-envs'], {
     cwd: work, encoding: 'utf8', timeout: o.wall_ms ?? 300000,
-    env: { ...process.env, TIMMY_WORKSPACE: work, OPENHANDS_SUPPRESS_BANNER: '1' }
+    env: {
+      ...process.env, TIMMY_WORKSPACE: work, OPENHANDS_SUPPRESS_BANNER: '1',
+      TERM: 'dumb', NO_COLOR: '1', CI: '1',
+      // agent-server boots with NO config.toml by default; feed the LLM via envs
+      LLM_MODEL: process.env.LLM_MODEL ?? 'openrouter/auto',
+      LLM_API_KEY: process.env.LLM_API_KEY ?? process.env.OPENROUTER_API_KEY ?? '',
+      LLM_BASE_URL: process.env.LLM_BASE_URL ?? 'https://openrouter.ai/api/v1'
+    }
   });
   const duration_ms = Date.now() - t0;
   const acceptance = (o.acceptance ?? []).map(cmd => ({
