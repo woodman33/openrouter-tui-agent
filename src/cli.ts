@@ -176,6 +176,21 @@ if (command === 'approve') {
   process.exit(0);
 }
 
+if (command === 'map') {
+  // Mission Map: serve the tldraw instance + open it (carbonyl if present)
+  const { spawnSync, spawn } = await import('child_process');
+  const probe = spawnSync('curl', ['-s', '--max-time', '1', 'http://localhost:4321/'], { encoding: 'utf8' });
+  if (probe.status !== 0) {
+    const srv = spawn('python3', ['-m', 'http.server', '4321', '-d', 'studio/tldraw-mission-map'], { detached: true, stdio: 'ignore' });
+    srv.unref();
+  }
+  const hasCarbonyl = spawnSync('command -v carbonyl', { encoding: 'utf8', shell: true }).status === 0;
+  const opener = spawn(hasCarbonyl ? 'carbonyl' : 'open', ['http://localhost:4321'], { detached: true, stdio: 'ignore' });
+  opener.unref();
+  console.log(`mission map: http://localhost:4321 (${hasCarbonyl ? 'carbonyl' : 'browser'})`);
+  process.exit(0);
+}
+
 if (command === 'q') {
   // dasel passthrough: one query grammar for json/yaml/toml/xml/csv configs
   const [file, ...expr] = args[0] === 'q' ? args.slice(1) : args;

@@ -149,6 +149,12 @@ export const LANE_RUNNERS: Record<string, LaneRunner> = {
     blurb: 'procedural 3D · hython headless + MCP bridge',
     task: 'hython {task}',
   },
+  openedit: {
+    cmd: 'openedit', label: 'OpenEdit (OTIO editor)', expected: 'openedit',
+    install: 'register OpenEdit CLI/MCP when available',
+    blurb: 'OTIO timeline editor on the film spine; emits modified EDL for re-verify',
+    task: 'openedit edit --instruction "{task}"',
+  },
   // ---- stored-key API lanes (queue item 7) ----
   webcontainers: {
     cmd: 'curl', label: 'WebContainers', expected: 'curl', key: 'WEBCONTAINERS_CLIENT_ID',

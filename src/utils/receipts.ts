@@ -72,7 +72,7 @@ const canon = (o: Record<string, unknown>): string =>
       .reduce((acc, k) => ({ ...acc, [k]: (o as Record<string, unknown>)[k] }), {})
   );
 
-const hashOf = (o: Record<string, unknown>): string =>
+export const hashOf = (o: Record<string, unknown>): string =>
   'sha256_' + crypto.createHash('sha256').update(canon(o)).digest('hex');
 
 export function receiptsDir(dir: string = process.cwd()): string {

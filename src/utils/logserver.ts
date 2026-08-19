@@ -10,7 +10,7 @@ import { join } from 'path';
 import { spawn } from 'child_process';
 import { pathToFileURL } from 'url';
 import { readEvents, eventsPath, TimmyEvent } from './eventbus.js';
-import { readChain, verifyChain } from './receipts.js';
+import { readChain, verifyChain, verifySignature, hashOf } from './receipts.js';
 
 export const LOGS_PORT = (): number => Number(process.env.TIMMY_LOGS_PORT ?? 4310);
 
@@ -155,6 +155,76 @@ async function loadPlans() {
 loadPlans(); setInterval(loadPlans, 3000);
 </script>`;
 
+// ---- Receipt browser: timeline over the chain, verify per receipt ----
+const BROWSER_HTML = `<!doctype html><html><head><meta charset="utf-8">
+<title>TIMMY Receipt Browser</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #0a0e12; color: #e6edf3; font: 13px/1.5 ui-monospace, Menlo, monospace; padding: 16px; }
+  header { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  header .logo { color: #a98bff; font-weight: 700; letter-spacing: .08em; }
+  button { background: #101418; border: 1px solid #2d333b; color: #a98bff; border-radius: 6px; font: inherit; padding: 4px 10px; cursor: pointer; }
+  input { background: #101418; border: 1px solid #2d333b; color: #e6edf3; border-radius: 6px; font: inherit; padding: 4px 10px; }
+  #chainstat { color: #3fb950; }
+  .epoch { color: #4aa8ff; margin: 14px 0 6px; letter-spacing: .12em; }
+  .rc { border: 1px solid #2d333b; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; background: #0d1117; }
+  .rc .row1 { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .rc .sub { color: #e6edf3; font-weight: 600; }
+  .rc .st-ok { color: #3fb950; } .rc .st-failed { color: #f87171; } .rc .st-denied { color: #f5b540; }
+  .rc .hash { color: #3fb950; } .rc .prev { color: #5a6470; }
+  .rc .meta { color: #8b949e; font-size: 11px; }
+  .rc .vf { color: #4aa8ff; font-size: 11px; }
+</style></head><body>
+<header>
+  <span class="logo">TIMMY ⛁ RECEIPT BROWSER</span>
+  <input id="q" placeholder="filter subject/kind…" size="28" />
+  <select id="stream"><option>runs</option><option>gens</option><option>harness</option></select>
+  <button id="verify">verify chain</button>
+  <span id="chainstat"></span>
+</header>
+<div id="list"></div>
+<script>
+const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let CHAIN = [];
+async function load() {
+  const stream = document.getElementById('stream').value;
+  CHAIN = await (await fetch('/receipts?stream=' + stream)).json();
+  render();
+  const v = await (await fetch('/verify?stream=' + stream)).json();
+  document.getElementById('chainstat').textContent =
+    (v.ok ? '✓ chain intact · ' : '✕ broken @ ' + (v.brokenAt ?? '?') + ' · ') + v.count + ' receipts · epoch ' + v.current_epoch;
+}
+function render() {
+  const q = document.getElementById('q').value.toLowerCase();
+  const list = document.getElementById('list');
+  const rows = CHAIN.filter(r => !q || ((r.subject ?? '') + (r.kind ?? '')).toLowerCase().includes(q));
+  let html = '', lastEpoch = null;
+  for (const r of [...rows].reverse()) {
+    const e = r.epoch ?? 1;
+    if (e !== lastEpoch) { html += '<div class="epoch">EPOCH ' + e + '</div>'; lastEpoch = e; }
+    html += '<div class="rc" id="rc-' + esc(r.id) + '"><div class="row1">'
+      + '<span class="sub">' + esc(r.subject ?? r.kind) + '</span>'
+      + '<span class="st-' + esc(r.status ?? 'ok') + '">' + esc(r.status ?? 'ok') + '</span>'
+      + '<span class="meta">' + esc(r.ts ?? '').slice(11, 19) + ' · ' + esc(r.kind) + (r.cost_usd ? ' · $' + r.cost_usd : '') + (r.tokens ? ' · ' + r.tokens + 'tok' : '') + '</span>'
+      + '<button onclick="vf(\\'' + esc(r.id) + '\\')">verify</button><span class="vf" id="vf-' + esc(r.id) + '"></span></div>'
+      + '<div><span class="hash">hash ' + esc(String(r.hash ?? '').slice(0, 20)) + '…</span> <span class="prev">prev ' + esc(String(r.prev_hash ?? '').slice(0, 20)) + '…</span></div>'
+      + (r.error_class ? '<div class="meta">error_class: ' + esc(r.error_class) + '</div>' : '')
+      + '</div>';
+  }
+  list.innerHTML = html || '<div class="meta">no receipts match</div>';
+}
+async function vf(id) {
+  const stream = document.getElementById('stream').value;
+  const v = await (await fetch('/verify-receipt?stream=' + stream + '&id=' + id)).json();
+  document.getElementById('vf-' + id).textContent = v.ok ? '✓ body+sig' : '✕ ' + (v.bodyOk ? 'sig' : 'body');
+}
+document.getElementById('q').oninput = render;
+document.getElementById('stream').onchange = load;
+document.getElementById('verify').onclick = load;
+load(); setInterval(load, 5000);
+</script></body></html>`;
+
 interface SseClient { res: ServerResponse }
 let clients: SseClient[] = [];
 let tailOffset = 0;
@@ -212,6 +282,24 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
       const stream = url.searchParams.get('stream') ?? 'runs';
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify(verifyChain(stream)));
+      return;
+    }
+    // Receipt browser backend: per-receipt body-hash + signature check.
+    if (url.pathname === '/verify-receipt') {
+      const stream = url.searchParams.get('stream') ?? 'runs';
+      const id = url.searchParams.get('id') ?? '';
+      const rec = readChain(stream).find(r => r.id === id);
+      res.setHeader('Content-Type', 'application/json');
+      if (!rec) { res.end(JSON.stringify({ ok: false, note: 'unknown receipt' })); return; }
+      const { hash, ...rest } = rec;
+      const bodyOk = hashOf({ ...rest, hash: '' }) === hash;
+      const sigOk = verifySignature(rec);
+      res.end(JSON.stringify({ ok: bodyOk && sigOk, bodyOk, sigOk }));
+      return;
+    }
+    if (url.pathname === '/browser') {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.end(BROWSER_HTML);
       return;
     }
     // Command Post survey surface: same controller, same allowlist. Browser
