@@ -7,15 +7,17 @@ Run with the uv tool python: ~/.local/share/uv/tools/openhands/bin/python
 import json
 import os
 
-from openhands.sdk import LLM, Agent, Tool, LocalWorkspace, LocalConversation
+from openhands.sdk import LLM, Agent, LocalWorkspace, LocalConversation
+from openhands.tools.preset.default import register_default_tools, get_default_tools
 
 req = json.load(__import__('sys').stdin)
+register_default_tools()  # terminal, file_editor, … into the registry
 llm = LLM(
     model=os.environ.get('LLM_MODEL', 'ollama/qwen3.8:27b-mlx'),
     base_url=os.environ.get('LLM_BASE_URL', 'http://localhost:11434'),
     api_key=os.environ.get('LLM_API_KEY', 'ollama'),
 )
-agent = Agent(llm=llm, tools=[Tool(name='terminal'), Tool(name='file_editor')])
+agent = Agent(llm=llm, tools=get_default_tools())
 conv = LocalConversation(agent=agent, workspace=LocalWorkspace(working_dir=req['workspace']))
 try:
     send = getattr(conv, 'send_message', None) or getattr(conv, 'ask_agent', None)
