@@ -31,9 +31,12 @@ export function theatreSequenceToTransforms(seq: TheatreSequence): EdlTransformE
   return out.sort((a, b) => a.at - b.at);
 }
 
-// Native Theatre.js project state (data-only; the browser sheet loads it via
-// getProject(...).setState / studio import). Track keys mirror the EDL
-// transform addressing: <target>.<prop>.
+// Native Theatre.js ON-DISK project state (data-only; the browser sheet loads
+// it via getProject(id, {state})). Must match @theatre/core's state definition
+// 0.4.0: top-level definitionVersion + revision, sheets keyed by sheet id.
+// Track keys mirror the EDL transform addressing: <target>.<prop>.
+export const THEATRE_STATE_DEFINITION_VERSION = '0.4.0';
+
 export interface TheatreNativeKeyframe {
   id: string;
   position: number;
@@ -41,23 +44,23 @@ export interface TheatreNativeKeyframe {
   interpolation: { type: 'CubicBezier'; config: { handles: BezierHandles } };
   handles: [number, number];
 }
+export interface TheatreSheetState {
+  staticOverrides: Record<string, never>;
+  sequence: {
+    type: 'Theatre_Sequence';
+    length: number;
+    subUnits: number;
+    tracks: Record<string, { type: 'Theatre_Track'; keyframes: TheatreNativeKeyframe[] }>;
+  };
+}
 export interface TheatreProjectState {
-  theatrejs: 'v1';
-  sheets: Array<{
-    id: string;
-    type: 'Theatre_Sheet';
-    staticOverrides: Record<string, never>;
-    sequence: {
-      type: 'Theatre_Sequence';
-      length: number;
-      subUnits: number;
-      tracks: Record<string, { type: 'Theatre_Track'; keyframes: TheatreNativeKeyframe[] }>;
-    };
-  }>;
+  definitionVersion: typeof THEATRE_STATE_DEFINITION_VERSION;
+  revision: number;
+  sheets: Record<string, TheatreSheetState>;
 }
 
 export function theatreStateFromSequence(seq: TheatreSequence): TheatreProjectState {
-  const tracks: TheatreProjectState['sheets'][0]['sequence']['tracks'] = {};
+  const tracks: TheatreSheetState['sequence']['tracks'] = {};
   for (const tr of seq.tracks) {
     const key = `${tr.target}.${tr.prop}`;
     tracks[key] = {
@@ -72,13 +75,14 @@ export function theatreStateFromSequence(seq: TheatreSequence): TheatreProjectSt
     };
   }
   return {
-    theatrejs: 'v1',
-    sheets: [{
-      id: seq.name,
-      type: 'Theatre_Sheet',
-      staticOverrides: {},
-      sequence: { type: 'Theatre_Sequence', length: seq.duration, subUnits: 30, tracks }
-    }]
+    definitionVersion: THEATRE_STATE_DEFINITION_VERSION,
+    revision: 0,
+    sheets: {
+      [seq.name]: {
+        staticOverrides: {},
+        sequence: { type: 'Theatre_Sequence', length: seq.duration, subUnits: 30, tracks }
+      }
+    }
   };
 }
 

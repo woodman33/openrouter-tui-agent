@@ -16,6 +16,7 @@ import { spawnSync } from 'child_process';
 import { createHash } from 'crypto';
 import { planHashOf, consumeApproval } from '../utils/approvals.js';
 import { listLanes, createPlan, armPlan, dispatchPlan, tailLane, pauseOrCancelLane, collectRun, type DispatchPlan } from '../utils/dispatch.js';
+import { compileMissionMap, type MissionMapDoc } from '../utils/slate-compiler.js';
 import { runOpenHandsTask, openHandsPlanHash, type OpenHandsOpts } from '../utils/openhands-adapter.js';
 import { roboflowRun, type RoboflowReq } from '../utils/roboflow-adapter.js';
 import { oapiRun, type OapiReq } from '../utils/oapi-adapter.js';
@@ -40,6 +41,7 @@ const TOOLS = [
   { name: 'timmy_roboflow_run', description: 'Roboflow lane (SDK in project venv .timmy/venv-roboflow): upload images, run detection, or sample video frames as observer evidence (sample = ffmpeg frames -> upload). Key-gated: honest not_configured without ROBOFLOW_API_KEY. Every use receipted.', inputSchema: { type: 'object', properties: { action: { type: 'string', description: 'upload | detect | sample' }, project: { type: 'string' }, path: { type: 'string' }, video: { type: 'string' }, frames: { type: 'number' }, every: { type: 'number' }, version: { type: 'number' }, confidence: { type: 'number' }, workspace: { type: 'string' } }, required: ['action', 'project'] } },
   { name: 'timmy_list_lanes', description: 'Command Post: list harness lanes (OpenHands/OpenCode/Pi/jcode/minds/…) with availability + install hints.', inputSchema: { type: 'object', properties: {} } },
   { name: 'timmy_plan_dispatch', description: 'Command Post: validate a full DispatchPlan (CUE) and store it ready/needs_approval. Returns plan id + immutable plan hash. Chat prepares; authority launches.', inputSchema: { type: 'object', properties: { plan: { type: 'object' } }, required: ['plan'] } },
+  { name: 'timmy_mission_compile', description: 'Mission Map bridge: compile a tldraw mission doc (capsule/harness-slide/gate/artifact/result nodes + depends/harness/gate/artifact edges) into typed, CUE-validated DispatchPlans — dependency-ordered, sha256-pinned context manifests, gate-driven approval. The map never launches: feed the plans to timmy_plan_dispatch, then authority arms/launches.', inputSchema: { type: 'object', properties: { doc: { type: 'object', description: 'MissionMapDoc {nodes, edges}' }, repo_root: { type: 'string', description: 'repo root for artifact manifest hashing (default: server cwd)' } }, required: ['doc'] } },
   { name: 'timmy_dispatch_plan', description: 'Command Post: arm (operator token bound to the complete plan hash) and launch a stored plan into its harness lane. Real sandbox or nothing — refuses live-checkout workspaces, post-approval mutation, and unarmed plans. Every outcome receipted.', inputSchema: { type: 'object', properties: { id: { type: 'string' }, approval: { type: 'string', description: 'operator token from `timmy approve <planHash>`' } }, required: ['id'] } },
   { name: 'timmy_tail_lane', description: 'Command Post: tail the last 40 pane lines of a dispatched plan session.', inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
   { name: 'timmy_pause_or_cancel_lane', description: 'Command Post: hold (SIGTSTP) or cancel (kill session) a dispatched plan; cancellations seal receipts.', inputSchema: { type: 'object', properties: { id: { type: 'string' }, action: { type: 'string', description: 'hold | cancel' } }, required: ['id', 'action'] } },
@@ -610,6 +612,7 @@ const call = (name: string, args: any): unknown => {
     case 'timmy_oapi_run': return oapiRun((args ?? {}) as OapiReq);
     case 'timmy_list_lanes': return { ok: true, lanes: listLanes() };
     case 'timmy_plan_dispatch': return createPlan((args?.plan ?? {}) as DispatchPlan);
+    case 'timmy_mission_compile': return compileMissionMap((args?.doc ?? { nodes: [], edges: [] }) as MissionMapDoc, typeof args?.repo_root === 'string' ? { repoRoot: args.repo_root } : {});
     case 'timmy_dispatch_plan': {
       const id = String(args?.id ?? '');
       if (args?.approval) {
