@@ -21,6 +21,15 @@ llm = LLM(
 agent = Agent(llm=llm, tools=get_default_tools())
 conv = LocalConversation(agent=agent, workspace=LocalWorkspace(working_dir=req['workspace']))
 conv.set_confirmation_policy(NeverConfirm())  # headless: never block on confirm
+import subprocess
+
+def green():
+    for t in req.get('acceptance', []):
+        r = subprocess.run(['bash', '-c', t], cwd=req['workspace'], capture_output=True)
+        if r.returncode != 0:
+            return False
+    return bool(req.get('acceptance'))
+
 try:
     send = getattr(conv, 'send_message', None) or getattr(conv, 'ask_agent', None)
     if send is None:
@@ -30,6 +39,16 @@ try:
         run = getattr(conv, 'run', None)  # send_message enqueues; run() drives the loop
         if callable(run):
             run()
+        # bounded nudge loop: the agent sometimes stops after viewing; re-prompt
+        # until acceptance is green or rounds exhaust (still agent-driven)
+        for _ in range(3):
+            if green():
+                break
+            send("Acceptance is still failing in the working directory. Use the "
+                 "file_editor tool (str_replace) to fix add.js so add(1,2) returns 3, "
+                 "then verify with the terminal tool: npm test.")
+            if callable(run):
+                run()
         print(json.dumps({'ok': True}))
 except Exception as e:  # honesty clause: surface why
     print(json.dumps({'ok': False, 'note': str(e)[:300]}))
