@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-08-19
+
+### Added
+- OpenHands A2 SDK engine: Conversation API + LocalWorkspace, tools execute
+  in-process against a seeded disposable workspace; NeverConfirm headless
+  policy; bounded nudge loop; non-streaming ollama (streaming mangles
+  tool-call args). Demo C remains honestly RED (last-mile edit reliability
+  unresolved; receipts record every attempt).
+- `hyperframes` render lane; Demos A+B re-run through the Command Post
+  (plan → J-BANG approval → dispatch → collect, receipted).
+- `host-ephemeral` dispatch workspaces seed `context_manifest` files
+  (sha256-verified, path-escape-checked) — the ephemeral temp copy the
+  isolation law always promised; renders run from the seeded copy, never
+  the live checkout.
+- Receipt browser (:4310/browser), Mission Map (:4321), UI north-star
+  reference + color-consistency law, public-repo organization pass.
+
+### Changed
+- Local default OpenHands model `ollama/qwen3.8:27b-mlx`; engine part of the
+  plan hash (immutability).
+
+### Honesty
+- Demo C acceptance record: workspace seeding ✓, tool invocation ✓, patch
+  red→green ✗ (sealed red, `sha256_cf72f858` preserved as the original
+  failure record). No fabricated passes.
+
 ## [0.5.0] - 2026-08-16
 
 ### Added
