@@ -24,6 +24,7 @@ export interface OpenHandsOpts {
   max_iterations?: number;
   max_spend?: number;            // A3: required >0 when llm==='auto'
   llm?: 'local' | 'auto';        // default local (ollama), $0-first
+  local_model?: string;          // default ollama/qwen3.8:27b-mlx (capable local)
   approval?: string;             // operator token bound to this task's plan hash
   dir?: string;
 }
@@ -42,7 +43,7 @@ export interface OpenHandsResult {
 }
 
 export const openHandsPlanHash = (o: OpenHandsOpts): string =>
-  planHashOf({ tool: 'timmy_openhands_run', task: o.task, acceptance: o.acceptance, ref: o.ref ?? null, wall_ms: o.wall_ms ?? 300000, max_iterations: o.max_iterations ?? 4, llm: o.llm ?? 'local', no_activity_ms: o.no_activity_ms ?? 90000, max_spend: o.max_spend ?? 0 });
+  planHashOf({ tool: 'timmy_openhands_run', task: o.task, acceptance: o.acceptance, ref: o.ref ?? null, wall_ms: o.wall_ms ?? 300000, max_iterations: o.max_iterations ?? 4, llm: o.llm ?? 'local', local_model: o.local_model ?? 'ollama/qwen3.8:27b-mlx', no_activity_ms: o.no_activity_ms ?? 90000, max_spend: o.max_spend ?? 0 });
 
 const HOST_PATH_RE = /\/Users\/|\/home\/|C:\\/;
 
@@ -104,7 +105,7 @@ export async function runOpenHandsTask(o: OpenHandsOpts): Promise<OpenHandsResul
       OPENHANDS_WORK_DIR: work,
       OPENHANDS_SUPPRESS_BANNER: '1', TERM: 'dumb', NO_COLOR: '1', CI: '1',
       // agent-server boots with NO config.toml by default; feed the LLM via envs
-      LLM_MODEL: llmLocal ? 'ollama/nemotron-3.5-lightning' : 'openrouter/auto',
+      LLM_MODEL: llmLocal ? (o.local_model ?? 'ollama/qwen3.8:27b-mlx') : 'openrouter/auto',
       LLM_API_KEY: llmLocal ? 'ollama' : (process.env.LLM_API_KEY ?? process.env.OPENROUTER_API_KEY ?? ''),
       LLM_BASE_URL: llmLocal ? 'http://localhost:11434' : 'https://openrouter.ai/api/v1'
     }
