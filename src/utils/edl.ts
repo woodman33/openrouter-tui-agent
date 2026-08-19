@@ -12,7 +12,17 @@ import { homedir } from 'os';
 export interface EdlRect { x: number; y: number; w: number; h: number }
 export interface EdlOverlay { asset: string; at: number; duration?: number; rect?: EdlRect }
 export interface EdlClip { src: string; filters?: string[]; overlays?: EdlOverlay[] }
-export interface Edl { edl_version: 1; output: string; clips: EdlClip[]; concat?: boolean }
+/** Multi-track audio stem (v0.7.2): rides OTIO Audio tracks; addressed like clips. */
+export interface EdlAudioStem { src: string; kind: 'music' | 'vo' | 'sfx'; duck_db?: number }
+export interface Edl {
+  edl_version: 1;
+  output: string;
+  clips: EdlClip[];
+  concat?: boolean;
+  /** explicit timebase (fps) for the timeline; default 24 */
+  timebase?: number;
+  audio_stems?: EdlAudioStem[];
+}
 
 const ALLOWED_FILTER = /^(scale|crop|fps|loudnorm)=/;
 
@@ -38,6 +48,10 @@ export function validateEdl(edl: Edl): void {
       if (!ALLOWED_FILTER.test(f)) throw new Error(`filter not in edl v1 vocabulary: ${f}`);
     }
   }
+  if (edl.timebase !== undefined && !(Number.isFinite(edl.timebase) && edl.timebase > 0)) {
+    throw new Error(`bad timebase: ${edl.timebase}`);
+  }
+  for (const s of edl.audio_stems ?? []) parseFragment(s.src);
 }
 
 const sha = (p: string): string => crypto.createHash('sha256').update(readFileSync(p)).digest('hex');
