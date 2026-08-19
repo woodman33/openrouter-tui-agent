@@ -1,220 +1,112 @@
-# TIMMY AgentOps
+# TIMMY — the Agent Trust OS
 
-Open-source local receipt and replay layer for AI agent work.
+**Trust the receipt, not the model.**
 
-AI agents can edit files, run commands, call models, and change infrastructure. TIMMY creates local receipts so developers can see what happened, when it happened, and what artifacts were produced.
+AI agents edit files, run commands, call models, and change infrastructure.
+TIMMY is a local-first flight recorder + control plane for agent work: every
+run gets a signed, hash-chained receipt (what ran, where, how long, what it
+cost, which artifacts it produced) — and replays refuse to lie about drifted
+environments. Live on Product Hunt.
 
-## Installation & Setup
+```
+one command · every run receipted · replay from the receipt alone
+```
 
-You can run TIMMY TUI by either cloning the source repository directly, installing it globally, or running it via `npx`.
+## Quickstart
 
-### Option A: Clone and Run from Source (Recommended)
 ```bash
-git clone https://github.com/woodman33/timmy-ai-proxy.git
-cd timmy-ai-proxy
+git clone https://github.com/woodman33/timmy-tui.git
+cd timmy-tui
 npm install
-cp .env.example .env
-# (Optional) Add your OPENROUTER_API_KEY to the .env file
-npm start
+cp .env.example .env        # optional: add OPENROUTER_API_KEY for frontier models
+npm start                   # the TUI (local ollama models work with $0)
 ```
 
-### Option B: Install Globally
-```bash
-npm install -g timmy-tui
-```
+Or: `npm install -g timmy-tui` · `npx timmy-tui demo`
 
-### Option C: Run via `npx`
-```bash
-npx timmy-tui demo
-```
-
-### Runtime notes
-- `.env` is loaded automatically at startup (real environment variables still win). Set `OPENROUTER_API_KEY` there for OpenRouter.
-- **Provider fallback:** if OpenRouter is unreachable, TIMMY answers via local **Ollama** (`http://localhost:11434`) and shows `FALLBACK 🟡` instead of failing.
-- The WORK panel connects to a Hermes gateway when `TIMMY_HERMES_CMD=hermes gateway` (or `TIMMY_HERMES_URL=ws://…`) is set.
-- Inside the TUI: `Ctrl+L` opens the live log monitor, `?` (in nav) opens quick help, `Ctrl+K` the command palette.
-- Logs land in `logs/` (timmy-tui.log, agent-events.log, companion.log, …) and rotate at 200KB.
-
-## CLI Usage
-
-### A. Run Demo
-```bash
-timmy demo
-```
-Generates a verifiable local receipt file at `.timmy/receipts/demo-receipt.json`.
-
-### B. Record a Task Proof Stub
-```bash
-timmy proof "create a hello world Cloudflare Worker"
-```
-Generates a proof run folder under `.timmy/runs/run_<timestamp>/` containing `manifest.json`, `receipt.json`, and `replay.md`.
-
-### C. Use the SceneForge Cloud Control Plane
-
-TIMMY includes MCPorter as a runtime dependency and calls the authenticated
-SceneForge remote MCP without exposing its bearer key in receipts.
+First receipt:
 
 ```bash
-export SCENEFORGE_AGENT_KEY="$(
-  security find-generic-password -a "$USER" -s sceneforge-agent-key -w
-)"
-
-timmy sceneforge status --project stalker-anomaly
-timmy sceneforge ask "What blocks the beauty gate?" --project stalker-anomaly
-timmy sceneforge note "Session checkpoint" --project stalker-anomaly
-timmy sceneforge jobs --status proposed --project stalker-anomaly
-timmy sceneforge propose \
-  --title "Verify canonical HIP" \
-  --description "Read-only verification; do not mutate Houdini"
+timmy demo        # sealed receipt at .timmy/receipts/demo-receipt.json
+timmy proof "create a hello world worker"   # proof run folder + replay.md
 ```
 
-Each call writes `.timmy/runs/run_sceneforge_<timestamp>/receipt.json` plus
-redacted MCP evidence. The remote MCP can advise, remember, and propose work;
-it cannot invoke local Houdini or approve its own proposal.
+Inside the TUI: `Tab` switches tabs, `?` shows the key grammar, `Ctrl+L`
+opens the live log monitor, `Ctrl+K` the command palette. Local Ollama models
+(`http://localhost:11434`) answer with $0 when OpenRouter is unreachable
+(`FALLBACK 🟡`).
 
----
+## What works today (v0.5.x)
 
-## 🎬 1. Demo
+- **Receipts v2**: sha256 hash-chained, ed25519-signed run records with
+  prompt/response hashes, usage, cost, latency, error class; failed and
+  denied runs seal too; release epochs keep old streams queryable.
+- **Environment lock**: OS/arch/tool *build hashes* bound to every receipt;
+  replay refuses drifted machines.
+- **Replay**: EDL cut-lists replay clips from the manifest alone; portable
+  `.agentrun` bundles (EDL + manifest + sources + hashes + receipts) with
+  OTIO interchange (`timmy export otio|agentrun`).
+- **Command Post**: typed DispatchPlan (CUE-validated) with lifecycle; six
+  delegation tools; J-BANG dispatch rail; operator tokens bound to the
+  complete immutable plan hash (single-use, expiring); paid routes
+  default-deny without a spend bound.
+- **Harness lanes**: OpenHands (disposable-sandbox-or-nothing), OpenCode, Pi,
+  jcode, minds + 3D lanes (blender/godot/defold/cocos/unity/unreal-mcp/
+  houdini-mcp) + key-gated API lanes; tmux/zellij/rmux multiplexing.
+- **Judge loops**: local-first multi-model fan-out with confidence-gated
+  frontier escalation; child + parent receipts per loop.
+- **MCP server**: 24 tools for any MCP-speaking agent (`timmy mcp serve`),
+  composed `timmy-agent` server, client-exec bridge, OpenAPI invoker lane.
+- **Companions**: browser companion on :3001 (chat mirror) and the receipt
+  browser + dispatch survey on :4310 (`timmy logs`), Mission Map on :4321
+  (`timmy map`).
+- **CLI verbs**: demo · proof · clip · export · events (--otlp) · mcp serve ·
+  logs · approve · epoch · map · q (dasel across json/yaml/toml/xml/csv) ·
+  doctor · sceneforge (read-only Houdini advisory; key from macOS keychain).
 
-Launch the TUI and follow the guided demo flow described in [§6 below](#-6-demo-flow).
+## Use TIMMY from your agent
 
----
-
-## 🛠️ 2. What Works Today
-* **Local Verifiable Receipts**: Generates run manifestations using a tamper-evident, hash-bound `.agentrun` format.
-* **Deterministic Key-Sorted Hashing**: Manifests are hashed recursively by sorting JSON keys.
-* **Main Chat with OpenRouter Model Rail**: Real-time streaming conversation, hotkey swapping, and dynamic model fetching.
-* **MCP → CLI Evidence Bundle Generation**: Converts MCP tool calls into local inspectable bash scripts and environment setups.
-* **SceneForge + MCPorter Control Plane**: Calls authenticated project memory and inert job tools through MCPorter, sealing every response in a local TIMMY receipt.
-* **cmux Workspace Launch**: Seamless workspace isolation with multiplexer controls (`cmux` window layout).
-* **Browser Companion Chat Mirror**: Live state mirroring on local WebSocket web client (`localhost:3001`).
-* **Bounded Logs**: Strict console append logs verifying state changes without bloating directory index files.
-* **Setup/Help/Doctor Commands**: Pre-flight CLI checkups and environment verifiers.
-
----
-
-## 🚀 3. Quickstart
-
-To run the console locally:
-
-```bash
-# 1. Clone the repository and navigate into it
-git clone https://github.com/woodman33/timmy-ai-proxy.git
-cd timmy-ai-proxy
-
-# 2. Install dependencies
-npm install
-
-# 3. Setup your local configuration
-cp .env.example .env
-
-# 4. Add your OPENROUTER_API_KEY to the .env file
-# OPENROUTER_API_KEY=sk-or-v1-...
-
-# 5. Run system diagnostic check
-npm run timmy -- doctor
-
-# 6. Start the TUI
-npm start
+```jsonc
+// your MCP client config
+{ "mcpServers": { "timmy": {
+  "command": "<repo>/node_modules/.bin/tsx",
+  "args": ["<repo>/src/mcp/server.ts"]
+}}}
 ```
 
----
+Tools include receipt verify, env lock, judge loop, dispatch plan/arm/launch/
+tail/cancel/collect, lanes list, OpenHands/roboflow/3minapi/oapi lanes — every
+call receipted.
 
-## 🧬 4. First Proof
-
-Generate your first verifiable session validation proof manifest:
-
-```bash
-npm run timmy -- agent-proof "Validate workspace integrity"
-```
-
-This runs the core telemetry auditor and writes a local **sealed TIMMY receipt** in the active session database containing a **manifest hash** and session timestamp.
-
----
-
-## 📂 5. First MCP → CLI Scan
-
-Inspect and scan an external MCP server to compile an evidence bundle:
-1. Navigate to the **MCP → CLI** panel (Tab to "MCP → CLI" in the left nav).
-2. Paste an MCP server URL into the scanner prompt.
-3. Press **Scan MCP Server** to generate a local evidence bundle under `mcp-cli/<slug>/`.
-4. Review the generated CLI plan, Visa scope, and receipt fields before giving the agent file system permissions.
-
----
-
-## 🏆 6. Demo Flow
-
-Follow this end-to-end path to exercise TIMMYTUI's full trust loop:
-
-```
-Main Chat ──► MCP → CLI Scan ──► Workspace / cmux
-                                        │
-Sealed Receipt ◄── Browser Companion ◄──┘
-```
-
----
-
-## 🧾 7. Why Receipts Matter for AI Agents
-
-AI agents are capable of mutating files, executing terminal commands, and calling API endpoints. Without a structured log of actions, debugging becomes difficult and security boundaries become opaque. 
-
-TIMMY solves this by acting as a **flight recorder** for agent execution. Every step, tool-use outcome, and generated artifact is registered into a local, key-sorted manifest receipt sealed with a deterministic SHA-256 hash. If any file or log is tampered with, the receipt validation seal breaks.
-
----
-
-## 📄 8. Example Receipt Output
-
-Here is a typical `receipt.json` generated by TIMMY:
+## Example receipt (v2, abridged)
 
 ```json
 {
-  "schema_version": "0.1.0",
-  "run_id": "run_proof_1717750800000",
-  "type": "proof",
-  "task": "create a hello world Cloudflare Worker",
-  "created_at": "2026-06-07T09:49:22.000Z",
-  "cwd": "/path/to/timmy-ai-proxy",
-  "platform": "darwin",
-  "node_version": "v20.10.0",
-  "package": {
-    "name": "timmy-tui",
-    "version": "0.4.0"
-  },
-  "status": "completed",
-  "artifacts": [
-    {
-      "path": ".timmy/runs/run_proof_1717750800000/replay.md",
-      "sha256": "5c9b83b63297a7a2bc4175bded918cd928c388a212b47bbbc28acb82f039a4c"
-    }
-  ],
-  "receipt_sha256": "4adaec82308cc7e5bded918cd928c388a212b47bbbc28acb82f039a4cae4fb8a"
+  "v": 1, "stream": "runs", "epoch": 2,
+  "subject": "llm google/gemini-3.7-flash",
+  "status": "ok",
+  "prompt_hash": "…", "response_hash": "…",
+  "model_requested": "google/gemini-3.7-flash", "model_resolved": "google/gemini-3.7-flash",
+  "via": "openrouter", "ms": 1742, "tokens": 214, "cost_usd": 0.0004,
+  "prev_hash": "sha256_…", "hash": "sha256_…",
+  "signer": "ed25519:…", "signature": "…"
 }
 ```
 
----
+## Docs
 
-## 🗺️ 9. Roadmap
+- [ROADMAP.md](ROADMAP.md) — public now/next
+- [docs/README.md](docs/README.md) — full doc index
+- [docs/RECEIPT-SPEC-v2.md](docs/RECEIPT-SPEC-v2.md) — receipt schema
+- [docs/UI-REFERENCE-NOTES.md](docs/UI-REFERENCE-NOTES.md) — the UI north-star
+- [SECURITY.md](SECURITY.md) · [CONTRIBUTING.md](CONTRIBUTING.md)
 
-Refer to [ROADMAP.md](ROADMAP.md) for full development milestones.
+## Trust notes
 
----
-
-## 🤝 10. Contributing
-
-We welcome early open-source contributors! Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for local environment setup, style policies, and PR review gates.
-
----
-
-## 🛡️ 11. Security Note
-
-- Do **not** pass secret credentials inside raw task strings, as prompts are stored in plaintext.
-- Dangerous command mutations are not run in the local proof stubs of version `v0.1`.
-- Refer to [SECURITY.md](SECURITY.md) for reporting guidelines.
-
----
-
-## 🔒 12. OpenSSF / Trust Notes
-
-- **Provenanced Releases**: Published directly from GitHub Actions with npm trusted publishing provenance.
-- **Zero Telemetry**: TIMMY does **not** call home or track developer behavior. All receipts remain strictly local-first.
-- **Local Authorities**: No secret collection or analytics tracking is coded into any execution loop.
+- **Local-first, zero telemetry**: no call-home, no analytics; receipts never
+  leave your machine unless you share them.
+- **Honesty clause**: anything unavailable reports `not_configured | blocked`
+  and seals a receipt saying so. No fabricated passes.
+- **No secrets in receipts**: prompts are stored plaintext — never put
+  credentials in task strings; keys live in env/keychain and are redacted on
+  the way out.

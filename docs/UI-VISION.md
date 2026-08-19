@@ -70,3 +70,20 @@ Rules:
 
 The test that keeps it honest: `grep -rn "#[0-9a-f]\{6\}" src/tui/panels` should only
 ever show imports from theme.ts.
+
+## Color-consistency law (owner directive, 2026-08-19)
+
+"The color matching from logs and ui and commands — make sure that stays
+throughout development." One semantic palette across EVERY surface:
+
+- violet/brand `#a98bff` — identity, active nav, plan hashes
+- cyan `#4aa8ff` — live/streaming, info, READY
+- green `#3fb950` — ok/sealed/verified, RUNNING health, cost-ok
+- amber `#f5b540` — queued/approval-pending/warning
+- red `#f87171` — failed/denied/rec
+- greys `#e6edf3 / #8b949e / #5a6470` — text tiers
+
+The same token means the same state in: TUI panels, LogRain/event bus,
+companion pages (:3001/:4310/:4321), CLI output, receipts' status/error_class,
+and the MMGEN reference sample. A new surface or a new state MUST reuse an
+existing token; introducing a color for decoration is a spec violation.
