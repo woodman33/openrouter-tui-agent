@@ -5,7 +5,7 @@
 // SSE tail of .timmy/runs/timmy-events.jsonl; no dependencies, no secrets.
 import { createServer, ServerResponse } from 'http';
 import { existsSync, readFileSync, statSync, openSync, readSync, closeSync, readdirSync } from 'fs';
-import { armPlan, dispatchPlan, pauseOrCancelLane, collectRun } from './dispatch.js';
+import { armPlan, dispatchPlan, pauseOrCancelLane, collectRun, createPlan, type DispatchPlan } from './dispatch.js';
 import { compileMissionMap, type MissionMapDoc } from './slate-compiler.js';
 import { join, resolve } from 'path';
 import { spawn } from 'child_process';
@@ -210,14 +210,41 @@ async function compile() {
     r = await res.json();
   } catch (e) { out.innerHTML = '<div class="err">compile failed: ' + String(e) + '</div>'; return; }
   for (const e of r.errors ?? []) out.innerHTML += '<div class="err">✕ ' + e + '</div>';
-  for (const p of r.plans ?? []) {
+  PLANS = r.plans ?? [];
+  PLANS.forEach((p, i) => {
     out.innerHTML += '<div class="plan"><div class="obj">' + p.plan.objective + '</div>'
       + '<div class="meta">node ' + p.node_id + ' · harness ' + p.plan.harnesses[0] + ' · workspace ' + p.plan.workspace.kind
       + ' · depends_on [' + (p.plan.cadence.depends_on || []).join(', ') + '] · approval ' + p.plan.approval.mode
       + ' · manifest ' + (p.plan.context_manifest || []).map(m => m.path + '@' + m.sha256.slice(0, 8) + '…').join(' ') + '</div>'
-      + '<div class="meta hash">CUE-valid — feed to timmy_plan_dispatch to store + hash</div></div>';
-  }
-  if (!(r.plans ?? []).length && !(r.errors ?? []).length) out.innerHTML = '<div class="err">no capsules in doc</div>';
+      + '<div class="meta" style="margin-top:6px"><button onclick="storePlan(' + i + ')">send to controller</button> <span id="gw-' + i + '"></span></div></div>';
+  });
+  if (!PLANS.length && !(r.errors ?? []).length) out.innerHTML = '<div class="err">no capsules in doc</div>';
+}
+
+// Arming gateway: the companion only EMITS hash-bound requests; the
+// controller validates the operator token and alone executes (J-BANG).
+let PLANS = [];
+async function storePlan(i) {
+  const el = document.getElementById('gw-' + i);
+  const res = await fetch('/mission/store', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ plan: PLANS[i].plan }) });
+  const r = await res.json();
+  if (!r.ok) { el.innerHTML = '<span class="err">✕ ' + (r.note ?? 'rejected') + '</span>'; return; }
+  el.dataset.id = r.id;
+  el.innerHTML = 'stored ' + r.id + ' · hash <span class="hash">' + r.plan_hash + '</span> '
+    + '<input id="tok-' + i + '" placeholder="operator token (timmy approve …)" size="26"> '
+    + '<button onclick="armLaunch(' + i + ')">arm + launch</button> <span id="al-' + i + '"></span>';
+}
+async function armLaunch(i) {
+  const el = document.getElementById('gw-' + i);
+  const out = document.getElementById('al-' + i);
+  const id = el.dataset.id;
+  const token = (document.getElementById('tok-' + i) || {}).value ?? '';
+  const a = await fetch('/dispatch/action', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, action: 'arm', token }) });
+  const ar = await a.json();
+  if (!ar.ok) { out.innerHTML = '<span class="err">arm denied: ' + (ar.note ?? '?') + '</span>'; return; }
+  const l = await fetch('/dispatch/action', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, action: 'launch' }) });
+  const lr = await l.json();
+  out.innerHTML = lr.ok ? '<span class="hash">J-BANG! launched ' + (lr.session ?? id) + '</span>' : '<span class="err">launch refused: ' + (lr.note ?? '?') + '</span>';
 }
 
 // cubic-bézier sampler — MIRROR of src/utils/theatre-runtime.ts bezierSample
@@ -510,6 +537,24 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
       req.on('end', () => {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(compileMissionMap((body?.doc ?? { nodes: [], edges: [] }) as MissionMapDoc, typeof body?.repo_root === 'string' ? { repoRoot: body.repo_root } : {})));
+      });
+      return;
+    }
+    // Arming gateway entry: store a compiled plan in the controller and
+    // return its id + immutable hash. Arm/launch still require the operator
+    // token via /dispatch/action — the companion never executes.
+    if (url.pathname === '/mission/store' && req.method === 'POST') {
+      const ip = req.socket.remoteAddress ?? '';
+      if (!isLocalIp(ip)) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ ok: false, note: 'localhost only' }));
+        return;
+      }
+      let body: any = {};
+      req.on('data', d => { try { body = JSON.parse(d.toString()); } catch { /* ignore */ } });
+      req.on('end', () => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(createPlan((body?.plan ?? {}) as DispatchPlan)));
       });
       return;
     }
