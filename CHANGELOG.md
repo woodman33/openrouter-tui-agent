@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Phase C — true sandbox isolation for the OpenHands runner: `engine: docker`
+  (default) executes the agent loop AND its tools inside an ephemeral
+  `timmy-oh-runner` container (`--cap-drop=ALL`, `no-new-privileges`, pids/
+  memory/cpu caps, single `/work` mount); daemon-down or image-build failure
+  fails closed as `not_configured`/`blocked`, never host fallback.
+- In-container patch lifecycle: the bridge generates the worktree patch,
+  applies it to a pristine clone, and asserts acceptance there — the receipt
+  only seals green when the patch ALONE turns red→green
+  (`patch_not_portable` otherwise). Host-path canary inside the container
+  trips `isolation_violation` on any leaked host mount.
+- Demo C GREEN (owner-approved frontier escalation, `llm=auto` under a
+  $0.50 hard cap, single-use approval bound to the plan hash): workdir and
+  pristine acceptance both exit 0, canary clean; parent receipt
+  `sha256_69073a15`. The containerized local-model attempts that stayed red
+  remain sealed honestly in the chain (`sha256_a1b85fea` correct patch but
+  npm missing in image; `sha256_05a077a7`, `sha256_8c2f8f19` view-only).
+- `scripts/phaseC-demo.ts` + `scripts/oh-runner.Dockerfile` (pinned
+  openhands-sdk/tools/workspace 1.21/1.21/1.11, uv resolver, Chromium for
+  toolset parity, npm for acceptance).
+
+### Changed
+- `timmy_openhands_run` plan hash now binds `engine` default `docker`
+  (immutability law: host engines are an explicit, approved deviation).
+- Note: `.agentrun` portable bundles remain clip-spine artifacts (EDL/media/
+  OTIO); Demo C's proof rides the parent/child signed receipt chain instead.
+
+## [0.7.0] - 2026-08-19
+
 ### Changed
 - UI remap against the MMGEN v2.4.1 reference: strict Tokyo Night palette
   tokens centralized in `src/tui/theme.ts` (zero raw hex outside that file,
