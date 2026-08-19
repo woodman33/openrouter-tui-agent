@@ -420,19 +420,19 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
       {/* A. Header */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Text bold color="#a98bff">📂 Governed Workspace Operator</Text>
-        <Text color="#8b949e">Browse one safe local Workspace Root. Secrets and build folders are hidden.</Text>
+      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text bold color={theme.brand}>📂 Governed Workspace Operator</Text>
+        <Text color={theme.textSecondary}>Browse one safe local Workspace Root. Secrets and build folders are hidden.</Text>
       </Box>
 
       {/* B. Main Area */}
       {!initialized ? (
-        <Box borderStyle="double" borderColor="#ff7b72" paddingX={2} paddingY={1} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
-          <Text bold color="#ff7b72">⚠️ TIMMY Workspace Uninitialized</Text>
-          <Text color="#c9d1d9">Required governed directories are missing under the workspace root:</Text>
-          <Text color="#79c0ff" bold>{workspaceRoot}</Text>
-          <Box borderStyle="single" borderColor="#d2a8ff" paddingX={1} marginTop={1} alignSelf="center">
-            <Text bold color="#d2a8ff">[ Press ENTER to Initialize TIMMY Workspace Folders ]</Text>
+        <Box borderStyle="double" borderColor={theme.error} paddingX={2} paddingY={1} marginBottom={1} flexDirection="column" width={mainStageWidth - 2}>
+          <Text bold color={theme.error}>⚠️ TIMMY Workspace Uninitialized</Text>
+          <Text color={theme.textSecondary}>Required governed directories are missing under the workspace root:</Text>
+          <Text color={theme.info} bold>{workspaceRoot}</Text>
+          <Box borderStyle="single" borderColor={theme.brand} paddingX={1} marginTop={1} alignSelf="center">
+            <Text bold color={theme.brand}>[ Press ENTER to Initialize TIMMY Workspace Folders ]</Text>
           </Box>
         </Box>
       ) : (
@@ -446,12 +446,12 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
                   const exists = existsSync(fullDir);
                   return (
                     <Box key={cat.id} justifyContent="space-between" width={mainStageWidth - 8}>
-                      <Text color={isSelected ? '#d2a8ff' : '#ffffff'} bold={isSelected}>
+                      <Text color={isSelected ? theme.brand : theme.textPrimary} bold={isSelected}>
                         {isSelected ? '▶ ' : '  '}
-                        {cat.name.padEnd(14)} │ <Text color="#8b949e">{cat.description.padEnd(28)}</Text>
+                        {cat.name.padEnd(14)} │ <Text color={theme.textSecondary}>{cat.description.padEnd(28)}</Text>
                       </Text>
-                      <Text bold color={exists ? '#3fb950' : '#8b949e'}>
-                        {exists ? 'ready' : 'missing'} │ <Text color={isSelected ? '#d2a8ff' : '#8b949e'}>Open</Text>
+                      <Text bold color={exists ? theme.success : theme.textSecondary}>
+                        {exists ? 'ready' : 'missing'} │ <Text color={isSelected ? theme.brand : theme.textSecondary}>Open</Text>
                       </Text>
                     </Box>
                   );
@@ -465,32 +465,32 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
               <Box flexDirection="column" paddingX={1} marginY={1}>
                 {/* Compact table headers: Name | Type | Status */}
                 <Box justifyContent="space-between" width={mainStageWidth - 8} marginBottom={1}>
-                  <Text bold color="#a98bff">Name</Text>
-                  <Text bold color="#4f9cff">Type</Text>
-                  <Text bold color="#3fb950">Status</Text>
+                  <Text bold color={theme.brand}>Name</Text>
+                  <Text bold color={theme.info}>Type</Text>
+                  <Text bold color={theme.success}>Status</Text>
                 </Box>
 
                 {files.map((file, idx) => {
                   const isSelected = idx === selectedFileIdx;
                   return (
                     <Box key={file.path} justifyContent="space-between" width={mainStageWidth - 8}>
-                      <Text color={isSelected ? '#d2a8ff' : '#e6edf3'} bold={isSelected}>
+                      <Text color={isSelected ? theme.brand : theme.textPrimary} bold={isSelected}>
                         {isSelected ? '▶ ' : '  '}
                         {getEllipsizedName(file.name)}
                       </Text>
-                      <Text color="#8b949e">{file.type}</Text>
-                      <Text color="#3fb950">ready</Text>
+                      <Text color={theme.textSecondary}>{file.type}</Text>
+                      <Text color={theme.success}>ready</Text>
                     </Box>
                   );
                 })}
 
                 {/* Back row */}
                 <Box justifyContent="space-between" width={mainStageWidth - 8} marginTop={1}>
-                  <Text color={selectedFileIdx === files.length ? '#d2a8ff' : '#8b949e'} bold={selectedFileIdx === files.length}>
+                  <Text color={selectedFileIdx === files.length ? theme.brand : theme.textSecondary} bold={selectedFileIdx === files.length}>
                     {selectedFileIdx === files.length ? '▶ ' : '  '}
                     .. [Back]
                   </Text>
-                  <Text color="#8b949e">
+                  <Text color={theme.textSecondary}>
                     Go Back
                   </Text>
                 </Box>
@@ -505,24 +505,24 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
                   const meta = getMcpCliMetadata(selectedFile?.path);
                   return (
                     <Box flexDirection="column" paddingX={2} paddingY={1}>
-                      <Text color="#e6edf3" bold>Governed MCP ➔ CLI Evidence Details:</Text>
-                      <Text color="#8b949e"> • Capability Name : <Text color="#ffffff" bold>{selectedFile?.name}</Text></Text>
-                      <Text color="#8b949e"> • Source URL      : <Text color="#79c0ff" bold wrap="truncate">{meta.sourceUrl}</Text></Text>
-                      <Text color="#8b949e"> • Pipeline Status : <Text color="#3fb950" bold>{meta.status.toUpperCase()}</Text></Text>
-                      <Text color="#8b949e"> • Bundle Folder   : <Text color="#8b949e">{selectedFile?.path}</Text></Text>
+                      <Text color={theme.textPrimary} bold>Governed MCP ➔ CLI Evidence Details:</Text>
+                      <Text color={theme.textSecondary}> • Capability Name : <Text color={theme.textPrimary} bold>{selectedFile?.name}</Text></Text>
+                      <Text color={theme.textSecondary}> • Source URL      : <Text color={theme.info} bold wrap="truncate">{meta.sourceUrl}</Text></Text>
+                      <Text color={theme.textSecondary}> • Pipeline Status : <Text color={theme.success} bold>{meta.status.toUpperCase()}</Text></Text>
+                      <Text color={theme.textSecondary}> • Bundle Folder   : <Text color={theme.textSecondary}>{selectedFile?.path}</Text></Text>
                       
                       <Box flexDirection="column" marginTop={1}>
-                        <Text color="#e6edf3" bold>Files Inside:</Text>
-                        <Text color="#8b949e">  ◈ README.md           ◈ cli-plan.md</Text>
-                        <Text color="#8b949e">  ◈ generated-files.md   ◈ agentpass-visa.md</Text>
-                        <Text color="#8b949e">  ◈ receipt-fields.md    ◈ commands.txt</Text>
+                        <Text color={theme.textPrimary} bold>Files Inside:</Text>
+                        <Text color={theme.textSecondary}>  ◈ README.md           ◈ cli-plan.md</Text>
+                        <Text color={theme.textSecondary}>  ◈ generated-files.md   ◈ agentpass-visa.md</Text>
+                        <Text color={theme.textSecondary}>  ◈ receipt-fields.md    ◈ commands.txt</Text>
                       </Box>
 
-                      <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor="#30363d" paddingX={2} paddingY={0}>
+                      <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor={theme.borderDefault} paddingX={2} paddingY={0}>
                         {['Open README', 'Open Folder', 'Copy Path', 'Back'].map((act, idx) => {
                           const isSelected = idx === selectedActionIdx;
                           return (
-                            <Text key={act} color={isSelected ? '#d2a8ff' : '#8b949e'} bold={isSelected}>
+                            <Text key={act} color={isSelected ? theme.brand : theme.textSecondary} bold={isSelected}>
                               {isSelected ? '▶ ' : '  '}
                               [{act}]
                             </Text>
@@ -534,24 +534,24 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
                 })()
               ) : (
                 <Box flexDirection="column" paddingX={2} paddingY={1}>
-                  <Text color="#e6edf3" bold>Governed Workspace Metadata:</Text>
-                  <Text color="#8b949e"> • Workspace Root   : <Text color="#ffffff">{workspaceRoot}</Text></Text>
-                  <Text color="#8b949e"> • Relative Path    : <Text color="#79c0ff">{relative(workspaceRoot, selectedFile?.path || '')}</Text></Text>
-                  <Text color="#8b949e"> • Absolute Path    : <Text color="#8b949e">{selectedFile?.path}</Text></Text>
-                  <Text color="#8b949e"> • Document Type    : <Text color="#bc8cff">{selectedFile?.type}</Text></Text>
-                  <Text color="#8b949e"> • Read Status     : <Text color="#3fb950">VERIFIED SAFE 🟢</Text></Text>
-                  <Text color="#8b949e"> • Mutation Status : <Text color="#ff7b72">REQUIRES VISA ⚠️</Text></Text>
-                  <Text color="#8b949e"> • Scope Enforced  : <Text color="#bc8cff">fs.read.workspace</Text></Text>
+                  <Text color={theme.textPrimary} bold>Governed Workspace Metadata:</Text>
+                  <Text color={theme.textSecondary}> • Workspace Root   : <Text color={theme.textPrimary}>{workspaceRoot}</Text></Text>
+                  <Text color={theme.textSecondary}> • Relative Path    : <Text color={theme.info}>{relative(workspaceRoot, selectedFile?.path || '')}</Text></Text>
+                  <Text color={theme.textSecondary}> • Absolute Path    : <Text color={theme.textSecondary}>{selectedFile?.path}</Text></Text>
+                  <Text color={theme.textSecondary}> • Document Type    : <Text color={theme.brand}>{selectedFile?.type}</Text></Text>
+                  <Text color={theme.textSecondary}> • Read Status     : <Text color={theme.success}>VERIFIED SAFE 🟢</Text></Text>
+                  <Text color={theme.textSecondary}> • Mutation Status : <Text color={theme.error}>REQUIRES VISA ⚠️</Text></Text>
+                  <Text color={theme.textSecondary}> • Scope Enforced  : <Text color={theme.brand}>fs.read.workspace</Text></Text>
 
-                  <Box borderStyle="single" borderColor="#d29922" paddingX={1} marginY={1}>
-                    <Text color="#d29922">💡 Open Folder reveals the selected path in Finder. TIMMY keeps the root, receipts, and proof.</Text>
+                  <Box borderStyle="single" borderColor={theme.warning} paddingX={1} marginY={1}>
+                    <Text color={theme.warning}>💡 Open Folder reveals the selected path in Finder. TIMMY keeps the root, receipts, and proof.</Text>
                   </Box>
                   
-                  <Box flexDirection="column" marginTop={0} borderStyle="single" borderColor="#30363d" paddingX={2} paddingY={0}>
+                  <Box flexDirection="column" marginTop={0} borderStyle="single" borderColor={theme.borderDefault} paddingX={2} paddingY={0}>
                     {['Open File', 'Copy Path', 'Open Folder', 'Inspect Metadata', 'Back'].map((act, idx) => {
                       const isSelected = idx === selectedActionIdx;
                       return (
-                        <Text key={act} color={isSelected ? '#d2a8ff' : '#8b949e'} bold={isSelected}>
+                        <Text key={act} color={isSelected ? theme.brand : theme.textSecondary} bold={isSelected}>
                           {isSelected ? '▶ ' : '  '}
                           [{act}]
                         </Text>
@@ -566,16 +566,16 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
       )}
 
       {/* C. Output Logs Block */}
-      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={0} width={mainStageWidth - 2} flexShrink={0}>
-        <Text color="#e6edf3" bold wrap="truncate">{outputLog}</Text>
+      <Box borderStyle="round" borderColor={theme.borderDefault} paddingX={2} marginBottom={0} width={mainStageWidth - 2} flexShrink={0}>
+        <Text color={theme.textPrimary} bold wrap="truncate">{outputLog}</Text>
       </Box>
 
       {/* D. Bottom Input prompt - Universal Files Bar */}
-      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} marginTop={0} width={mainStageWidth - 2} flexShrink={0}>
-        <Text color="#8b949e">[ files ] </Text>
-        <Text color="#79c0ff">▶ </Text>
-        <Text color="#ffffff">{inputCmd}</Text>
-        <Text color="#8b949e">█</Text>
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? theme.brand : theme.borderDefault} paddingX={1} marginTop={0} width={mainStageWidth - 2} flexShrink={0}>
+        <Text color={theme.textSecondary}>[ files ] </Text>
+        <Text color={theme.info}>▶ </Text>
+        <Text color={theme.textPrimary}>{inputCmd}</Text>
+        <Text color={theme.textSecondary}>█</Text>
       </Box>
     </Box>
   );

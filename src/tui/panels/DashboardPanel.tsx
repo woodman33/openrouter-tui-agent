@@ -204,13 +204,13 @@ export function DashboardPanel({ agent: _agent, setInspector }: DashboardPanelPr
       {/* Stage Title */}
       <Box height={1} justifyContent="space-between" width={panelWidth - 2}>
         <Box>
-          <Text bold color="#d29922">📟  Systems Web Capability Map</Text>
+          <Text bold color={theme.warning}>📟  Systems Web Capability Map</Text>
         </Box>
       </Box>
 
       {/* Systems Status Ticker */}
-      <Box width={panelWidth - 2} marginTop={1} borderStyle="single" borderColor="#30363d" paddingX={1}>
-        <Text color="#8b949e">
+      <Box width={panelWidth - 2} marginTop={1} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+        <Text color={theme.textSecondary}>
           "Quartermaster here: Navigate Systems Web capabilities below. Detailed specs, safety scopes, and risk tiers are piped straight to your Trust Inspector on the right in real-time."
         </Text>
       </Box>
@@ -218,7 +218,7 @@ export function DashboardPanel({ agent: _agent, setInspector }: DashboardPanelPr
       {/* Main Split Layout */}
       <Box flexDirection="column" width={panelWidth - 2} height={bodyHeight} marginTop={1}>
         <GlowBorder 
-          color="#d29922" 
+          color={theme.warning} 
           width={panelWidth - 2} 
           height={bodyHeight} 
           label="⚡ INSTALLED SYSTEM CAPABILITIES" 
@@ -226,10 +226,10 @@ export function DashboardPanel({ agent: _agent, setInspector }: DashboardPanelPr
           <Box flexDirection="column" paddingX={1} height={contentHeight} overflowY="hidden">
             {capabilities.map((item, idx) => {
               const isSelected = selectedIndex === idx;
-              const statusColor = item.status === 'ACTIVE' ? '#3fb950' : item.status === 'AVAILABLE' ? '#79c0ff' : '#8b949e';
+              const statusColor = item.status === 'ACTIVE' ? theme.success : item.status === 'AVAILABLE' ? theme.info : theme.textSecondary;
               return (
                 <Box key={item.key} marginBottom={1} justifyContent="space-between" width={panelWidth - 6}>
-                  <Text color={isSelected ? "#d29922" : "#e6edf3"} bold={isSelected}>
+                  <Text color={isSelected ? theme.warning : theme.textPrimary} bold={isSelected}>
                     {isSelected ? '▶ ' : '  '}
                     {truncateVisible(item.name, panelWidth - 24)}
                   </Text>
@@ -245,9 +245,9 @@ export function DashboardPanel({ agent: _agent, setInspector }: DashboardPanelPr
       </Box>
 
       {/* Quick Specs overview inside Stage */}
-      <Box marginTop={1} borderStyle="single" borderColor="#30363d" paddingX={1} width={panelWidth - 2} flexDirection="column">
-        <Text color="#e6edf3" bold>🔌 Highlighted Specs Preview:</Text>
-        <Text color="#8b949e" wrap="truncate">
+      <Box marginTop={1} borderStyle="single" borderColor={theme.borderDefault} paddingX={1} width={panelWidth - 2} flexDirection="column">
+        <Text color={theme.textPrimary} bold>🔌 Highlighted Specs Preview:</Text>
+        <Text color={theme.textSecondary} wrap="truncate">
           Description: {selectedItem.description}
         </Text>
       </Box>

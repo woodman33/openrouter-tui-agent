@@ -1,16 +1,20 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { spawnSync } from 'child_process';
 import { LANE_RUNNERS } from '../../agent/lanes.js';
 import {
   createPlan, armPlan, dispatchPlan, tailLane, pauseOrCancelLane, collectRun,
   type DispatchPlan, type StoredPlan
 } from '../../utils/dispatch.js';
-import { readFileSync, readdirSync, existsSync } from 'fs';
+import { theme } from '../theme.js';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 
 // Command Post v0.1 — compact Dispatch rail (J-BANG: Job Bundle, Authorization,
 // Navigation and Guarantees). Extends ChatPanel; never replaces it. The exact
-// plan hash is shown before launch; launch requires an operator token.
+// plan hash is shown before launch (8-char truncation, [x] expand, [y] copy);
+// launch requires an operator token. Every line truncates to the rail width so
+// the reverse LogRain beside it never clips.
 export function DispatchRail({ width }: { width: number }) {
   const harnessIds = Object.keys(LANE_RUNNERS);
   const [hIdx, setHIdx] = useState(0);
@@ -21,6 +25,7 @@ export function DispatchRail({ width }: { width: number }) {
   const [typing, setTyping] = useState(false);
   const [planId, setPlanId] = useState<string | null>(null);
   const [planHash, setPlanHash] = useState<string | null>(null);
+  const [expandHash, setExpandHash] = useState(false);
   const [armed, setArmed] = useState(false);
   const [token, setToken] = useState('');
   const [msg, setMsg] = useState('rail: [o] objective · [h] harness · [+-] copies/budget/wall · [p] plan · [g] arm+launch (J-BANG) · [t] tail · [c] cancel');
@@ -43,8 +48,15 @@ export function DispatchRail({ width }: { width: number }) {
       case 'h': setHIdx(i => (i + 1) % harnessIds.length); break;
       case '+': setCopies(c => Math.min(8, c + 1)); break;
       case '-': setCopies(c => Math.max(1, c - 1)); break;
-      case 'w': setWallS(w => w === 300 ? 900 : 300); break;
-      case '$': setBudget(b => b === 0 ? 0.5 : 0); break;
+      case 'w': setWallS(w => (w === 300 ? 900 : 300)); break;
+      case '$': setBudget(b => (b === 0 ? 0.5 : 0)); break;
+      case 'x': setExpandHash(e => !e); break;
+      case 'y': {
+        if (!planHash) { setMsg('no plan hash yet — [p] first'); break; }
+        const c = spawnSync('pbcopy', { input: planHash });
+        setMsg(c.status === 0 ? `hash copied (${planHash.slice(0, 8)}…)` : 'clipboard unavailable on this platform');
+        break;
+      }
       case 'p': {
         const plan: DispatchPlan = {
           schema_version: 'dispatch/0.1',
@@ -95,16 +107,20 @@ export function DispatchRail({ width }: { width: number }) {
   });
 
   const harness = harnessIds[hIdx];
+  const sandbox = stored?.plan.workspace.kind ?? 'host-ephemeral';
+  const thermFilled = budget <= 0 ? 0 : Math.min(5, Math.max(1, Math.round(budget * 2)));
+  const therm = '▮'.repeat(thermFilled) + '░'.repeat(5 - thermFilled);
   return (
-    <Box flexDirection="column" width={width} borderStyle="single" borderColor="#5d4a8a" paddingX={1} flexShrink={0}>
-      <Text bold color="#a78bfa">DISPATCH · J-BANG</Text>
-      <Text color="#8892a0">harness  <Text color="#e8ecf0">{harness}</Text> ({LANE_RUNNERS[harness].label})</Text>
-      <Text color="#8892a0">copies   <Text color="#e8ecf0">{copies}</Text> · wall <Text color="#e8ecf0">{wallS}s</Text> · budget <Text color="#ffaa33">${budget}</Text></Text>
-      <Text color="#8892a0">objective <Text color="#e8ecf0">{objective.slice(0, width - 12) || '—'}</Text></Text>
-      <Text color="#8892a0">plan     <Text color="#e8ecf0">{planId ?? '—'}</Text> · {stored?.lifecycle ?? 'draft'}</Text>
-      <Text color="#8892a0">hash     <Text color="#4ade80">{planHash ? planHash.slice(0, 16) + '…' : '— shown before launch'}</Text></Text>
-      <Text color="#8892a0">armed    <Text color={armed ? '#4ade80' : '#f5b545'}>{armed ? 'yes' : 'no'}</Text></Text>
-      <Text color="#5a6470">{msg}</Text>
+    <Box flexDirection="column" width={width} borderStyle="single" borderColor={theme.brandDim} paddingX={1} flexShrink={0}>
+      <Text bold color={theme.brand} wrap="truncate">DISPATCH · J-BANG</Text>
+      <Text color={theme.textSecondary} wrap="truncate">harness  <Text color={theme.textPrimary}>{harness}</Text> ({LANE_RUNNERS[harness].label})</Text>
+      <Text color={theme.textSecondary} wrap="truncate">copies   <Text color={theme.textPrimary}>{copies}</Text> · wall <Text color={theme.textPrimary}>{wallS}s</Text> · <Text color={theme.accent}>{therm} ${budget}</Text></Text>
+      <Text color={theme.textSecondary} wrap="truncate">sandbox  <Text color={theme.focus}>⛨ {sandbox}</Text> · never the live checkout</Text>
+      <Text color={theme.textSecondary} wrap="truncate">objective <Text color={theme.textPrimary}>{objective.slice(0, Math.max(8, width - 14)) || '—'}</Text></Text>
+      <Text color={theme.textSecondary} wrap="truncate">plan     <Text color={theme.textPrimary}>{planId ?? '—'}</Text> · {stored?.lifecycle ?? 'draft'}</Text>
+      <Text color={theme.textSecondary} wrap="truncate">hash     <Text color={theme.success}>{planHash ? (expandHash ? planHash : planHash.slice(0, 8) + '…') : '— shown before launch'}</Text>{planHash ? <Text color={theme.textTertiary}> [y]copy [x]{expandHash ? 'fold' : 'expand'}</Text> : null}</Text>
+      <Text color={theme.textSecondary} wrap="truncate">armed    <Text color={armed ? theme.success : theme.warning}>{armed ? 'yes' : 'no'}</Text></Text>
+      <Text color={theme.textTertiary} wrap="truncate">{msg}</Text>
     </Box>
   );
 }

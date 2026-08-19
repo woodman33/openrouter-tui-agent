@@ -2,6 +2,7 @@ import { chromium, type Browser, type Page } from 'playwright';
 import { EventEmitter } from 'eventemitter3';
 import type { FrameBuffer } from './pipeline.js';
 import { logger } from '../utils/logger.js';
+import { theme } from '../tui/theme.js';
 
 export class RiveFrameExtractor extends EventEmitter {
   private browser: Browser | null = null;
@@ -84,7 +85,7 @@ function buildRiveHtml(riveFilePath: string, width: number, height: number): str
 <html>
 <head>
 <style>
-  body { margin: 0; background: #0d1117; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  body { margin: 0; background: ${theme.surfaceBase}; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
   canvas { display: block; width: 100%; height: 100%; }
 </style>
 </head>
@@ -99,13 +100,13 @@ function buildRiveHtml(riveFilePath: string, width: number, height: number): str
 
   // State display fallback
   function drawPlaceholder(text) {
-    ctx.fillStyle = '#0d1117';
+    ctx.fillStyle = '${theme.surfaceBase}';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#5e6ad2';
+    ctx.fillStyle = '${theme.info}';
     ctx.font = 'bold 20px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Rive TUI Mascot', canvas.width / 2, canvas.height / 2 - 10);
-    ctx.fillStyle = '#8b949e';
+    ctx.fillStyle = '${theme.textSecondary}';
     ctx.font = '14px monospace';
     ctx.fillText('State: ' + text, canvas.width / 2, canvas.height / 2 + 20);
   }

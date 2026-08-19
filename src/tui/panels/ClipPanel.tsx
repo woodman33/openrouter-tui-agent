@@ -6,6 +6,7 @@ import { runClipJob } from '../../utils/cliprunner.js';
 import { listProjects } from '../../utils/projects.js';
 import { BRAND } from '../../utils/brand.js';
 import { osc52Copy } from '../../utils/notify.js';
+import { theme } from '../theme.js';
 
 interface ClipPanelProps {
   agent: any;
@@ -86,7 +87,7 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
       icon="✂️"
       title={`${BRAND.clip} — VIDEO EDITING OVER OPEN-EDIT`}
       status={`${jobs.length} job${jobs.length === 1 ? '' : 's'} · ${st.dir ? 'open-edit ready' : 'open-edit missing'}`}
-      statusColor="#79c0ff"
+      statusColor={theme.info}
       explain={BRAND.clipTagline}
       hints={[
         { key: '↑↓', label: 'job' },
@@ -97,17 +98,17 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
       ]}
     >
       <Box flexDirection="row" flexGrow={1}>
-        <Box flexDirection="column" width="42%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
+        <Box flexDirection="column" width="42%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
           {jobs.length === 0 && (
             <Box flexDirection="column">
-              <Text color="#8b949e">no clip jobs yet.</Text>
-              <Text color="#8b949e">[n] here, or SLATE [c] on a project (links its gens).</Text>
+              <Text color={theme.textSecondary}>no clip jobs yet.</Text>
+              <Text color={theme.textSecondary}>[n] here, or SLATE [c] on a project (links its gens).</Text>
             </Box>
           )}
           {jobs.map((j, i) => {
             const isSel = i === Math.min(idx, jobs.length - 1);
             return (
-              <Text key={j.id} color={isSel ? '#79c0ff' : '#a5b0bc'} bold={isSel} wrap="truncate">
+              <Text key={j.id} color={isSel ? theme.info : theme.textSecondary} bold={isSel} wrap="truncate">
                 {isSel ? '▶ ' : '  '}{j.id} · {j.project} · {j.sources.length} src · {j.status}
               </Text>
             );
@@ -116,34 +117,34 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
         <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
           {sel ? (
             <>
-              <Text bold color="#79c0ff" wrap="truncate">{sel.id} · {sel.project}</Text>
-              <Text color="#8b949e" wrap="wrap">instruction: {sel.instruction}</Text>
+              <Text bold color={theme.info} wrap="truncate">{sel.id} · {sel.project}</Text>
+              <Text color={theme.textSecondary} wrap="wrap">instruction: {sel.instruction}</Text>
               <Box marginTop={1} flexDirection="column">
                 {sel.sources.map(s => (
-                  <Text key={s.genId + s.artifact} color="#a5b0bc" wrap="truncate">
+                  <Text key={s.genId + s.artifact} color={theme.textSecondary} wrap="truncate">
                     • {s.label} → {s.artifact}{s.receiptHash ? ` · receipt ${s.receiptHash.slice(7, 19)}` : ''}
                   </Text>
                 ))}
-                {sel.sources.length === 0 && <Text color="#8b949e">• no linked sources — SLATE [c] links gens with receipt hashes</Text>}
+                {sel.sources.length === 0 && <Text color={theme.textSecondary}>• no linked sources — SLATE [c] links gens with receipt hashes</Text>}
               </Box>
-              <Text color="#3fb950" wrap="truncate">out: {sel.output}</Text>
+              <Text color={theme.success} wrap="truncate">out: {sel.output}</Text>
               <Box marginTop={1} flexDirection="column">
-                <Text color="#8b949e">deterministic layer ([y] yanks these):</Text>
+                <Text color={theme.textSecondary}>deterministic layer ([y] yanks these):</Text>
                 {ffmpegCheat(sel.sources[0]?.artifact ?? sel.output).slice(1).map(l => (
-                  <Text key={l} color="#a5b0bc" wrap="truncate">  {l}</Text>
+                  <Text key={l} color={theme.textSecondary} wrap="truncate">  {l}</Text>
                 ))}
               </Box>
-              {!st.dir && <Text color="#f5b540" wrap="truncate">agent layer: {st.note ?? CLIP_INSTALL}</Text>}
-              {note && <Text color="#3fb950" wrap="truncate">{note}</Text>}
+              {!st.dir && <Text color={theme.warning} wrap="truncate">agent layer: {st.note ?? CLIP_INSTALL}</Text>}
+              {note && <Text color={theme.success} wrap="truncate">{note}</Text>}
             </>
           ) : (
-            <Text color="#8b949e">select a job, or [n] to queue one.</Text>
+            <Text color={theme.textSecondary}>select a job, or [n] to queue one.</Text>
           )}
           {composing && (
-            <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1} flexDirection="column">
-              <Text color="#79c0ff">NEW CLIP JOB — ↑↓ project · instruction:</Text>
+            <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1} flexDirection="column">
+              <Text color={theme.info}>NEW CLIP JOB — ↑↓ project · instruction:</Text>
               <Text>{projects[projIdx] ?? '(no projects)'} ▸ {draft}█</Text>
-              <Text color="#8b949e">Enter queues · Esc cancels</Text>
+              <Text color={theme.textSecondary}>Enter queues · Esc cancels</Text>
             </Box>
           )}
         </Box>

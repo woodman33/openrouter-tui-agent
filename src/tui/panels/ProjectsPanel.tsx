@@ -9,6 +9,7 @@ import {
   exportTraining, previewFile, type TreeFile
 } from '../../utils/projecttree.js';
 import { seedStarter } from '../../utils/starter.js';
+import { theme } from '../theme.js';
 
 interface ProjectsPanelProps {
   agent: Agent;
@@ -94,7 +95,7 @@ export function ProjectsPanel({ agent, zone = 0, setZone, inputLocked }: Project
       icon="🗂️"
       title="PROJECTS — PER-PROJECT TREE"
       status={`${projects.length} projects · ${files.length} files`}
-      statusColor="#d2a8ff"
+      statusColor={theme.brand}
       explain="Context-optimized: PROJECT.md index first, descend only when relevant. Prompts ↔ outcomes ↔ logs ↔ receipts cross-link by gen-id."
       hints={[
         { key: '←→', label: 'pane' },
@@ -106,31 +107,31 @@ export function ProjectsPanel({ agent, zone = 0, setZone, inputLocked }: Project
         { key: 'e', label: 'training export' }
       ]}
     >
-      {note && <Text color="#3fb950">{note}</Text>}
+      {note && <Text color={theme.success}>{note}</Text>}
       {preview ? (
-        <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
-          <Text bold color="#79c0ff">preview · {file?.rel} · Esc back</Text>
+        <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={theme.info} paddingX={1}>
+          <Text bold color={theme.info}>preview · {file?.rel} · Esc back</Text>
           {preview.split('\n').slice(0, 30).map((l, i) => (
-            <Text key={i} color="#a5b0bc">{l}</Text>
+            <Text key={i} color={theme.textSecondary}>{l}</Text>
           ))}
         </Box>
       ) : (
         <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" width="26%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
+          <Box flexDirection="column" width="26%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
             {projects.map((p, i) => (
-              <Text key={p} color={i === Math.min(idx, projects.length - 1) ? '#d2a8ff' : '#a5b0bc'} bold={i === Math.min(idx, projects.length - 1)} wrap="truncate">
+              <Text key={p} color={i === Math.min(idx, projects.length - 1) ? theme.brand : theme.textSecondary} bold={i === Math.min(idx, projects.length - 1)} wrap="truncate">
                 {i === Math.min(idx, projects.length - 1) ? '▶ ' : '  '}📁 {p}
               </Text>
             ))}
           </Box>
           <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
-            <Text bold color="#d2a8ff" wrap="truncate">studio/{sel || '?'}/ — PROJECT.md first</Text>
+            <Text bold color={theme.brand} wrap="truncate">studio/{sel || '?'}/ — PROJECT.md first</Text>
             {files.slice(0, 26).map((f, i) => (
-              <Text key={f.rel} color={i === Math.min(fidx, files.length - 1) ? '#e6edf3' : '#8b949e'} bold={i === Math.min(fidx, files.length - 1)} wrap="truncate">
+              <Text key={f.rel} color={i === Math.min(fidx, files.length - 1) ? theme.textPrimary : theme.textSecondary} bold={i === Math.min(fidx, files.length - 1)} wrap="truncate">
                 {i === Math.min(fidx, files.length - 1) ? '▶ ' : '  '}{f.rel.padEnd(44)} {(f.size / 1024).toFixed(1)}kb
               </Text>
             ))}
-            {files.length > 26 && <Text color="#8b949e">… {files.length - 26} more — [p] previews any of them</Text>}
+            {files.length > 26 && <Text color={theme.textSecondary}>… {files.length - 26} more — [p] previews any of them</Text>}
           </Box>
         </Box>
       )}

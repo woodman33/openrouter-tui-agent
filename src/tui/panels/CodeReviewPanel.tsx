@@ -245,32 +245,32 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
     const btn = buttons[idx];
     const marker = isSelected ? '▶ ' : '  ';
     
-    let labelColor = '#ffffff';
+    let labelColor = theme.textPrimary;
     if (isSelected) {
-      labelColor = '#3fb950';
+      labelColor = theme.success;
     } else {
-      if (btn.key === 'carbonyl') labelColor = '#a98bff';
-      else if (btn.key === 'browser') labelColor = '#58a6ff';
-      else if (btn.key === 'files') labelColor = '#d2a8ff';
-      else if (btn.key === 'logs') labelColor = '#3fb950';
-      else if (btn.key === 'tmux') labelColor = '#d29922';
+      if (btn.key === 'carbonyl') labelColor = theme.brand;
+      else if (btn.key === 'browser') labelColor = theme.info;
+      else if (btn.key === 'files') labelColor = theme.brand;
+      else if (btn.key === 'logs') labelColor = theme.success;
+      else if (btn.key === 'tmux') labelColor = theme.warning;
     }
 
     let statusText = 'READY';
-    let statusColor = '#3fb950';
+    let statusColor = theme.success;
     if (btn.key === 'carbonyl') {
       statusText = carbonylInstalled ? 'READY' : 'MISSING';
-      statusColor = carbonylInstalled ? '#3fb950' : '#ff7b72';
+      statusColor = carbonylInstalled ? theme.success : theme.error;
     } else if (btn.key === 'browser') {
       statusText = browserRunning ? 'RUNNING' : 'NOT RUNNING';
-      statusColor = browserRunning ? '#3fb950' : '#d29922';
+      statusColor = browserRunning ? theme.success : theme.warning;
     } else if (btn.key === 'tmux') {
       statusText = tmuxInstalled ? 'READY' : 'MISSING';
-      statusColor = tmuxInstalled ? '#3fb950' : '#ff7b72';
+      statusColor = tmuxInstalled ? theme.success : theme.error;
     }
 
     const prefixStr = isSelected ? '┃ ' : '│ ';
-    const prefixColor = isSelected ? '#3fb950' : '#484f58';
+    const prefixColor = isSelected ? theme.success : theme.textTertiary;
     
     const rowWidth = mainStageWidth - 6;
     const col1Width = 3;
@@ -296,7 +296,7 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
         </Box>
         {showDesc && (
           <Box width={col4Width} flexGrow={1} flexShrink={1}>
-            <Text color={isSelected ? '#ffffff' : '#8b949e'}>{truncatedDesc}</Text>
+            <Text color={isSelected ? theme.textPrimary : theme.textSecondary}>{truncatedDesc}</Text>
           </Box>
         )}
       </Box>
@@ -323,72 +323,72 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
     <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
       
       {/* 1. Header Explainer */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Text bold color="#a98bff">TIMMY Workspace</Text>
-        <Text color="#8b949e">Choose where work happens. carbonyl renders a real browser in a pane. Browser Companion mirrors TIMMY. tmux is fallback persistence.</Text>
+      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
+        <Text bold color={theme.brand}>TIMMY Workspace</Text>
+        <Text color={theme.textSecondary}>Choose where work happens. carbonyl renders a real browser in a pane. Browser Companion mirrors TIMMY. tmux is fallback persistence.</Text>
       </Box>
 
       {/* 2. Main Command List */}
-      <Box borderStyle="round" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2}>
+      <Box borderStyle="round" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2}>
         {buttons.map((_, idx) => renderRow(idx))}
       </Box>
 
       {/* 3. Detail Panel */}
-      <Box borderStyle="round" borderColor={focusArea === 'stage' ? "#3fb950" : "#30363d"} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2}>
-        <Text bold color="#a98bff">Selected:</Text>
-        <Text bold color="#ffffff">{activeBtn.label}</Text>
+      <Box borderStyle="round" borderColor={focusArea === 'stage' ? theme.success : theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2}>
+        <Text bold color={theme.brand}>Selected:</Text>
+        <Text bold color={theme.textPrimary}>{activeBtn.label}</Text>
         
         <Box marginTop={1} flexDirection="column">
-          <Text bold color="#8b949e">What it does:</Text>
-          <Text color="#e6edf3">{detailedExplain}</Text>
+          <Text bold color={theme.textSecondary}>What it does:</Text>
+          <Text color={theme.textPrimary}>{detailedExplain}</Text>
         </Box>
 
         {activeBtn.key === 'carbonyl' && (
           <Box marginTop={1} flexDirection="column">
-            <Text bold color="#8b949e">Target URL:</Text>
-            <Text color="#79c0ff">{companionUrl}</Text>
+            <Text bold color={theme.textSecondary}>Target URL:</Text>
+            <Text color={theme.info}>{companionUrl}</Text>
           </Box>
         )}
 
         {activeBtn.key === 'tmux' && (
           <Box marginTop={1} flexDirection="column">
-            <Text bold color="#8b949e">Attach command:</Text>
-            <Text color="#79c0ff" bold>tmux attach -t timmy-run</Text>
+            <Text bold color={theme.textSecondary}>Attach command:</Text>
+            <Text color={theme.info} bold>tmux attach -t timmy-run</Text>
             {isTmuxExpanded && tmuxInstalled && (
-              <Box flexDirection="column" borderStyle="single" borderColor="#d29922" paddingX={2} marginY={1}>
-                <Text color="#e6edf3"> • Session Name  : <Text color="#ffffff" bold>timmy-run</Text></Text>
-                <Text color="#e6edf3"> • Status        : {tmuxSessionExists ? <Text color="#3fb950" bold>READY</Text> : <Text color="#8b949e">STANDBY</Text>}</Text>
-                <Text color="#e6edf3"> • Last Output   : <Text color="#8b949e" italic>"{truncateVisible(tmuxLastOutput, Math.max(10, mainStageWidth - 30))}"</Text></Text>
+              <Box flexDirection="column" borderStyle="single" borderColor={theme.warning} paddingX={2} marginY={1}>
+                <Text color={theme.textPrimary}> • Session Name  : <Text color={theme.textPrimary} bold>timmy-run</Text></Text>
+                <Text color={theme.textPrimary}> • Status        : {tmuxSessionExists ? <Text color={theme.success} bold>READY</Text> : <Text color={theme.textSecondary}>STANDBY</Text>}</Text>
+                <Text color={theme.textPrimary}> • Last Output   : <Text color={theme.textSecondary} italic>"{truncateVisible(tmuxLastOutput, Math.max(10, mainStageWidth - 30))}"</Text></Text>
               </Box>
             )}
           </Box>
         )}
 
         <Box marginTop={1} flexDirection="row" justifyContent="flex-start">
-          <Text bold color="#3fb950">{detailedAction} </Text>
+          <Text bold color={theme.success}>{detailedAction} </Text>
           {activeBtn.key === 'tmux' && tmuxSessionExists && (
-            <Text color="#8b949e"> | Press [C] to Copy Attach Command | Press [K] to Kill Session</Text>
+            <Text color={theme.textSecondary}> | Press [C] to Copy Attach Command | Press [K] to Kill Session</Text>
           )}
         </Box>
       </Box>
 
       {/* 4. Gated OpenHands Status Pill */}
       <Box paddingX={2} marginBottom={isSmallScreen ? 0 : 1} width={mainStageWidth - 2} flexShrink={0}>
-        <Text color="#8b949e">OpenHands Runner: not configured</Text>
+        <Text color={theme.textSecondary}>OpenHands Runner: not configured</Text>
       </Box>
 
       {/* 5. Diagnostics Log verifier */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} width={mainStageWidth - 2} flexShrink={0} marginBottom={isSmallScreen ? 0 : 1}>
-        <Text color="#c9d1d9">{outputLog}</Text>
-        <Text color="#8b949e">Press arrows / Tab to navigate. Enter selects surface.</Text>
+      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} width={mainStageWidth - 2} flexShrink={0} marginBottom={isSmallScreen ? 0 : 1}>
+        <Text color={theme.textSecondary}>{outputLog}</Text>
+        <Text color={theme.textSecondary}>Press arrows / Tab to navigate. Enter selects surface.</Text>
       </Box>
 
       {/* 6. Universal bottom input prompt */}
-      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} width={mainStageWidth - 2} flexShrink={0}>
-        <Text color="#8b949e">[ workspace ] </Text>
-        <Text color="#79c0ff">▶ </Text>
-        <Text color="#ffffff">{inputCmd}</Text>
-        <Text color="#a5b0bc">█</Text>
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? theme.brand : theme.borderDefault} paddingX={1} width={mainStageWidth - 2} flexShrink={0}>
+        <Text color={theme.textSecondary}>[ workspace ] </Text>
+        <Text color={theme.info}>▶ </Text>
+        <Text color={theme.textPrimary}>{inputCmd}</Text>
+        <Text color={theme.textSecondary}>█</Text>
       </Box>
     </Box>
   );

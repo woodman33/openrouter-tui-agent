@@ -2,6 +2,7 @@ import { DurableObject, WorkflowEntrypoint } from "cloudflare:workers";
 import type { Message } from "../types/index.js";
 import { computeReceiptHash, Receipt } from "../receipt/schema.js";
 import { VERSION } from "../version.js";
+import { theme } from '../tui/theme.js';
 
 
 // Cloudflare Env Bindings conforming exactly to user receipt parameters
@@ -1060,7 +1061,7 @@ export class MyDurableObject extends DurableObject {
               <!-- Builder -->
               <div style="background: var(--panel); border: 2px solid ${tier === 'builder' ? 'var(--accent)' : 'var(--border)'}; padding: 2rem; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; height: 380px;">
                 <div>
-                  <h3 style="margin-top:0; color: #a78bfa;">Builder</h3>
+                  <h3 style="margin-top:0; color: ${theme.brand};">Builder</h3>
                   <div style="font-size: 2rem; font-weight: 800; margin: 1rem 0;">$19<span style="font-size: 1rem; color: var(--text-muted);">/mo</span></div>
                   <p style="color: var(--text-muted); font-size: 0.9rem;">Perfect for developers managing local sandbox context packs.</p>
                   <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
@@ -1285,7 +1286,7 @@ export class MyDurableObject extends DurableObject {
               .logo {
                 font-size: 1.5rem;
                 font-weight: 800;
-                background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+                background: linear-gradient(135deg, ${theme.brand}, #8b5cf6);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 text-decoration: none;
@@ -1317,7 +1318,7 @@ export class MyDurableObject extends DurableObject {
                 margin-top: 0;
                 margin-bottom: 1.5rem;
                 line-height: 1.1;
-                background: linear-gradient(to right, #ffffff, #a1a1aa);
+                background: linear-gradient(to right, ${theme.textPrimary}, #a1a1aa);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
               }
@@ -1514,16 +1515,16 @@ export class MyDurableObject extends DurableObject {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
         <style>
           :root {
-            --bg-dark: #0d1117;
+            --bg-dark: ${theme.surfaceBase};
             --bg-card: #161b22;
-            --border-color: #30363d;
-            --text-primary: #c9d1d9;
-            --text-muted: #8b949e;
+            --border-color: ${theme.borderDefault};
+            --text-primary: ${theme.textSecondary};
+            --text-muted: ${theme.textSecondary};
             --purple: #8250df;
-            --blue: #58a6ff;
-            --green: #3fb950;
-            --orange: #d29922;
-            --red: #f85149;
+            --blue: ${theme.info};
+            --green: ${theme.success};
+            --orange: ${theme.warning};
+            --red: ${theme.error};
           }
 
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1553,7 +1554,7 @@ export class MyDurableObject extends DurableObject {
           .title-area h1 {
             font-size: 24px;
             font-weight: 700;
-            color: #ffffff;
+            color: ${theme.textPrimary};
             letter-spacing: -0.5px;
           }
           .title-area p {
@@ -1596,7 +1597,7 @@ export class MyDurableObject extends DurableObject {
           .metric-value {
             font-size: 28px;
             font-weight: 700;
-            color: #ffffff;
+            color: ${theme.textPrimary};
           }
 
           .summary-card {
@@ -1668,7 +1669,7 @@ export class MyDurableObject extends DurableObject {
             padding: 2px 4px;
             border-radius: 4px;
             font-family: 'JetBrains Mono', monospace;
-            color: #ff7b72;
+            color: ${theme.error};
           }
 
           .context-dump {

@@ -16,6 +16,7 @@ import { clockTime } from '../../utils/humanlog.js';
 import { appendGenEvent } from '../../utils/generations.js';
 import { seedStarter } from '../../utils/starter.js';
 import { osc52Copy } from '../../utils/notify.js';
+import { theme } from '../theme.js';
 
 interface GensPanelProps {
   agent: Agent;
@@ -162,7 +163,7 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
       icon="🎬"
       title="GENS — GENERATION CONTROL ROOM"
       status={generationsOverview()}
-      statusColor="#d2a8ff"
+      statusColor={theme.brand}
       explain="Queue prompts at any provider; watch statuses flip live; every run ledgered, costed, sealed."
       hints={[
         { key: '↑↓', label: 'select' },
@@ -172,18 +173,18 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
       ]}
     >
       <Box flexDirection="row" flexGrow={1}>
-        <Box flexDirection="column" width="46%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
+        <Box flexDirection="column" width="46%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
           {gens.length === 0 && (
             <Box flexDirection="column">
-              <Text color="#8b949e">no generations yet.</Text>
-              <Text color="#8b949e">[n] writes a prompt — ↑↓ picks a provider, ] cycles its options.</Text>
+              <Text color={theme.textSecondary}>no generations yet.</Text>
+              <Text color={theme.textSecondary}>[n] writes a prompt — ↑↓ picks a provider, ] cycles its options.</Text>
             </Box>
           )}
           {gens.map((g, i) => {
             const glyph = statusGlyph(g.status === 'done' ? 'sealed' : g.status === 'failed' ? 'failed' : g.status === 'running' ? 'running' : 'queued');
             const isSel = i === Math.min(idx, gens.length - 1);
             return (
-              <Text key={g.id} color={isSel ? '#d2a8ff' : glyph.color} bold={isSel} wrap="truncate">
+              <Text key={g.id} color={isSel ? theme.brand : glyph.color} bold={isSel} wrap="truncate">
                 {isSel ? '▶ ' : '  '}{glyph.glyph} {clockTime(g.created_at).slice(0, 5)} {g.provider.padEnd(16)}{g.cost_usd !== undefined ? ` $${g.cost_usd.toFixed(3)}` : ''} {g.prompt.slice(0, 22)}
               </Text>
             );
@@ -192,31 +193,31 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
         <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
           {sel ? (
             <>
-              <Text bold color="#d2a8ff" wrap="truncate">{sel.provider}{sel.model ? ` · ${sel.model}` : ''} · {sel.status}</Text>
-              <Text color="#8b949e">{sel.created_at.replace('T', ' ').slice(0, 19)} · {sel.transport}{sel.cost_usd !== undefined ? ` · $${sel.cost_usd.toFixed(4)}` : ''}</Text>
+              <Text bold color={theme.brand} wrap="truncate">{sel.provider}{sel.model ? ` · ${sel.model}` : ''} · {sel.status}</Text>
+              <Text color={theme.textSecondary}>{sel.created_at.replace('T', ' ').slice(0, 19)} · {sel.transport}{sel.cost_usd !== undefined ? ` · $${sel.cost_usd.toFixed(4)}` : ''}</Text>
               <Box marginTop={1} flexDirection="column">
                 <Text wrap="wrap">{sel.prompt}</Text>
               </Box>
-              {sel.artifact && <Text color="#3fb950">→ {sel.artifact}</Text>}
-              {sel.framesDir && <Text color="#a5b0bc">frames: {sel.framesDir} ({sel.frameCount || 0})</Text>}
+              {sel.artifact && <Text color={theme.success}>→ {sel.artifact}</Text>}
+              {sel.framesDir && <Text color={theme.textSecondary}>frames: {sel.framesDir} ({sel.frameCount || 0})</Text>}
               {sel.log && existsSync(sel.log) && (
                 <Box flexDirection="column" marginTop={1}>
                   {readFileSync(sel.log, 'utf8').split('\n').filter(Boolean).slice(-4).map((l, i) => (
-                    <Text key={i} color="#8b949e" wrap="truncate">{l}</Text>
+                    <Text key={i} color={theme.textSecondary} wrap="truncate">{l}</Text>
                   ))}
                 </Box>
               )}
               {sel?.status === 'failed' && (
-                <Box flexDirection="column" borderStyle="single" borderColor="#ff6b6b" paddingX={1} marginTop={1}>
-                  <Text bold color="#ff6b6b">failed — turn it into a decision:</Text>
-                  <Text color="#a5b0bc">[1] reroute same prompt to a local provider (no credits needed)</Text>
-                  <Text color="#a5b0bc">[2] log a top-up note to .timmy/notes.md</Text>
+                <Box flexDirection="column" borderStyle="single" borderColor={theme.error} paddingX={1} marginTop={1}>
+                  <Text bold color={theme.error}>failed — turn it into a decision:</Text>
+                  <Text color={theme.textSecondary}>[1] reroute same prompt to a local provider (no credits needed)</Text>
+                  <Text color={theme.textSecondary}>[2] log a top-up note to .timmy/notes.md</Text>
                 </Box>
               )}
-              {note && <Text color="#3fb950" wrap="truncate">{note}</Text>}
+              {note && <Text color={theme.success} wrap="truncate">{note}</Text>}
             </>
           ) : (
-            <Text color="#8b949e">select a generation, or [p] to queue one.</Text>
+            <Text color={theme.textSecondary}>select a generation, or [p] to queue one.</Text>
           )}
           {composing && (() => {
             const winStart = Math.max(0, Math.min(provIdx - 4, Math.max(0, providers.length - 9)));
@@ -224,20 +225,20 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
             const opts = optionsFor(prov.id);
             const opt = opts.length ? opts[optIdx % opts.length] : undefined;
             return (
-              <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
-                <Text bold color="#79c0ff">PROVIDER — ↑↓ like the chat model rail · ] option</Text>
+              <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1}>
+                <Text bold color={theme.info}>PROVIDER — ↑↓ like the chat model rail · ] option</Text>
                 {win.map((p, i) => {
                   const isSel = winStart + i === provIdx;
                   const pOpts = optionsFor(p.id);
                   const pOpt = isSel && pOpts.length ? pOpts[optIdx % pOpts.length] : undefined;
                   return (
-                    <Text key={p.id} color={isSel ? '#d2a8ff' : '#a5b0bc'} bold={isSel} wrap="truncate">
+                    <Text key={p.id} color={isSel ? theme.brand : theme.textSecondary} bold={isSel} wrap="truncate">
                       {isSel ? '▶ ' : '  '}{p.kind === 'video' ? '🎞️' : '🖼️'} {p.id.padEnd(20)} {p.modelId || ''}{pOpt ? ` · opt: ${pOpt.label}` : ''}
                     </Text>
                   );
                 })}
                 <Text>prompt: {draft}█</Text>
-                <Text color="#a5b0bc">{opt ? `option ${opt.label} rides the prompt · ` : ''}Enter queues (real credits if launched) · Esc cancels</Text>
+                <Text color={theme.textSecondary}>{opt ? `option ${opt.label} rides the prompt · ` : ''}Enter queues (real credits if launched) · Esc cancels</Text>
               </Box>
             );
           })()}

@@ -11,15 +11,16 @@ import { spawn } from 'child_process';
 import { pathToFileURL } from 'url';
 import { readEvents, eventsPath, TimmyEvent } from './eventbus.js';
 import { readChain, verifyChain, verifySignature, hashOf } from './receipts.js';
+import { theme } from '../tui/theme.js';
 
 export const LOGS_PORT = (): number => Number(process.env.TIMMY_LOGS_PORT ?? 4310);
 
 const kindColor = (kind: string): string => {
-  if (kind.includes('sealed') || kind.includes('completed')) return '#4ade80';
-  if (kind.includes('failed') || kind.includes('broken')) return '#f87171';
-  if (kind.includes('approval') || kind.includes('gated')) return '#fbbf24';
-  if (kind.includes('fusion') || kind.includes('run')) return '#a78bfa';
-  return '#9ca3af';
+  if (kind.includes('sealed') || kind.includes('completed')) return theme.success;
+  if (kind.includes('failed') || kind.includes('broken')) return theme.error;
+  if (kind.includes('approval') || kind.includes('gated')) return theme.warning;
+  if (kind.includes('fusion') || kind.includes('run')) return theme.brand;
+  return theme.textSecondary;
 };
 
 const PAGE = `<!doctype html><html><head><meta charset="utf-8">
@@ -27,29 +28,29 @@ const PAGE = `<!doctype html><html><head><meta charset="utf-8">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; }
-  body { background: #0a0a0b; color: #e5e7eb; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
-  header { display: flex; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid #1f2937; position: sticky; top: 0; background: #0a0a0b; }
-  header .logo { color: #a78bfa; font-weight: 700; letter-spacing: .08em; }
-  header .dot { width: 8px; height: 8px; border-radius: 50%; background: #f87171; }
-  header .dot.on { background: #4ade80; box-shadow: 0 0 8px #4ade8088; }
-  header .meta { color: #6b7280; }
+  body { background: ${theme.surfaceBase}; color: ${theme.textPrimary}; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  header { display: flex; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid ${theme.surfaceRaised}; position: sticky; top: 0; background: ${theme.surfaceBase}; }
+  header .logo { color: ${theme.brand}; font-weight: 700; letter-spacing: .08em; }
+  header .dot { width: 8px; height: 8px; border-radius: 50%; background: ${theme.error}; }
+  header .dot.on { background: ${theme.success}; box-shadow: 0 0 8px ${theme.success}88; }
+  header .meta { color: ${theme.textTertiary}; }
   header .right { margin-left: auto; display: flex; gap: 8px; }
-  button { background: #111827; color: #a78bfa; border: 1px solid #374151; border-radius: 4px; font: inherit; padding: 3px 10px; cursor: pointer; }
-  button:hover { border-color: #a78bfa; }
+  button { background: ${theme.surfaceRaised}; color: ${theme.brand}; border: 1px solid ${theme.borderDefault}; border-radius: 4px; font: inherit; padding: 3px 10px; cursor: pointer; }
+  button:hover { border-color: ${theme.brand}; }
   main { display: grid; grid-template-columns: 1.4fr 1fr; gap: 0; height: calc(100vh - 42px); }
   section { overflow-y: auto; padding: 12px 16px; }
-  section + section { border-left: 1px solid #1f2937; }
-  h2 { color: #4ade80; font-size: 11px; letter-spacing: .18em; margin-bottom: 10px; }
+  section + section { border-left: 1px solid ${theme.surfaceRaised}; }
+  h2 { color: ${theme.success}; font-size: 11px; letter-spacing: .18em; margin-bottom: 10px; }
   .ev { display: flex; gap: 10px; padding: 2px 0; white-space: pre-wrap; word-break: break-word; }
-  .ev .ts { color: #4b5563; flex: 0 0 86px; }
+  .ev .ts { color: ${theme.textTertiary}; flex: 0 0 86px; }
   .ev .kind { flex: 0 0 150px; font-weight: 600; }
-  .ev .pl { color: #9ca3af; }
-  .rc { border: 1px solid #1f2937; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; background: #0d0f12; }
-  .rc .sub { color: #e5e7eb; }
-  .rc .hash { color: #4ade80; }
-  .rc .prev { color: #4b5563; }
-  .rc .meta { color: #6b7280; font-size: 11px; }
-  #verify-out { color: #fbbf24; padding: 6px 16px; border-top: 1px solid #1f2937; }
+  .ev .pl { color: ${theme.textSecondary}; }
+  .rc { border: 1px solid ${theme.surfaceRaised}; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; background: ${theme.surfaceBase}; }
+  .rc .sub { color: ${theme.textPrimary}; }
+  .rc .hash { color: ${theme.success}; }
+  .rc .prev { color: ${theme.textTertiary}; }
+  .rc .meta { color: ${theme.textTertiary}; font-size: 11px; }
+  #verify-out { color: ${theme.warning}; padding: 6px 16px; border-top: 1px solid ${theme.surfaceRaised}; }
 </style></head><body>
 <header>
   <span class="logo">TIMMY</span><span class="meta">:: LIVE LOGS</span>
@@ -65,10 +66,10 @@ const PAGE = `<!doctype html><html><head><meta charset="utf-8">
 <script>
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const eventsEl = document.getElementById('events');
-const colors = KIND => KIND.includes('sealed')||KIND.includes('completed') ? '#4ade80'
-  : KIND.includes('failed')||KIND.includes('broken') ? '#f87171'
-  : KIND.includes('approval')||KIND.includes('gated') ? '#fbbf24'
-  : KIND.includes('fusion')||KIND.includes('run') ? '#a78bfa' : '#9ca3af';
+const colors = KIND => KIND.includes('sealed')||KIND.includes('completed') ? theme.success
+  : KIND.includes('failed')||KIND.includes('broken') ? theme.error
+  : KIND.includes('approval')||KIND.includes('gated') ? theme.warning
+  : KIND.includes('fusion')||KIND.includes('run') ? theme.brand : theme.textSecondary;
 function addEvent(ev, scroll) {
   const d = document.createElement('div'); d.className = 'ev';
   d.innerHTML = '<span class="ts">'+esc((ev.ts||'').slice(11,19))+'</span>'
@@ -122,7 +123,7 @@ const listPlans = () => {
 };
 
 const DISPATCH_HTML = `
-<div style="border-top:1px solid #1f2937;padding:12px 16px">
+<div style="border-top:1px solid ${theme.surfaceRaised};padding:12px 16px">
   <h2>DISPATCH · COMMAND POST</h2>
   <div id="plans" style="display:flex;flex-direction:column;gap:6px"></div>
 </div>
@@ -139,18 +140,18 @@ async function loadPlans() {
   const r = await fetch('/dispatch');
   const plans = await r.json();
   document.getElementById('plans').innerHTML = plans.length ? plans.map(p =>
-    '<div style="border:1px solid #1f2937;border-radius:6px;padding:6px 10px;background:#0d0f12">'
-    + '<span style="color:#a78bfa">' + p.id + '</span> '
-    + '<span style="color:#4ade80">' + p.lifecycle + '</span> '
-    + '<span style="color:#9ca3af">' + p.harness + ' · ' + p.objective + '</span> '
-    + '<span style="color:#4b5563">hash ' + (p.plan_hash || '').slice(0, 12) + '…</span>'
-    + (p.blocked ? ' <span style="color:#f87171">' + p.blocked.state + ': ' + p.blocked.note + '</span>' : '')
+    '<div style="border:1px solid ${theme.surfaceRaised};border-radius:6px;padding:6px 10px;background:${theme.surfaceBase}">'
+    + '<span style="color:${theme.brand}">' + p.id + '</span> '
+    + '<span style="color:${theme.success}">' + p.lifecycle + '</span> '
+    + '<span style="color:${theme.textSecondary}">' + p.harness + ' · ' + p.objective + '</span> '
+    + '<span style="color:${theme.textTertiary}">hash ' + (p.plan_hash || '').slice(0, 12) + '…</span>'
+    + (p.blocked ? ' <span style="color:${theme.error}">' + p.blocked.state + ': ' + p.blocked.note + '</span>' : '')
     + ' <button onclick="act(\\'' + p.id + '\\',\\'arm\\')">arm</button>'
     + ' <button onclick="act(\\'' + p.id + '\\',\\'launch\\')">launch</button>'
     + ' <button onclick="act(\\'' + p.id + '\\',\\'hold\\')">hold</button>'
     + ' <button onclick="act(\\'' + p.id + '\\',\\'cancel\\')">cancel</button>'
     + ' <button onclick="act(\\'' + p.id + '\\',\\'collect\\')">collect</button>'
-    + '</div>').join('') : '<div style="color:#5a6470">no plans — prepare one from chat (ctrl+d rail) or timmy_plan_dispatch</div>';
+    + '</div>').join('') : '<div style="color:${theme.textTertiary}">no plans — prepare one from chat (ctrl+d rail) or timmy_plan_dispatch</div>';
 }
 loadPlans(); setInterval(loadPlans, 3000);
 </script>`;
@@ -161,20 +162,20 @@ const BROWSER_HTML = `<!doctype html><html><head><meta charset="utf-8">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; }
-  body { background: #0a0e12; color: #e6edf3; font: 13px/1.5 ui-monospace, Menlo, monospace; padding: 16px; }
+  body { background: ${theme.surfaceBase}; color: ${theme.textPrimary}; font: 13px/1.5 ui-monospace, Menlo, monospace; padding: 16px; }
   header { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-  header .logo { color: #a98bff; font-weight: 700; letter-spacing: .08em; }
-  button { background: #101418; border: 1px solid #2d333b; color: #a98bff; border-radius: 6px; font: inherit; padding: 4px 10px; cursor: pointer; }
-  input { background: #101418; border: 1px solid #2d333b; color: #e6edf3; border-radius: 6px; font: inherit; padding: 4px 10px; }
-  #chainstat { color: #3fb950; }
-  .epoch { color: #4aa8ff; margin: 14px 0 6px; letter-spacing: .12em; }
-  .rc { border: 1px solid #2d333b; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; background: #0d1117; }
+  header .logo { color: ${theme.brand}; font-weight: 700; letter-spacing: .08em; }
+  button { background: ${theme.surfaceRaised}; border: 1px solid ${theme.borderDefault}; color: ${theme.brand}; border-radius: 6px; font: inherit; padding: 4px 10px; cursor: pointer; }
+  input { background: ${theme.surfaceRaised}; border: 1px solid ${theme.borderDefault}; color: ${theme.textPrimary}; border-radius: 6px; font: inherit; padding: 4px 10px; }
+  #chainstat { color: ${theme.success}; }
+  .epoch { color: ${theme.info}; margin: 14px 0 6px; letter-spacing: .12em; }
+  .rc { border: 1px solid ${theme.borderDefault}; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; background: ${theme.surfaceBase}; }
   .rc .row1 { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-  .rc .sub { color: #e6edf3; font-weight: 600; }
-  .rc .st-ok { color: #3fb950; } .rc .st-failed { color: #f87171; } .rc .st-denied { color: #f5b540; }
-  .rc .hash { color: #3fb950; } .rc .prev { color: #5a6470; }
-  .rc .meta { color: #8b949e; font-size: 11px; }
-  .rc .vf { color: #4aa8ff; font-size: 11px; }
+  .rc .sub { color: ${theme.textPrimary}; font-weight: 600; }
+  .rc .st-ok { color: ${theme.success}; } .rc .st-failed { color: ${theme.error}; } .rc .st-denied { color: ${theme.warning}; }
+  .rc .hash { color: ${theme.success}; } .rc .prev { color: ${theme.textTertiary}; }
+  .rc .meta { color: ${theme.textSecondary}; font-size: 11px; }
+  .rc .vf { color: ${theme.info}; font-size: 11px; }
 </style></head><body>
 <header>
   <span class="logo">TIMMY ⛁ RECEIPT BROWSER</span>

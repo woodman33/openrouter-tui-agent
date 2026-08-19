@@ -4,6 +4,7 @@ import path from 'path';
 import { execSync } from 'child_process';
 import { canonicalize, computeReceiptHash, Receipt } from '../src/receipt/schema.js';
 import { truncateMiddleOrEnd, splitModelNameAndBlurb, getModelColors } from '../src/tui/utils/text.js';
+import { theme } from '../src/tui/theme.js';
 import { VERSION } from '../src/version.js';
 
 
@@ -208,17 +209,18 @@ describe('TIMMY Receipt System', () => {
     });
 
     it('should return correct high-contrast colors based on model states', () => {
+      // palette law: colors are Tokyo Night tokens from src/tui/theme.ts
       const disabled = getModelColors(false, false, true);
-      expect(disabled.nameColor).toBe('#8a8a94');
+      expect(disabled.nameColor).toBe(theme.textTertiary);
 
       const selected = getModelColors(true, false, false);
-      expect(selected.nameColor).toBe('#fec240'); // Bright yellow
+      expect(selected.nameColor).toBe(theme.warning);
 
       const active = getModelColors(false, true, false);
-      expect(active.nameColor).toBe('#33d6ff'); // Bright cyan
+      expect(active.nameColor).toBe(theme.focus);
 
       const normal = getModelColors(false, false, false);
-      expect(normal.nameColor).toBe('#ffffff'); // Bright white
+      expect(normal.nameColor).toBe(theme.textPrimary);
     });
   });
 

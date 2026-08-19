@@ -64,9 +64,9 @@ export function SetupPanel({ agent }: SetupPanelProps) {
   return (
     <Box flexDirection="column" paddingY={1} flexGrow={1}>
       {/* Glow Greeting Header */}
-      <Box borderStyle="round" borderColor="#5e6ad2" paddingX={2} flexDirection="column" marginBottom={1}>
+      <Box borderStyle="round" borderColor={theme.info} paddingX={2} flexDirection="column" marginBottom={1}>
         <Box justifyContent="center" marginBottom={1}>
-          <Text bold color="#79c0ff">⚡ WELCOME TO OPENROUTER TERMINAL TUI ⚡</Text>
+          <Text bold color={theme.info}>⚡ WELCOME TO OPENROUTER TERMINAL TUI ⚡</Text>
         </Box>
         <Text color={theme.textPrimary} wrap="wrap">
           A state-of-the-art developer workspace powered by OpenRouter, featuring a high-fidelity swarm dashboard, real-time code reviewer panels, and persistent edge storage sync.
@@ -75,18 +75,18 @@ export function SetupPanel({ agent }: SetupPanelProps) {
 
       {/* Account & Billing Hyperlinks */}
       <Box flexDirection="column" marginBottom={1} borderStyle="single" borderColor={theme.borderDefault} paddingX={2}>
-        <Text bold color="#a5d6ff">🔗 Quick Setup & Credentials Link</Text>
+        <Text bold color={theme.info}>🔗 Quick Setup & Credentials Link</Text>
         <Box marginY={1}>
           <Text color={theme.textSecondary}>
             Click the interactive terminal links below to link your account or upgrade:
           </Text>
         </Box>
         <Box flexDirection="row" justifyContent="space-around" marginY={1}>
-          <Box borderStyle="single" borderColor="#58a6ff" paddingX={1}>
-            <Text bold color="#58a6ff">{oauthLink}</Text>
+          <Box borderStyle="single" borderColor={theme.info} paddingX={1}>
+            <Text bold color={theme.info}>{oauthLink}</Text>
           </Box>
-          <Box borderStyle="single" borderColor="#3fb950" paddingX={1}>
-            <Text bold color="#3fb950">{stripeLink}</Text>
+          <Box borderStyle="single" borderColor={theme.success} paddingX={1}>
+            <Text bold color={theme.success}>{stripeLink}</Text>
           </Box>
         </Box>
       </Box>
@@ -102,8 +102,8 @@ export function SetupPanel({ agent }: SetupPanelProps) {
         </Box>
 
         {/* Pro Tier */}
-        <Box flexDirection="column" width="33%" borderStyle="single" borderColor="#d29922" paddingX={1}>
-          <Text bold color="#d29922">⚡ Edge Pro ($5/mo)</Text>
+        <Box flexDirection="column" width="33%" borderStyle="single" borderColor={theme.warning} paddingX={1}>
+          <Text bold color={theme.warning}>⚡ Edge Pro ($5/mo)</Text>
           <Text color={theme.textSecondary}>- Durable Object SQLite Sync</Text>
           <Text color={theme.textSecondary}>- Offloaded Edge Swarm DO</Text>
           <Text color={theme.textSecondary}>- Globally Replicated KV Vault</Text>
@@ -111,8 +111,8 @@ export function SetupPanel({ agent }: SetupPanelProps) {
         </Box>
 
         {/* Ultra Pro Tier */}
-        <Box flexDirection="column" width="33%" borderStyle="single" borderColor="#d2a8ff" paddingX={1}>
-          <Text bold color="#d2a8ff">🌌 Ultra Pro ($45/mo)</Text>
+        <Box flexDirection="column" width="33%" borderStyle="single" borderColor={theme.brand} paddingX={1}>
+          <Text bold color={theme.brand}>🌌 Ultra Pro ($45/mo)</Text>
           <Text color={theme.textPrimary}>- Private Isolated VPS droplet</Text>
           <Text color={theme.textPrimary}>- Asynchronous Email Agent Loop</Text>
           <Text color={theme.textPrimary}>- MCP Serverless Wrangler Deploy</Text>
@@ -121,15 +121,15 @@ export function SetupPanel({ agent }: SetupPanelProps) {
       </Box>
 
       {/* Interactive API Key Input Console */}
-      <Box flexDirection="column" borderStyle="round" borderColor={success ? "#3fb950" : "#d2a8ff"} paddingX={2}>
+      <Box flexDirection="column" borderStyle="round" borderColor={success ? theme.success : theme.brand} paddingX={2}>
         {success ? (
           <Box flexDirection="column" paddingY={1} alignItems="center">
-            <Text bold color="#3fb950">✓ API Key Saved Successfully!</Text>
+            <Text bold color={theme.success}>✓ API Key Saved Successfully!</Text>
             <Text color={theme.textSecondary}>Dynamically connecting client and launching conversational console...</Text>
           </Box>
         ) : (
           <Box flexDirection="column">
-            <Text bold color="#e6edf3">🔑 Setup Your Credentials</Text>
+            <Text bold color={theme.textPrimary}>🔑 Setup Your Credentials</Text>
             <Box marginBottom={1}>
               <Text color={theme.textSecondary}>
                 Paste your OpenRouter API key below and press [Enter] to unlock the workspace:
@@ -137,9 +137,9 @@ export function SetupPanel({ agent }: SetupPanelProps) {
             </Box>
             
             <Box flexDirection="row" alignItems="center">
-              <Text bold color="#d2a8ff">sk-or- </Text>
-              <Box flexGrow={1} borderStyle="single" borderColor="#30363d" paddingX={1}>
-                <Text color={input ? "#e6edf3" : theme.textTertiary}>
+              <Text bold color={theme.brand}>sk-or- </Text>
+              <Box flexGrow={1} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+                <Text color={input ? theme.textPrimary : theme.textTertiary}>
                   {input ? '•'.repeat(Math.min(input.length, 36)) : 'Paste your API key here (Ctrl+V / Cmd+V)...'}
                 </Text>
               </Box>
@@ -147,7 +147,7 @@ export function SetupPanel({ agent }: SetupPanelProps) {
 
             {errorMsg && (
               <Box marginTop={1}>
-                <Text color={errorMsg.includes('Warning') ? '#d29922' : '#f85149'} bold>
+                <Text color={errorMsg.includes('Warning') ? theme.warning : theme.error} bold>
                   {errorMsg.includes('Warning') ? '⚠️ ' : '✕ '}
                   {errorMsg}
                 </Text>

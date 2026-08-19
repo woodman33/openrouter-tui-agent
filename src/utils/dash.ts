@@ -3,6 +3,7 @@ import { join } from 'path';
 import { spawn, execSync } from 'child_process';
 import { BRAND } from './brand.js';
 import { GENERATION_PROVIDERS } from './providers.js';
+import { theme } from '../tui/theme.js';
 
 // TIMMY Studios dashboard — the whole fabric (ledger, fleet, frames, events)
 // rendered in carbonyl browser panes. Served by a plain python http.server
@@ -64,23 +65,23 @@ export function renderDashboardHtml(cwd: string = process.cwd()): string {
 <meta charset="utf-8">
 <title>${BRAND.studios} — dashboard</title>
 <style>
-body{margin:0;background:#090b10;color:#e6edf3;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
-header{padding:14px 18px;border-bottom:1px solid #21262d;display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
-header h1{margin:0;font-size:16px;color:#d2a8ff}
-header .tag{color:#3fb950}
-header .slate{color:#8b949e}
+body{margin:0;background:${theme.surfaceBase};color:${theme.textPrimary};font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+header{padding:14px 18px;border-bottom:1px solid ${theme.surfaceOverlay};display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+header h1{margin:0;font-size:16px;color:${theme.brand}}
+header .tag{color:${theme.success}}
+header .slate{color:${theme.textSecondary}}
 main{padding:14px 18px;display:grid;gap:18px}
-section h2{font-size:12px;letter-spacing:.25em;color:#3fb950;margin:0 0 8px}
+section h2{font-size:12px;letter-spacing:.25em;color:${theme.success};margin:0 0 8px}
 table{border-collapse:collapse;width:100%}
-td,th{border:1px solid #21262d;padding:4px 8px;text-align:left;vertical-align:top;font-size:12px}
-th{color:#8b949e}
-.done{color:#3fb950}.failed{color:#f85149}.running{color:#d29922}.queued{color:#8b949e}
+td,th{border:1px solid ${theme.surfaceOverlay};padding:4px 8px;text-align:left;vertical-align:top;font-size:12px}
+th{color:${theme.textSecondary}}
+.done{color:${theme.success}}.failed{color:${theme.error}}.running{color:${theme.warning}}.queued{color:${theme.textSecondary}}
 .fleet{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid #21262d;border-radius:10px;padding:2px 8px;font-size:11px;color:#e6edf3}
-.chip b{color:#d2a8ff}
+.chip{border:1px solid ${theme.surfaceOverlay};border-radius:10px;padding:2px 8px;font-size:11px;color:${theme.textPrimary}}
+.chip b{color:${theme.brand}}
 .frames{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.frames img{height:72px;border:1px solid #21262d}
-pre{margin:0;font-size:11px;color:#8b949e;white-space:pre-wrap}
+.frames img{height:72px;border:1px solid ${theme.surfaceOverlay}}
+pre{margin:0;font-size:11px;color:${theme.textSecondary};white-space:pre-wrap}
 </style>
 </head>
 <body>

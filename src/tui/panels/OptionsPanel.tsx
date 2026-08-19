@@ -271,10 +271,10 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
       {/* Header Banner */}
-      <Box borderStyle="single" borderColor="#30363d" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
-        <Text bold color="#a98bff">⚙️  TIMMY Settings & Options</Text>
+      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
+        <Text bold color={theme.brand}>⚙️  TIMMY Settings & Options</Text>
         {!isCompact && (
-          <Text color="#8b949e">Change simple local settings. Runtime secrets and bindings are untouched.</Text>
+          <Text color={theme.textSecondary}>Change simple local settings. Runtime secrets and bindings are untouched.</Text>
         )}
       </Box>
 
@@ -291,25 +291,25 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
             const valStr = ellipsize(formatValue(opt), VALUE_W);
 
             // Color coding for values
-            let valColor = '#79c0ff';
-            if (isSelected) valColor = '#d2a8ff';
+            let valColor = theme.info;
+            if (isSelected) valColor = theme.brand;
             const rawVal = formatValue(opt);
-            if (rawVal === '[ON]' || rawVal === '[DETECTED]') valColor = isSelected ? '#7ee787' : '#3fb950';
-            else if (rawVal === '[OFF]' || rawVal === '[MISSING]') valColor = isSelected ? '#ffa198' : '#f85149';
-            else if (rawVal === '[NOT SET]') valColor = '#8b949e';
+            if (rawVal === '[ON]' || rawVal === '[DETECTED]') valColor = isSelected ? theme.success : theme.success;
+            else if (rawVal === '[OFF]' || rawVal === '[MISSING]') valColor = isSelected ? theme.error : theme.error;
+            else if (rawVal === '[NOT SET]') valColor = theme.textSecondary;
 
             return (
               <Box key={opt.key} flexDirection="row" height={1}>
                 {/* Selector */}
                 <Box width={SELECTOR_W} flexShrink={0}>
-                  <Text color={isSelected ? '#d2a8ff' : '#8b949e'} bold={isSelected}>
+                  <Text color={isSelected ? theme.brand : theme.textSecondary} bold={isSelected}>
                     {selectorStr}
                   </Text>
                 </Box>
 
                 {/* Label */}
                 <Box width={LABEL_W} flexShrink={0}>
-                  <Text color={isSelected ? '#e6edf3' : '#c9d1d9'} bold={isSelected}>
+                  <Text color={isSelected ? theme.textPrimary : theme.textSecondary} bold={isSelected}>
                     {padRight(labelStr, LABEL_W)}
                   </Text>
                 </Box>
@@ -320,7 +320,7 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
                 {/* Description (hidden at narrow widths) */}
                 {showDesc && (
                   <Box width={DESC_W} flexShrink={0}>
-                    <Text color={isSelected ? '#e6edf3' : '#a5b0bc'}>
+                    <Text color={isSelected ? theme.textPrimary : theme.textSecondary}>
                       {padRight(descStr, DESC_W)}
                     </Text>
                   </Box>
@@ -342,20 +342,20 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
       </GlowBorder>
 
       {/* Auth & Authority Panel */}
-      <Box borderStyle="single" borderColor="#d2a8ff" paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
-        <Text bold color="#d2a8ff">🛡️  Auth & Authority</Text>
+      <Box borderStyle="single" borderColor={theme.brand} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
+        <Text bold color={theme.brand}>🛡️  Auth & Authority</Text>
         <Box flexDirection="column" marginTop={1}>
           {[
-            { label: 'Human Auth', value: 'Local', color: '#e6edf3' },
-            { label: 'AgentPass', value: 'Active', color: '#3fb950' },
-            { label: 'Passports', value: 'Enabled', color: '#79c0ff' },
-            { label: 'Visas', value: 'Enabled', color: '#79c0ff' },
-            { label: 'Stamps', value: 'Enabled', color: '#79c0ff' },
-            { label: 'Receipts', value: 'Local', color: '#3fb950' },
+            { label: 'Human Auth', value: 'Local', color: theme.textPrimary },
+            { label: 'AgentPass', value: 'Active', color: theme.success },
+            { label: 'Passports', value: 'Enabled', color: theme.info },
+            { label: 'Visas', value: 'Enabled', color: theme.info },
+            { label: 'Stamps', value: 'Enabled', color: theme.info },
+            { label: 'Receipts', value: 'Local', color: theme.success },
           ].map((row) => (
             <Box key={row.label} flexDirection="row" height={1}>
               <Box width={Math.min(20, Math.floor(rowWidth * 0.4))} flexShrink={0}>
-                <Text color="#8b949e"> • {row.label}:</Text>
+                <Text color={theme.textSecondary}> • {row.label}:</Text>
               </Box>
               <Box flexGrow={1} justifyContent="flex-end">
                 <Text bold color={row.color}>{row.value}</Text>
@@ -366,11 +366,11 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
       </Box>
 
       {/* Active configuration prompt box - Universal bottom input */}
-      <Box borderStyle="single" borderColor={focusArea === 'stage' ? "#a98bff" : "#30363d"} paddingX={1} marginTop={isSmallScreen ? 0 : 1} flexShrink={0}>
-        <Text color="#8b949e">[ options ] </Text>
-        <Text color="#79c0ff">▶ </Text>
-        <Text color="#ffffff" wrap="truncate">{inputCmd}</Text>
-        <Text color="#8b949e">█</Text>
+      <Box borderStyle="single" borderColor={focusArea === 'stage' ? theme.brand : theme.borderDefault} paddingX={1} marginTop={isSmallScreen ? 0 : 1} flexShrink={0}>
+        <Text color={theme.textSecondary}>[ options ] </Text>
+        <Text color={theme.info}>▶ </Text>
+        <Text color={theme.textPrimary} wrap="truncate">{inputCmd}</Text>
+        <Text color={theme.textSecondary}>█</Text>
       </Box>
     </Box>
   );

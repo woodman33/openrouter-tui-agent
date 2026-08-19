@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Text, Box } from 'ink';
 import chalk from 'chalk';
+import { theme } from '../theme.js';
 
 interface ProgressBarProps {
   value: number; // 0-1
@@ -10,7 +11,7 @@ interface ProgressBarProps {
   color?: string;
 }
 
-export function ProgressBar({ value, width = 30, label, showPercent = true, color = '#5e6ad2' }: ProgressBarProps) {
+export function ProgressBar({ value, width = 30, label, showPercent = true, color = theme.info }: ProgressBarProps) {
   const clamped = Math.max(0, Math.min(1, value));
   const safeWidth = Math.max(1, Math.floor(width));
   const filled = Math.round(clamped * safeWidth);
@@ -47,7 +48,7 @@ export function IndeterminateBar({ width = 30, label }: { width?: number; label?
 
   return (
     <Box>
-      <Text>{chalk.hex('#5e6ad2')(chars.join(''))}</Text>
+      <Text>{chalk.hex(theme.info)(chars.join(''))}</Text>
       {label && <Text> {label}</Text>}
     </Box>
   );

@@ -16,6 +16,7 @@ import { agentLogger, tuiLogger } from '../utils/logger.js';
 
 import { Onboarding } from './Onboarding.js';
 import { condenseSession } from '../utils/iceberg.js';
+import { theme } from './theme.js';
 
 interface AppProps {
   config: AgentConfig;
@@ -352,25 +353,25 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
             top={3}
             left={25}
             borderStyle="double"
-            borderColor="#d2a8ff"
+            borderColor={theme.brand}
             paddingX={2}
             flexDirection="column"
             width={45}
             height={paletteItems.length + 3}
           >
-            <Text bold color="#d2a8ff">🏛️ TIMMY COMMAND PALETTE (Ctrl+K)</Text>
-            <Text color="#8b949e">─────────────────────────────────────────</Text>
+            <Text bold color={theme.brand}>🏛️ TIMMY COMMAND PALETTE (Ctrl+K)</Text>
+            <Text color={theme.textSecondary}>─────────────────────────────────────────</Text>
             {paletteItems.map((item, idx) => {
               const isSelected = idx === paletteIdx;
               return (
-                <Text key={idx} color={isSelected ? '#3fb950' : '#e6edf3'} bold={isSelected}>
+                <Text key={idx} color={isSelected ? theme.success : theme.textPrimary} bold={isSelected}>
                   {isSelected ? '▶ ' : '  '}
                   {item.label}
                 </Text>
               );
             })}
-            <Text color="#8b949e">─────────────────────────────────────────</Text>
-            <Text color="#8b949e" dimColor>Arrows to scroll | Enter to choose | Esc to exit</Text>
+            <Text color={theme.textSecondary}>─────────────────────────────────────────</Text>
+            <Text color={theme.textSecondary} dimColor>Arrows to scroll | Enter to choose | Esc to exit</Text>
           </Box>
         )}
 
@@ -381,23 +382,23 @@ function App({ config, initialMode = 'brief', graphicsType = 'auto' }: AppProps)
             top={3}
             left={25}
             borderStyle="double"
-            borderColor="#3fb950"
+            borderColor={theme.success}
             paddingX={2}
             flexDirection="column"
             width={52}
           >
-            <Text bold color="#3fb950">❓ ONE GRAMMAR — same keys, every tab · {mode.toUpperCase()}</Text>
-            <Text color="#8b949e">────────────────────────────────────────────────</Text>
+            <Text bold color={theme.success}>❓ ONE GRAMMAR — same keys, every tab · {mode.toUpperCase()}</Text>
+            <Text color={theme.textSecondary}>────────────────────────────────────────────────</Text>
             {GLOBAL_KEYS.map(g => (
-              <Text key={g.key} color="#e6edf3">{g.key.padEnd(10)} {g.label}</Text>
+              <Text key={g.key} color={theme.textPrimary}>{g.key.padEnd(10)} {g.label}</Text>
             ))}
-            <Text color="#8b949e">────────────────────────────────────────────────</Text>
+            <Text color={theme.textSecondary}>────────────────────────────────────────────────</Text>
             {MODE_KEYS[mode].map(g => (
-              <Text key={g.key} color="#e6edf3">{g.key.padEnd(10)} {g.label}</Text>
+              <Text key={g.key} color={theme.textPrimary}>{g.key.padEnd(10)} {g.label}</Text>
             ))}
-            <Text color="#8b949e">────────────────────────────────────────────────</Text>
-            <Text color="#e6edf3">Ctrl+K palette · Ctrl+L logs · Ctrl+R lanes · Ctrl+W projects · Ctrl+C quit</Text>
-            <Text color="#8b949e" dimColor>Press ? or ESC to close</Text>
+            <Text color={theme.textSecondary}>────────────────────────────────────────────────</Text>
+            <Text color={theme.textPrimary}>Ctrl+K palette · Ctrl+L logs · Ctrl+R lanes · Ctrl+W projects · Ctrl+C quit</Text>
+            <Text color={theme.textSecondary} dimColor>Press ? or ESC to close</Text>
           </Box>
         )}
       </Box>

@@ -8,6 +8,7 @@ import { ensureDashServer } from '../../utils/dash.js';
 import { seedStarter } from '../../utils/starter.js';
 import { createClipJob, detectClip } from '../../utils/clip.js';
 import { BRAND } from '../../utils/brand.js';
+import { theme } from '../theme.js';
 
 interface SlatePanelProps {
   agent: Agent;
@@ -154,7 +155,7 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
       icon="📐"
       title="SLATE — TIMMY VISUAL LANGUAGE"
       status={`${listProjects().length} projects · ${listTemplates().length} templates`}
-      statusColor="#d2a8ff"
+      statusColor={theme.brand}
       explain="Author storyboards + projects in the terminal; watch them live in a carbonyl canvas. One schema → HyperFrames, sites, tldraw."
       hints={[
         { key: '↑↓', label: 'select' },
@@ -167,15 +168,15 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
       ]}
     >
       <Box flexDirection="row" flexGrow={1}>
-        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? '#a98bff' : '#30363d'}>
+        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
           {items.length === 0 && (
             <Box flexDirection="column">
-              <Text color="#8b949e">no projects yet.</Text>
-              <Text color="#8b949e">[n] creates one; templates seed from /studio.</Text>
+              <Text color={theme.textSecondary}>no projects yet.</Text>
+              <Text color={theme.textSecondary}>[n] creates one; templates seed from /studio.</Text>
             </Box>
           )}
           {items.map((it, i) => (
-            <Text key={`${it.kind}-${it.name}`} color={i === Math.min(idx, items.length - 1) ? '#d2a8ff' : '#e6edf3'} bold={i === Math.min(idx, items.length - 1)} wrap="truncate">
+            <Text key={`${it.kind}-${it.name}`} color={i === Math.min(idx, items.length - 1) ? theme.brand : theme.textPrimary} bold={i === Math.min(idx, items.length - 1)} wrap="truncate">
               {i === Math.min(idx, items.length - 1) ? '▶ ' : '  '}{it.kind === 'project' ? '📁' : '📐'} {it.name}
             </Text>
           ))}
@@ -183,47 +184,47 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
         <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
           {proj && (
             <>
-              <Text bold color="#d2a8ff">📁 {proj.name}</Text>
-              <Text color="#8b949e">{proj.created_at.replace('T', ' ').slice(0, 16)} · template: {proj.template || '—'}</Text>
-              <Text color="#8b949e">{proj.refs.length} refs · {proj.gens.length} gens</Text>
+              <Text bold color={theme.brand}>📁 {proj.name}</Text>
+              <Text color={theme.textSecondary}>{proj.created_at.replace('T', ' ').slice(0, 16)} · template: {proj.template || '—'}</Text>
+              <Text color={theme.textSecondary}>{proj.refs.length} refs · {proj.gens.length} gens</Text>
               {(proj.beats || []).map((b, i) => (
-                <Text key={i} color="#9aa4b2" wrap="truncate">• {b.at}s–{b.at + b.dur}s [{b.label}] {b.text}</Text>
+                <Text key={i} color={theme.textSecondary} wrap="truncate">• {b.at}s–{b.at + b.dur}s [{b.label}] {b.text}</Text>
               ))}
               {proj.gens.slice(-4).map(g => (
-                <Text key={g.id} color="#a5b0bc" wrap="truncate">  🎬 {g.label} · {g.provider}{g.artifact ? ` → ${g.artifact}` : ''}</Text>
+                <Text key={g.id} color={theme.textSecondary} wrap="truncate">  🎬 {g.label} · {g.provider}{g.artifact ? ` → ${g.artifact}` : ''}</Text>
               ))}
-              <Text color="#a5b0bc">[P] renders site/ · [c] {BRAND.clip} · [v] canvas · [o] site pane</Text>
-              {note && <Text color="#3fb950" wrap="truncate">{note}</Text>}
+              <Text color={theme.textSecondary}>[P] renders site/ · [c] {BRAND.clip} · [v] canvas · [o] site pane</Text>
+              {note && <Text color={theme.success} wrap="truncate">{note}</Text>}
             </>
           )}
           {tmpl && (
             <>
-              <Text bold color="#d2a8ff">📐 {tmpl.name} ({tmpl.source}, {tmpl.total}s)</Text>
+              <Text bold color={theme.brand}>📐 {tmpl.name} ({tmpl.source}, {tmpl.total}s)</Text>
               {tmpl.beats.map((b, i) => (
-                <Text key={i} color="#9aa4b2" wrap="truncate">• {b.at}s–{b.at + b.dur}s [{b.label}] {b.text}</Text>
+                <Text key={i} color={theme.textSecondary} wrap="truncate">• {b.at}s–{b.at + b.dur}s [{b.label}] {b.text}</Text>
               ))}
-              <Text color="#a5b0bc">use with /studio --template {tmpl.name} &lt;idea&gt;</Text>
-              <Text color="#a5b0bc">[v] opens your tldraw Slate canvas (TIMMY_SLATE_URL)</Text>
+              <Text color={theme.textSecondary}>use with /studio --template {tmpl.name} &lt;idea&gt;</Text>
+              <Text color={theme.textSecondary}>[v] opens your tldraw Slate canvas (TIMMY_SLATE_URL)</Text>
             </>
           )}
-          {!proj && !tmpl && <Text color="#8b949e">select a project or template.</Text>}
+          {!proj && !tmpl && <Text color={theme.textSecondary}>select a project or template.</Text>}
           {naming && (
-            <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1}>
-              <Text color="#79c0ff">new project name: {draft}█</Text>
+            <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1}>
+              <Text color={theme.info}>new project name: {draft}█</Text>
             </Box>
           )}
           {clipping && sel && (
-            <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1} flexDirection="column">
-              <Text color="#79c0ff">{BRAND.clip} — edit instruction (links this project's gens into an open-edit job):</Text>
+            <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1} flexDirection="column">
+              <Text color={theme.info}>{BRAND.clip} — edit instruction (links this project's gens into an open-edit job):</Text>
               <Text>{draft}█</Text>
-              <Text color="#8b949e">Enter writes clips/&lt;id&gt;.json + .md (receipt-linked sources) · Esc cancels</Text>
+              <Text color={theme.textSecondary}>Enter writes clips/&lt;id&gt;.json + .md (receipt-linked sources) · Esc cancels</Text>
             </Box>
           )}
           {using && sel && (
-            <Box marginTop={1} borderStyle="single" borderColor="#79c0ff" paddingX={1} flexDirection="column">
-              <Text color="#79c0ff">use template "{sel.name}" — idea (becomes the project name + brief):</Text>
+            <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1} flexDirection="column">
+              <Text color={theme.info}>use template "{sel.name}" — idea (becomes the project name + brief):</Text>
               <Text>{draft}█</Text>
-              <Text color="#8b949e">Enter creates the project with the template's beats · Esc cancels</Text>
+              <Text color={theme.textSecondary}>Enter creates the project with the template's beats · Esc cancels</Text>
             </Box>
           )}
         </Box>

@@ -141,36 +141,36 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
         });
         checkpointCount++;
 
-        lines.push(chalk.bold.hex('#79c0ff')(`▶ You [Checkpoint ${checkpointCount}]`));
+        lines.push(chalk.bold.hex(theme.info)(`▶ You [Checkpoint ${checkpointCount}]`));
         lines.push(...msg.content.split('\n'));
         lines.push('');
       } else if (msg.role === 'assistant') {
-        lines.push(chalk.bold.hex('#a98bff')('◀ TIMMY Agent'));
+        lines.push(chalk.bold.hex(theme.brand)('◀ TIMMY Agent'));
         const parsedMarkdown = renderMarkdown(msg.content, textWidth);
         lines.push(...parsedMarkdown.split('\n'));
         lines.push('');
-        lines.push(chalk.hex('#43d6a0')('☁️  [Saved to Cloudflare Durable Object SQLite Session]'));
+        lines.push(chalk.hex(theme.success)('☁️  [Saved to Cloudflare Durable Object SQLite Session]'));
         lines.push('');
       }
     }
 
     if (state.isStreaming) {
       if (state.currentTools.length > 0) {
-        lines.push(chalk.hex('#a98bff')(state.currentTools.map(t => `⚙ ${t}`).join('  ')));
+        lines.push(chalk.hex(theme.brand)(state.currentTools.map(t => `⚙ ${t}`).join('  ')));
         lines.push('');
       }
       if (state.streamingText) {
-        lines.push(chalk.bold.hex('#a98bff')('◀ TIMMY Agent'));
+        lines.push(chalk.bold.hex(theme.brand)('◀ TIMMY Agent'));
         const parsedStream = renderMarkdown(state.streamingText, textWidth);
         lines.push(...parsedStream.split('\n'));
-        lines.push(chalk.hex('#a5b0bc')('▌'));
+        lines.push(chalk.hex(theme.textSecondary)('▌'));
       } else {
-        lines.push(chalk.hex('#a98bff')('◌ Thinking...'));
+        lines.push(chalk.hex(theme.brand)('◌ Thinking...'));
       }
     }
 
     if (state.error) {
-      lines.push(chalk.bold.hex('#ff6b6b')(`✕ Error: ${state.error.message}`));
+      lines.push(chalk.bold.hex(theme.error)(`✕ Error: ${state.error.message}`));
     }
 
     return { allLines: lines, checkpoints: checkpointsList };
@@ -470,11 +470,11 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
     if (totalLines <= visibleHeight) {
       return (
         <Box flexDirection="column" width={2} alignItems="center" paddingLeft={1}>
-          <Text color="#30363d">▲</Text>
+          <Text color={theme.borderDefault}>▲</Text>
           {Array.from({ length: visibleHeight - 2 }).map((_, idx) => (
-            <Text key={idx} color="#1f1f26">│</Text>
+            <Text key={idx} color={theme.surfaceRaised}>│</Text>
           ))}
-          <Text color="#30363d">▼</Text>
+          <Text color={theme.borderDefault}>▼</Text>
         </Box>
       );
     }
@@ -494,7 +494,7 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
     return (
       <Box flexDirection="column" width={2} alignItems="center" paddingLeft={1}>
         {track.map((char, idx) => (
-          <Text key={idx} color={char === '█' ? '#4f9cff' : '#1f1f26'}>{char}</Text>
+          <Text key={idx} color={char === '█' ? theme.info : theme.surfaceRaised}>{char}</Text>
         ))}
       </Box>
     );
@@ -509,17 +509,17 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
         {/* Short 1-line top guide header */}
         <Box paddingX={1} flexDirection="column" marginBottom={isCompact ? 0 : 1} width={chatWidth - 2}>
           <Box justifyContent="space-between" width="100%">
-            <Text bold color="#a98bff">💬 Main Chat</Text>
-            {state.isThinking || state.isStreaming ? <Spinner color="#a98bff" label="thinking" /> : <Text color="#a5b0bc">Ready</Text>}
+            <Text bold color={theme.brand}>💬 Main Chat</Text>
+            {state.isThinking || state.isStreaming ? <Spinner color={theme.brand} label="thinking" /> : <Text color={theme.textSecondary}>Ready</Text>}
           </Box>
           <Box marginTop={0}>
-            <Text bold color="#ffffff">OpenRouter Agent</Text>
-            <Text color="#8b949e">  - "Ask TIMMY anything. Choose a model on the right."</Text>
+            <Text bold color={theme.textPrimary}>OpenRouter Agent</Text>
+            <Text color={theme.textSecondary}>  - "Ask TIMMY anything. Choose a model on the right."</Text>
           </Box>
         </Box>
 
         {/* Messages Viewport — flex-fills all remaining stage height */}
-        <Box borderStyle="round" borderColor="#30363d" width={chatWidth - 2} flexDirection="row" paddingX={1} flexShrink={1} flexGrow={1}>
+        <Box borderStyle="round" borderColor={theme.borderDefault} width={chatWidth - 2} flexDirection="row" paddingX={1} flexShrink={1} flexGrow={1}>
           
           {/* Scrollable text region */}
           <Box flexDirection="column" flexGrow={1} height={visibleHeight} justifyContent={totalLines <= visibleHeight ? 'flex-end' : 'flex-start'} overflowY="hidden">
@@ -527,16 +527,16 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
               <Box flexGrow={1} flexDirection="column" paddingX={2} paddingY={1} justifyContent="space-around">
                 
                 <Box justifyContent="center" marginBottom={1}>
-                  <Text bold color="#ffffff">Start here. Ask the OpenRouter agent what to do.</Text>
+                  <Text bold color={theme.textPrimary}>Start here. Ask the OpenRouter agent what to do.</Text>
                 </Box>
                 
                 {/* Available Tools Summary */}
-                <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={2} paddingY={isCompact ? 0 : 1} marginBottom={1}>
-                  <Text bold color="#a98bff">⚙️ Core trust chain:</Text>
-                  <Text color="#e6edf3"> • <Text bold color="#43d6a0">OpenRouter Agent</Text>: model routing and agent reasoning</Text>
-                  <Text color="#e6edf3"> • <Text bold color="#ff7b72">TIMMY Porter</Text>: MCP server ➔ CLI onboarding</Text>
-                  <Text color="#e6edf3"> • <Text bold color="#3fb950">carbonyl</Text>: headless Chromium browser lanes in terminal panes</Text>
-                  <Text color="#e6edf3"> • <Text bold color="#d29922">OpenHands</Text>: autonomous headless runner for delegated fixes (lane 4)</Text>
+                <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={2} paddingY={isCompact ? 0 : 1} marginBottom={1}>
+                  <Text bold color={theme.brand}>⚙️ Core trust chain:</Text>
+                  <Text color={theme.textPrimary}> • <Text bold color={theme.success}>OpenRouter Agent</Text>: model routing and agent reasoning</Text>
+                  <Text color={theme.textPrimary}> • <Text bold color={theme.error}>TIMMY Porter</Text>: MCP server ➔ CLI onboarding</Text>
+                  <Text color={theme.textPrimary}> • <Text bold color={theme.success}>carbonyl</Text>: headless Chromium browser lanes in terminal panes</Text>
+                  <Text color={theme.textPrimary}> • <Text bold color={theme.warning}>OpenHands</Text>: autonomous headless runner for delegated fixes (lane 4)</Text>
                 </Box>
 
                 {/* Three Buttons - Position Stable Fixed Width */}
@@ -555,7 +555,7 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
                   }
                 </Box>
                 <Box justifyContent="center" width="100%">
-                  <Text color="#8b949e">[1-3] pick · ↵ runs · → model rail</Text>
+                  <Text color={theme.textSecondary}>[1-3] pick · ↵ runs · → model rail</Text>
                 </Box>
 
               </Box>
@@ -574,13 +574,13 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
         {showAutocomplete && matches.length > 0 && (
           <Box paddingX={1} minHeight={1} width={chatWidth - 2} flexDirection="row" flexWrap="wrap" marginBottom={1} flexShrink={0}>
             <Box marginRight={2}>
-              <Text color="#a5b0bc">Suggestions: </Text>
+              <Text color={theme.textSecondary}>Suggestions: </Text>
             </Box>
             {matches.map((m, idx) => {
               const isCurrent = idx === activeSuggestIdx;
               return (
                 <Box key={m.command} marginRight={4}>
-                  <Text color={isCurrent ? '#4f9cff' : '#a5b0bc'} bold={isCurrent}>
+                  <Text color={isCurrent ? theme.info : theme.textSecondary} bold={isCurrent}>
                     {isCurrent ? `▶ ${m.command}` : m.command}
                   </Text>
                 </Box>
@@ -590,56 +590,56 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
         )}
 
         {/* Input prompt box - Never disappears */}
-        <Box borderStyle="single" borderColor={focusSection === 'chat' && zone >= 0 ? "#a98bff" : "#30363d"} paddingX={1} width={chatWidth - 2} flexShrink={0} marginTop={1}>
-          <Text color="#a5b0bc">[ main-chat ] </Text>
-          <Text color="#4f9cff">{state.isThinking ? '◌ ' : '▶ '} </Text>
-          <Text color="#e6edf3" wrap="truncate">{scrollVisibleLeft(input, inputTextWidth)}</Text>
-          <Text color="#a98bff">{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
+        <Box borderStyle="single" borderColor={focusSection === 'chat' && zone >= 0 ? theme.brand : theme.borderDefault} paddingX={1} width={chatWidth - 2} flexShrink={0} marginTop={1}>
+          <Text color={theme.textSecondary}>[ main-chat ] </Text>
+          <Text color={theme.info}>{state.isThinking ? '◌ ' : '▶ '} </Text>
+          <Text color={theme.textPrimary} wrap="truncate">{scrollVisibleLeft(input, inputTextWidth)}</Text>
+          <Text color={theme.brand}>{state.isStreaming || state.isThinking ? ' ···' : '█'}</Text>
         </Box>
       </Box>
 
       {/* 2. Right Box: OpenRouter Model Rail */}
-      <Box width={railWidth} flexDirection="column" borderStyle="single" borderColor={modelChangedFlash ? '#3fb950' : (focusSection === 'modelRail' ? '#a98bff' : '#30363d')} borderLeft={true} borderRight={false} borderTop={false} borderBottom={false} paddingX={1} flexShrink={0}>
+      <Box width={railWidth} flexDirection="column" borderStyle="single" borderColor={modelChangedFlash ? theme.success : (focusSection === 'modelRail' ? theme.brand : theme.borderDefault)} borderLeft={true} borderRight={false} borderTop={false} borderBottom={false} paddingX={1} flexShrink={0}>
         <Box marginBottom={1} height={1} justifyContent="space-between" flexDirection="row">
-          <Text bold color={focusSection === 'modelRail' ? '#d2a8ff' : '#ff7b72'}>🤖 OPENROUTER MODELS</Text>
-          {modelChangedFlash && <Text bold color="#3fb950"> [ 🤖 OK ]</Text>}
+          <Text bold color={focusSection === 'modelRail' ? theme.brand : theme.error}>🤖 OPENROUTER MODELS</Text>
+          {modelChangedFlash && <Text bold color={theme.success}> [ 🤖 OK ]</Text>}
         </Box>
 
         {/* Active Model & Session Cost */}
         <Box flexDirection="column" marginBottom={1}>
-          <Text color="#8b949e">Active Model:</Text>
-          <Text bold color="#e6edf3" wrap="truncate">{state.model}</Text>
-          <Text color="#8b949e">Cost/Session: <Text bold color="#3fb950">${state.totalCost.toFixed(4)}</Text></Text>
-          <Text color="#8b949e">Model Health: <Text bold color={
-            state.modelHealthStatus === 'READY' ? '#3fb950' :
-            state.modelHealthStatus === 'FALLBACK READY' ? '#d29922' :
-            state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#a5b0bc'
+          <Text color={theme.textSecondary}>Active Model:</Text>
+          <Text bold color={theme.textPrimary} wrap="truncate">{state.model}</Text>
+          <Text color={theme.textSecondary}>Cost/Session: <Text bold color={theme.success}>${state.totalCost.toFixed(4)}</Text></Text>
+          <Text color={theme.textSecondary}>Model Health: <Text bold color={
+            state.modelHealthStatus === 'READY' ? theme.success :
+            state.modelHealthStatus === 'FALLBACK READY' ? theme.warning :
+            state.modelHealthStatus === 'ERROR' ? theme.error : theme.textSecondary
           }>{state.modelHealthStatus || 'UNTESTED'}</Text></Text>
-          <Text color="#8b949e">Provider Status: <Text bold color={
-            state.modelHealthStatus === 'READY' ? '#3fb950' :
-            state.modelHealthStatus === 'FALLBACK READY' ? '#d29922' :
-            state.modelHealthStatus === 'ERROR' ? '#ff7b72' : '#d29922'
+          <Text color={theme.textSecondary}>Provider Status: <Text bold color={
+            state.modelHealthStatus === 'READY' ? theme.success :
+            state.modelHealthStatus === 'FALLBACK READY' ? theme.warning :
+            state.modelHealthStatus === 'ERROR' ? theme.error : theme.warning
           }>{
             state.modelHealthStatus === 'READY' ? 'ONLINE 🟢' :
             state.modelHealthStatus === 'FALLBACK READY' ? 'FALLBACK 🟡 ollama' :
             state.modelHealthStatus === 'ERROR' ? 'ERROR 🔴' : 'CHECKING ⏳'
           }</Text></Text>
           {state.modelHealthStatus === 'ERROR' && (agent as any).lastHealthError ? (
-            <Text color="#8b949e">  └ {String((agent as any).lastHealthError).slice(0, 70)}</Text>
+            <Text color={theme.textSecondary}>  └ {String((agent as any).lastHealthError).slice(0, 70)}</Text>
           ) : null}
         </Box>
 
         {/* Model Search Box */}
-        <Box borderStyle="single" borderColor={focusSection === 'modelRail' ? '#a98bff' : '#30363d'} paddingX={1} marginBottom={1} flexShrink={0}>
-          <Text color="#8b949e">[ search ] </Text>
-          <Text color="#e6edf3" wrap="truncate">{scrollVisibleLeft(modelSearchQuery, 14)}</Text>
-          {focusSection === 'modelRail' && <Text color="#a98bff">█</Text>}
+        <Box borderStyle="single" borderColor={focusSection === 'modelRail' ? theme.brand : theme.borderDefault} paddingX={1} marginBottom={1} flexShrink={0}>
+          <Text color={theme.textSecondary}>[ search ] </Text>
+          <Text color={theme.textPrimary} wrap="truncate">{scrollVisibleLeft(modelSearchQuery, 14)}</Text>
+          {focusSection === 'modelRail' && <Text color={theme.brand}>█</Text>}
         </Box>
 
         {/* Scrollable Model List */}
         <Box flexDirection="column" height={railListHeight} overflowY="hidden">
           {filteredModels.length === 0 ? (
-            <Text color="#8b949e" italic>No matching models.</Text>
+            <Text color={theme.textSecondary} italic>No matching models.</Text>
           ) : (
             visibleModels.map((m, idx) => {
               const actualIdx = startIdx + idx;
@@ -690,7 +690,7 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
                   )}
                   {showDescription && priceText && (
                     <Box paddingLeft={2}>
-                      <Text color="#a5b0bc">{priceText}</Text>
+                      <Text color={theme.textSecondary}>{priceText}</Text>
                     </Box>
                   )}
                 </Box>
@@ -714,18 +714,18 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
           };
           const activeModel = (rawModels as any[]).find(r => r.id === state.model);
           return (
-            <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} marginTop={1} flexShrink={0}>
-              <Text bold color="#d2a8ff" wrap="truncate">{dm.name || dm.id}</Text>
+            <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={1} marginTop={1} flexShrink={0}>
+              <Text bold color={theme.brand} wrap="truncate">{dm.name || dm.id}</Text>
               {wrapVisible(String(dm.description || 'no description'), Math.max(20, railWidth - 6)).slice(0, 7).map((l, i) => (
-                <Text key={i} color="#9aa4b2">{l}</Text>
+                <Text key={i} color={theme.textSecondary}>{l}</Text>
               ))}
-              <Text color="#a5b0bc">
+              <Text color={theme.textSecondary}>
                 {dm.context_length ? `${Math.round(dm.context_length / 1000)}k ctx · ` : ''}{priceOf(dm)}
               </Text>
               {activeModel && activeModel.id !== dm.id && (
-                <Text color="#a5b0bc" wrap="truncate">vs active {String(state.model).split('/').pop()}: {priceOf(activeModel)}</Text>
+                <Text color={theme.textSecondary} wrap="truncate">vs active {String(state.model).split('/').pop()}: {priceOf(activeModel)}</Text>
               )}
-              <Text color="#a5b0bc">[d] close · [o] full page in carbonyl</Text>
+              <Text color={theme.textSecondary}>[d] close · [o] full page in carbonyl</Text>
             </Box>
           );
         })()}
@@ -733,11 +733,11 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
         {/* Live log rain — newest at top, rains downward (stacked mode) */}
         {!threeCol && <LogRain height={rainHeight} focused={focusSection === 'logRain' && zone >= 0} />}
 
-        <Box flexDirection="column" borderStyle="single" borderColor="#30363d" paddingX={1} borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
-          <Text color="#8b949e">Tab·menu ←→·panes ↑↓·move</Text>
-          <Text color="#8b949e">Enter·select Esc·back ?·keys</Text>
-          <Text color="#8b949e">d·model detail o·open page</Text>
-          <Text color="#8b949e">^K·palette · 1-3 home buttons</Text>
+        <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={1} borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
+          <Text color={theme.textSecondary}>Tab·menu ←→·panes ↑↓·move</Text>
+          <Text color={theme.textSecondary}>Enter·select Esc·back ?·keys</Text>
+          <Text color={theme.textSecondary}>d·model detail o·open page</Text>
+          <Text color={theme.textSecondary}>^K·palette · 1-3 home buttons</Text>
         </Box>
       </Box>
 

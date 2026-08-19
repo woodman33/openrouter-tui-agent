@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- UI remap against the MMGEN v2.4.1 reference: strict Tokyo Night palette
+  tokens centralized in `src/tui/theme.ts` (zero raw hex outside that file,
+  enforced across panels, drafts, companions, logserver and project sites);
+  PanelFrame standardized (hairline border, stdout-derived responsive gutters,
+  semantic status glyphs from the single StatusGlyph map); Dispatch rail shows
+  an 8-char plan hash with `[y]` copy / `[x]` expand, a sandbox isolation badge
+  and a budget thermometer, every line width-truncated so the reverse LogRain
+  never clips; LogRain is burst-safe (tail-only reads, size-signature skip,
+  memoized) so Cloudflare event storms never lag chat/J-BANG input.
+- TrueColor fallback: Ink/chalk down-convert the hex tokens automatically when
+  `COLORTERM!=truecolor` (bare SSH/CI); `colorLevel` in theme.ts exposes the
+  live mode — no second palette to keep in sync.
+
+### Removed
+- Orphaned Cloudflare workers `r2-worker` and `openrouter-tui-agent`
+  decommissioned per owner decision — eliminates the false Workers-Builds
+  PR checks.
+
 ## [0.6.0] - 2026-08-19
 
 ### Added

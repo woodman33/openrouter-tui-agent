@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { theme } from '../theme.js';
 
 interface Draft4Props {
   activeTab: number;
@@ -35,11 +36,11 @@ export function Draft4Browser({ activeTab, setActiveTab, width = 120, height = 3
 
   // Upward streaming Chrome DevTools Protocol network frames
   const cdpLogs = [
-    { id: 'REQ-409', method: 'GET', url: '/api/v4/accounts/workers/scripts', status: '200 OK', latency: '42ms', color: '#3ddc84' },
-    { id: 'WS -102', method: 'WS',  url: 'wss://dash.cloudflare.com/live-tail', status: '101 UPGRADE', latency: '12ms', color: '#4aa8ff' },
-    { id: 'DOM-881', method: 'CDP', url: 'Page.screencastFrameAck(sessionId="s1")', status: 'ACK 60FPS', latency: '16ms', color: '#e8ecf0' },
-    { id: 'REQ-408', method: 'POST', url: '/api/v4/workers/receipt-verify', status: '204 NO CONTENT', latency: '88ms', color: '#3ddc84' },
-    { id: 'REQ-407', method: 'GET', url: '/static/dashboard.bundle.js', status: '304 CACHED', latency: '4ms', color: '#8892a0' },
+    { id: 'REQ-409', method: 'GET', url: '/api/v4/accounts/workers/scripts', status: '200 OK', latency: '42ms', color: theme.success },
+    { id: 'WS -102', method: 'WS',  url: 'wss://dash.cloudflare.com/live-tail', status: '101 UPGRADE', latency: '12ms', color: theme.info },
+    { id: 'DOM-881', method: 'CDP', url: 'Page.screencastFrameAck(sessionId="s1")', status: 'ACK 60FPS', latency: '16ms', color: theme.textPrimary },
+    { id: 'REQ-408', method: 'POST', url: '/api/v4/workers/receipt-verify', status: '204 NO CONTENT', latency: '88ms', color: theme.success },
+    { id: 'REQ-407', method: 'GET', url: '/static/dashboard.bundle.js', status: '304 CACHED', latency: '4ms', color: theme.textSecondary },
   ];
 
   useEffect(() => {
@@ -65,38 +66,38 @@ export function Draft4Browser({ activeTab, setActiveTab, width = 120, height = 3
   const rightPaneW = Math.max(30, width - 24 - leftPaneW - 4);
 
   return (
-    <Box flexDirection="column" width={width} height={height} borderStyle="round" borderColor="#4aa8ff">
+    <Box flexDirection="column" width={width} height={height} borderStyle="round" borderColor={theme.info}>
       {/* Top Browser Navigation Ribbon */}
-      <Box justifyContent="space-between" paddingX={1} borderStyle="single" borderColor="#1c232c">
+      <Box justifyContent="space-between" paddingX={1} borderStyle="single" borderColor={theme.borderDefault}>
         <Box gap={1}>
-          <Text color="#4aa8ff" bold>◉ BROWSE / CDP ENGINE</Text>
-          <Text color="#5a6470">|</Text>
+          <Text color={theme.info} bold>◉ BROWSE / CDP ENGINE</Text>
+          <Text color={theme.textTertiary}>|</Text>
           {browserActions.map((act, idx) => (
-            <Text key={act} color={activeAction === idx ? '#4aa8ff' : '#5a6470'} bold={activeAction === idx}>
+            <Text key={act} color={activeAction === idx ? theme.info : theme.textTertiary} bold={activeAction === idx}>
               {act}
             </Text>
           ))}
         </Box>
         <Box gap={1}>
-          <Text color="#8892a0">CDP Port:</Text>
-          <Text color="#3ddc84">127.0.0.1:9222</Text>
-          <Text color="#5a6470">|</Text>
-          <Text color="#4aa8ff">Carbonyl: Active</Text>
+          <Text color={theme.textSecondary}>CDP Port:</Text>
+          <Text color={theme.success}>127.0.0.1:9222</Text>
+          <Text color={theme.textTertiary}>|</Text>
+          <Text color={theme.info}>Carbonyl: Active</Text>
         </Box>
       </Box>
 
       {/* URL Address Bar */}
-      <Box borderStyle="single" borderColor="#161c22" paddingX={1}>
-        <Text color="#4aa8ff">🔒 https:// </Text>
-        <Text color="#e8ecf0" bold>{url}</Text>
+      <Box borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
+        <Text color={theme.info}>🔒 https:// </Text>
+        <Text color={theme.textPrimary} bold>{url}</Text>
       </Box>
 
       {/* Main Dual-Pane Matrix with Left Standing Rail */}
       <Box flexGrow={1} flexDirection="row">
         {/* Left Standing Menu (6 Tabs) */}
-        <Box flexDirection="column" width={22} borderStyle="single" borderColor="#1c232c" paddingX={1}>
+        <Box flexDirection="column" width={22} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
           <Box marginBottom={1}>
-            <Text color="#5a6470" bold>── BROWSE RAILS ──</Text>
+            <Text color={theme.textTertiary} bold>── BROWSE RAILS ──</Text>
           </Box>
           {tabs.map((tab, idx) => {
             const isSelected = activeTab === idx;
@@ -106,29 +107,29 @@ export function Draft4Browser({ activeTab, setActiveTab, width = 120, height = 3
                 justifyContent="space-between"
                 paddingX={1}
                 borderStyle={isSelected ? 'single' : undefined}
-                borderColor={isSelected ? '#4aa8ff' : undefined}
+                borderColor={isSelected ? theme.info : undefined}
               >
-                <Text color={isSelected ? '#4aa8ff' : '#8892a0'} bold={isSelected}>
+                <Text color={isSelected ? theme.info : theme.textSecondary} bold={isSelected}>
                   [{tab.key}] {tab.icon} {tab.label}
                 </Text>
-                <Text color={isSelected ? '#3ddc84' : '#5a6470'}>
+                <Text color={isSelected ? theme.success : theme.textTertiary}>
                   {tab.badge}
                 </Text>
               </Box>
             );
           })}
-          <Box marginTop={1} flexDirection="column" borderStyle="single" borderColor="#161c22" padding={1}>
-            <Text color="#5a6470">RENDER: WebGL</Text>
-            <Text color="#5a6470">COOKIES: 14 saved</Text>
-            <Text color="#3ddc84">HEADLESS: NO</Text>
+          <Box marginTop={1} flexDirection="column" borderStyle="single" borderColor={theme.surfaceOverlay} padding={1}>
+            <Text color={theme.textTertiary}>RENDER: WebGL</Text>
+            <Text color={theme.textTertiary}>COOKIES: 14 saved</Text>
+            <Text color={theme.success}>HEADLESS: NO</Text>
           </Box>
         </Box>
 
         {/* Left Pane: Terminal Browser Viewport & DOM Hierarchy */}
-        <Box flexDirection="column" width={leftPaneW} borderStyle="single" borderColor="#1c232c" paddingX={1}>
-          <Box justifyContent="space-between" borderStyle="single" borderColor="#161c22" paddingX={1}>
-            <Text color="#e8ecf0" bold>▼ DOM ACCESSIBILITY & VIEWPORT TREE</Text>
-            <Text color="#8892a0">[↑↓] Select Target Element</Text>
+        <Box flexDirection="column" width={leftPaneW} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
+            <Text color={theme.textPrimary} bold>▼ DOM ACCESSIBILITY & VIEWPORT TREE</Text>
+            <Text color={theme.textSecondary}>[↑↓] Select Target Element</Text>
           </Box>
 
           <Box flexDirection="column" flexGrow={1} gap={1} marginTop={1}>
@@ -141,67 +142,67 @@ export function Draft4Browser({ activeTab, setActiveTab, width = 120, height = 3
                   flexDirection="row"
                   justifyContent="space-between"
                   borderStyle="single"
-                  borderColor={isSelected ? '#4aa8ff' : '#2c3540'}
+                  borderColor={isSelected ? theme.info : theme.surfaceOverlay}
                   paddingX={1}
                 >
-                  <Text color={isSelected ? '#4aa8ff' : '#e8ecf0'} bold={isSelected}>
+                  <Text color={isSelected ? theme.info : theme.textPrimary} bold={isSelected}>
                     {indent}⟨{el.tag}⟩ {el.text}
                   </Text>
-                  <Text color={isSelected ? '#3ddc84' : '#5a6470'}>{el.id}</Text>
+                  <Text color={isSelected ? theme.success : theme.textTertiary}>{el.id}</Text>
                 </Box>
               );
             })}
           </Box>
 
           {/* Interactive Element Actions */}
-          <Box borderStyle="single" borderColor="#4aa8ff" paddingX={1} justifyContent="space-between">
-            <Text color="#8892a0">Target: <Text color="#4aa8ff" bold>{domElements[selectedElement]?.id}</Text></Text>
+          <Box borderStyle="single" borderColor={theme.info} paddingX={1} justifyContent="space-between">
+            <Text color={theme.textSecondary}>Target: <Text color={theme.info} bold>{domElements[selectedElement]?.id}</Text></Text>
             <Box gap={1}>
-              <Text color="#3ddc84" bold>[C] Click</Text>
-              <Text color="#ffaa33" bold>[T] Type</Text>
-              <Text color="#ff007f" bold>[S] Scroll</Text>
+              <Text color={theme.success} bold>[C] Click</Text>
+              <Text color={theme.accent} bold>[T] Type</Text>
+              <Text color={theme.brand} bold>[S] Scroll</Text>
             </Box>
           </Box>
         </Box>
 
         {/* Right Pane: Upward Streaming Chrome DevTools Protocol & Network Inspector */}
-        <Box flexDirection="column" width={rightPaneW} borderStyle="single" borderColor="#1c232c" paddingX={1}>
-          <Box justifyContent="space-between" borderStyle="single" borderColor="#161c22" paddingX={1}>
-            <Text color="#4aa8ff" bold>▲ NETWORK / CDP LOGS</Text>
-            <Text color="#3ddc84">COUNTER STREAM ↑</Text>
+        <Box flexDirection="column" width={rightPaneW} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
+            <Text color={theme.info} bold>▲ NETWORK / CDP LOGS</Text>
+            <Text color={theme.success}>COUNTER STREAM ↑</Text>
           </Box>
 
           <Box marginTop={1} flexDirection="column" flexGrow={1} justifyContent="flex-end" gap={0}>
             {cdpLogs.map((log, i) => (
               <Box key={i} marginY={0} justifyContent="space-between">
-                <Text color="#5a6470">{log.id} [{log.method}]</Text>
+                <Text color={theme.textTertiary}>{log.id} [{log.method}]</Text>
                 <Text color={log.color} wrap="truncate-end">{log.url}</Text>
-                <Text color="#3ddc84">{log.latency}</Text>
+                <Text color={theme.success}>{log.latency}</Text>
               </Box>
             ))}
           </Box>
 
-          <Box flexDirection="column" borderStyle="round" borderColor="#1c232c" paddingX={1} marginTop={1}>
-            <Text color="#8892a0">Frames Received: <Text color="#3ddc84">2,840</Text></Text>
-            <Text color="#8892a0">Bandwidth: <Text color="#ffaa33">1.2 MB/s</Text> | DOM Nodes: 184</Text>
+          <Box flexDirection="column" borderStyle="round" borderColor={theme.borderDefault} paddingX={1} marginTop={1}>
+            <Text color={theme.textSecondary}>Frames Received: <Text color={theme.success}>2,840</Text></Text>
+            <Text color={theme.textSecondary}>Bandwidth: <Text color={theme.accent}>1.2 MB/s</Text> | DOM Nodes: 184</Text>
           </Box>
         </Box>
       </Box>
 
       {/* Bottom Contextual Descriptor */}
-      <Box flexDirection="column" borderStyle="single" borderColor="#1c232c" paddingX={1}>
+      <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
         <Box justifyContent="space-between">
           <Box gap={1}>
-            <Text color="#8892a0" bold>CDP COMMANDS:</Text>
-            <Text color="#4aa8ff">[C] Click Element</Text>
-            <Text color="#ffaa33">[T] Input Text</Text>
-            <Text color="#3ddc84">[📸] Capture Screenshot</Text>
+            <Text color={theme.textSecondary} bold>CDP COMMANDS:</Text>
+            <Text color={theme.info}>[C] Click Element</Text>
+            <Text color={theme.accent}>[T] Input Text</Text>
+            <Text color={theme.success}>[📸] Capture Screenshot</Text>
           </Box>
-          <Text color="#4aa8ff">[H] {showDescriptor ? 'Hide Help' : 'Show Help'}</Text>
+          <Text color={theme.info}>[H] {showDescriptor ? 'Hide Help' : 'Show Help'}</Text>
         </Box>
         {showDescriptor && (
           <Box marginTop={0}>
-            <Text color="#5a6470" italic>
+            <Text color={theme.textTertiary} italic>
               💡 Tab 5 Browse: Direct Chrome DevTools Protocol bridge. Left pane selects DOM elements; right pane streams network & CDP traffic upward.
             </Text>
           </Box>
