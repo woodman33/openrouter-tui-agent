@@ -19,8 +19,8 @@ const opts = () => ({
 });
 
 describe('OpenHands adapter — real sandbox or nothing', () => {
-  it('default-deny without operator approval (paid work)', () => {
-    const r = runOpenHandsTask(opts());
+  it('default-deny without operator approval (paid work)', async () => {
+    const r = await runOpenHandsTask(opts());
     expect(r.ok).toBe(false);
     expect(r.state).toBe('blocked');
     expect(r.note).toContain('timmy approve');
@@ -29,12 +29,12 @@ describe('OpenHands adapter — real sandbox or nothing', () => {
     expect(last.error_class).toBe('approval');
   });
 
-  it('fails closed not_configured when isolation is unavailable', () => {
+  it('fails closed not_configured when isolation is unavailable', async () => {
     const o = opts();
     o.approval = issueApproval(openHandsPlanHash(o)).token;
     const oldPath = process.env.PATH;
     process.env.PATH = '/nonexistent';
-    const r = runOpenHandsTask(o);
+    const r = await runOpenHandsTask(o);
     process.env.PATH = oldPath;
     expect(r.ok).toBe(false);
     expect(r.state).toBe('not_configured');

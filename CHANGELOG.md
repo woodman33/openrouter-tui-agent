@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unresolved; receipts record every attempt).
 - `hyperframes` render lane; Demos A+B re-run through the Command Post
   (plan → J-BANG approval → dispatch → collect, receipted).
+- `host-ephemeral` dispatch workspaces seed `context_manifest` files
+  (sha256-verified, path-escape-checked) — the ephemeral temp copy the
+  isolation law always promised; renders run from the seeded copy, never
+  the live checkout.
 - Receipt browser (:4310/browser), Mission Map (:4321), UI north-star
   reference + color-consistency law, public-repo organization pass.
 

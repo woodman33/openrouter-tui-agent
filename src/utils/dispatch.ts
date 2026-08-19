@@ -3,7 +3,7 @@
 // existing harness lanes (LANE_RUNNERS + tmux vocabulary). It is not a second
 // scheduler; the later tldraw Mission Map compiles into these same calls.
 import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 import { spawnSync } from 'child_process';
 import { tmpdir } from 'os';
 import { fileURLToPath } from 'url';
@@ -132,6 +132,19 @@ function establishIsolation(s: StoredPlan): { ok: boolean; workdir?: string; not
     return { ok: false, state: 'blocked', note: 'workspace inside live checkout — refused (isolation law)' };
   }
   const workdir = mkdtempSync(join(tmpdir(), `timmy-dp-${s.id}-`));
+  // seed the temp copy: hash-verified manifest files read from the governing
+  // repo; the pane only ever sees the ephemeral copy (isolation law)
+  for (const m of s.plan.context_manifest ?? []) {
+    const src = resolve(repoRoot, m.path);
+    if (!src.startsWith(resolve(repoRoot) + '/')) return { ok: false, state: 'blocked', note: `context path escapes repo: ${m.path}` };
+    if (!existsSync(src)) return { ok: false, state: 'blocked', note: `context missing: ${m.path}` };
+    const got = sha(src);
+    if (got !== m.sha256) return { ok: false, state: 'blocked', note: `context hash mismatch: ${m.path} (want ${m.sha256.slice(0, 12)}… got ${got.slice(0, 12)}…)` };
+    const dst = resolve(workdir, m.path);
+    if (!dst.startsWith(resolve(workdir) + '/')) return { ok: false, state: 'blocked', note: `context path escapes workspace: ${m.path}` };
+    mkdirSync(dirname(dst), { recursive: true });
+    writeFileSync(dst, readFileSync(src));
+  }
   return { ok: true, workdir };
 }
 
