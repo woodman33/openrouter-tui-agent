@@ -3,10 +3,10 @@
 // limits, deterministic acceptance tests. OpenHands' own runtime is
 // docker-backed; we additionally verify the daemon up front and fail closed.
 // PTY/tmux is watch/attach/recovery only — structured spawn here.
-import { existsSync, mkdirSync, writeFileSync, readFileSync, mkdtempSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, mkdtempSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { spawnSync } from 'child_process';
+import { spawnSync, spawn } from 'child_process';
 import crypto from 'crypto';
 import { appendReceipt } from './receipts.js';
 import { appendEvent } from './eventbus.js';
@@ -20,7 +20,10 @@ export interface OpenHandsOpts {
   fixture_repo?: string;         // git url/dir to clone (pinned ref) — else scaffold
   ref?: string;
   wall_ms?: number;
+  no_activity_ms?: number;       // A2 fail-fast: no tool/file activity within N → kill
   max_iterations?: number;
+  max_spend?: number;            // A3: required >0 when llm==='auto'
+  llm?: 'local' | 'auto';        // default local (ollama), $0-first
   approval?: string;             // operator token bound to this task's plan hash
   dir?: string;
 }
@@ -39,7 +42,9 @@ export interface OpenHandsResult {
 }
 
 export const openHandsPlanHash = (o: OpenHandsOpts): string =>
-  planHashOf({ tool: 'timmy_openhands_run', task: o.task, acceptance: o.acceptance, ref: o.ref ?? null, wall_ms: o.wall_ms ?? 300000, max_iterations: o.max_iterations ?? 4 });
+  planHashOf({ tool: 'timmy_openhands_run', task: o.task, acceptance: o.acceptance, ref: o.ref ?? null, wall_ms: o.wall_ms ?? 300000, max_iterations: o.max_iterations ?? 4, llm: o.llm ?? 'local', no_activity_ms: o.no_activity_ms ?? 90000, max_spend: o.max_spend ?? 0 });
+
+const HOST_PATH_RE = /\/Users\/|\/home\/|C:\\/;
 
 export function openHandsPreflight(): { ok: boolean; state?: 'not_configured'; note?: string } {
   const d = spawnSync('docker', ['info'], { encoding: 'utf8', timeout: 15000 });
@@ -55,7 +60,7 @@ const scaffoldFixture = (work: string) => {
   writeFileSync(join(work, 'test.js'), `const { add } = require('./add.js');\nif (add(1, 2) !== 3) { console.error('RED: add(1,2) !== 3'); process.exit(1); }\nconsole.log('GREEN');\n`);
 };
 
-export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
+export async function runOpenHandsTask(o: OpenHandsOpts): Promise<OpenHandsResult> {
   const dir = o.dir ?? process.cwd();
   const planHash = openHandsPlanHash(o);
   // paid/remote work default-deny: operator token bound to the complete task hash
@@ -65,11 +70,16 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
     appendEvent('openhands.denied', { plan_hash: planHash, note: gate.note }, dir);
     return { ok: false, state: 'blocked', note: `${gate.note} — mint: timmy approve ${planHash}`, plan_hash: planHash, receipt: rec.hash };
   }
-  const pre = openHandsPreflight();
-  if (!pre.ok) {
-    const rec = appendReceipt('runs', { kind: 'run', subject: 'openhands run not_configured', policy: 'human-gated', status: 'failed', error_class: 'not_configured', plan_hash: planHash, discrepancies: [pre.note!], spans: [], artifacts: [] }, dir);
-    appendEvent('openhands.not_configured', { plan_hash: planHash, note: pre.note }, dir);
-    return { ok: false, state: pre.state, note: pre.note, plan_hash: planHash, receipt: rec.hash };
+  // A3 spend guard: frontier models only under a hard max_spend bound
+  if ((o.llm ?? 'local') === 'auto' && !(Number(o.max_spend) > 0)) {
+    const rec = appendReceipt('runs', { kind: 'run', subject: 'openhands run DENIED (spend policy)', policy: 'human-gated', status: 'denied', error_class: 'spend_policy', plan_hash: planHash, discrepancies: ['llm=auto requires max_spend > 0 in the approved plan'], spans: [], artifacts: [] }, dir);
+    return { ok: false, state: 'blocked', note: 'llm=auto requires max_spend > 0', plan_hash: planHash, receipt: rec.hash };
+  }
+  const bin = spawnSync('openhands', ['--version'], { encoding: 'utf8', timeout: 15000 });
+  if (bin.status !== 0) {
+    const rec = appendReceipt('runs', { kind: 'run', subject: 'openhands run not_configured', policy: 'human-gated', status: 'failed', error_class: 'not_configured', plan_hash: planHash, discrepancies: ['openhands binary missing'], spans: [], artifacts: [] }, dir);
+    appendEvent('openhands.not_configured', { plan_hash: planHash }, dir);
+    return { ok: false, state: 'not_configured', note: 'openhands binary missing', plan_hash: planHash, receipt: rec.hash };
   }
   const work = mkdtempSync(join(tmpdir(), 'timmy-oh-'));
   if (o.fixture_repo) {
@@ -85,19 +95,45 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
     spawnSync('git', ['-c', 'user.email=timmy@local', '-c', 'user.name=timmy', 'commit', '-q', '-m', 'red fixture'], { cwd: work });
   }
   const t0 = Date.now();
-  // NB: --max-iterations is NOT a top-level flag in this CLI; iterations are
-  // bounded by the wall-clock timeout instead.
-  const run = spawnSync('openhands', ['--headless', '-t', o.task, '--always-approve', '--json', '--override-with-envs'], {
-    cwd: work, encoding: 'utf8', timeout: o.wall_ms ?? 300000,
+  // A1: seeded disposable workspace via OPENHANDS_WORK_DIR — never shared/live.
+  const llmLocal = (o.llm ?? 'local') === 'local';
+  const child = spawn('openhands', ['--headless', '-t', o.task, '--always-approve', '--override-with-envs'], {
+    cwd: work,
     env: {
-      ...process.env, TIMMY_WORKSPACE: work, OPENHANDS_SUPPRESS_BANNER: '1',
-      TERM: 'dumb', NO_COLOR: '1', CI: '1',
+      ...process.env,
+      OPENHANDS_WORK_DIR: work,
+      OPENHANDS_SUPPRESS_BANNER: '1', TERM: 'dumb', NO_COLOR: '1', CI: '1',
       // agent-server boots with NO config.toml by default; feed the LLM via envs
-      LLM_MODEL: process.env.LLM_MODEL ?? 'openrouter/auto',
-      LLM_API_KEY: process.env.LLM_API_KEY ?? process.env.OPENROUTER_API_KEY ?? '',
-      LLM_BASE_URL: process.env.LLM_BASE_URL ?? 'https://openrouter.ai/api/v1'
+      LLM_MODEL: llmLocal ? 'ollama/nemotron-3.5-lightning' : 'openrouter/auto',
+      LLM_API_KEY: llmLocal ? 'ollama' : (process.env.LLM_API_KEY ?? process.env.OPENROUTER_API_KEY ?? ''),
+      LLM_BASE_URL: llmLocal ? 'http://localhost:11434' : 'https://openrouter.ai/api/v1'
     }
   });
+  let tail = '';
+  let killed: string | null = null;
+  const snap = (): string => {
+    try { return readdirSync(work).map(f => { try { return String(statSync(join(work, f)).mtimeMs); } catch { return 'x'; } }).join(','); } catch { return ''; }
+  };
+  const lastMtime = { v: snap() };
+  const lastActivity = { v: Date.now() };
+  const noAct = o.no_activity_ms ?? 90000;   // A2 fail-fast
+  const wall = o.wall_ms ?? 300000;
+  child.stderr?.on('data', d => {
+    const s = d.toString();
+    tail = (tail + s).slice(-2000);
+    if (/file_editor|terminal|Execut|edit|read/i.test(s)) lastActivity.v = Date.now();
+  });
+  child.stdout?.on('data', d => { tail = (tail + d.toString()).slice(-2000); lastActivity.v = Date.now(); });
+  const watcher = setInterval(() => {
+    const m = snap();
+    if (m !== lastMtime.v) { lastMtime.v = m; lastActivity.v = Date.now(); }
+    const now = Date.now();
+    if (now - t0 > wall) { killed = 'wall_time'; child.kill(); }
+    else if (now - lastActivity.v > noAct) { killed = 'no_tool_activity'; child.kill(); }
+  }, 5000);
+  await new Promise<void>(resolve => child.on('exit', () => resolve()));
+  clearInterval(watcher);
+  const run = { status: killed ? null : (child.exitCode ?? 0), stdout: tail, stderr: tail };
   const duration_ms = Date.now() - t0;
   const acceptance = (o.acceptance ?? []).map(cmd => ({
     cmd,
@@ -105,12 +141,15 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
   }));
   const patch = spawnSync('git', ['diff', 'HEAD'], { cwd: work, encoding: 'utf8' }).stdout ?? '';
   const allGreen = acceptance.length > 0 && acceptance.every(a => a.code === 0);
-  const child = appendReceipt('runs', {
-    kind: 'run', subject: `openhands headless · ${allGreen ? 'green' : 'red'}`, policy: 'human-gated',
-    status: run.status === 0 && allGreen ? 'ok' : 'failed',
-    ...(run.status !== 0 || !allGreen ? { error_class: (run.status === null ? 'wall_time' : 'acceptance_red') as string } : {}),
+  // A4: host-path scan at seal — isolation violations never seal clean
+  const hostLeak = HOST_PATH_RE.test(patch);
+  const errClass = killed ?? (hostLeak ? 'isolation_violation' : (!allGreen ? 'acceptance_red' : undefined));
+  const childRec = appendReceipt('runs', {
+    kind: 'run', subject: `openhands headless · ${killed ?? (hostLeak ? 'ISOLATION VIOLATION' : (allGreen ? 'green' : 'red'))}`, policy: 'human-gated',
+    status: !errClass ? 'ok' : 'failed',
+    ...(errClass ? { error_class: errClass as string } : {}),
     plan_hash: planHash, ms: duration_ms,
-    spans: [{ name: 'openhands headless (docker runtime)', kind: 'invoke_agent' }],
+    spans: [{ name: 'openhands headless (seeded disposable workspace)', kind: 'invoke_agent' }],
     artifacts: []
   }, dir);
   // structured events from --json stdout land on the bus (SDK-grade evidence);
@@ -129,21 +168,21 @@ export function runOpenHandsTask(o: OpenHandsOpts): OpenHandsResult {
       }
     } catch { /* non-event json line */ }
   }
-  appendEvent('openhands.completed', { plan_hash: planHash, green: allGreen, duration_ms }, dir);
+  appendEvent('openhands.completed', { plan_hash: planHash, green: allGreen, duration_ms, killed }, dir);
   const parent = appendReceipt('runs', {
     kind: 'verify', subject: `openhands acceptance · ${acceptance.filter(a => a.code === 0).length}/${acceptance.length} green`,
-    policy: 'human-gated', status: allGreen ? 'ok' : 'failed',
-    ...(allGreen ? {} : { error_class: 'acceptance_red' as string }),
+    policy: 'human-gated', status: !errClass ? 'ok' : 'failed',
+    ...(errClass ? { error_class: errClass as string } : {}),
     plan_hash: planHash, output_sha256: sha(patch),
     ...(evCost > 0 ? { cost_usd: evCost } : {}),
     ...(evTokens > 0 ? { tokens: evTokens } : {}),
-    child_receipts: [child.hash],
+    child_receipts: [childRec.hash],
     spans: [{ name: 'acceptance tests', kind: 'execute_tool' }],
     artifacts: []
   }, dir);
   // failure evidence rides on the result (work order: never swallow why)
-  const output_tail = (run.status === 0 && allGreen) ? undefined : `${(run.stderr ?? '')}${(run.stdout ?? '')}`.slice(-600);
-  return { ok: run.status === 0 && allGreen, plan_hash: planHash, workdir: work, patch, patch_sha256: sha(patch), acceptance, duration_ms, receipt: parent.hash, note: output_tail };
+  const output_tail = !errClass ? undefined : (killed ? `killed: ${killed} · ` : '') + tail.slice(-600);
+  return { ok: !errClass, plan_hash: planHash, workdir: work, patch, patch_sha256: sha(patch), acceptance, duration_ms, receipt: parent.hash, note: output_tail };
 }
 
 export { readFileSync as _ohRead, existsSync as _ohExists, mkdirSync as _ohMkdir };
