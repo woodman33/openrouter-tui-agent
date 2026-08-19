@@ -59,3 +59,12 @@ hide-ui/custom-ui (terminal-first chrome).
 When reaching for a canvas feature, check this surface first — the SDK likely
 ships it as a first-class feature or example; compose it, don't rebuild it.
 Render instances in-terminal via carbonyl (localhost browser, WebGL embedded).
+
+## Visual north-star (owner-approved reference)
+
+`docs/ui-references/mmgen-console-v2.4.1.png` + `docs/UI-REFERENCE-NOTES.md`:
+neon-on-black monospace console — icon nav rail, routing/pipeline panels with
+ASCII sliders + status chips, live waveform monitor, EDL timeline with
+keyframes, preview pane with run metadata, receipt-derived telemetry cards,
+footer key-grammar + status bar. Color is semantic only. Every number traces
+to a receipt or live bus event.
