@@ -6,7 +6,8 @@
 import { createServer, ServerResponse } from 'http';
 import { existsSync, readFileSync, statSync, openSync, readSync, closeSync, readdirSync } from 'fs';
 import { armPlan, dispatchPlan, pauseOrCancelLane, collectRun } from './dispatch.js';
-import { join } from 'path';
+import { compileMissionMap, type MissionMapDoc } from './slate-compiler.js';
+import { join, resolve } from 'path';
 import { spawn } from 'child_process';
 import { pathToFileURL } from 'url';
 import { readEvents, eventsPath, TimmyEvent } from './eventbus.js';
@@ -121,6 +122,164 @@ const listPlans = () => {
     });
   } catch { return []; }
 };
+
+// Mission Studio: survey surface for the Mission Map compiler + frame-accurate
+// playback of compiled mission stages. Compiles only — launching stays with
+// the controller (plan_dispatch → approve → dispatch). The Bézier sampler
+// MIRRORS src/utils/theatre-runtime.ts (same bisection math, deterministic);
+// bundler-based studios load the identical state via @theatre/core.
+const MISSION_HTML = `<!doctype html><html><head><meta charset="utf-8">
+<title>TIMMY :: MISSION STUDIO</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: ${theme.surfaceBase}; color: ${theme.textPrimary}; font: 13px/1.5 ui-monospace, Menlo, monospace; padding: 16px; }
+  h1 { color: ${theme.brand}; font-size: 14px; letter-spacing: .12em; margin-bottom: 10px; }
+  h2 { color: ${theme.focus}; font-size: 11px; letter-spacing: .18em; margin: 14px 0 6px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  textarea { flex: 1; min-width: 320px; background: ${theme.surfaceRaised}; color: ${theme.textPrimary}; border: 1px solid ${theme.borderDefault}; border-radius: 6px; padding: 8px; font: inherit; height: 170px; }
+  button { background: ${theme.surfaceRaised}; border: 1px solid ${theme.brand}; color: ${theme.brand}; border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
+  button:hover { border-color: ${theme.focus}; color: ${theme.focus}; }
+  input { background: ${theme.surfaceRaised}; border: 1px solid ${theme.borderDefault}; color: ${theme.textPrimary}; border-radius: 6px; padding: 6px 8px; font: inherit; }
+  .plan { border: 1px solid ${theme.borderDefault}; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; background: ${theme.surfaceRaised}; }
+  .plan .obj { font-weight: 600; }
+  .plan .meta { color: ${theme.textSecondary}; font-size: 11px; }
+  .plan .hash { color: ${theme.success}; }
+  .err { color: ${theme.error}; margin: 6px 0; }
+  #stage { width: 260px; height: 130px; border: 1px solid ${theme.borderDefault}; background: ${theme.surfaceOverlay}; position: relative; margin: 8px 0; }
+  #actor { position: absolute; left: 20px; top: 50px; width: 24px; height: 24px; background: ${theme.brand}; border-radius: 4px; }
+  #clock { color: ${theme.warning}; }
+  .note { color: ${theme.textTertiary}; font-size: 11px; }
+</style></head><body>
+<h1>TIMMY :: MISSION STUDIO · compile + playback</h1>
+
+<h2>1 · MISSION MAP → CUE PLANS (timmy_mission_compile)</h2>
+<div class="row"><textarea id="doc" spellcheck="false"></textarea></div>
+<div class="row" style="margin-top:8px">
+  <button onclick="compile()">compile</button>
+  <span class="note">compiles only — launch stays with the controller: timmy_plan_dispatch → timmy approve → timmy_dispatch_plan</span>
+</div>
+<div id="plans"></div>
+
+<h2>2 · THEATRE PLAYBACK (frame-accurate · 30fps timebase)</h2>
+<div class="row">
+  <input id="folder" value="studio/timmy-sting-5s" size="34">
+  <button onclick="loadState()">load state</button>
+  <button onclick="play()">play</button>
+  <button onclick="stop()">stop</button>
+</div>
+<div id="stage"><div id="actor"></div></div>
+<div id="clock">t=0.000</div>
+<div id="stateNote" class="note">no state loaded — compiled folders carry theatre-state.json (theatre-runtime saveTheatreState)</div>
+
+<h2>3 · VIDEO STEM (W3C media fragments — same addressing as the EDL)</h2>
+<div class="row">
+  <input id="vsrc" placeholder="media url" size="40">
+  <input id="vin" type="number" value="0" step="0.1" style="width:70px">
+  <input id="vout" type="number" value="5" step="0.1" style="width:70px">
+  <button onclick="playVid()">play fragment</button>
+</div>
+<video id="vid" controls style="max-width:480px;width:100%;margin-top:8px;border:1px solid ${theme.borderDefault}"></video>
+
+<script>
+const DEFAULT_DOC = {
+  nodes: [
+    { id: 'sting', kind: 'capsule', objective: 'render the 5s sting', copies: 1 },
+    { id: 'stingHarness', kind: 'harness', harness: 'hyperframes' },
+    { id: 'fix', kind: 'capsule', objective: 'sandboxed patch pass' },
+    { id: 'fixHarness', kind: 'harness', harness: 'openhands', workspace: 'docker' },
+    { id: 'fixGate', kind: 'gate', approval: 'manual', acceptance: ['npm test'] },
+    { id: 'stingOut', kind: 'artifact', path: 'package.json' }
+  ],
+  edges: [
+    { from: 'stingHarness', to: 'sting', kind: 'harness' },
+    { from: 'fixHarness', to: 'fix', kind: 'harness' },
+    { from: 'fixGate', to: 'fix', kind: 'gate' },
+    { from: 'stingOut', to: 'fix', kind: 'artifact' },
+    { from: 'sting', to: 'fix', kind: 'depends' }
+  ]
+};
+document.getElementById('doc').value = JSON.stringify(DEFAULT_DOC, null, 2);
+
+async function compile() {
+  const out = document.getElementById('plans');
+  out.innerHTML = '';
+  let r;
+  try {
+    const res = await fetch('/mission/compile', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ doc: JSON.parse(document.getElementById('doc').value) }) });
+    r = await res.json();
+  } catch (e) { out.innerHTML = '<div class="err">compile failed: ' + String(e) + '</div>'; return; }
+  for (const e of r.errors ?? []) out.innerHTML += '<div class="err">✕ ' + e + '</div>';
+  for (const p of r.plans ?? []) {
+    out.innerHTML += '<div class="plan"><div class="obj">' + p.plan.objective + '</div>'
+      + '<div class="meta">node ' + p.node_id + ' · harness ' + p.plan.harnesses[0] + ' · workspace ' + p.plan.workspace.kind
+      + ' · depends_on [' + (p.plan.cadence.depends_on || []).join(', ') + '] · approval ' + p.plan.approval.mode
+      + ' · manifest ' + (p.plan.context_manifest || []).map(m => m.path + '@' + m.sha256.slice(0, 8) + '…').join(' ') + '</div>'
+      + '<div class="meta hash">CUE-valid — feed to timmy_plan_dispatch to store + hash</div></div>';
+  }
+  if (!(r.plans ?? []).length && !(r.errors ?? []).length) out.innerHTML = '<div class="err">no capsules in doc</div>';
+}
+
+// cubic-bézier sampler — MIRROR of src/utils/theatre-runtime.ts bezierSample
+function bez(h, x) {
+  const [x1, y1, x2, y2] = h;
+  const cx = u => 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u;
+  const cy = u => 3 * (1 - u) * (1 - u) * u * y1 + 3 * (1 - u) * u * u * y2 + u * u * u;
+  const t = Math.min(1, Math.max(0, x));
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (cx(m) < t) lo = m; else hi = m; }
+  return cy((lo + hi) / 2);
+}
+function sampleKfs(kfs, t) {
+  if (!kfs.length) return 0;
+  if (t <= kfs[0].position) return kfs[0].value;
+  if (t >= kfs[kfs.length - 1].position) return kfs[kfs.length - 1].value;
+  for (let i = 0; i < kfs.length - 1; i++) {
+    const a = kfs[i], b = kfs[i + 1];
+    if (t >= a.position && t <= b.position) {
+      if (typeof a.value === 'string' || typeof b.value === 'string') return a.value;
+      const span = b.position - a.position;
+      const x = span <= 0 ? 1 : (t - a.position) / span;
+      return a.value + (b.value - a.value) * bez(a.interpolation.config.handles, x);
+    }
+  }
+  return kfs[kfs.length - 1].value;
+}
+let STATE = null, RAF = 0, T0 = 0, LEN = 5;
+async function loadState() {
+  const note = document.getElementById('stateNote');
+  const res = await fetch('/mission/theatre?folder=' + encodeURIComponent(document.getElementById('folder').value));
+  const s = await res.json();
+  if (!s.sheets) { note.textContent = 'no theatre state in that folder (save one via theatre-runtime)'; STATE = null; return; }
+  STATE = s;
+  const sheet = Object.values(s.sheets)[0];
+  LEN = sheet.sequence.length;
+  note.textContent = 'loaded definition ' + s.definitionVersion + ' · ' + Object.keys(s.sheets)[0] + ' · ' + Object.keys(sheet.sequence.tracks).length + ' tracks · ' + LEN + 's';
+}
+function apply(t) {
+  const actor = document.getElementById('actor');
+  let x = 0, y = 0, sc = 1;
+  if (STATE) {
+    const sheet = Object.values(STATE.sheets)[0];
+    for (const [key, tr] of Object.entries(sheet.sequence.tracks)) {
+      const v = sampleKfs(tr.keyframes, t);
+      if (typeof v !== 'number') continue;
+      if (key.endsWith('.position.x')) x = v;
+      else if (key.endsWith('.y')) y = v;
+      else if (key.endsWith('.scale')) sc = v;
+    }
+  }
+  actor.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + sc + ')';
+  document.getElementById('clock').textContent = 't=' + t.toFixed(3) + ' / ' + LEN.toFixed(3);
+}
+function play() { stop(); T0 = performance.now(); const tick = () => { apply(((performance.now() - T0) / 1000) % LEN); RAF = requestAnimationFrame(tick); }; RAF = requestAnimationFrame(tick); }
+function stop() { cancelAnimationFrame(RAF); }
+function playVid() {
+  const v = document.getElementById('vid');
+  v.src = document.getElementById('vsrc').value + '#t=' + document.getElementById('vin').value + ',' + document.getElementById('vout').value;
+  v.play();
+}
+</script></body></html>`;
 
 const DISPATCH_HTML = `
 <div style="border-top:1px solid ${theme.surfaceRaised};padding:12px 16px">
@@ -330,6 +489,40 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(r));
       });
+      return;
+    }
+    // Mission Studio: survey surface for the compiler + playback. Compiles
+    // only — every mutation still goes through the controller.
+    if (url.pathname === '/mission') {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.end(MISSION_HTML);
+      return;
+    }
+    if (url.pathname === '/mission/compile' && req.method === 'POST') {
+      const ip = req.socket.remoteAddress ?? '';
+      if (!isLocalIp(ip)) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ ok: false, errors: ['localhost only'], plans: [] }));
+        return;
+      }
+      let body: any = {};
+      req.on('data', d => { try { body = JSON.parse(d.toString()); } catch { /* ignore */ } });
+      req.on('end', () => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(compileMissionMap((body?.doc ?? { nodes: [], edges: [] }) as MissionMapDoc, typeof body?.repo_root === 'string' ? { repoRoot: body.repo_root } : {})));
+      });
+      return;
+    }
+    if (url.pathname === '/mission/theatre') {
+      const folder = String(url.searchParams.get('folder') ?? '');
+      const root = process.cwd();
+      const abs = resolve(root, folder);
+      res.setHeader('Content-Type', 'application/json');
+      if (!folder || !abs.startsWith(resolve(root) + '/') || !existsSync(join(abs, 'theatre-state.json'))) {
+        res.end(JSON.stringify({ ok: false, error: 'no theatre state in that folder' }));
+        return;
+      }
+      res.end(readFileSync(join(abs, 'theatre-state.json'), 'utf8'));
       return;
     }
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
