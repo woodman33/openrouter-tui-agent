@@ -17,6 +17,9 @@ llm = LLM(
     model=os.environ.get('LLM_MODEL', 'ollama/qwen3.8:27b-mlx'),
     base_url=os.environ.get('LLM_BASE_URL', 'http://localhost:11434'),
     api_key=os.environ.get('LLM_API_KEY', 'ollama'),
+    # ollama streaming mangles tool-call args (empty params observed);
+    # non-streaming parses them correctly
+    **({'stream': False} if os.environ.get('LLM_MODEL', '').startswith('ollama/') else {}),
 )
 agent = Agent(llm=llm, tools=get_default_tools())
 conv = LocalConversation(agent=agent, workspace=LocalWorkspace(working_dir=req['workspace']))
