@@ -60,4 +60,11 @@ describe('mission studio live launch (:4310/mission)', () => {
     const plans = await (await fetch(`http://127.0.0.1:${port}/dispatch`)).json();
     expect(plans.find((p: { id: string }) => p.id === s.id).lifecycle).toBe('judging');
   });
+
+  it('telemetry panel is hardened: drop recovery + bounded autoscroll buffer', async () => {
+    const html = await (await fetch(`http://127.0.0.1:${port}/mission`)).text();
+    expect(html).toContain('sse.connection-dropped');
+    expect(html).toContain('sse.reconnected');
+    expect(html).toContain('TELE_CAP = 200');
+  });
 });

@@ -255,19 +255,37 @@ async function armLaunch(i) {
 
 // Real-time telemetry: the SAME NDJSON event bus the TUI consumes, filtered
 // to the launched plan. Read-only — the companion still never executes.
-let TELE_ID = null, TELE_ES = null;
+// Hardened (v0.7.7): bounded ring buffer (oldest lines dropped), autoscroll
+// only while pinned to the tail, and drop-recovery — on reconnect the /events
+// replay refills a cleared buffer so a dropped connection never reads as
+// silence.
+const TELE_CAP = 200;
+let TELE_ID = null, TELE_ES = null, TELE_LINES = [], TELE_DROP = false;
+function teleRender() {
+  const box = document.getElementById('telelog').parentElement;
+  const pinned = box.scrollTop + box.clientHeight >= box.scrollHeight - 24;
+  document.getElementById('telelog').textContent = TELE_LINES.join('\\n') + (TELE_LINES.length ? '\\n' : '');
+  if (pinned) box.scrollTop = box.scrollHeight;
+}
+function telePush(line) {
+  TELE_LINES.push(line);
+  if (TELE_LINES.length > TELE_CAP) TELE_LINES.splice(0, TELE_LINES.length - TELE_CAP);
+  teleRender();
+}
 function streamTelemetry(id) {
   TELE_ID = id;
-  const log = document.getElementById('telelog');
-  log.textContent = '';
+  TELE_LINES = [];
+  document.getElementById('telelog').textContent = '';
   if (!TELE_ES) {
     TELE_ES = new EventSource('/events');
+    TELE_ES.onopen = () => {
+      if (TELE_DROP) { TELE_LINES = []; telePush('sse.reconnected · replaying event tail'); TELE_DROP = false; }
+    };
+    TELE_ES.onerror = () => { TELE_DROP = true; telePush('sse.connection-dropped · reconnecting…'); };
     TELE_ES.onmessage = m => {
       const e = JSON.parse(m.data); const p = e.payload || {};
       if (!TELE_ID || p.plan_id !== TELE_ID) return;
-      const line = e.kind + (p.line ? ' · ' + p.line : (p.note ? ' · ' + p.note : (p.receipt ? ' · receipt ' + String(p.receipt).slice(0, 18) + '…' : '')));
-      log.textContent += line + '\\n';
-      log.parentElement.scrollTop = log.parentElement.scrollHeight;
+      telePush(e.kind + (p.line ? ' · ' + p.line : (p.note ? ' · ' + p.note : (p.receipt ? ' · receipt ' + String(p.receipt).slice(0, 18) + '…' : ''))));
     };
   }
 }

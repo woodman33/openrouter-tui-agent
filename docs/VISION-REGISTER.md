@@ -13,7 +13,7 @@ must never merge.
 | Exit criteria are receipt-grade | Each entry states what would verify it. An entry graduates only when a sealed receipt (or bundle) demonstrates the criterion; graduation is a CHANGELOG event, not an edit here. |
 | Fail-closed stays | If a target's sandbox/isolation/spend story cannot be verified, it remains a target forever (REAL SANDBOX OR NOTHING; default-deny spend). |
 
-## V-01 · Hierarchical Context Cone
+## ~~V-01 · Hierarchical Context Cone~~ — GRADUATED at v0.7.7
 
 **Target.** Context is a cone, not a window: a hot tip (current turn), a warm
 mantle (session receipts + project slate), and a cold base (cross-project
@@ -23,10 +23,19 @@ tiers per plan instead of stuffing one prompt.
 **Why.** Judge loops and multi-shot productions already pay for context they
 cannot budget; tiered selection makes context a planned resource like spend.
 
-**Verifies when.** A dispatched plan carries a `context_manifest` whose
+**Graduated criterion.** A dispatched plan carries a `context_manifest` whose
 entries are tagged by tier, the receipt records per-tier token/cost counts,
 and an ablation run (mantle removed) seals a comparable receipt showing the
-delta. Until then: target.
+delta.
+
+**Proof.** `scripts/phaseE-cone-bench.ts`: cone-budgeted capsule vs
+unconstrained raw-repo dump over the same repo — tokens 19,525 → 5,515
+(72% reduction) at fact recall 1.0 on both routes; mantle ablation drops
+recall to 2/3 (delta shown); per-tier tokens L0 961 / L1 389 / L2 4,165;
+dispatched plan `dp_mt0ztp1x_tfzy` carries the tier-tagged manifest.
+Graduation receipt `sha256_08d24235…`. CHANGELOG [0.7.7]. The remaining
+cone scope (cross-project cold base, redaction policies per tier) is not
+covered by this graduation and stays target-grade work.
 
 ## V-02 · Tri-modal 3D USD Stack
 
