@@ -7,13 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-08-19
+
 ### Added
 - V-04 GRADUATION (first ComfyUI federation rung): `scripts/phaseD-golden.ts`
   ran two FRESH headless 5s golden executions (server restarted between runs,
   seed pinned 1337, checkpoint discovered at runtime) producing byte-identical
   output `sha256:50aa3c52…30a69`; graduation receipt `sha256_253c4a08…` with
   the two run receipts as children. `docs/VISION-REGISTER.md` strikes V-04 and
-  re-registers the remaining routing scope as V-05.
+  re-registers the remaining routing scope as V-05. Re-verified after the
+  ComfyUI 0.28 tool-env fix: two further fresh runs
+  (timmy-golden-5s_00006/00007) reproduce the identical sha — 4/4
+  byte-identical across server restarts; receipt `sha256_363f1b8e…`.
 - Context Cone (V-01 rung 1): `src/utils/context-cone.ts` +
   `schemas/context-cone.cue` — CUE-validated 3-tier indexing (L0 apex
   manifest / L1 skeleton / L2 diffs+traces) with strict token budgeting;

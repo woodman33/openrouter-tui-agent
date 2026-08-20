@@ -70,6 +70,11 @@ byte-identical output `sha256:50aa3c528d0e110214967b50d979787580e0ec3268ce949ec1
 (timmy-golden-5s_00004/00005). Graduation receipt `sha256_253c4a08…`,
 children = the two run receipts. CHANGELOG [0.7.5].
 
+**Re-verification.** After the ComfyUI 0.28 tool-env fix the proof re-ran:
+two more fresh executions (timmy-golden-5s_00006/00007) reproduce the same
+sha — 4/4 byte-identical runs across server restarts; receipt
+`sha256_363f1b8e…`.
+
 The remaining federation scope (workflow-as-fragment into DispatchPlans at
 scale, cloud/local routing under one approval/spend law) is re-registered as
 V-05 below.
