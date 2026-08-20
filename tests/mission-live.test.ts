@@ -3,6 +3,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { startLogServer } from '../src/utils/logserver.js';
 import { issueApproval } from '../src/utils/approvals.js';
+import { appendReceipt } from '../src/utils/receipts.js';
+import { buildAgentPass } from '../src/utils/agent-pass.js';
 
 // Mission Studio live launch (v0.7.6): the arming gateway triggers the
 // containerized lane for openhands+docker plans and telemetry lands on the
@@ -66,5 +68,22 @@ describe('mission studio live launch (:4310/mission)', () => {
     expect(html).toContain('sse.connection-dropped');
     expect(html).toContain('sse.reconnected');
     expect(html).toContain('TELE_CAP = 200');
+    expect(html).toContain('5 · INSPECTORS');
+  });
+
+  it('inspectors: merkle proof tree matches; stage hierarchy resolves', async () => {
+    const parent = appendReceipt('runs', { kind: 'run', subject: 'inspector parent', policy: 'human-gated', status: 'ok', spans: [], artifacts: [] }).hash;
+    const b = buildAgentPass({ parent_receipt: parent });
+    const m = await post(port, '/mission/inspect', { kind: 'merkle', pass: b.pass });
+    expect(m.ok).toBe(true);
+    expect(m.matches).toBe(true);
+    expect(m.levels.length).toBe(1);
+    const s = await post(port, '/mission/inspect', {
+      kind: 'stage',
+      scene: { schema_version: 'usd/0.1', name: 'insp', meters_per_unit: 0.01, up_axis: 'Z', prims: [{ id: 'a', kind: 'cube' }] }
+    });
+    expect(s.ok).toBe(true);
+    expect(s.hierarchy[0]).toEqual({ path: '/World', kind: 'Xform' });
+    expect(s.usda).toContain('def Cube "a"');
   });
 });

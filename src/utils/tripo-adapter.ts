@@ -11,7 +11,7 @@ import { tmpdir } from 'os';
 import { join, extname } from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
-import { compileUsda, type UsdScene } from './usd-compiler.js';
+import { composeUnifiedStage, type UsdScene } from './usd-compiler.js';
 
 export interface MeshAsset {
   id: string;
@@ -62,29 +62,9 @@ export function tripoGenerate(): { ok: false; state: 'not_configured'; note: str
 
 // Compose the final stage: compiled scene + hero reference prim under the
 // scene root. USD-native assets get a composition arc; glb carries provenance
-// until a real converter lands.
+// until a real converter lands. Delegates to the rung-3 unified composer.
 export function compileStageWithHero(scene: UsdScene, asset: MeshAsset): { ok: boolean; usda?: string; sha256?: string; note?: string } {
-  const base = compileUsda(scene);
-  const root = scene.root ?? 'World';
-  const primName = asset.prim_path.split('/').filter(Boolean).pop() ?? 'HeroMesh';
-  const i4 = '    ';
-  const lines = [
-    `${i4}def Xform "${primName}"`,
-    `${i4}{`,
-    `${i4}${i4}custom string timmy:prim_path = "${asset.prim_path.startsWith('/') ? asset.prim_path : `/${root}/${primName}`}"`,
-    `${i4}${i4}custom string timmy:mesh_source = "${asset.source}"`,
-    `${i4}${i4}custom string timmy:mesh_format = "${asset.format}"`,
-    `${i4}${i4}custom string timmy:mesh_sha256 = "${asset.sha256}"`,
-    `${i4}${i4}custom int64 timmy:mesh_size_bytes = ${asset.size_bytes}`
-  ];
-  if (asset.format !== 'glb') lines.push(`${i4}${i4}prepend references = @${asset.path}@`);
-  else lines.push(`${i4}${i4}custom string timmy:needs_conversion = "glb→usd via real converter (REAL TOOL OR NOTHING)"`);
-  lines.push(`${i4}}`);
-  const block = lines.join('\n') + '\n';
-  const idx = base.lastIndexOf('}');
-  if (idx < 0) return { ok: false, note: 'stage text malformed' };
-  const usda = base.slice(0, idx) + block + base.slice(idx);
-  return { ok: true, usda, sha256: crypto.createHash('sha256').update(usda).digest('hex') };
+  return composeUnifiedStage(scene, { hero: asset });
 }
 
 export function writeHeroStage(scene: UsdScene, asset: MeshAsset, outDir: string): { ok: boolean; usda_path?: string; sha256?: string; note?: string } {

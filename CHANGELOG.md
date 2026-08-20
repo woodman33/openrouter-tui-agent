@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Unified USD stage composition (V-02 rung 3): `composeUnifiedStage` binds
+  OpenSCAD CSG primitives, UsdShade PBR materials (`#Material` →
+  UsdPreviewSurface + `material:binding`) and the hero reference into ONE
+  CUE-validated, content-hashed `.usda`; `stageHierarchy` exposes the prim
+  tree (CSG children, material flags, hero) for inspection.
+- Escrow settlement engine (V-03 rung 2): `src/utils/escrow-engine.ts` +
+  `schemas/escrow.cue` — `armed → locked → judged → settled / slashed`
+  state machine; judge gates strictly on a verified AgentPass Merkle proof
+  AND Roboflow QA ≥ threshold (either failure slashes); draws accrue under
+  the ceiling (overspend fails closed); settle/cancel refund
+  ceiling − drawn; every transition CUE-validated + receipted;
+  `verifyEscrow` re-walks legality + refund math.
+- Mission Studio inspectors: `POST /mission/inspect` (localhost-gated)
+  serves the Merkle proof tree (`merkleProofTree`, root-match flag) and the
+  unified stage hierarchy + usda; section 5 of :4310/mission renders both.
+
+## [0.7.8] - 2026-08-19
+
+### Added
 - Neural-mesh ingestion (V-02 rung 2): `src/utils/tripo-adapter.ts` +
   `schemas/mesh-asset.cue` — local-first hero-asset ingest (existence-
   checked, sha256-hashed, CUE-validated `.glb`/`.usd`/`.usda`) referenced

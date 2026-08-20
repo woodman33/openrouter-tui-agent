@@ -94,6 +94,23 @@ export function buildAgentPass(o: {
   return { ok: true, pass, receipt: rec.hash };
 }
 
+// Inspector helper: the full pairwise hash tree for display; the last
+// level's single node must equal the declared root.
+export function merkleProofTree(hexLeaves: string[]): { levels: string[][]; root: string } {
+  const levels: string[][] = [hexLeaves];
+  let level = hexLeaves;
+  while (level.length > 1) {
+    const padded = level.length % 2 ? [...level, level[level.length - 1]] : level;
+    const next: string[] = [];
+    for (let i = 0; i < padded.length; i += 2) {
+      next.push(crypto.createHash('sha256').update(Buffer.concat([Buffer.from(padded[i], 'hex'), Buffer.from(padded[i + 1], 'hex')])).digest('hex'));
+    }
+    levels.push(next);
+    level = next;
+  }
+  return { levels, root: level[0] ?? merkleRoot([]) };
+}
+
 export function verifyAgentPass(pass: AgentPass, dir?: string): { ok: boolean; brokenAt?: 'schema' | 'merkle' | 'chain'; note?: string } {
   const v = validatePassCue(pass);
   if (!v.ok) return { ok: false, brokenAt: 'schema', note: v.note };

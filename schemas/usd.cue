@@ -4,6 +4,12 @@
 // is content-hashed so handoffs are sha-pinnable like every other artifact.
 package usdcue
 
+#Material: {
+	diffuse?:   [...number]         // rgb 0..1 (3)
+	metallic?:  number & >= 0 & <= 1
+	roughness?: number & >= 0 & <= 1
+}
+
 #Prim: {
 	id:        string & != ""
 	kind:      "cube" | "sphere" | "cylinder"
@@ -13,6 +19,7 @@ package usdcue
 	translate?: [...number]
 	rotate?:    [...number]
 	color?:     [...number]         // rgb 0..1
+	material?: #Material            // UsdShade PreviewSurface binding (rung 3)
 	op?:        "union" | "difference" | "intersection"
 	children?: [...#Prim]           // CSG tree (requires op)
 }
