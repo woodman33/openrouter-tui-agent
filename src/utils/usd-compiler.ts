@@ -10,6 +10,8 @@ import { join } from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 
+export interface UsdMaterial { diffuse?: number[]; metallic?: number; roughness?: number }
+
 export interface UsdPrim {
   id: string;
   kind: 'cube' | 'sphere' | 'cylinder';
@@ -19,8 +21,19 @@ export interface UsdPrim {
   translate?: number[];
   rotate?: number[];
   color?: number[];
+  material?: UsdMaterial;
   op?: 'union' | 'difference' | 'intersection';
   children?: UsdPrim[];
+}
+
+/** structural hero reference (tripo-adapter's MeshAsset satisfies this) */
+export interface HeroRef {
+  source: string;
+  format: 'glb' | 'usd' | 'usda';
+  path?: string;
+  sha256: string;
+  size_bytes: number;
+  prim_path: string;
 }
 
 export interface UsdScene {
@@ -57,7 +70,27 @@ function xformOps(p: UsdPrim, indent: string): string {
   return ops.join('\n') + '\n' + `${indent}uniform token[] xformOpOrder = [${order.map(o => `"xformOp:${o}"`).join(', ')}]`;
 }
 
-function primUsda(p: UsdPrim, depth: number): string {
+function materialUsda(p: UsdPrim, depth: number): string {
+  const i = '    '.repeat(depth);
+  const inner = '    '.repeat(depth + 1);
+  const m = p.material!;
+  return [
+    `${i}def Material "mat_${p.id}"`,
+    `${i}{`,
+    `${inner}def Shader "PreviewSurface"`,
+    `${inner}{`,
+    `${inner}    uniform token info:id = "UsdPreviewSurface"`,
+    `${inner}    color3f inputs:diffuseColor = ${m.diffuse ? vec(m.diffuse) : '(0.8, 0.8, 0.8)'}`,
+    `${inner}    float inputs:metallic = ${num(m.metallic ?? 0)}`,
+    `${inner}    float inputs:roughness = ${num(m.roughness ?? 0.5)}`,
+    `${inner}    token outputs:surface`,
+    `${inner}}`,
+    `${inner}token outputs:surface`,
+    `${i}}`
+  ].join('\n');
+}
+
+function primUsda(p: UsdPrim, depth: number, root: string): string {
   const i = '    '.repeat(depth);
   const inner = '    '.repeat(depth + 1);
   if (p.op && p.children?.length) {
@@ -65,7 +98,7 @@ function primUsda(p: UsdPrim, depth: number): string {
     // the source as provenance plus the child prims for inspection
     const body = [
       `${inner}custom string timmy:openscad = """${openscadExpr(p)}"""`,
-      ...p.children.map(c => primUsda(c, depth + 1))
+      ...p.children.map(c => primUsda(c, depth + 1, root))
     ].join('\n');
     return `${i}def Scope "${p.id}"\n${i}{\n${body}\n${i}}`;
   }
@@ -76,12 +109,14 @@ function primUsda(p: UsdPrim, depth: number): string {
       ? `${inner}double radius = ${num(p.radius ?? 1)}`
       : `${inner}double radius = ${num(p.radius ?? 1)}\n${inner}double height = ${num(p.height ?? 2)}`;
   const color = p.color ? `\n${inner}color3f[] primvars:displayColor = [${vec(p.color)}]` : '';
+  const mat = p.material ? `\n${inner}rel material:binding = </${root}/mat_${p.id}>` : '';
   const xf = xformOps(p, inner);
-  return `${i}def ${kind} "${p.id}"\n${i}{\n${geom}${color}${xf ? '\n' + xf : ''}\n${i}}`;
+  return `${i}def ${kind} "${p.id}"\n${i}{\n${geom}${color}${mat}${xf ? '\n' + xf : ''}\n${i}}`;
 }
 
 export function compileUsda(scene: UsdScene): string {
   const root = scene.root ?? 'World';
+  const body = scene.prims.map(p => primUsda(p, 1, root) + (p.material ? '\n' + materialUsda(p, 1) : '')).join('\n');
   return [
     '#usda 1.0',
     '(',
@@ -93,10 +128,59 @@ export function compileUsda(scene: UsdScene): string {
     '',
     `def Xform "${root}"`,
     '{',
-    scene.prims.map(p => primUsda(p, 1)).join('\n'),
+    body,
     '}',
     ''
   ].join('\n');
+}
+
+// --- rung 3: hero reference + unified composition -------------------------
+
+export function heroPrimBlock(asset: HeroRef, root: string): string {
+  const primName = asset.prim_path.split('/').filter(Boolean).pop() ?? 'HeroMesh';
+  const i4 = '    ';
+  const lines = [
+    `${i4}def Xform "${primName}"`,
+    `${i4}{`,
+    `${i4}${i4}custom string timmy:prim_path = "${asset.prim_path.startsWith('/') ? asset.prim_path : `/${root}/${primName}`}"`,
+    `${i4}${i4}custom string timmy:mesh_source = "${asset.source}"`,
+    `${i4}${i4}custom string timmy:mesh_format = "${asset.format}"`,
+    `${i4}${i4}custom string timmy:mesh_sha256 = "${asset.sha256}"`,
+    `${i4}${i4}custom int64 timmy:mesh_size_bytes = ${asset.size_bytes}`
+  ];
+  if (asset.format !== 'glb') lines.push(`${i4}${i4}prepend references = @${asset.path ?? asset.prim_path}@`);
+  else lines.push(`${i4}${i4}custom string timmy:needs_conversion = "glb→usd via real converter (REAL TOOL OR NOTHING)"`);
+  lines.push(`${i4}}`);
+  return lines.join('\n') + '\n';
+}
+
+// V-02 rung 3: ONE CUE-validated stage binding CSG primitives, PBR materials
+// and the hero reference. Deterministic + content-hashed like rung 1.
+export function composeUnifiedStage(scene: UsdScene, opts?: { hero?: HeroRef }): { ok: boolean; usda?: string; sha256?: string; note?: string } {
+  const v = validateUsdCue(scene);
+  if (!v.ok) return { ok: false, note: v.note ?? v.error_class };
+  let usda = compileUsda(scene);
+  if (opts?.hero) {
+    const idx = usda.lastIndexOf('}');
+    if (idx < 0) return { ok: false, note: 'stage text malformed' };
+    usda = usda.slice(0, idx) + heroPrimBlock(opts.hero, scene.root ?? 'World') + usda.slice(idx);
+  }
+  return { ok: true, usda, sha256: crypto.createHash('sha256').update(usda).digest('hex') };
+}
+
+export interface StageNode { path: string; kind: string; material?: boolean; csg?: boolean; format?: string }
+
+export function stageHierarchy(scene: UsdScene, hero?: HeroRef): StageNode[] {
+  const root = scene.root ?? 'World';
+  const walk = (p: UsdPrim, base: string): StageNode[] => [
+    { path: `${base}/${p.id}`, kind: p.op ? `CSG:${p.op}` : p.kind, ...(p.material ? { material: true } : {}), ...(p.op ? { csg: true } : {}) },
+    ...(p.children ?? []).flatMap(c => walk(c, `${base}/${p.id}`))
+  ];
+  return [
+    { path: `/${root}`, kind: 'Xform' },
+    ...scene.prims.flatMap(p => walk(p, `/${root}`)),
+    ...(hero ? [{ path: hero.prim_path, kind: 'HeroMesh', format: hero.format }] : [])
+  ];
 }
 
 // --- OpenSCAD CSG adapter -------------------------------------------------

@@ -6,6 +6,8 @@
 import { createServer, ServerResponse } from 'http';
 import { existsSync, readFileSync, statSync, openSync, readSync, closeSync, readdirSync } from 'fs';
 import { armPlan, dispatchPlan, dispatchContainerized, getPlan, pauseOrCancelLane, collectRun, createPlan, type DispatchPlan } from './dispatch.js';
+import { composeUnifiedStage, stageHierarchy } from './usd-compiler.js';
+import { merkleProofTree } from './agent-pass.js';
 import { compileMissionMap, type MissionMapDoc } from './slate-compiler.js';
 import { join, resolve } from 'path';
 import { spawn } from 'child_process';
@@ -186,7 +188,34 @@ const MISSION_HTML = `<!doctype html><html><head><meta charset="utf-8">
   <pre id="telelog" style="padding:8px;color:${theme.textSecondary};font:inherit;white-space:pre-wrap">no live run yet — arm + launch an openhands/docker plan above</pre>
 </div>
 
+<h2>5 · INSPECTORS (Merkle proof tree · USD stage hierarchy)</h2>
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+  <div style="flex:1;min-width:280px">
+    <h3 style="color:${theme.success}">Merkle proof</h3>
+    <textarea id="passjson" rows="4" style="width:100%;background:${theme.surfaceRaised};color:${theme.textSecondary};border:1px solid ${theme.borderDefault};border-radius:6px;font:inherit">paste AgentPass JSON</textarea>
+    <button id="btnmerkle">inspect merkle</button>
+  </div>
+  <div style="flex:1;min-width:280px">
+    <h3 style="color:${theme.brand}">USD stage</h3>
+    <textarea id="scenejson" rows="4" style="width:100%;background:${theme.surfaceRaised};color:${theme.textSecondary};border:1px solid ${theme.borderDefault};border-radius:6px;font:inherit">paste UsdScene JSON</textarea>
+    <button id="btnstage">inspect stage</button>
+  </div>
+</div>
+<pre id="insp" style="max-height:240px;overflow-y:auto;padding:8px;border:1px solid ${theme.borderDefault};border-radius:6px;background:${theme.surfaceRaised};color:${theme.textSecondary};font:inherit;white-space:pre-wrap"></pre>
+
 <script>
+async function inspectKind(kind) {
+  const out = document.getElementById('insp');
+  try {
+    const body = kind === 'merkle'
+      ? { kind, pass: JSON.parse(document.getElementById('passjson').value) }
+      : { kind, scene: JSON.parse(document.getElementById('scenejson').value) };
+    const r = await (await fetch('/mission/inspect', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).json();
+    out.textContent = JSON.stringify(r, null, 2);
+  } catch (e) { out.textContent = 'parse error: ' + e; }
+}
+document.getElementById('btnmerkle').onclick = () => inspectKind('merkle');
+document.getElementById('btnstage').onclick = () => inspectKind('stage');
 const DEFAULT_DOC = {
   nodes: [
     { id: 'sting', kind: 'capsule', objective: 'render the 5s sting', copies: 1 },
@@ -605,6 +634,31 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
       req.on('end', () => {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(createPlan((body?.plan ?? {}) as DispatchPlan)));
+      });
+      return;
+    }
+    // v0.7.9 inspectors: Merkle proof tree + USD stage hierarchy. Read-only
+    // display aids; localhost-gated like the rest of the gateway.
+    if (url.pathname === '/mission/inspect' && req.method === 'POST') {
+      const ip = req.socket.remoteAddress ?? '';
+      if (!isLocalIp(ip)) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ ok: false, note: 'localhost only' }));
+        return;
+      }
+      let body: any = {};
+      req.on('data', d => { try { body = JSON.parse(d.toString()); } catch { /* ignore */ } });
+      req.on('end', () => {
+        res.setHeader('Content-Type', 'application/json');
+        if (body?.kind === 'merkle' && body.pass?.leaves) {
+          const tree = merkleProofTree((body.pass.leaves as { hash: string }[]).map(l => l.hash));
+          res.end(JSON.stringify({ ok: true, ...tree, matches: tree.root === body.pass.merkle_root }));
+        } else if (body?.kind === 'stage' && body.scene) {
+          const c = composeUnifiedStage(body.scene, body.hero ? { hero: body.hero } : undefined);
+          res.end(JSON.stringify({ ok: c.ok, sha256: c.sha256, note: c.note, hierarchy: c.ok ? stageHierarchy(body.scene, body.hero) : undefined, usda: c.usda }));
+        } else {
+          res.end(JSON.stringify({ ok: false, note: 'kind must be merkle|stage' }));
+        }
       });
       return;
     }
