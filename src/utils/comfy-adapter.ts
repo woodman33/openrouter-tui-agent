@@ -6,6 +6,7 @@
 import { spawnSync } from 'child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
+import { homedir } from 'os';
 import crypto from 'crypto';
 import { appendReceipt } from './receipts.js';
 import { appendEvent } from './eventbus.js';
@@ -32,8 +33,19 @@ export interface ComfyGoldenResult {
 
 const sha = (p: string): string => crypto.createHash('sha256').update(readFileSync(p)).digest('hex');
 
+// Background shells may lack ~/.local/bin on PATH — resolve like the
+// openhands adapter's UV_PY pattern.
+function comfyBin(): string {
+  // `--json env` is the cheap always-valid envelope (`--json version` is a
+  // usage error in comfy-cli 1.16)
+  const probe = spawnSync('comfy', ['--json', 'env'], { encoding: 'utf8', timeout: 15000 });
+  if (probe.status === 0) return 'comfy';
+  const fallback = join(homedir(), '.local', 'bin', 'comfy');
+  return existsSync(fallback) ? fallback : 'comfy';
+}
+
 export function comfyPreflight(): { ok: boolean; state?: 'not_configured'; note?: string } {
-  const v = spawnSync('comfy', ['--json', 'version'], { encoding: 'utf8', timeout: 15000 });
+  const v = spawnSync(comfyBin(), ['--json', 'env'], { encoding: 'utf8', timeout: 15000 });
   if (v.status !== 0) return { ok: false, state: 'not_configured', note: 'comfy CLI missing (see comfy skill)' };
   return { ok: true };
 }
@@ -51,7 +63,7 @@ export function prepareGoldenWorkflow(wf: Record<string, unknown>, opts: { seed?
 }
 
 export function discoverCheckpoint(): string | null {
-  const r = spawnSync('comfy', ['--json', 'models', 'list-folder', 'checkpoints'], { encoding: 'utf8', timeout: 30000 });
+  const r = spawnSync(comfyBin(), ['--json', 'models', 'list-folder', 'checkpoints'], { encoding: 'utf8', timeout: 30000 });
   if (r.status !== 0) return null;
   try {
     const env = JSON.parse(r.stdout);
@@ -82,7 +94,7 @@ export async function runComfyGolden(o: ComfyGoldenOpts): Promise<ComfyGoldenRes
   mkdirSync(dirname(wfPath), { recursive: true });
   writeFileSync(wfPath, JSON.stringify(prepared, null, 2));
 
-  const r = spawnSync('comfy', ['--json', 'run', '--workflow', wfPath, '--where', 'local', '--wait'], { encoding: 'utf8', timeout: o.wall_ms ?? 180000 });
+  const r = spawnSync(comfyBin(), ['--json', 'run', '--workflow', wfPath, '--where', 'local', '--wait'], { encoding: 'utf8', timeout: o.wall_ms ?? 180000 });
   let env: any = {};
   try { env = JSON.parse(r.stdout ?? ''); } catch { /* non-json */ }
   const code = env?.error?.code as string | undefined;

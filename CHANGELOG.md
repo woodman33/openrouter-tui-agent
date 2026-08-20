@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-08-19
+
+### Added
+- V-04 GRADUATION (first ComfyUI federation rung): `scripts/phaseD-golden.ts`
+  ran two FRESH headless 5s golden executions (server restarted between runs,
+  seed pinned 1337, checkpoint discovered at runtime) producing byte-identical
+  output `sha256:50aa3c52…30a69`; graduation receipt `sha256_253c4a08…` with
+  the two run receipts as children. `docs/VISION-REGISTER.md` strikes V-04 and
+  re-registers the remaining routing scope as V-05. Re-verified after the
+  ComfyUI 0.28 tool-env fix: two further fresh runs
+  (timmy-golden-5s_00006/00007) reproduce the identical sha — 4/4
+  byte-identical across server restarts; receipt `sha256_363f1b8e…`.
+- Context Cone (V-01 rung 1): `src/utils/context-cone.ts` +
+  `schemas/context-cone.cue` — CUE-validated 3-tier indexing (L0 apex
+  manifest / L1 skeleton / L2 diffs+traces) with strict token budgeting;
+  selection fails closed when the apex alone exceeds budget; L2 forages
+  recency-desc under the remaining budget.
+- Companion arming gateway: `POST /mission/store` on :4310 stores a compiled
+  plan and returns its id + immutable hash; the Mission Studio page then
+  emits hash-bound arm+launch requests through the controller's existing
+  `/dispatch/action` (operator token required — the companion never
+  executes). Integration tests cover compile→store→arm-denied and the
+  theatre-state escape check.
+
+### Fixed
+- `comfy-adapter`: binary resolution fallback for PATH-less background
+  shells (UV_PY pattern) and `--json env` probe (`--json version` is a usage
+  error in comfy-cli 1.16); golden proof restarts the server between runs so
+  determinism is proven on fresh executions, not node-cache hits.
+- Local ComfyUI 0.28 tool env aligned (sqlalchemy + full requirements.txt) —
+  the asset scanner crash that killed the daemon mid-phase.
+
+## [0.7.4] - 2026-08-19
+
 ### Added
 - Vision Register (`docs/VISION-REGISTER.md`, spec §11): the four unverified
   north-star targets (Hierarchical Context Cone, Tri-modal 3D USD stack,

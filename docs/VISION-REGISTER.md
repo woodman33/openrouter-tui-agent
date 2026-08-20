@@ -56,21 +56,41 @@ refund, and cross-agent bidding has no settlement primitive.
 ceiling minus drawn child receipts, and `verifyChain` walks ceiling→draws→
 refund clean. Until then: target (current spend policy remains default-deny).
 
-## V-04 · ComfyUI Federation
+## ~~V-04 · ComfyUI Federation (determinism rung)~~ — GRADUATED at v0.7.5
 
-**Target.** Local ComfyUI as a first-class harness lane: deterministic
-headless golden runs (pinned seeds, discovered checkpoints, env-locked
-encoders), workflow-as-fragment compilation into DispatchPlans, and
-cloud/local routing under the same approval/spend law.
-
-**Why.** The media fabric already speaks EDL/OTIO; ComfyUI is the local
-render/genesis surface that closes the loop without a partner API.
-
-**Verifies when.** A 5s golden run seals a receipt whose output sha256
+**Graduated criterion.** A 5s golden run seals a receipt whose output sha256
 reproduces on a second run with the same env lock (determinism), and the
 workflow's checkpoint name came from runtime discovery, never a hardcoded
-string. The v0.7.4 `comfy-adapter` spike is the first rung — a spike, not a
-graduation.
+string.
+
+**Proof.** `scripts/phaseD-golden.ts`: two FRESH headless executions (server
+restarted between runs so no node cache is reused), seed pinned 1337,
+checkpoint discovered at runtime (`v1-5-pruned-emaonly.safetensors`) →
+byte-identical output `sha256:50aa3c528d0e110214967b50d979787580e0ec3268ce949ec12c237089f30a69`
+(timmy-golden-5s_00004/00005). Graduation receipt `sha256_253c4a08…`,
+children = the two run receipts. CHANGELOG [0.7.5].
+
+**Re-verification.** After the ComfyUI 0.28 tool-env fix the proof re-ran:
+two more fresh executions (timmy-golden-5s_00006/00007) reproduce the same
+sha — 4/4 byte-identical runs across server restarts; receipt
+`sha256_363f1b8e…`.
+
+The remaining federation scope (workflow-as-fragment into DispatchPlans at
+scale, cloud/local routing under one approval/spend law) is re-registered as
+V-05 below.
+
+## V-05 · ComfyUI Federation (routing rung)
+
+**Target.** Workflow-as-fragment compilation into DispatchPlans and
+cloud/local routing under the same approval/spend law, building on the
+graduated deterministic local lane (V-04).
+
+**Why.** The local lane is proven; federation is what makes the media fabric
+elastic without a second governance model.
+
+**Verifies when.** A mission compiles a ComfyUI fragment into a CUE plan,
+routes local vs cloud by policy, and both routes seal receipts that verify
+in the same chain under the same approval token format. Until then: target.
 
 ---
 
