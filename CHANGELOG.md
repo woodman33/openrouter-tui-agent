@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Context Cone dispatch integration (V-01 rung 2): `createPlan` accepts a
+  cone and derives the sha-pinned `context_manifest` from the budgeted
+  L0/L1/L2 selection (`coneToContextManifest`); isolation seeds ONLY the
+  selected slices — manifest entries outside the cone selection are refused
+  as unconstrained blobs; provenance rides the plan as `context_cone`
+  (CUE-validated in `schemas/dispatch.cue`).
+- Mission Studio live launch: arming + launching a compiled
+  `openhands`+`docker` plan routes through the containerized OpenHands
+  engine (`dispatchContainerized`) with real-time telemetry
+  (container_started/log/done) streamed over the event-bus SSE into
+  :4310/mission; authority stays hash-bound — arm consumes the operator
+  token and the adapter records the dispatch plan hash (`preApproved`)
+  instead of re-minting.
+
 ## [0.7.5] - 2026-08-19
 
 ### Added

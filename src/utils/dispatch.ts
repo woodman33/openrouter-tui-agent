@@ -12,6 +12,8 @@ import { planHashOf, consumeApproval } from './approvals.js';
 import { appendReceipt } from './receipts.js';
 import { appendEvent } from './eventbus.js';
 import { LANE_RUNNERS } from '../agent/lanes.js';
+import { selectFromCone, type ContextCone, type ConeSelection } from './context-cone.js';
+import { openHandsPreflight, runOpenHandsTask } from './openhands-adapter.js';
 
 export type Lifecycle =
   | 'draft' | 'ready' | 'armed' | 'running' | 'needs_approval'
@@ -27,6 +29,12 @@ export interface DispatchPlan {
   copies: number;
   cadence: { mode: 'parallel' | 'sequential'; depends_on: string[] };
   context_manifest: { path: string; sha256: string }[];
+  /** V-01 rung 2: provenance of a cone-derived manifest; isolation seeds only these paths */
+  context_cone?: {
+    budget_tokens: number;
+    selected_tokens: number;
+    entries: { id: string; tier: 'L0' | 'L1' | 'L2'; tokens: number; path?: string }[];
+  };
   repo_ref: string;
   workspace: { kind: 'docker' | 'host-ephemeral'; image?: string; path?: string };
   permissions: { filesystem: 'ro' | 'rw-ephemeral'; network: boolean; tools: string[]; secrets: string[] };
@@ -81,7 +89,38 @@ export function listLanes(): { id: string; label: string; available: boolean; in
   }));
 }
 
-export function createPlan(plan: DispatchPlan, dir?: string): { ok: boolean; id?: string; plan_hash?: string; validation?: unknown; note?: string } {
+// V-01 rung 2 (v0.7.6): the cone selects token-budgeted L0/L1/L2 slices; this
+// turns the selection into the sha-pinned context_manifest a capsule seeds.
+// Fails closed on budget_exceeded, path escapes, and missing entries.
+export function coneToContextManifest(cone: ContextCone, opts?: { budgetOverride?: number; repoRoot?: string }): { ok: boolean; manifest?: { path: string; sha256: string }[]; selection?: ConeSelection; error_class?: string; note?: string } {
+  const root = resolve(opts?.repoRoot ?? process.cwd());
+  const sel = selectFromCone(cone, opts?.budgetOverride);
+  if (!sel.ok) return { ok: false, selection: sel, error_class: sel.error_class, note: sel.note };
+  const manifest: { path: string; sha256: string }[] = [];
+  for (const e of sel.entries) {
+    if (!e.path) continue;
+    const src = resolve(root, e.path);
+    if (!src.startsWith(root + '/')) return { ok: false, selection: sel, error_class: 'blocked', note: `cone path escapes repo: ${e.path}` };
+    if (!existsSync(src)) return { ok: false, selection: sel, error_class: 'missing_source', note: `cone entry missing: ${e.path}` };
+    manifest.push({ path: e.path, sha256: sha(src) });
+  }
+  return { ok: true, manifest, selection: sel };
+}
+
+export function createPlan(plan: DispatchPlan, dir?: string, cone?: ContextCone): { ok: boolean; id?: string; plan_hash?: string; validation?: unknown; note?: string } {
+  if (cone) {
+    const cm = coneToContextManifest(cone);
+    if (!cm.ok) return { ok: false, validation: { error_class: cm.error_class, note: cm.note }, note: cm.note ?? cm.error_class };
+    plan = {
+      ...plan,
+      context_manifest: cm.manifest!,
+      context_cone: {
+        budget_tokens: cone.budget_tokens,
+        selected_tokens: cm.selection!.tokens,
+        entries: cm.selection!.entries.map(e => ({ id: e.id, tier: e.tier, tokens: e.tokens, ...(e.path ? { path: e.path } : {}) }))
+      }
+    };
+  }
   const validation = validatePlanCue(plan, dir);
   if (!validation.ok) return { ok: false, validation, note: validation.note };
   if (!plan.harnesses || plan.harnesses.length < 1) return { ok: false, note: 'no harnesses' };
@@ -132,9 +171,15 @@ function establishIsolation(s: StoredPlan): { ok: boolean; workdir?: string; not
     return { ok: false, state: 'blocked', note: 'workspace inside live checkout — refused (isolation law)' };
   }
   const workdir = mkdtempSync(join(tmpdir(), `timmy-dp-${s.id}-`));
+  // cone law (v0.7.6): a cone-derived capsule seeds ONLY the budgeted
+  // selection — unconstrained blobs riding the manifest are refused
+  const allowed = s.plan.context_cone
+    ? new Set(s.plan.context_cone.entries.map(e => e.path).filter((p): p is string => Boolean(p)))
+    : null;
   // seed the temp copy: hash-verified manifest files read from the governing
   // repo; the pane only ever sees the ephemeral copy (isolation law)
   for (const m of s.plan.context_manifest ?? []) {
+    if (allowed && !allowed.has(m.path)) return { ok: false, state: 'blocked', note: `context outside cone selection: ${m.path}` };
     const src = resolve(repoRoot, m.path);
     if (!src.startsWith(resolve(repoRoot) + '/')) return { ok: false, state: 'blocked', note: `context path escapes repo: ${m.path}` };
     if (!existsSync(src)) return { ok: false, state: 'blocked', note: `context missing: ${m.path}` };
@@ -199,6 +244,80 @@ export function dispatchPlan(id: string, dir?: string): { ok: boolean; note?: st
     spans: [{ name: `dispatch ${s.plan.harnesses[0]}`, kind: 'invoke_agent' }], artifacts: []
   }, dir);
   return { ok: true, session };
+}
+
+export function getPlan(id: string, dir?: string): StoredPlan | null {
+  return readStored(id, dir);
+}
+
+// Live containerized lane (v0.7.6): an armed openhands+docker plan runs
+// through the OpenHands docker engine with telemetry on the event bus (SSE
+// to the Mission Studio). Authority was consumed at arm time against THIS
+// plan hash; the adapter records that hash (preApproved) instead of re-
+// minting — unidirectional authority, no second token.
+export async function dispatchContainerized(id: string, dir?: string): Promise<{ ok: boolean; note?: string; container?: boolean; blocked?: { state: string; note: string } }> {
+  const s = readStored(id, dir);
+  if (!s) return { ok: false, note: 'unknown plan' };
+  if (s.lifecycle !== 'armed') return { ok: false, note: `plan not armed (lifecycle ${s.lifecycle}) — chat prepares, authority launches` };
+  const currentHash = planHashOf(s.plan);
+  if (s.approved_hash !== currentHash || currentHash !== s.plan_hash) {
+    s.plan_hash = currentHash;
+    s.lifecycle = 'needs_approval';
+    writeStored(s, dir);
+    ev('dispatch.mutation_denied', s, {}, dir);
+    appendReceipt('runs', { kind: 'run', subject: `dispatch ${id} DENIED (plan mutated post-approval)`, policy: 'human-gated', status: 'denied', error_class: 'approval', plan_hash: s.plan_hash, spans: [], artifacts: [] }, dir);
+    return { ok: false, note: 'plan mutated after approval — approval invalidated' };
+  }
+  if (process.env.TIMMY_DISPATCH_DRYRUN === '1') {
+    s.session = `container-dryrun-${s.id}`;
+    s.lifecycle = 'running';
+    s.dispatched_at = new Date().toISOString();
+    writeStored(s, dir);
+    ev('dispatch.container_started', s, { dryrun: true }, dir);
+    s.lifecycle = 'judging';
+    writeStored(s, dir);
+    ev('dispatch.container_done', s, { dryrun: true, ok: true }, dir);
+    return { ok: true, container: true };
+  }
+  const pre = openHandsPreflight();
+  if (!pre.ok) {
+    s.blocked = { state: 'not_configured', note: pre.note! };
+    s.lifecycle = 'failed';
+    writeStored(s, dir);
+    ev('dispatch.container_failed', s, { note: pre.note }, dir);
+    appendReceipt('runs', { kind: 'run', subject: `dispatch ${id} container not_configured`, policy: 'human-gated', status: 'failed', error_class: 'not_configured', plan_hash: s.plan_hash, discrepancies: [pre.note!], spans: [], artifacts: [] }, dir);
+    return { ok: false, note: pre.note, blocked: s.blocked };
+  }
+  s.session = `container-${s.id}`;
+  s.lifecycle = 'running';
+  s.dispatched_at = new Date().toISOString();
+  writeStored(s, dir);
+  ev('dispatch.container_started', s, { engine: 'docker' }, dir);
+  let lastLog = 0;
+  void runOpenHandsTask({
+    task: s.plan.objective,
+    acceptance: s.plan.acceptance_tests,
+    engine: 'docker',
+    wall_ms: s.plan.limits.wall_ms,
+    max_spend: s.plan.limits.cost_usd,
+    llm: s.plan.model_policy.allow_paid ? 'auto' : 'local',
+    preApproved: { plan_hash: s.plan_hash },
+    onLine: chunk => {
+      const now = Date.now();
+      if (now - lastLog < 1500) return;
+      lastLog = now;
+      ev('dispatch.container_log', s, { line: chunk.replace(/\s+/g, ' ').slice(0, 240) }, dir);
+    },
+    dir,
+  }).then(r => {
+    const s2 = readStored(id, dir);
+    if (!s2) return;
+    s2.lifecycle = r.ok ? 'judging' : 'failed';
+    if (!r.ok) s2.blocked = { state: r.state ?? 'blocked', note: r.note ?? 'container run failed' };
+    writeStored(s2, dir);
+    ev(r.ok ? 'dispatch.container_done' : 'dispatch.container_failed', s2, { ok: r.ok, receipt: r.receipt ?? null, note: r.note ?? null }, dir);
+  });
+  return { ok: true, container: true };
 }
 
 export function tailLane(id: string, dir?: string): { ok: boolean; lines?: string[]; note?: string; lifecycle?: Lifecycle } {

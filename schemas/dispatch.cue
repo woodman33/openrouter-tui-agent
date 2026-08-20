@@ -23,6 +23,19 @@ package dispatch
 		path:   string
 		sha256: string
 	}]
+	// V-01 rung 2 (v0.7.6): provenance of a cone-derived manifest. When
+	// present, isolation seeds ONLY these paths — anything else in
+	// context_manifest is refused as an unconstrained blob.
+	context_cone?: {
+		budget_tokens:   int & > 0
+		selected_tokens: int & >= 0
+		entries: [...{
+			id:     string & != ""
+			tier:   "L0" | "L1" | "L2"
+			tokens: int & > 0
+			path?:  string
+		}]
+	}
 	repo_ref: string
 	workspace: {
 		kind:  "docker" | "host-ephemeral"
