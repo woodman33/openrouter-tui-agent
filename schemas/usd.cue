@@ -22,5 +22,6 @@ package usdcue
 	name:           string & != ""
 	meters_per_unit: number & > 0
 	up_axis:         "Y" | "Z"
+	root?:          string & != "" // stage root prim (default "World")
 	prims: [...#Prim]
 }

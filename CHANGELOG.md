@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Neural-mesh ingestion (V-02 rung 2): `src/utils/tripo-adapter.ts` +
+  `schemas/mesh-asset.cue` — local-first hero-asset ingest (existence-
+  checked, sha256-hashed, CUE-validated `.glb`/`.usd`/`.usda`) referenced
+  into the compiled stage under `/World/HeroMesh`; USD-native formats get a
+  real `prepend references` arc, glb rides provenance until a real
+  converter exists; partner generation stays target-grade
+  (`not_configured`, default-deny).
+- AgentPass rung 1 (V-03): `src/utils/agent-pass.ts` +
+  `schemas/agent-pass.cue` — packages parent/child receipt chains, Roboflow
+  visual QA scores, and `.agentrun` bundle hashes under a SHA-256 Merkle
+  root; `verifyAgentPass` recomputes the root and checks runs-chain
+  membership; the pass seals as a verify receipt. Escrow settlement stays
+  target-grade.
 - V-01 graduation benchmark (`src/utils/cone-bench.ts` +
   `scripts/phaseE-cone-bench.ts`): cone-budgeted capsule vs unconstrained
   raw-repo dump plus mantle ablation; accuracy proxy is retrieval recall of
