@@ -14,6 +14,7 @@ import { appendEvent } from './eventbus.js';
 import { LANE_RUNNERS } from '../agent/lanes.js';
 import { selectFromCone, type ContextCone, type ConeSelection } from './context-cone.js';
 import { openHandsPreflight, runOpenHandsTask } from './openhands-adapter.js';
+import { dockerReady } from './doctor.js';
 
 export type Lifecycle =
   | 'draft' | 'ready' | 'armed' | 'running' | 'needs_approval'
@@ -138,6 +139,15 @@ export function createPlan(plan: DispatchPlan, dir?: string, cone?: ContextCone)
 export function armPlan(id: string, approval: string, dir?: string): { ok: boolean; note?: string; plan_hash?: string } {
   const s = readStored(id, dir);
   if (!s) return { ok: false, note: 'unknown plan' };
+  // preflight (friction log #2): containerized plans cannot arm while the
+  // docker daemon is down — checked BEFORE consuming the one-shot token so a
+  // bad environment never burns operator authority. DRYRUN bypasses (the
+  // mechanical path is explicitly not the real sandbox).
+  if (s.plan.workspace.kind === 'docker' && process.env.TIMMY_DISPATCH_DRYRUN !== '1' && !dockerReady()) {
+    ev('dispatch.arm_denied', s, { note: 'docker not_configured' }, dir);
+    appendReceipt('runs', { kind: 'run', subject: `dispatch ${id} arm BLOCKED (preflight)`, policy: 'human-gated', status: 'failed', error_class: 'not_configured', plan_hash: s.plan_hash, discrepancies: ['docker daemon down — timmy doctor preflight'], spans: [], artifacts: [] }, dir);
+    return { ok: false, note: 'docker daemon not_configured — containerized plans cannot arm (timmy doctor preflight)', plan_hash: s.plan_hash };
+  }
   const gate = consumeApproval(approval, s.plan_hash);
   if (!gate.ok) {
     s.lifecycle = 'needs_approval';

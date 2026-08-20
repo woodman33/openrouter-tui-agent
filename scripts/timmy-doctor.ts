@@ -1,5 +1,6 @@
 import { getWorkspaceEvidenceStatus } from '../src/utils/workspace-evidence.js';
 import { depsDoctor, networkDoctor, hardwareDoctor, printRows } from '../src/utils/doctors.js';
+import { runDoctor } from '../src/utils/doctor.js';
 
 function parseArgs(argv: string[]) {
   const command = argv.find((arg) => !arg.startsWith('-')) || 'doctor';
@@ -7,15 +8,16 @@ function parseArgs(argv: string[]) {
   return { command, json };
 }
 
-function printDoctor(json = false): void {
+async function printDoctor(json = false): Promise<void> {
   const workspace = getWorkspaceEvidenceStatus();
+  const pre = await runDoctor();
   const rmux = workspace.rmux;
   const tmuxSessions = workspace.tmux.sessions;
   const palette = workspace.palette;
   const zellij = workspace.zellij;
 
   if (json) {
-    console.log(JSON.stringify(workspace, null, 2));
+    console.log(JSON.stringify({ ...workspace, preflight: pre }, null, 2));
     return;
   }
 
@@ -37,6 +39,12 @@ function printDoctor(json = false): void {
   console.log(`zellij CLI: ${zellij.cliPath || 'not detected'}`);
   console.log('zellij Required for launch: NO');
   console.log(`zellij Role: ${zellij.role}`);
+  console.log('');
+  console.log('Preflight (v1.0.0-rc1):');
+  for (const c of pre.checks) {
+    console.log(`  ${c.state === 'ok' ? '✓' : c.state === 'warn' ? '!' : '✗'} ${c.name}${c.required ? ' (required)' : ''}${c.note ? ' — ' + c.note : ''}`);
+  }
+  console.log(pre.ok ? 'Preflight READY — lanes may arm' : 'Preflight BLOCKED — required checks missing');
   console.log('');
   console.log('Ready for demo: YES');
   console.log('Next step: npm start');
@@ -65,9 +73,22 @@ if (command === 'hardware') {
   process.exit(0);
 }
 
+if (command === 'preflight') {
+  const rep = await runDoctor();
+  if (json) console.log(JSON.stringify(rep, null, 2));
+  else {
+    console.log('TIMMY Doctor · preflight');
+    for (const c of rep.checks) {
+      console.log(`${c.state === 'ok' ? '✓' : c.state === 'warn' ? '!' : '✗'} ${c.name}${c.required ? ' (required)' : ''}${c.note ? ' — ' + c.note : ''}`);
+    }
+    console.log(rep.ok ? 'preflight: READY' : 'preflight: BLOCKED');
+  }
+  process.exit(rep.ok ? 0 : 1);
+}
+
 if (command !== 'doctor') {
-  console.error('Usage: timmy doctor [deps|network|hardware] [--json]');
+  console.error('Usage: timmy doctor [deps|network|hardware|preflight] [--json]');
   process.exit(2);
 }
 
-printDoctor(json);
+await printDoctor(json);
