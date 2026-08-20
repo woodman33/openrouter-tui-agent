@@ -28,6 +28,7 @@ export interface UsdScene {
   name: string;
   meters_per_unit: number;
   up_axis: 'Y' | 'Z';
+  root?: string;
   prims: UsdPrim[];
 }
 
@@ -80,16 +81,17 @@ function primUsda(p: UsdPrim, depth: number): string {
 }
 
 export function compileUsda(scene: UsdScene): string {
+  const root = scene.root ?? 'World';
   return [
     '#usda 1.0',
     '(',
-    '    defaultPrim = "Scene"',
+    `    defaultPrim = "${root}"`,
     `    metersPerUnit = ${num(scene.meters_per_unit)}`,
     `    upAxis = "${scene.up_axis}"`,
     `    doc = "TIMMY usd-compiler · ${scene.name}"`,
     ')',
     '',
-    'def Xform "Scene"',
+    `def Xform "${root}"`,
     '{',
     scene.prims.map(p => primUsda(p, 1)).join('\n'),
     '}',
