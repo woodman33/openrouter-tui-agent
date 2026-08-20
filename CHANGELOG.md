@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- V-01 graduation benchmark (`src/utils/cone-bench.ts` +
+  `scripts/phaseE-cone-bench.ts`): cone-budgeted capsule vs unconstrained
+  raw-repo dump plus mantle ablation; accuracy proxy is retrieval recall of
+  per-tier mission facts, tokens a bytes/4 estimator; graduation seals an
+  efficiency receipt carrying per-tier token counts and the delta. Ran for
+  v0.7.7: **V-01 GRADUATED** — 19,525 → 5,515 tokens (72%) at equal 1.0
+  recall, ablation delta 2/3, receipt `sha256_08d24235…`;
+  `docs/VISION-REGISTER.md` strikes V-01.
+- USD geometry spine (V-02 rung 1): `src/utils/usd-compiler.ts` +
+  `schemas/usd.cue` — typed parametric scenes compile to deterministic,
+  content-hashed `.usda` stages (native UsdGeom prims; CSG trees ride as
+  provenance Scopes) plus an OpenSCAD CSG adapter (`openscadFromScene` /
+  `renderCsg`, fail-closed `not_configured` without the binary).
+- Mission telemetry hardening: the :4310/mission SSE log panel gains a
+  bounded 200-line ring buffer, tail-pinned autoscroll, and connection-drop
+  recovery (the /events replay refills a cleared buffer on reconnect).
+
+## [0.7.6] - 2026-08-19
+
+### Added
 - Context Cone dispatch integration (V-01 rung 2): `createPlan` accepts a
   cone and derives the sha-pinned `context_manifest` from the budgeted
   L0/L1/L2 selection (`coneToContextManifest`); isolation seeds ONLY the
