@@ -5,6 +5,7 @@ import { startLogServer } from '../src/utils/logserver.js';
 import { issueApproval } from '../src/utils/approvals.js';
 import { appendReceipt } from '../src/utils/receipts.js';
 import { buildAgentPass } from '../src/utils/agent-pass.js';
+import { armEscrow, lockEscrow } from '../src/utils/escrow-engine.js';
 
 // Mission Studio live launch (v0.7.6): the arming gateway triggers the
 // containerized lane for openhands+docker plans and telemetry lands on the
@@ -85,5 +86,22 @@ describe('mission studio live launch (:4310/mission)', () => {
     expect(s.ok).toBe(true);
     expect(s.hierarchy[0]).toEqual({ path: '/World', kind: 'Xform' });
     expect(s.usda).toContain('def Cube "a"');
+  });
+
+  it('escrow ledger: live locks surface via endpoint + events', async () => {
+    const a = armEscrow({ plan_hash: 'f'.repeat(64), ceiling_usd: 1, qa_threshold: 0.5 });
+    expect(a.ok).toBe(true);
+    lockEscrow(a.escrow!.escrow_id);
+    const r = await (await fetch(`http://127.0.0.1:${port}/mission/escrows`)).json();
+    expect(r.ok).toBe(true);
+    const row = r.escrows.find((e: { escrow_id: string }) => e.escrow_id === a.escrow!.escrow_id);
+    expect(row).toBeTruthy();
+    expect(row.state).toBe('locked');
+    expect(row.ceiling_usd).toBe(1);
+    const html = await (await fetch(`http://127.0.0.1:${port}/mission`)).text();
+    expect(html).toContain('6 · ESCROW LEDGER');
+    const evs = readFileSync(join(process.cwd(), '.timmy', 'runs', 'timmy-events.jsonl'), 'utf8')
+      .trim().split('\n').map(x => JSON.parse(x));
+    expect(evs.some((e: { kind: string; payload?: { escrow_id?: string } }) => e.kind === 'escrow.locked' && e.payload?.escrow_id === a.escrow!.escrow_id)).toBe(true);
   });
 });

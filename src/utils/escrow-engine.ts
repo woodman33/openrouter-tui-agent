@@ -12,6 +12,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import { appendReceipt } from './receipts.js';
+import { appendEvent } from './eventbus.js';
 import { verifyAgentPass, type AgentPass } from './agent-pass.js';
 
 export type EscrowState = 'armed' | 'locked' | 'judged' | 'settled' | 'slashed';
@@ -75,6 +76,12 @@ function transition(e: Escrow, to: EscrowState, reason: string | undefined, rece
     discrepancies: reason ? [reason] : [],
     spans: [{ name: `escrow ${e.state}`, kind: 'execute_tool' }], artifacts: []
   }, dir);
+  // live telemetry for the Mission Studio escrow ledger (v0.9.0)
+  appendEvent(`escrow.${to}`, {
+    escrow_id: e.escrow_id, state: to, drawn_usd: e.drawn_usd,
+    ...(e.refund_usd !== undefined ? { refund_usd: e.refund_usd } : {}),
+    ...(reason ? { reason } : {})
+  }, dir);
   return { ok: true, escrow: e };
 }
 
@@ -93,6 +100,7 @@ export function armEscrow(o: { plan_hash: string; ceiling_usd: number; qa_thresh
   if (!v.ok) return { ok: false, note: v.note ?? v.error_class };
   writeEscrow(e, o.dir);
   appendReceipt('runs', { kind: 'run', subject: `escrow ${e.escrow_id} armed · ceiling ${o.ceiling_usd}`, policy: 'human-gated', status: 'ok', plan_hash: o.plan_hash, max_spend: o.ceiling_usd, spans: [], artifacts: [] }, o.dir);
+  appendEvent('escrow.armed', { escrow_id: e.escrow_id, state: 'armed', ceiling_usd: o.ceiling_usd, drawn_usd: 0 }, o.dir);
   return { ok: true, escrow: e };
 }
 

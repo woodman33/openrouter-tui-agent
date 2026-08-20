@@ -203,7 +203,25 @@ const MISSION_HTML = `<!doctype html><html><head><meta charset="utf-8">
 </div>
 <pre id="insp" style="max-height:240px;overflow-y:auto;padding:8px;border:1px solid ${theme.borderDefault};border-radius:6px;background:${theme.surfaceRaised};color:${theme.textSecondary};font:inherit;white-space:pre-wrap"></pre>
 
+<h2>6 · ESCROW LEDGER (live locks · refunds · slashes)</h2>
+<pre id="escrows" style="max-height:160px;overflow-y:auto;padding:8px;border:1px solid ${theme.borderDefault};border-radius:6px;background:${theme.surfaceRaised};color:${theme.textSecondary};font:inherit;white-space:pre-wrap">no escrows yet</pre>
+
 <script>
+async function refreshEscrows() {
+  const r = await (await fetch('/mission/escrows')).json();
+  const box = document.getElementById('escrows');
+  if (!r.ok || !r.escrows.length) { box.textContent = 'no escrows yet — arm one via the escrow engine'; return; }
+  box.textContent = r.escrows.map(e =>
+    e.escrow_id + ' · ' + e.state + ' · ceiling ' + e.ceiling_usd + ' · drawn ' + e.drawn_usd +
+    (e.refund_usd != null ? ' · refund ' + e.refund_usd : '') +
+    (e.qa_value != null ? ' · qa ' + e.qa_value : '') +
+    (e.merkle_root ? ' · merkle ' + e.merkle_root : '')).join('\\n');
+}
+new EventSource('/events').onmessage = m => {
+  const e = JSON.parse(m.data);
+  if (String(e.kind).startsWith('escrow.')) refreshEscrows();
+};
+refreshEscrows();
 async function inspectKind(kind) {
   const out = document.getElementById('insp');
   try {
@@ -660,6 +678,24 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
           res.end(JSON.stringify({ ok: false, note: 'kind must be merkle|stage' }));
         }
       });
+      return;
+    }
+    // v0.9.0 escrow ledger: live balance locks / refunds / slashes
+    if (url.pathname === '/mission/escrows' && req.method === 'GET') {
+      const escDir = join(process.cwd(), '.timmy', 'escrow');
+      let rows: unknown[] = [];
+      try {
+        rows = readdirSync(escDir).filter(f => f.endsWith('.json'))
+          .map(f => JSON.parse(readFileSync(join(escDir, f), 'utf8')))
+          .sort((a, b) => String(a.escrow_id).localeCompare(String(b.escrow_id)))
+          .map(e => ({
+            escrow_id: e.escrow_id, state: e.state, ceiling_usd: e.ceiling_usd, drawn_usd: e.drawn_usd,
+            refund_usd: e.refund_usd ?? null, qa_threshold: e.qa_threshold, qa_value: e.qa_value ?? null,
+            merkle_root: e.merkle_root ? String(e.merkle_root).slice(0, 16) + '…' : null
+          }));
+      } catch { /* no escrows yet */ }
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ ok: true, escrows: rows }));
       return;
     }
     if (url.pathname === '/mission/theatre') {
