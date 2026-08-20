@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-08-20
+
+TIMMY the Agent Trust OS reaches general availability. All four north-star
+targets are graduated with on-disk cryptographic receipts — V-01 Context
+Cone (0.7.7), V-02 USD spine (0.8.0), V-03 AgentPass escrow (0.8.0),
+V-04 media fabric (0.7.5) — the Command Post ships zero-config (bare
+`timmy` boots the Tokyo Night UI), and `timmy doctor preflight` gates every
+containerized arm on a verified environment without burning operator
+authority. The sovereign golden run (slate → cone → armed dispatch →
+USD/ComfyUI generation → escrow settlement) is a first-class test.
 
 ### Added
 - `timmy doctor` preflight tier (v1.0.0-rc1, friction log #2):
