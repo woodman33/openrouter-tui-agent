@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- V-02 GRADUATION (tri-modal USD spine): `scripts/phaseF-usd-bench.ts`
+  proves one stage sha256 (`eea40ee0…`) carried in three lane manifests
+  (houdini-mcp, unreal-mcp, webcontainers), a write→read replay that
+  byte-compares, and fresh-compile determinism; graduation receipt
+  `sha256_0fd8a091…`. `docs/VISION-REGISTER.md` strikes V-02.
+- V-03 GRADUATION (AgentPass escrow): `scripts/phaseG-escrow-bench.ts`
+  proves settle and cancel both honor refund = ceiling − drawn
+  (0.75 = 1.00 − 0.25; 1.50 = 2.00 − 0.50), `verifyChain` walks
+  ceiling→draws→refund clean, and a tampered Merkle proof slashes with
+  settle refused; graduation receipt `sha256_9a628849…`. The register
+  strikes V-03.
+- v0.8.0 SOVEREIGN BASELINE: all four north-star targets are now graduated
+  (V-01 Context Cone, V-02 USD spine, V-03 AgentPass escrow, V-04 media
+  fabric determinism); package version 0.6.0 → 0.8.0. Remaining scopes
+  (cone cold base/redaction, real lane renders + EDL fragment addressing
+  for USD, fleet bidding, federation routing) stay target-grade per the
+  register's maintenance law.
+
+## [0.7.9] - 2026-08-19
+
+### Added
 - Unified USD stage composition (V-02 rung 3): `composeUnifiedStage` binds
   OpenSCAD CSG primitives, UsdShade PBR materials (`#Material` →
   UsdPreviewSurface + `material:binding`) and the hero reference into ONE

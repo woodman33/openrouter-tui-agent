@@ -37,7 +37,7 @@ Graduation receipt `sha256_08d24235…`. CHANGELOG [0.7.7]. The remaining
 cone scope (cross-project cold base, redaction policies per tier) is not
 covered by this graduation and stays target-grade work.
 
-## V-02 · Tri-modal 3D USD Stack
+## ~~V-02 · Tri-modal 3D USD Stack~~ — GRADUATED at v0.8.0
 
 **Target.** One USD spine served three ways: Houdini (hython lane), Unreal
 (unreal-mcp lane), and browser preview — with the EDL/OTIO media spine
@@ -47,11 +47,19 @@ sha-pinned handoffs, replay verification).
 **Why.** The 3D lanes exist but are siloed; a shared stage format is what
 makes "receipt-bound 3D" instead of "three exporters".
 
-**Verifies when.** A mission compiles a capsule per lane against the SAME
-stage artifact (one sha256 in three manifests), and a replay of the USD
-handoff byte-compares. Until then: target.
+**Graduated criterion.** A mission compiles a capsule per lane against the
+SAME stage artifact (one sha256 in three manifests), and a replay of the USD
+handoff byte-compares.
 
-## V-03 · AgentPass Escrow Clearinghouse
+**Proof.** `scripts/phaseF-usd-bench.ts`: one stage `sha256:eea40ee0…`
+(CSG + PBR + hero composed) carried in three lane manifests (houdini-mcp,
+unreal-mcp, webcontainers — plans dp_mt150w11_ek28 / dp_mt150w1k_3nof /
+dp_mt150w21_sgfz); write→read replay byte-compares; fresh compiles are
+deterministic. Graduation receipt `sha256_0fd8a091…`. CHANGELOG [0.8.0].
+Real lane execution against the stage (hython/unreal renders, EDL fragment
+addressing for USD) stays target-grade.
+
+## ~~V-03 · AgentPass Escrow Clearinghouse~~ — GRADUATED at v0.8.0
 
 **Target.** Spend authority becomes an escrow: plans deposit a signed
 max_spend ceiling; executors draw against it per sealed receipt; the
@@ -61,9 +69,16 @@ delta on cancel/fail. Multi-party (fleet bidding) builds on the same escrow.
 **Why.** Today max_spend is a gate, not a ledger — cancellation doesn't
 refund, and cross-agent bidding has no settlement primitive.
 
-**Verifies when.** A cancelled run seals a refund receipt whose amount equals
-ceiling minus drawn child receipts, and `verifyChain` walks ceiling→draws→
-refund clean. Until then: target (current spend policy remains default-deny).
+**Graduated criterion.** A cancelled run seals a refund receipt whose amount
+equals ceiling minus drawn child receipts, and `verifyChain` walks
+ceiling→draws→refund clean.
+
+**Proof.** `scripts/phaseG-escrow-bench.ts`: settle refunds 0.75 =
+1.00 − 0.25 drawn; a cancelled run seals refund 1.50 = 2.00 − 0.50 and
+`verifyChain` walks ceiling→draws→refund clean; a tampered Merkle proof
+slashes with settle refused (no payout path). Escrows esc_af8826ef /
+esc_0dfbb92b / esc_175a885c; graduation receipt `sha256_9a628849…`.
+CHANGELOG [0.8.0]. Multi-party fleet bidding stays target-grade.
 
 ## ~~V-04 · ComfyUI Federation (determinism rung)~~ — GRADUATED at v0.7.5
 
