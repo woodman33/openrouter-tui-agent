@@ -95,9 +95,19 @@ for (let i = 0; i < args.length; i++) {
   cleanArgs.push(args[i]);
 }
 
-if (cleanArgs.length === 0 || args.includes('--help') || args.includes('-h') || cleanArgs[0] === 'help') {
+if (args.includes('--help') || args.includes('-h') || cleanArgs[0] === 'help') {
   printHelp();
   process.exit(0);
+}
+
+// zero-config (v1.0.0-rc1): bare `timmy` boots the Tokyo Night Command Post
+if (cleanArgs.length === 0) {
+  const jsEntry = fileURLToPath(new URL('./cli.js', import.meta.url));      // packaged (dist siblings)
+  const tsEntry = fileURLToPath(new URL('./cli.tsx', import.meta.url));    // repo run
+  const r = fs.existsSync(jsEntry)
+    ? spawnSync(process.execPath, [jsEntry], { stdio: 'inherit' })
+    : spawnSync('npx', ['tsx', tsEntry], { stdio: 'inherit' });
+  process.exit(r.status ?? 0);
 }
 
 const command = cleanArgs[0];

@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `timmy doctor` preflight tier (v1.0.0-rc1, friction log #2):
+  `src/utils/doctor.ts` audits docker daemon, comfy-cli + tool-venv
+  (filelock/sqlalchemy — the 0.28 asset-scanner crash window), CUE CLI,
+  OpenSCAD, tmux and ports 8188/4310; `timmy doctor preflight` exits
+  non-zero when a required check is missing. Containerized plans cannot
+  arm while docker is down — checked BEFORE consuming the one-shot token
+  so a bad environment never burns operator authority.
+- Zero-config CLI: bare `timmy` now boots the Tokyo Night Command Post
+  (dist/cli.js when packaged, tsx cli.tsx from the repo); `--help` keeps
+  the command surface.
+- End-to-end sovereign golden run (`tests/e2e-sovereign.test.ts`): slate
+  tldraw map → context-cone-indexed capsule → operator-armed containerized
+  dispatch → content-hashed USD stage + live ComfyUI stem (honest
+  not_configured skip when absent) → AgentPass-judged escrow settlement
+  with the refund invariant and a clean chain walk.
+
+## [0.9.0] - 2026-08-20
+
+### Added
 - Fleet distribution (v0.9.0 horizon 1): `src/utils/fleet-dispatch.ts` +
   `scripts/phaseH-fleet.ts` — one mission fans out a ComfyUI video stem
   (local golden lane) plus tri-modal USD stage renders in parallel against
