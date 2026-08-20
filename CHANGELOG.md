@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Fleet distribution (v0.9.0 horizon 1): `src/utils/fleet-dispatch.ts` +
+  `scripts/phaseH-fleet.ts` — one mission fans out a ComfyUI video stem
+  (local golden lane) plus tri-modal USD stage renders in parallel against
+  the same content-hashed stage; plans arm only via operator-minted tokens
+  (`armToken` hook — authority stays external); a parent receipt links the
+  fan-out; missing tooling seals honest `not_configured`/`missing_source`,
+  never a fake stem.
+- Real-time escrow dashboard (v0.9.0 horizon 2): the escrow engine emits
+  `escrow.*` events on the bus; `GET /mission/escrows` lists live locks,
+  draws, refunds and merkle prefixes; :4310/mission section 6 renders the
+  ledger and refreshes on SSE escrow events.
+- Version-sync hardening (friction log #1): `tests/globalsetup.ts` wired as
+  vitest `globalSetup` regenerates `src/version.ts` even under raw
+  `npx vitest`, so version bumps can't break stale assertions.
+
+## [0.8.0] - 2026-08-20
+
+### Added
 - V-02 GRADUATION (tri-modal USD spine): `scripts/phaseF-usd-bench.ts`
   proves one stage sha256 (`eea40ee0…`) carried in three lane manifests
   (houdini-mcp, unreal-mcp, webcontainers), a write→read replay that
