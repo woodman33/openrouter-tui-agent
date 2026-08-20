@@ -5,7 +5,7 @@
 // SSE tail of .timmy/runs/timmy-events.jsonl; no dependencies, no secrets.
 import { createServer, ServerResponse } from 'http';
 import { existsSync, readFileSync, statSync, openSync, readSync, closeSync, readdirSync } from 'fs';
-import { armPlan, dispatchPlan, pauseOrCancelLane, collectRun, createPlan, type DispatchPlan } from './dispatch.js';
+import { armPlan, dispatchPlan, dispatchContainerized, getPlan, pauseOrCancelLane, collectRun, createPlan, type DispatchPlan } from './dispatch.js';
 import { compileMissionMap, type MissionMapDoc } from './slate-compiler.js';
 import { join, resolve } from 'path';
 import { spawn } from 'child_process';
@@ -181,6 +181,11 @@ const MISSION_HTML = `<!doctype html><html><head><meta charset="utf-8">
 </div>
 <video id="vid" controls style="max-width:480px;width:100%;margin-top:8px;border:1px solid ${theme.borderDefault}"></video>
 
+<h2>4 · LIVE MISSION TELEMETRY (container runs · event-bus SSE)</h2>
+<div style="max-height:180px;overflow-y:auto;border:1px solid ${theme.borderDefault};border-radius:6px;background:${theme.surfaceRaised}">
+  <pre id="telelog" style="padding:8px;color:${theme.textSecondary};font:inherit;white-space:pre-wrap">no live run yet — arm + launch an openhands/docker plan above</pre>
+</div>
+
 <script>
 const DEFAULT_DOC = {
   nodes: [
@@ -245,6 +250,26 @@ async function armLaunch(i) {
   const l = await fetch('/dispatch/action', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, action: 'launch' }) });
   const lr = await l.json();
   out.innerHTML = lr.ok ? '<span class="hash">J-BANG! launched ' + (lr.session ?? id) + '</span>' : '<span class="err">launch refused: ' + (lr.note ?? '?') + '</span>';
+  if (lr.ok && lr.container) { streamTelemetry(id); out.innerHTML += ' <span class="note">· containerized · telemetry below</span>'; }
+}
+
+// Real-time telemetry: the SAME NDJSON event bus the TUI consumes, filtered
+// to the launched plan. Read-only — the companion still never executes.
+let TELE_ID = null, TELE_ES = null;
+function streamTelemetry(id) {
+  TELE_ID = id;
+  const log = document.getElementById('telelog');
+  log.textContent = '';
+  if (!TELE_ES) {
+    TELE_ES = new EventSource('/events');
+    TELE_ES.onmessage = m => {
+      const e = JSON.parse(m.data); const p = e.payload || {};
+      if (!TELE_ID || p.plan_id !== TELE_ID) return;
+      const line = e.kind + (p.line ? ' · ' + p.line : (p.note ? ' · ' + p.note : (p.receipt ? ' · receipt ' + String(p.receipt).slice(0, 18) + '…' : '')));
+      log.textContent += line + '\\n';
+      log.parentElement.scrollTop = log.parentElement.scrollHeight;
+    };
+  }
 }
 
 // cubic-bézier sampler — MIRROR of src/utils/theatre-runtime.ts bezierSample
@@ -505,11 +530,18 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
       }
       let body: any = {};
       req.on('data', d => { try { body = JSON.parse(d.toString()); } catch { /* ignore */ } });
-      req.on('end', () => {
+      req.on('end', async () => {
         const { id, action, token } = body;
         let r: unknown = { ok: false, error: 'unknown action' };
         if (action === 'arm' && token) r = armPlan(String(id), String(token));
-        else if (action === 'launch') r = dispatchPlan(String(id));
+        else if (action === 'launch') {
+          // openhands+docker plans run through the containerized engine with
+          // live telemetry; every other harness keeps the tmux lane runner
+          const st = getPlan(String(id));
+          r = st && st.plan.harnesses[0] === 'openhands' && st.plan.workspace.kind === 'docker'
+            ? await dispatchContainerized(String(id))
+            : dispatchPlan(String(id));
+        }
         else if (action === 'hold') r = pauseOrCancelLane(String(id), 'hold');
         else if (action === 'cancel') r = pauseOrCancelLane(String(id), 'cancel');
         else if (action === 'collect') r = collectRun(String(id));

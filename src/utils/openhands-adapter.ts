@@ -27,6 +27,9 @@ export interface OpenHandsOpts {
   local_model?: string;          // default ollama/qwen3.8:27b-mlx (capable local)
   engine?: 'sdk' | 'cli' | 'docker'; // C: docker = ephemeral runner container (default)
   approval?: string;             // operator token bound to this task's plan hash
+  onLine?: (chunk: string) => void; // live telemetry tap (caller throttles)
+  /** authority consumed upstream (dispatch arm bound to this hash) — skips the internal token gate and records the chain */
+  preApproved?: { plan_hash: string };
   dir?: string;
 }
 
@@ -72,8 +75,10 @@ const scaffoldFixture = (work: string) => {
 export async function runOpenHandsTask(o: OpenHandsOpts): Promise<OpenHandsResult> {
   const dir = o.dir ?? process.cwd();
   const planHash = openHandsPlanHash(o);
-  // paid/remote work default-deny: operator token bound to the complete task hash
-  const gate = consumeApproval(o.approval ?? '', planHash);
+  // paid/remote work default-deny: operator token bound to the complete task
+  // hash. preApproved = the dispatch controller already consumed a token bound
+  // to the dispatch plan hash at arm time (unidirectional authority).
+  const gate = o.preApproved ? { ok: true as const } : consumeApproval(o.approval ?? '', planHash);
   if (!gate.ok) {
     const rec = appendReceipt('runs', { kind: 'run', subject: 'openhands run DENIED (approval)', policy: 'human-gated', status: 'denied', error_class: 'approval', plan_hash: planHash, spans: [], artifacts: [] }, dir);
     appendEvent('openhands.denied', { plan_hash: planHash, note: gate.note }, dir);
@@ -174,9 +179,10 @@ export async function runOpenHandsTask(o: OpenHandsOpts): Promise<OpenHandsResul
   child.stderr?.on('data', d => {
     const s = d.toString();
     tail = (tail + s).slice(-2000);
+    o.onLine?.(s);
     if (/file_editor|terminal|Execut|edit|read/i.test(s)) lastActivity.v = Date.now();
   });
-  child.stdout?.on('data', d => { const s = d.toString(); tail = (tail + s).slice(-2000); fullOut = (fullOut + s).slice(-200000); lastActivity.v = Date.now(); });
+  child.stdout?.on('data', d => { const s = d.toString(); tail = (tail + s).slice(-2000); fullOut = (fullOut + s).slice(-200000); o.onLine?.(s); lastActivity.v = Date.now(); });
   const watcher = setInterval(() => {
     const m = snap();
     if (m !== lastMtime.v) { lastMtime.v = m; lastActivity.v = Date.now(); }
@@ -217,6 +223,7 @@ export async function runOpenHandsTask(o: OpenHandsOpts): Promise<OpenHandsResul
     status: !errClass ? 'ok' : 'failed',
     ...(errClass ? { error_class: errClass as string } : {}),
     plan_hash: planHash, ms: duration_ms,
+    ...(o.preApproved ? { authority: 'dispatch-armed', dispatch_plan_hash: o.preApproved.plan_hash } : {}),
     ...(engine === 'docker' ? { container_image: OH_RUNNER_IMAGE, host_canary: envelope.host_canary ?? null } : {}),
     spans: [{ name: `openhands ${engine} (seeded disposable workspace)`, kind: 'invoke_agent' }],
     artifacts: []
