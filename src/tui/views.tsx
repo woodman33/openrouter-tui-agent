@@ -5,7 +5,7 @@
 import React from 'react';
 import { Box } from 'ink';
 import type { Agent } from '../agent/core.js';
-import { ChatPanel } from './panels/ChatPanel.js';
+import { CommandView } from './components/CommandView.js';
 import { SlatePanel } from './panels/SlatePanel.js';
 import { GensPanel } from './panels/GensPanel.js';
 import { LogsPanel } from './panels/LogsPanel.js';
@@ -31,16 +31,13 @@ export function ViewStage({ view, paneFocus, agent, setInspector, setModalInput,
   const pane = (i: number): boolean => paneFocus === i;
 
   if (view === 0) {
-    // clean prompt + conversation + concise J-BANG cards; NO ambient rain
-    return (
-      <Box flexDirection="column" flexGrow={1}>
-        <ActionCards width={width} />
-        <ChatPanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} ambientRain={false} />
-      </Box>
-    );
+    // v1.0.2: ONLY the conversation + one clean prompt box. No rail, no
+    // cards, no rain, no debug chatter.
+    return <CommandView agent={agent} />;
   }
 
   if (view === 1) {
+    // task/capsule cards live here now (evicted from View [1])
     return (
       <Box flexDirection="row" flexGrow={1}>
         <Box flexGrow={3} flexDirection="column" paddingRight={1}>
@@ -49,6 +46,7 @@ export function ViewStage({ view, paneFocus, agent, setInspector, setModalInput,
           </PaneFocusContext.Provider>
         </Box>
         <Box flexGrow={2} flexDirection="column" paddingLeft={1}>
+          <ActionCards width={Math.max(30, Math.floor(width * 0.4))} />
           <PaneFocusContext.Provider value={pane(1)}>
             <GensPanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} setModalInput={setModalInput} inputLocked={inputLocked} />
           </PaneFocusContext.Provider>
