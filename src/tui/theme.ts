@@ -16,6 +16,7 @@ export const theme = {
   textSecondary: '#a9b1d6',     // mid
   textTertiary: '#565f89',      // dim
   borderDefault: '#3b4261',     // hairline, barely-there
+  borderMuted: '#292e42',       // inactive pane chrome (v1.0.1 ergonomic overhaul)
   accent: '#ff9e64',            // ORANGE — the signal color (cost, singular)
   accentDim: '#565f89',         // muted chrome
   success: '#9ece6a',           // verified receipts · seals · ok

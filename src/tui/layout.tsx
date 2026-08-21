@@ -7,8 +7,7 @@ import { Box, Text, useWindowSize } from 'ink';
 import { theme } from './theme.js';
 import { VERSION } from '../version.js';
 import { checkDocker, checkComfyCli } from '../utils/doctor.js';
-import { StatusTicker } from './components/StatusTicker.js';
-import { layoutBudget, footerKeysLine, footerHintLine, VIEWS, VIEW_PANES } from './utils/ergonomics.js';
+import { layoutBudget, footerKeysLine, VIEWS } from './utils/ergonomics.js';
 
 // children read the debounced viewport through this — one source of truth
 // for column/row math below the shell.
@@ -103,8 +102,12 @@ export function Layout({
           <Text color={busy ? anim.color : theme.textTertiary}>{anim.glyph}</Text>
           <Text color={tel.color}> {tel.glyph}</Text>
           {queuedTelemetryCount > 0 && <Text color={theme.textTertiary}>+{queuedTelemetryCount}</Text>}
-          <Text color={theme.textTertiary}> · RUN·</Text>
-          <Text color={theme.textPrimary}>{runDisplay}</Text>
+          {W >= 110 && (
+            <>
+              <Text color={theme.textTertiary}> · RUN·</Text>
+              <Text color={theme.textPrimary}>{runDisplay}</Text>
+            </>
+          )}
           <Text color={theme.textTertiary}> · COST·</Text>
           <Text color={theme.accent}>${totalCost.toFixed(4)}</Text>
           {W >= 90 && (
@@ -118,28 +121,16 @@ export function Layout({
         </Box>
       </Box>
 
-      {/* ══ HEADER ROW 2 — live ticker (the rain's only ambient surface) ══ */}
-      <Box paddingX={1} flexShrink={0}>
-        <StatusTicker width={W - 2} />
-      </Box>
-
-      {/* ══ MAIN — rows − 4, hard budget ══ */}
+      {/* ══ MAIN — rows − 2, hard budget (v1.0.2: strict 1+1 chrome) ══ */}
       <Box height={budget.main} flexDirection="row" paddingX={1} flexShrink={0}>
         <ViewportContext.Provider value={{ w: Math.max(40, W - 2), h: budget.main }}>
           {children}
         </ViewportContext.Provider>
       </Box>
 
-      {/* ══ FOOTER ROW 1 — keymap ══ */}
+      {/* ══ FOOTER — strict 1-line keymap at the absolute bottom ══ */}
       <Box paddingX={1} flexShrink={0}>
         <Text color={theme.textTertiary} wrap="truncate">{footerKeysLine(W - 2)}</Text>
-      </Box>
-
-      {/* ══ FOOTER ROW 2 — view/pane hints ══ */}
-      <Box paddingX={1} flexShrink={0}>
-        <Text color={theme.textTertiary} wrap="truncate">
-          {footerHintLine(view, paneFocus, VIEW_PANES[view] ?? 1, busy, W - 2)}
-        </Text>
       </Box>
     </Box>
   );

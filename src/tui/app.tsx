@@ -7,7 +7,7 @@ import { createAgent } from '../agent/core.js';
 import type { AgentConfig } from '../types/index.js';
 import { Layout } from './layout.js';
 import { ViewStage } from './views.js';
-import { VIEWS, VIEW_PANES } from './utils/ergonomics.js';
+import { VIEWS, VIEW_PANES, PALETTE_MODELS } from './utils/ergonomics.js';
 import { useTerminalCapabilities } from './hooks/useTerminalCapabilities.js';
 import { useGraphicsPipeline } from './hooks/useGraphicsPipeline.js';
 import { useAgent } from './hooks/useAgent.js';
@@ -119,6 +119,8 @@ function App({ config, graphicsType = 'auto' }: AppProps) {
 
   const paletteItems = [
     ...VIEWS.map((vd, i) => ({ label: `${vd.key} · ${vd.label}`, action: () => gotoView(i) })),
+    // v1.0.2: model switching + health live strictly here, never in a sidebar
+    ...PALETTE_MODELS.map(m => ({ label: `model · ${m.label}`, action: () => agentState.switchModel(m.id) })),
     { label: 'q · Exit Application', action: safeExit }
   ];
 
@@ -235,9 +237,8 @@ function App({ config, graphicsType = 'auto' }: AppProps) {
             <Text color={theme.textPrimary}>[1-4]     switch top-level views</Text>
             <Text color={theme.textPrimary}>[Tab]     cycle pane focus (⇧Tab reverses)</Text>
             <Text color={theme.textPrimary}>[L]       jump to TELEMETRY</Text>
-            <Text color={theme.textPrimary}>[J-BANG]  launch armed plan (dispatch rail)</Text>
+            <Text color={theme.textPrimary}>[^K]      models + command palette</Text>
             <Text color={theme.textPrimary}>[?]       this overlay · [q] quit · ^C quit</Text>
-            <Text color={theme.textPrimary}>[^K]      command palette</Text>
             <Text color={theme.textSecondary}>────────────────────────────────────────────────</Text>
             <Text color={theme.textSecondary} dimColor>Press ? or ESC to close</Text>
           </Box>

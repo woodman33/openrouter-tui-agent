@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Radical View [1] de-clutter (v1.0.2): new `CommandView` — ONLY the
+  conversation plus one clean bordered prompt box (`▶ [Type command or
+  prompt...]`). The OPENROUTER MODELS sidebar is gone (model switching +
+  health live strictly in the `^K` palette); J-BANG action cards evicted
+  to View [2] (Mission); internal system chatter (`[Saved to Cloudflare…]`,
+  state-sync, run.created noise) filtered out of the scrollback; minimal
+  markdown rendering (user prompt one clean line, agent indented below),
+  no nested box borders, no scroll-thumb artifacts.
+- Chrome consolidated to strict single lines: header
+  `TIMMY v1.0.2 · VIEW · model · badges`, footer
+  `[Tab] Focus  [1-4] Views  [^K] Models/Palette  [?] Help  [q] Quit`;
+  layout budget is now header 1 + footer 1 + main rows−2.
+
+### Removed
+- `StatusTicker` ambient line (live surface stays in TELEMETRY).
+
+### Changed
 - Full TUI ergonomic overhaul (v1.0.1): the cramped 8-mode monolith is
   replaced by four top-level views — [1] COMMAND (clean chat + concise
   J-BANG action cards), [2] MISSION (DAG + capsules), [3] TELEMETRY
