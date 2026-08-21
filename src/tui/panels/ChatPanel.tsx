@@ -19,6 +19,8 @@ interface ChatPanelProps {
   setInspector: (data: any) => void;
   zone?: number;
   setZone?: (z: number) => void;
+  /** v1.0.1: the COMMAND view kills the ambient reverse rain (ticker owns live). */
+  ambientRain?: boolean;
 }
 
 const FALLBACK_MODELS = [
@@ -33,7 +35,7 @@ const FALLBACK_MODELS = [
   { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', description: 'top coding open weights assistant' }
 ];
 
-export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelProps) {
+export function ChatPanel({ agent, setInspector, zone = 0, setZone, ambientRain = true }: ChatPanelProps) {
   const { rows: height, columns: width } = useWindowSize();
   const terminalHeight = height || 24;
   const terminalWidth = width || 80;
@@ -85,7 +87,7 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
   const railWidth = Math.max(30, Math.min(44, Math.floor(stageWidth * 0.28)));
   const rainWidth = Math.max(34, Math.min(60, Math.floor(stageWidth * 0.24)));
   // Three full-height columns (chat | rail | rain) only when chat keeps >=44 cols.
-  const threeCol = stageWidth >= 128 && stageWidth - railWidth - rainWidth - 8 >= 44;
+  const threeCol = ambientRain && stageWidth >= 128 && stageWidth - railWidth - rainWidth - 8 >= 44;
   const chatWidth = Math.max(30, stageWidth - railWidth - (threeCol ? rainWidth : 0) - 4);
 
   // Chat viewport = measured fill, not a hard cap.
@@ -416,7 +418,7 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
       return;
     } else {
       // focusSection === 'modelRail'
-      if (key.rightArrow) {
+      if (key.rightArrow && ambientRain) {
         focusPane('logRain');
         return;
       }
@@ -730,8 +732,9 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone }: ChatPanelP
           );
         })()}
 
-        {/* Live log rain — newest at top, rains downward (stacked mode) */}
-        {!threeCol && <LogRain height={rainHeight} focused={focusSection === 'logRain' && zone >= 0} />}
+        {/* Live log rain — newest at top, rains downward (stacked mode).
+            v1.0.1: hidden in the COMMAND view; the header ticker owns live. */}
+        {!threeCol && ambientRain && <LogRain height={rainHeight} focused={focusSection === 'logRain' && zone >= 0} />}
 
         <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={1} borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
           <Text color={theme.textSecondary}>Tab·menu ←→·panes ↑↓·move</Text>

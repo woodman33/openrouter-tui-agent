@@ -162,5 +162,8 @@ if (opts.headless) {
   // Ensure standard terminal clear before starting TUI to avoid layout corruption
   process.stdout.write('\x1Bc');
 
+  // v1.0.1: the first-run gate must not re-show once completed (config passthrough)
+  Object.assign(agentConfig, { onboarded: (config as any).onboarded === true });
+
   startTUI(agentConfig, mode, opts.companion === false ? 'ansi' : 'auto');
 }

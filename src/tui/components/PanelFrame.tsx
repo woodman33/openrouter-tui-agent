@@ -13,23 +13,31 @@ interface PanelFrameProps {
   statusColor?: string;
   explain?: string;
   hints: KeyHint[];
+  /** v1.0.1 Active Pane Invariant; defaults to the PaneFocusContext value. */
+  active?: boolean;
   children: React.ReactNode;
 }
+
+// The focused pane in a view provides this as true; every framed pane below
+// it renders bright #7dcfff chrome, everyone else drops to muted #292e42.
+export const PaneFocusContext = React.createContext<boolean>(true);
 
 // Consistent chrome for every tab: 1px hairline border, title + live status
 // strip, one-line plain-English explainer, content, contextual key hints.
 // All column math derives from stdout dimensions — no hardcoded buffers, so
 // split tmux panes and small viewports shrink gutters instead of wrapping
 // box-drawing characters.
-export function PanelFrame({ icon, title, status, statusKind, statusColor, explain, hints, children }: PanelFrameProps) {
+export function PanelFrame({ icon, title, status, statusKind, statusColor, explain, hints, active, children }: PanelFrameProps) {
   const cols = useStdout().stdout?.columns ?? 80;
   const gutter = cols >= 100 ? 2 : 1;
   const g = statusKind ? statusGlyph(statusKind) : null;
+  const ctxActive = React.useContext(PaneFocusContext);
+  const isActive = active ?? ctxActive;
   return (
-    <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={theme.borderDefault} paddingX={gutter}>
+    <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={isActive ? theme.focus : theme.borderMuted} paddingX={gutter}>
       <Box flexDirection="column" marginBottom={1} flexShrink={0}>
         <Box justifyContent="space-between">
-          <Text bold color={theme.brand} wrap="truncate">{icon} {title}</Text>
+          <Text bold={isActive} color={isActive ? theme.focus : theme.brandDim} wrap="truncate">{isActive ? '◆ ' : ''}{icon} {title}</Text>
           {g || status ? (
             <Text color={statusColor ?? (g ? g.color : theme.textSecondary)} wrap="truncate">
               {g ? `${g.glyph} ${g.label}` : ''}{g && status ? ' · ' : ''}{status ?? ''}
