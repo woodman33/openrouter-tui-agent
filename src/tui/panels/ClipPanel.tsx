@@ -120,8 +120,8 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
               <Text bold color={theme.info} wrap="truncate">{sel.id} · {sel.project}</Text>
               <Text color={theme.textSecondary} wrap="wrap">instruction: {sel.instruction}</Text>
               <Box marginTop={1} flexDirection="column">
-                {sel.sources.map(s => (
-                  <Text key={s.genId + s.artifact} color={theme.textSecondary} wrap="truncate">
+                {sel.sources.map((s, si) => (
+                  <Text key={`${si}-${s.genId}-${s.artifact}`} color={theme.textSecondary} wrap="truncate">
                     • {s.label} → {s.artifact}{s.receiptHash ? ` · receipt ${s.receiptHash.slice(7, 19)}` : ''}
                   </Text>
                 ))}
@@ -130,8 +130,8 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
               <Text color={theme.success} wrap="truncate">out: {sel.output}</Text>
               <Box marginTop={1} flexDirection="column">
                 <Text color={theme.textSecondary}>deterministic layer ([y] yanks these):</Text>
-                {ffmpegCheat(sel.sources[0]?.artifact ?? sel.output).slice(1).map(l => (
-                  <Text key={l} color={theme.textSecondary} wrap="truncate">  {l}</Text>
+                {ffmpegCheat(sel.sources[0]?.artifact ?? sel.output).slice(1).map((l, li) => (
+                  <Text key={`${li}-${l}`} color={theme.textSecondary} wrap="truncate">  {l}</Text>
                 ))}
               </Box>
               {!st.dir && <Text color={theme.warning} wrap="truncate">agent layer: {st.note ?? CLIP_INSTALL}</Text>}

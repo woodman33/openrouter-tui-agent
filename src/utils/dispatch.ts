@@ -2,7 +2,7 @@
 // Equip riders; don't ride: this PREPARES, ARMS and LAUNCHES work into
 // existing harness lanes (LANE_RUNNERS + tmux vocabulary). It is not a second
 // scheduler; the later tldraw Mission Map compiles into these same calls.
-import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, readdirSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { spawnSync } from 'child_process';
 import { tmpdir } from 'os';
@@ -258,6 +258,17 @@ export function dispatchPlan(id: string, dir?: string): { ok: boolean; note?: st
 
 export function getPlan(id: string, dir?: string): StoredPlan | null {
   return readStored(id, dir);
+}
+
+export function listPlans(dir?: string): StoredPlan[] {
+  const d = join(dir ?? process.cwd(), '.timmy', 'dispatch');
+  try {
+    return readdirSync(d)
+      .filter(f => f.endsWith('.json'))
+      .map(f => readStored(f.replace(/\.json$/, ''), dir))
+      .filter((s): s is StoredPlan => Boolean(s))
+      .sort((a, b) => String(b.dispatched_at ?? '').localeCompare(String(a.dispatched_at ?? '')));
+  } catch { return []; }
 }
 
 // Live containerized lane (v0.7.6): an armed openhands+docker plan runs

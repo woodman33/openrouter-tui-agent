@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Full TUI ergonomic overhaul (v1.0.1): the cramped 8-mode monolith is
+  replaced by four top-level views — [1] COMMAND (clean chat + concise
+  J-BANG action cards), [2] MISSION (DAG + capsules), [3] TELEMETRY
+  (log inspector + full LogRain), [4] ESCROW (live ledger + receipt chain
+  with verify) — switched by [1-4], pane focus by Tab.
+- Strict viewport budgeting: header 2 rows (status bar + `[● LIVE]`
+  ticker), footer 2 rows (keymap + view hints), main = rows − 4; all
+  dynamic text clamps (`wrap="truncate"`, column clamping); resize
+  rerenders debounced (120ms) through a single ViewportContext.
+- Active Pane Invariant: focused pane renders bold bright `#7dcfff` border
+  + `◆` title glyph; inactive panes drop to muted `#292e42`
+  (`PaneFocusContext` + `chromeFor`).
+- Ambient noise collapsed: the continuous reverse LogRain no longer rides
+  in the chat pane; a single-line ticker (`[● LIVE] Last event: … ·
+  [L] telemetry`) is the only ambient live surface outside TELEMETRY.
+
+### Fixed
+- Duplicate React key warnings (content-keyed lists in ClipPanel).
+- First-run gate re-showing on every launch (`onboarded` now passes through
+  cli.tsx into the app shell).
+
 ## [1.0.0] - 2026-08-20
 
 TIMMY the Agent Trust OS reaches general availability. All four north-star
