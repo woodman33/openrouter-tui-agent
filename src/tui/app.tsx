@@ -26,7 +26,7 @@ interface AppProps {
   graphicsType?: string;
 }
 
-function App({ config, graphicsType = 'auto' }: AppProps) {
+export function App({ config, graphicsType = 'auto' }: AppProps) {
   const { exit } = useApp();
 
   // v1.0.1 view grammar: 0 COMMAND · 1 MISSION · 2 TELEMETRY · 3 ESCROW
@@ -130,6 +130,8 @@ function App({ config, graphicsType = 'auto' }: AppProps) {
       safeExit();
       return;
     }
+    // onboarding holds the keyboard — root hotkeys stay silent (v1.0.5-fix)
+    if (showOnboard) return;
     if (key.ctrl && input === 'k') {
       setCommandPaletteOpen(prev => !prev);
       setPaletteIdx(0);
@@ -239,6 +241,10 @@ function App({ config, graphicsType = 'auto' }: AppProps) {
           >
             <Text bold color={theme.success}>❓ VIEW GRAMMAR — {VIEWS[view]?.label}</Text>
             <Text color={theme.textSecondary}>────────────────────────────────────────────────</Text>
+            <Text bold color={theme.focus}>What is TIMMY?</Text>
+            <Text color={theme.textSecondary}>Terminal-first Agent Trust OS — a flight recorder for AI agent runs.</Text>
+            <Text color={theme.textSecondary}>What is a receipt? Every action seals a SHA-256 / ed25519 receipt; chains verify from [4] ESCROW.</Text>
+            <Text color={theme.borderDefault}>──────────────────────────────────────────────</Text>
             <Text color={theme.textPrimary}>[1-4]     switch top-level views</Text>
             <Text color={theme.textPrimary}>[Tab]     cycle pane focus (⇧Tab reverses)</Text>
             <Text color={theme.textPrimary}>[L]       jump to TELEMETRY</Text>

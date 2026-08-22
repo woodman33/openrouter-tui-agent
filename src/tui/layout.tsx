@@ -51,7 +51,7 @@ export function Layout({
     return () => clearInterval(t);
   }, []);
 
-  const modelShort = model.split('/').pop() ?? model;
+  const modelShort = (model ?? 'local/none').split('/').pop() ?? model;
   const sess = activeRunId ? activeRunId.slice(0, 12) : 'live';
 
   return (
@@ -62,7 +62,9 @@ export function Layout({
         <Box flexGrow={1} justifyContent="center">
           {VIEWS.map((vd, i) => (
             <Text key={vd.key} bold={i === view} color={i === view ? theme.focus : theme.textTertiary} wrap="truncate">
-              {i === view ? `[ ${vd.key} ${vd.label} ]` : ` ${vd.key} ${vd.label} `}
+              {W >= 110
+                ? (i === view ? `[ ${vd.key} ${vd.label} ]` : ` ${vd.key} ${vd.label} `)
+                : (i === view ? `[${vd.key} ${vd.label.slice(0, 3)}]` : ` ${vd.key} ${vd.label.slice(0, 3)} `)}
             </Text>
           ))}
         </Box>

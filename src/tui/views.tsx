@@ -45,7 +45,7 @@ export function ViewStage({ view, paneFocus, agent, setInspector, setModalInput,
             paddingX={1}
           >
             <Text bold color={pane(0) ? theme.focus : theme.brandDim} wrap="truncate">{pane(0) ? '◆' : '◇'} COMMAND POST</Text>
-            <CommandView agent={agent} />
+            <CommandView agent={agent} setModalInput={setModalInput} inputLocked={inputLocked} />
           </Box>
         </Box>
         <Box flexGrow={2} flexDirection="column" paddingLeft={1}>
