@@ -3,7 +3,7 @@
 // [3] Telemetry & LogRain, [4] Escrow & Receipts. Legacy panels are reused
 // as content; the shell owns navigation, budget and chrome.
 import React from 'react';
-import { Box } from 'ink';
+import { Box, Text } from 'ink';
 import type { Agent } from '../agent/core.js';
 import { CommandView } from './components/CommandView.js';
 import { LogRelay } from './components/LogRelay.js';
@@ -41,9 +41,10 @@ export function ViewStage({ view, paneFocus, agent, setInspector, setModalInput,
             flexDirection="column"
             flexGrow={1}
             borderStyle="round"
-            borderColor={pane(0) ? theme.cardFocus : theme.borderMuted}
+            borderColor={pane(0) ? theme.focus : theme.borderMuted}
             paddingX={1}
           >
+            <Text bold color={pane(0) ? theme.focus : theme.brandDim} wrap="truncate">{pane(0) ? '◆' : '◇'} COMMAND POST</Text>
             <CommandView agent={agent} />
           </Box>
         </Box>

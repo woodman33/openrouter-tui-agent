@@ -7,7 +7,7 @@ import { Box, Text, useWindowSize } from 'ink';
 import { theme } from './theme.js';
 import { VERSION } from '../version.js';
 import { checkDocker, checkComfyCli } from '../utils/doctor.js';
-import { layoutBudget, footerKeysLine } from './utils/ergonomics.js';
+import { layoutBudget, footerKeysLine, VIEWS } from './utils/ergonomics.js';
 
 export const ViewportContext = React.createContext<{ w: number; h: number }>({ w: 80, h: 20 });
 
@@ -22,8 +22,6 @@ export interface LayoutProps {
   activeRunId?: string;
   children: React.ReactNode;
 }
-
-const RAIL_ICONS = ['>_', '⊞', '', '🛡', '⚙'];
 
 export function Layout({
   view,
@@ -58,30 +56,25 @@ export function Layout({
 
   return (
     <Box flexDirection="column" width={W} height={H}>
-      {/* ══ HEADER — 1 row, pills right-aligned ══ */}
+      {/* ══ HEADER — 1 row: brand · center view tabs · right pills ══ */}
       <Box paddingX={1} flexShrink={0}>
-        <Text bold color={theme.neonCyan} wrap="truncate">[TIMMY TRUST OS v{VERSION}]</Text>
-        {W >= 60 && <Text color={theme.textSecondary} wrap="truncate"> MODEL: {modelShort}</Text>}
-        {W >= 72 && <Text color={theme.textTertiary} wrap="truncate"> SESSION: {sess}</Text>}
-        <Box flexGrow={1} />
+        <Text bold color={theme.focus} wrap="truncate">[TIMMY TRUST OS v{VERSION}]</Text>
+        <Box flexGrow={1} justifyContent="center">
+          {VIEWS.map((vd, i) => (
+            <Text key={vd.key} bold={i === view} color={i === view ? theme.focus : theme.textTertiary} wrap="truncate">
+              {i === view ? `[ ${vd.key} ${vd.label} ]` : ` ${vd.key} ${vd.label} `}
+            </Text>
+          ))}
+        </Box>
         <Text color={env.docker ? theme.emerald : theme.error} wrap="truncate">● DOCKER: {env.docker ? 'ACTIVE' : 'DOWN'} </Text>
         {W >= 90 && <Text color={env.comfy ? theme.emerald : theme.error} wrap="truncate">● COMFY: {env.comfy ? 'READY' : 'OFF'} </Text>}
         <Text color={theme.accent} wrap="truncate">COST: ${totalCost.toFixed(2)}</Text>
       </Box>
 
-      {/* ══ BODY — 5-col icon rail + main viewport ══ */}
+      {/* ══ BODY — full-width dual-card viewport (rail removed v1.0.5) ══ */}
       <Box flexDirection="row" flexGrow={1}>
-        <Box width={5} flexDirection="column" alignItems="center" paddingTop={1} flexShrink={0}>
-          {RAIL_ICONS.map((ic, i) => (
-            <Box key={ic} height={2} justifyContent="center">
-              <Text bold={i === view} color={i === view ? theme.focus : i === 4 ? theme.brandDim : theme.textTertiary}>
-                {ic}
-              </Text>
-            </Box>
-          ))}
-        </Box>
         <Box flexGrow={1} flexDirection="row" paddingX={1}>
-          <ViewportContext.Provider value={{ w: Math.max(40, W - 7), h: budget.main }}>
+          <ViewportContext.Provider value={{ w: Math.max(40, W - 2), h: budget.main }}>
             {children}
           </ViewportContext.Provider>
         </Box>
