@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { PanelFrame } from '../components/PanelFrame.js';
 import { listClipJobs, createClipJob, detectClip, ffmpegCheat, CLIP_INSTALL, type ClipJob } from '../../utils/clip.js';
 import { runClipJob } from '../../utils/cliprunner.js';
@@ -42,10 +43,12 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
   const projects = listProjects();
   const st = detectClip();
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:clip')) return;
     if (zone < 0) return;
     if (composing) {
-      if (key.escape) { setComposing(false); setDraft(''); setModalInput?.(false); return; }
+      if (key.escape) { setComposing(false); setDraft(''); __focus.release('input:clip'); return; }
       if (key.upArrow) { setProjIdx(i => Math.max(0, i - 1)); return; }
       if (key.downArrow) { setProjIdx(i => Math.min(Math.max(0, projects.length - 1), i + 1)); return; }
       if (key.return) {
@@ -56,7 +59,7 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
         }
         setComposing(false);
         setDraft('');
-        setModalInput?.(false);
+        __focus.release('input:clip');
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -68,7 +71,7 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
     if (key.leftArrow) { setZone?.(Math.max(-1, zone - 1)); return; }
     if (key.rightArrow) { setZone?.(Math.min(1, zone + 1)); return; }
     const c = char.toLowerCase();
-    if (c === 'n') { setComposing(true); setModalInput?.(true); return; }
+    if (c === 'n') { setComposing(true); __focus.claim('input:clip'); return; }
     if (c === 'o' && sel) { setNote(`in your terminal: ${process.env.EDITOR || 'nvim'} ${sel.output.replace(/\.mp4$/, '.md')}`); return; }
     if (c === 'y' && sel?.sources[0]) {
       osc52Copy(ffmpegCheat(sel.sources[0].artifact).join('\n'));

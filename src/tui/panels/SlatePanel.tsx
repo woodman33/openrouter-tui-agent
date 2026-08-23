@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
 import { listProjects, readProject, initProject, saveProject, renderProjectSite, renderCanvasPage, type SlateProject } from '../../utils/projects.js';
@@ -68,16 +69,18 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
     agent.addBrowserPane(`http://127.0.0.1:4273/studio/${item.name}/site/index.html`);
   };
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:slate')) return;
     if (zone < 0) return; // nav owns the keyboard
     if (naming) {
-      if (key.escape) { setNaming(false); setDraft(''); setModalInput?.(false); return; }
+      if (key.escape) { setNaming(false); setDraft(''); __focus.release('input:slate'); return; }
       if (key.return) {
         const name = draft.trim().replace(/[^a-z0-9-]+/gi, '-').toLowerCase();
         if (name) initProject(name);
         setNaming(false);
         setDraft('');
-        setModalInput?.(false);
+        __focus.release('input:slate');
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -85,7 +88,7 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
       return;
     }
     if (using) {
-      if (key.escape) { setUsing(false); setDraft(''); setModalInput?.(false); return; }
+      if (key.escape) { setUsing(false); setDraft(''); __focus.release('input:slate'); return; }
       if (key.return && sel) {
         const idea = draft.trim() || sel.name;
         const name = idea.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24) || 'proj';
@@ -101,7 +104,7 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
         }
         setUsing(false);
         setDraft('');
-        setModalInput?.(false);
+        __focus.release('input:slate');
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -109,7 +112,7 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
       return;
     }
     if (clipping) {
-      if (key.escape) { setClipping(false); setDraft(''); setModalInput?.(false); return; }
+      if (key.escape) { setClipping(false); setDraft(''); __focus.release('input:slate'); return; }
       if (key.return && sel?.kind === 'project') {
         const p = readProject(sel.name);
         const sources = (p?.gens || [])
@@ -120,7 +123,7 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
         setNote(`${BRAND.clip}: ${job.id} → ${sel.name}/clips/ · ${sources.length} linked gens${st.dir ? '' : ` · open-edit missing (${st.note})`}`);
         setClipping(false);
         setDraft('');
-        setModalInput?.(false);
+        __focus.release('input:slate');
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -135,11 +138,11 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
     const c = char.toLowerCase();
     // Enter ALWAYS selects: use a template, open a project
     if (key.return && sel) {
-      if (sel.kind === 'template') { setUsing(true); setModalInput?.(true); return; }
+      if (sel.kind === 'template') { setUsing(true); __focus.claim('input:slate'); return; }
       openCanvas(sel);
       return;
     }
-    if (c === 'n') { setNaming(true); setModalInput?.(true); return; }
+    if (c === 'n') { setNaming(true); __focus.claim('input:slate'); return; }
     if (char === 'P' && sel?.kind === 'project') {
       const site = renderProjectSite(sel.name);
       if (site) ensureDashServer();
@@ -147,7 +150,7 @@ export function SlatePanel({ agent, zone = 0, setZone, setModalInput, inputLocke
     }
     if (c === 'v' && sel) { openCanvas(sel); return; }
     if (c === 'o' && sel) { openSite(sel); return; }
-    if (c === 'c' && sel?.kind === 'project') { setClipping(true); setModalInput?.(true); return; }
+    if (c === 'c' && sel?.kind === 'project') { setClipping(true); __focus.claim('input:slate'); return; }
   }, { isActive: !inputLocked });
 
   return (

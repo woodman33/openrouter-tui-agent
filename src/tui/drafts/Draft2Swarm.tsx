@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
 
 interface Draft2Props {
@@ -46,7 +47,9 @@ export function Draft2Swarm({ activeTab, setActiveTab, width = 120, height = 34 
     return () => clearInterval(timer);
   }, []);
 
+  const __focus = useFocus();
   useInput((input, key) => {
+    if (!panelMayAct(__focus, 'input:draft2')) return;
     if (key.rightArrow || input === '\t') {
       setActiveLaneFilter(f => (f + 1) % laneFilters.length);
     } else if (key.leftArrow) {

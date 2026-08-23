@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput, useWindowSize, useApp } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { Draft1Cockpit } from './Draft1Cockpit.js';
 import { Draft2Swarm } from './Draft2Swarm.js';
 import { Draft3Studio } from './Draft3Studio.js';
@@ -14,7 +15,9 @@ export function TUIDraftShowcase() {
   const width = Math.max(80, columns || 110);
   const height = Math.max(24, rows || 32);
 
+  const __focus = useFocus();
   useInput((input, key) => {
+    if (!panelMayAct(__focus, 'input:showcase')) return;
     if (input === '1') setActiveTab(0);
     else if (input === '2') setActiveTab(1);
     else if (input === '3') setActiveTab(2);

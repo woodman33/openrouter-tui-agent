@@ -1,4 +1,5 @@
 import { useInput } from 'ink';
+import { useFocus, panelMayAct } from './useKeyDispatcher.js';
 
 export interface KeyboardShortcuts {
   onEscape?: () => void;
@@ -11,7 +12,9 @@ export interface KeyboardShortcuts {
 }
 
 export function useKeyboardShortcuts(shortcuts: KeyboardShortcuts) {
+  const __focus = useFocus();
   useInput((input, key) => {
+    if (!panelMayAct(__focus, 'input:shortcuts')) return;
     if (key.escape && shortcuts.onEscape) {
       shortcuts.onEscape();
     } else if (key.ctrl && input === 'c' && shortcuts.onCtrlC) {

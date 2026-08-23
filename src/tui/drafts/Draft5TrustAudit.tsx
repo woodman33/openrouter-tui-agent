@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
 
 interface Draft5Props {
@@ -44,7 +45,9 @@ export function Draft5TrustAudit({ activeTab, setActiveTab, width = 120, height 
     return () => clearInterval(timer);
   }, []);
 
+  const __focus = useFocus();
   useInput((input, key) => {
+    if (!panelMayAct(__focus, 'input:draft5')) return;
     if (key.rightArrow || input === '\t') {
       setSecurityLevel(s => (s + 1) % securityModes.length);
     } else if (key.leftArrow) {

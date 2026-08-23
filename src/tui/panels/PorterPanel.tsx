@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
 import { GlowBorder } from '../components/GlowBorder.js';
 import { usePulse } from '../hooks/usePulse.js';
@@ -64,7 +65,9 @@ export function PorterPanel({ agent, setInspector, focusArea = 'stage' }: Porter
     updateInspectorData(scanResult === 'success' ? 'SUCCESS' : scanResult === 'scanning' ? 'SCANNING' : 'READY');
   }, [scanResult, urlInput]);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:porter')) return;
     if (focusArea !== 'stage') return;
 
     if (activeElement === 'url') {

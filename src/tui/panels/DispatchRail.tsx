@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { spawnSync } from 'child_process';
 import { LANE_RUNNERS } from '../../agent/lanes.js';
 import {
@@ -35,7 +36,9 @@ export function DispatchRail({ width }: { width: number }) {
     try { return JSON.parse(readFileSync(join(process.cwd(), '.timmy', 'dispatch', `${planId}.json`), 'utf8')); } catch { return null; }
   }, [planId, msg]);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:dispatch')) return;
     if (typing) {
       if (key.return) { setTyping(false); return; }
       if (key.backspace || key.delete) { setObjective(o => o.slice(0, -1)); return; }

@@ -2,7 +2,8 @@
 // Tab walks pane focus), no left nav, no ambient rain in chat. The shell
 // owns navigation + budget; ViewStage owns content; Layout owns chrome.
 import React, { useState, useEffect } from 'react';
-import { render, useApp, useInput, Box, Text } from 'ink';
+import { render, useApp, Box, Text } from 'ink';
+import { FocusProvider, useFocus, useKeyDispatcher } from './hooks/useKeyDispatcher.js';
 import { createAgent } from '../agent/core.js';
 import type { AgentConfig } from '../types/index.js';
 import { Layout } from './layout.js';
@@ -26,13 +27,17 @@ interface AppProps {
   graphicsType?: string;
 }
 
-export function App({ config, graphicsType = 'auto' }: AppProps) {
+export function App(props: AppProps) {
+  // v1.0.5-keyboard-arch: the focus stack lives above everything
+  return <FocusProvider><Shell {...props} /></FocusProvider>;
+}
+
+function Shell({ config, graphicsType = 'auto' }: AppProps) {
   const { exit } = useApp();
 
   // v1.0.1 view grammar: 0 COMMAND · 1 MISSION · 2 TELEMETRY · 3 ESCROW
   const [view, setView] = useState(0);
   const [paneFocus, setPaneFocus] = useState(0);
-  const [modalInput, setModalInput] = useState(false);
   const setInspectorSafe = React.useCallback((data: unknown) => {
     Promise.resolve().then(() => void data);
   }, []);
@@ -110,6 +115,10 @@ export function App({ config, graphicsType = 'auto' }: AppProps) {
     try { condenseSession(); } catch { /* best-effort */ }
     try { if (pipeline) pipeline.cleanup(); } catch { /* guard */ }
     exit();
+    // v1.0.5-keyboard-arch: a lingering handle (companion spawn, heartbeat
+    // socket) must never block a clean quit; the exit hook restores the
+    // alt-screen before this fires.
+    setTimeout(() => process.exit(0), 250);
   };
 
   const gotoView = (v: number) => {
@@ -124,50 +133,34 @@ export function App({ config, graphicsType = 'auto' }: AppProps) {
     { label: 'q · Exit Application', action: safeExit }
   ];
 
-  useInput((input, key) => {
-    if (key.ctrl && input === 'c') {
-      tuiLogger.info('Ctrl+C captured. Clean exit.');
-      safeExit();
-      return;
-    }
-    // onboarding holds the keyboard — root hotkeys stay silent (v1.0.5-fix)
-    if (showOnboard) return;
-    if (key.ctrl && input === 'k') {
-      setCommandPaletteOpen(prev => !prev);
-      setPaletteIdx(0);
-      return;
-    }
-    if (key.ctrl && input === 'l') {
-      gotoView(2);
-      return;
-    }
+  // v1.0.5-keyboard-arch: ONE root dispatcher; the focus stack replaces the
+  // modalInput boolean. Palette/help visibility mirrors the stack so Esc-pop
+  // at the dispatcher closes them structurally.
+  const focus = useFocus();
+  useEffect(() => {
+    if (!focus.stack.includes('modal:palette')) setCommandPaletteOpen(false);
+  }, [focus.stack]);
+  useEffect(() => {
+    if (!focus.stack.includes('modal:help')) setHelpOpen(false);
+  }, [focus.stack]);
 
-    if (commandPaletteOpen) {
-      if (key.escape) { setCommandPaletteOpen(false); return; }
-      if (key.upArrow) { setPaletteIdx(prev => Math.max(0, prev - 1)); return; }
-      if (key.downArrow) { setPaletteIdx(prev => Math.min(paletteItems.length - 1, prev + 1)); return; }
-      if (key.return) { paletteItems[paletteIdx].action(); setCommandPaletteOpen(false); return; }
-      return;
-    }
-
-    if (helpOpen) {
-      if (key.escape || input === '?') setHelpOpen(false);
-      return;
-    }
-
-    const autocompleteActive = Boolean((agent as any).autocompleteActive);
-    if (modalInput || autocompleteActive) return;
-
-    // [1-4] views · Tab focus · [L] telemetry · [q] quit · [?] help
-    if (input >= '1' && input <= '4') { gotoView(Number(input) - 1); return; }
-    if (input === 'l') { gotoView(2); return; }
-    if (input === 'q') { safeExit(); return; }
-    if (input === '?') { setHelpOpen(true); return; }
-    if (key.tab) {
+  useKeyDispatcher({
+    view,
+    gotoView,
+    cyclePane: rev => {
       const panes = VIEW_PANES[view] ?? 1;
-      setPaneFocus(prev => key.shift ? (prev - 1 + panes) % panes : (prev + 1) % panes);
-      return;
-    }
+      setPaneFocus(prev => rev ? (prev - 1 + panes) % panes : (prev + 1) % panes);
+    },
+    openPalette: () => { focus.claim('modal:palette'); setCommandPaletteOpen(true); setPaletteIdx(0); },
+    paletteKey: (input, key) => {
+      if (key.upArrow) { setPaletteIdx(p => Math.max(0, p - 1)); return; }
+      if (key.downArrow) { setPaletteIdx(p => Math.min(paletteItems.length - 1, p + 1)); return; }
+      if (key.return) { paletteItems[paletteIdx].action(); focus.release('modal:palette'); return; }
+    },
+    toggleHelp: () => { focus.claim('modal:help'); setHelpOpen(true); },
+    quit: () => { tuiLogger.info('quit captured. Clean exit.'); safeExit(); },
+    jumpTelemetry: () => gotoView(2),
+    enterCommandInput: () => focus.claim('input:command')
   });
 
   if (showOnboard) {
@@ -184,6 +177,7 @@ export function App({ config, graphicsType = 'auto' }: AppProps) {
       activeRunId={activeRunId}
       telemetryStatus={telemetryStatus}
       queuedTelemetryCount={queuedTelemetryCount}
+      focusTop={focus.top}
     >
       <Box flexGrow={1} flexShrink={1}>
         <ViewStage
@@ -191,8 +185,6 @@ export function App({ config, graphicsType = 'auto' }: AppProps) {
           paneFocus={paneFocus}
           agent={agent}
           setInspector={setInspectorSafe}
-          setModalInput={setModalInput}
-          inputLocked={commandPaletteOpen}
         />
 
         {/* v1.0.4: SOLID full-card overlay — opaque #16161e field, never

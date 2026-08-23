@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { join } from 'path';
 import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
@@ -48,7 +49,9 @@ export function ProjectsPanel({ agent, zone = 0, setZone, inputLocked }: Project
   const sel = projects[Math.min(idx, Math.max(0, projects.length - 1))];
   const file = files[Math.min(fidx, Math.max(0, files.length - 1))];
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:projects')) return;
     if (zone < 0) return; // nav owns the keyboard
     if (preview) {
       if (key.escape || key.return) { setPreview(null); return; }

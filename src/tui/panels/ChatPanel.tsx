@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { DispatchRail } from './DispatchRail.js';
 import chalk from 'chalk';
 import { useAgent } from '../hooks/useAgent.js';
@@ -243,7 +244,9 @@ export function ChatPanel({ agent, setInspector, zone = 0, setZone, ambientRain 
   const startIdx = Math.max(0, Math.min(highlightedModelIdx - 4, filteredModels.length - visibleModelCount));
   const visibleModels = filteredModels.slice(startIdx, startIdx + visibleModelCount);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:chat')) return;
     if (zone < 0) return; // nav owns the keyboard
     if (focusSection === 'chat') {
       if (key.escape) {

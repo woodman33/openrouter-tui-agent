@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { existsSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { humanizeLines, clockTime } from '../../utils/humanlog.js';
@@ -139,7 +140,9 @@ export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelPr
   const visibleLines = rows.slice(off, off + visibleHeight);
   const atBottom = off >= Math.max(0, rows.length - visibleHeight);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:logs')) return;
     // Only consume keys when the stage owns focus; nav stays arrow-owned
     if (zone < 0) return;
 

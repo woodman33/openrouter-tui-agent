@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
 import { GlowBorder } from '../components/GlowBorder.js';
 import { existsSync, readdirSync, statSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
@@ -330,7 +331,9 @@ export function FilesPanel({ agent, setInspector, focusArea = 'stage' }: FilesPa
     updateInspectorData();
   }, [viewState, selectedCategoryIdx, selectedFileIdx, selectedFile]);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:files')) return;
     if (focusArea !== 'stage') return;
     if (!initialized) {
       if (key.return) {

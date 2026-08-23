@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { existsSync, openSync, closeSync, fstatSync, readSync } from 'fs';
 import { join } from 'path';
 import { theme } from '../theme.js';
@@ -68,7 +69,9 @@ export const LogRain = memo(function LogRain({ height, focused }: LogRainProps) 
     return () => clearInterval(t);
   }, []);
 
+  const __focus = useFocus();
   useInput((_char, key) => {
+    if (!panelMayAct(__focus, 'input:rain')) return;
     if (key.downArrow) setOffset(o => Math.min(Math.max(0, rain.length - 1), o + 1));
     if (key.upArrow) setOffset(o => Math.max(0, o - 1));
   }, { isActive: focused });

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { existsSync, readFileSync, appendFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import type { Agent } from '../../agent/core.js';
@@ -75,10 +76,12 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
 
   const sel = gens[Math.min(idx, Math.max(0, gens.length - 1))];
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:gens')) return;
     if (zone < 0) return; // nav owns the keyboard
     if (composing) {
-      if (key.escape) { setComposing(false); setDraft(''); setModalInput?.(false); return; }
+      if (key.escape) { setComposing(false); setDraft(''); __focus.release('input:gens'); return; }
       // chat-style picker: arrows move the provider list, not the ledger
       if (key.upArrow) { setProvIdx(i => Math.max(0, i - 1)); setOptIdx(0); return; }
       if (key.downArrow) { setProvIdx(i => Math.min(providers.length - 1, i + 1)); setOptIdx(0); return; }
@@ -107,7 +110,7 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
         }
         setComposing(false);
         setDraft('');
-        setModalInput?.(false);
+        __focus.release('input:gens');
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -155,7 +158,7 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
       setNote('yanked gen line to clipboard (OSC-52/pbcopy)');
       return;
     }
-    if (char.toLowerCase() === 'n') { setComposing(true); setModalInput?.(true); return; }
+    if (char.toLowerCase() === 'n') { setComposing(true); __focus.claim('input:gens'); return; }
   }, { isActive: !inputLocked });
 
   return (

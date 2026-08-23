@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import { checkDocker, checkComfyCli } from '../utils/doctor.js';
+import { useFocus } from './hooks/useKeyDispatcher.js';
 import { appendFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import type { Agent } from '../agent/core.js';
@@ -33,6 +34,13 @@ const MARK_COLORS = ['#00f0ff', '#7dcfff', '#9ece6a', '#bb9af7', '#7a5ff0'];
  */
 export function Onboarding({ agent, onDone }: OnboardingProps) {
   const { exit } = useApp();
+  const focus = useFocus();
+  // sovereign permitted leaf: hold the stack while mounted; pop is structural
+  useEffect(() => {
+    focus.claim('modal:onboarding');
+    return () => focus.release('modal:onboarding');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [step, setStep] = useState<Step>('splash');
   const [envNote] = useState(() => {
     try {

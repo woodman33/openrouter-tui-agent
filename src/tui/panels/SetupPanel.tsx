@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import type { Agent } from '../../agent/core.js';
 import { saveConfig } from '../../utils/config.js';
 import { terminalLink } from '../../utils/hyperlink.js';
@@ -19,7 +20,9 @@ export function SetupPanel({ agent }: SetupPanelProps) {
   const oauthLink = terminalLink('🔗 Get API Key / OAuth Link', 'https://openrouter.ai/keys');
   const stripeLink = terminalLink('💳 Subscribe to Premium Edge (Stripe)', 'https://checkout.stripe.com/pay/timmy-tui-premium');
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:setup')) return;
     if (success) return; // Wait for transition
 
     if (key.return || char === '\r' || char === '\n') {

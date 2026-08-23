@@ -20,6 +20,8 @@ export interface LayoutProps {
   telemetryStatus?: string;
   queuedTelemetryCount?: number;
   activeRunId?: string;
+  /** v1.0.5-keyboard-arch: focus stack top, always visible in the footer */
+  focusTop?: string;
   children: React.ReactNode;
 }
 
@@ -28,6 +30,7 @@ export function Layout({
   model,
   totalCost,
   activeRunId,
+  focusTop,
   children
 }: LayoutProps) {
   const raw = useWindowSize();
@@ -70,7 +73,7 @@ export function Layout({
         </Box>
         <Text color={env.docker ? theme.emerald : theme.error} wrap="truncate">● DOCKER: {env.docker ? 'ACTIVE' : 'DOWN'} </Text>
         {W >= 90 && <Text color={env.comfy ? theme.emerald : theme.error} wrap="truncate">● COMFY: {env.comfy ? 'READY' : 'OFF'} </Text>}
-        <Text color={theme.accent} wrap="truncate">COST: ${totalCost.toFixed(2)}</Text>
+        {W >= 90 && <Text color={theme.accent} wrap="truncate">COST: ${totalCost.toFixed(2)}</Text>}
       </Box>
 
       {/* ══ BODY — full-width dual-card viewport (rail removed v1.0.5) ══ */}
@@ -82,11 +85,14 @@ export function Layout({
         </Box>
       </Box>
 
-      {/* ══ FOOTER — 1 row: session left, keymap pills right ══ */}
+      {/* ══ FOOTER — 1 row, single pre-padded Text (no flex contention) ══ */}
       <Box paddingX={1} flexShrink={0}>
-        <Text color={theme.textTertiary} wrap="truncate">~/timmy · {sess}</Text>
-        <Box flexGrow={1} />
-        <Text color={theme.textSecondary} wrap="truncate">{footerKeysLine(Math.max(40, W - 24))}</Text>
+        <Text wrap="truncate">
+          <Text color={theme.textTertiary}>{W >= 100 ? `~/timmy · ${sess}` : ''}</Text>
+          <Text bold color={focusTop === 'nav' ? theme.success : theme.focus}>{` MODE:${(focusTop ?? 'nav').toUpperCase()}`}</Text>
+          <Text color={theme.textSecondary}>{' '.repeat(Math.max(1, W - 2 - ((W >= 100 ? 10 + sess.length : 0) + 9 + footerKeysLine(Math.max(40, W - 24)).length)))}</Text>
+          <Text color={theme.textSecondary}>{footerKeysLine(Math.max(40, W - 24))}</Text>
+        </Text>
       </Box>
     </Box>
   );

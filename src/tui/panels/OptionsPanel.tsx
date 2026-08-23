@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
 import { GlowBorder } from '../components/GlowBorder.js';
 import { execSync } from 'child_process';
@@ -137,7 +138,9 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
     }
   }, [activeIdx, options]);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:options')) return;
     if (focusArea !== 'stage') return;
     if (options.length === 0) return;
     const activeOpt = options[activeIdx];

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
 
 interface Draft4Props {
@@ -48,7 +49,9 @@ export function Draft4Browser({ activeTab, setActiveTab, width = 120, height = 3
     return () => clearInterval(timer);
   }, []);
 
+  const __focus = useFocus();
   useInput((input, key) => {
+    if (!panelMayAct(__focus, 'input:draft4')) return;
     if (key.downArrow) {
       setSelectedElement(e => Math.min(domElements.length - 1, e + 1));
     } else if (key.upArrow) {

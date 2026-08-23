@@ -3,7 +3,8 @@
 // scroll thumb, no nested boxes. Internal system chatter is filtered out
 // of the scrollback entirely.
 import React, { useState } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text } from 'ink';
+import { useKeyOwner } from '../hooks/useKeyDispatcher.js';
 import { useAgent } from '../hooks/useAgent.js';
 import { theme } from '../theme.js';
 import { handleSlashCommand } from '../../utils/slash-commands.js';
@@ -41,22 +42,13 @@ interface Line { text: string; kind: 'user' | 'agent' | 'err' }
 
 interface CommandViewProps {
   agent: Agent;
-  /** v1.0.5-fix input sovereignty: INPUT mode holds the global keyboard lock */
-  setModalInput?: (b: boolean) => void;
-  inputLocked?: boolean;
 }
 
-export function CommandView({ agent, setModalInput, inputLocked }: CommandViewProps) {
+export function CommandView({ agent }: CommandViewProps) {
   const { w: width, h: height } = React.useContext(ViewportContext);
   const state = useAgent(agent);
   const [input, setInput] = useState('');
   const [scroll, setScroll] = useState(0); // lines up from the tail
-  const [focused, setFocused] = useState(true); // INPUT mode by default
-
-  React.useEffect(() => {
-    setModalInput?.(focused);
-    return () => setModalInput?.(false);
-  }, [focused, setModalInput]);
 
   const lines = React.useMemo(() => {
     const out: Line[] = [];
@@ -86,17 +78,10 @@ export function CommandView({ agent, setModalInput, inputLocked }: CommandViewPr
   const end = lines.length - clamped;
   const visible = lines.slice(Math.max(0, end - viewH), end);
 
-  useInput((char, key) => {
-    if (inputLocked) return;
-    if (!focused) {
-      // NAV mode: only Enter re-enters INPUT; every other key falls through
-      // to the root handler (1-4 / Tab / ^K / q / ?)
-      if (key.return) setFocused(true);
-      return;
-    }
-    // defense in depth: INPUT mode never dispatches navigation — printable
-    // chars (incl. 1/q/l/?) go to the buffer; Esc blurs to NAV
-    if (key.escape) { setFocused(false); return; }
+  // v1.0.5-keyboard-arch: keys arrive ONLY while the dispatcher's stack top
+  // is 'input:command' (claimed via Enter at nav level). Esc/Tab never reach
+  // this handler — the dispatcher owns them, so trapping is impossible.
+  useKeyOwner('input:command', (char, key) => {
     if (key.upArrow) { setScroll(s => Math.min(maxScroll, s + 1)); return; }
     if (key.downArrow) { setScroll(s => Math.max(0, s - 1)); return; }
     if (key.return) {
