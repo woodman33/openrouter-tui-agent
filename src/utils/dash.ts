@@ -86,7 +86,7 @@ pre{margin:0;font-size:11px;color:${theme.textSecondary};white-space:pre-wrap}
 </head>
 <body>
 <header>
-  <h1>⛁ ${BRAND.studios}</h1>
+  <h1>● ${BRAND.studios}</h1>
   <span class="tag">${BRAND.studiosTagline}</span>
   <span class="slate">${BRAND.slate}: ${BRAND.slateTagline}</span>
 </header>

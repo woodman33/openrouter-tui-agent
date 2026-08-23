@@ -565,7 +565,7 @@ export default function DemoDashboard() {
       const kind = args.trim().toLowerCase() as HarnessKind;
       if (kind && !HARNESS_KINDS.includes(kind)) return `Usage: /harness [${HARNESS_KINDS.join('|')}]`;
       const entries = listHarnessEntries(kind || undefined);
-      const head = `⛁ TIMMY CONTINUAL HARNESS\n${harnessOverview()}`;
+      const head = `● TIMMY CONTINUAL HARNESS\n${harnessOverview()}`;
       if (entries.length === 0) {
         return `${head}\n(no entries${kind ? ` of kind "${kind}"` : ''} yet — teach TIMMY with \`/refine <kind> <title> :: <content>\`)`;
       }
@@ -603,7 +603,7 @@ export default function DemoDashboard() {
           timestamp: Date.now()
         });
       }
-      return `⛁ HARNESS REFINED (sealed ${event.stamp.slice(0, 20)}…)\n• [${kind}] ${entry.title} → v${entry.version}\n• change: ${content.length > 80 ? content.slice(0, 80) + '…' : content}\nBase system prompt untouched. State lives in .timmy/harness_state.json.`;
+      return `● HARNESS REFINED (sealed ${event.stamp.slice(0, 20)}…)\n• [${kind}] ${entry.title} → v${entry.version}\n• change: ${content.length > 80 ? content.slice(0, 80) + '…' : content}\nBase system prompt untouched. State lives in .timmy/harness_state.json.`;
     }
   },
   {
@@ -1417,7 +1417,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const lines = streams.map(s => {
         const r = verifyChain(s);
         return r.ok
-          ? `⛁ ${s.padEnd(9)} ${String(r.count).padStart(3)} receipts · chain intact`
+          ? `● ${s.padEnd(9)} ${String(r.count).padStart(3)} receipts · chain intact`
           : `× ${s.padEnd(9)} BROKEN at ${r.brokenAt} — ${r.reason}`;
       });
       const allOk = streams.every(s => verifyChain(s).ok);
@@ -1505,7 +1505,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const reset = '\x1b[0m';
       const dim = '\x1b[2m';
 
-      return `${boldYellow}⛁ ${BRAND.umbrella} — ${BRAND.tagline}${reset}\n` +
+      return `${boldYellow}● ${BRAND.umbrella} — ${BRAND.tagline}${reset}\n` +
              `${dim}${BRAND.studios}: ${BRAND.studiosTagline}\n` +
              `${BRAND.slate}: ${BRAND.slateTagline}${reset}\n` +
              `${boldCyan}💡 TIMMY CONSOLE SYSTEMS HELP DIRECTORY${reset}\n` +
@@ -1528,7 +1528,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /render <file>— Push images, videos or media frames to companion\n` +
              `  /stress <url> — Perform high-concurrency Rust oha stress tests\n` +
              `  /qr <url>     — Generate glowing terminal QR code\n\n` +
-             `${boldMagenta}⛁ HARNESS, STUDIOS & STATS${reset}\n` +
+             `${boldMagenta}● HARNESS, STUDIOS & STATS${reset}\n` +
              `  /refine <k> <t> :: <c> — Small evidence-backed harness update (sealed)\n` +
              `  /harness [kind] — Inspect continual-harness state & refinements\n` +
              `  /studio <idea>  — Seed HyperFrames comp + carbonyl preview lane\n` +

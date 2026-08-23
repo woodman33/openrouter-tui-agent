@@ -454,7 +454,7 @@ const BROWSER_HTML = `<!doctype html><html><head><meta charset="utf-8">
   .rc .vf { color: ${theme.accent}; font-size: 11px; }
 </style></head><body>
 <header>
-  <span class="logo">TIMMY ⛁ RECEIPT BROWSER</span>
+  <span class="logo">TIMMY ● RECEIPT BROWSER</span>
   <input id="q" placeholder="filter subject/kind…" size="28" />
   <select id="stream"><option>runs</option><option>gens</option><option>harness</option></select>
   <button id="verify">verify chain</button>
