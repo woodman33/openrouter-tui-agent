@@ -88,14 +88,14 @@ export function humanizeLine(line: string): HumanEvent | null {
       case 'openrouter.request.failed':
         return { ts, icon: '×', color: theme.danger, text: 'openrouter request failed' };
       case 'run.started':
-        return { ts, icon: '⛁', color: theme.accent, text: 'run started' };
+        return { ts, icon: '●', color: theme.accent, text: 'run started' };
       default:
         return { ts, icon: '·', color: theme.textMuted, text: ev.replace(/\./g, ' ') };
     }
   }
   if (/run\.created/.test(line)) {
     const src = (line.match(/"source"\s*:\s*"([^"]+)"/) || [])[1];
-    return { ts, icon: '⛁', color: theme.seal, text: `run sealed${src && src !== 'timmy' ? ` · ${src.replace('timmy-', '')}` : ''}` };
+    return { ts, icon: '●', color: theme.seal, text: `run sealed${src && src !== 'timmy' ? ` · ${src.replace('timmy-', '')}` : ''}` };
   }
   if (/model\.switch/.test(line) && (m = line.match(/"model"\s*:\s*"([^"]+)"/))) {
     return { ts, icon: '▸', color: theme.accent, text: `model → ${m[1]}` };
