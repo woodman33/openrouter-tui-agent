@@ -42,7 +42,7 @@ const L = await import('../src/tui/panels/LogsPanel.js'); results.LogsPanel = aw
 const LR = await import('../src/tui/panels/LogRain.js'); results.LogRain = await mount(React.createElement(LR.LogRain, { height: 20 } as never));
 const ME = await import('../src/tui/panels/ModelExplorerPanel.js'); results.ModelExplorerPanel = await mount(React.createElement(ME.ModelExplorerPanel, base));
 const O = await import('../src/tui/panels/OptionsPanel.js'); results.OptionsPanel = await mount(React.createElement(O.OptionsPanel, base));
-const PO = await import('../src/tui/panels/PorterPanel.js'); results.PorterPanel = await mount(React.createElement(PO.PorterPanel, base));
+const PO = await import('../src/tui/attic/PorterPanel.js'); results['PorterPanel(legacy,attic)'] = await mount(React.createElement(PO.PorterPanel, base));
 const PR = await import('../src/tui/panels/ProjectsPanel.js'); results.ProjectsPanel = await mount(React.createElement(PR.ProjectsPanel, base));
 const S = await import('../src/tui/panels/SetupPanel.js'); results.SetupPanel = await mount(React.createElement(S.SetupPanel, base));
 const SL = await import('../src/tui/panels/SlatePanel.js'); results.SlatePanel = await mount(React.createElement(SL.SlatePanel, base));
