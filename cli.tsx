@@ -10,7 +10,7 @@ import { loadConfig } from './src/utils/config.js';
 import { startTUI } from './src/tui/app.js';
 import { startCompanionServer } from './src/companion/server.js';
 import { showCompanionQR } from './src/companion/qr.js';
-import type { Mode } from './src/tui/router.js';
+import type { Mode } from './src/tui/attic/router.js';
 import type { AgentConfig } from './src/types/index.js';
 import { VERSION } from './src/version.js';
 

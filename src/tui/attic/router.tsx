@@ -1,13 +1,13 @@
 import React from 'react';
-import { ChatPanel } from './panels/ChatPanel.js';
-import { LogsPanel } from './panels/LogsPanel.js';
-import { LanesPanel } from './panels/LanesPanel.js';
-import { GensPanel } from './panels/GensPanel.js';
-import { SlatePanel } from './panels/SlatePanel.js';
-import { ClipPanel } from './panels/ClipPanel.js';
-import { BrowsePanel } from './panels/BrowsePanel.js';
-import { ProjectsPanel } from './panels/ProjectsPanel.js';
-import type { Agent } from '../agent/core.js';
+import { ChatPanel } from './ChatPanel.js';
+import { LogsPanel } from '../panels/LogsPanel.js';
+import { LanesPanel } from '../panels/LanesPanel.js';
+import { GensPanel } from '../panels/GensPanel.js';
+import { SlatePanel } from '../panels/SlatePanel.js';
+import { ClipPanel } from '../panels/ClipPanel.js';
+import { BrowsePanel } from '../panels/BrowsePanel.js';
+import { ProjectsPanel } from '../panels/ProjectsPanel.js';
+import type { Agent } from '../../agent/core.js';
 
 export type Mode = 'brief' | 'lanes' | 'gens' | 'slate' | 'clip' | 'browse' | 'logs' | 'files';
 

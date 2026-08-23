@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
-import { DispatchRail } from './DispatchRail.js';
+import { DispatchRail } from '../panels/DispatchRail.js';
 import chalk from 'chalk';
 import { useAgent } from '../hooks/useAgent.js';
 import type { Agent } from '../../agent/core.js';
@@ -13,7 +13,7 @@ import { Spinner } from '../components/Motion.js';
 import { useEdgeHealth } from '../hooks/useEdgeHealth.js';
 import { PrimaryButton, SecondaryButton } from '../components/DesignSystem.js';
 import { fetchModels } from '../../agent/openrouter-client.js';
-import { LogRain } from './LogRain.js';
+import { LogRain } from '../panels/LogRain.js';
 
 interface ChatPanelProps {
   agent: Agent;

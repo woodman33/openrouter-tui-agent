@@ -1,6 +1,6 @@
 {
   "name": "timmy-tui",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "TIMMY TUI, a terminal-first Agent Trust OS.",
   "type": "module",
   "main": "dist/cli.js",

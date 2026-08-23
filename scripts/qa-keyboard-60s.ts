@@ -61,6 +61,29 @@ send('q'); sleep(1500);
 console.log('\n════ 8 · AFTER q (shell back, alt-screen restored) ════');
 console.log(cap().split('\n').filter(l => l.trim()).slice(0, 6).join('\n'));
 const gone = !cap().includes('TIMMY TRUST OS');
-console.log('\nQA RESULT:', gone ? 'PASS — clean quit, scrollback intact' : 'FAIL — TUI still on screen');
+console.log('\nSTEP8:', gone ? 'PASS — clean quit, scrollback intact' : 'FAIL — TUI still on screen');
+
+// 9 · walk ALL views 1-9, capture header + first card line per view
+try { tmux(`kill-session -t ${S}`); } catch { /* fresh */ }
+tmux(`new-session -d -s ${S} -x 140 -y 40 "cd ${process.cwd()} && npx tsx timmy.ts; sleep 60"`);
+sleep(7000);
+const MARKS: Record<string, string> = {
+  '1': 'COMMAND POST', '2': 'SLATE DAG', '3': 'AUDIT LOG MONITOR', '4': 'ESCROW LEDGER',
+  '5': 'first time here?', '6': 'spawns carbonyl on any URL', '7': 'PROJECTS — PER-PROJECT TREE',
+  '8': 'TIMMY Settings & Options', '9': 'real Chromium renderer'
+};
+let walk = true;
+for (const k of ['1', '2', '3', '4', '5', '6', '7', '8', '9']) {
+  send(k); sleep(700);
+  const f = cap();
+  const line = f.split('\n').find(l => l.includes(MARKS[k])) ?? '';
+  console.log(`\n════ 9.${k} · VIEW ${k} ════`);
+  console.log(line.trim() || '(marker missing!)');
+  const mode = f.includes('MODE:NAV');
+  console.log(`   MODE:NAV ${mode ? 'ok' : 'MISSING'}`);
+  if (!line) walk = false;
+  if (!mode) walk = false;
+}
+console.log('\nWALK 1-9:', walk ? 'PASS' : 'FAIL');
 try { tmux(`kill-session -t ${S}`); } catch { /* gone */ }
-process.exit(gone ? 0 : 1);
+process.exit(gone && walk ? 0 : 1);

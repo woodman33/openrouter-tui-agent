@@ -58,16 +58,20 @@ export function Layout({
   const sess = activeRunId ? activeRunId.slice(0, 12) : 'live';
 
   return (
-    <Box flexDirection="column" width={W} height={H}>
+    // key={view}: full remount per view — ink's TTY diff can drop the header
+    // row when switching between tall panels (p10 PTY evidence)
+    <Box key={view} flexDirection="column" width={W} height={H}>
       {/* ══ HEADER — 1 row: brand · center view tabs · right pills ══ */}
-      <Box paddingX={1} flexShrink={0}>
+      <Box paddingX={1} flexShrink={0} height={1}>
         <Text bold color={theme.focus} wrap="truncate">[TIMMY TRUST OS v{VERSION}]</Text>
         <Box flexGrow={1} justifyContent="center">
           {VIEWS.map((vd, i) => (
             <Text key={vd.key} bold={i === view} color={i === view ? theme.focus : theme.textTertiary} wrap="truncate">
-              {W >= 110
+              {W >= 170
                 ? (i === view ? `[ ${vd.key} ${vd.label} ]` : ` ${vd.key} ${vd.label} `)
-                : (i === view ? `[${vd.key} ${vd.label.slice(0, 3)}]` : ` ${vd.key} ${vd.label.slice(0, 3)} `)}
+                : W >= 140
+                  ? (i === view ? `[${vd.key} ${vd.label.slice(0, 3)}]` : ` ${vd.key} ${vd.label.slice(0, 3)} `)
+                  : (i === view ? `[${vd.key}]` : ` ${vd.key} `)}
             </Text>
           ))}
         </Box>

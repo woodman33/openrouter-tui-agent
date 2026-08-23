@@ -116,7 +116,7 @@ export function useKeyDispatcher(d: DispatcherDeps): void {
     // 5) nav level globals
     if (key.ctrl && input === 'c') { d.quit(); return; }
     if (key.ctrl && input === 'k') { d.openPalette(); return; }
-    if (input >= '1' && input <= '4') { d.gotoView(Number(input) - 1); return; }
+    if (input >= '1' && input <= '9') { d.gotoView(Number(input) - 1); return; }
     if (input === 'l') { d.jumpTelemetry(); return; }
     if (input === 'q') { d.quit(); return; }
     if (input === '?') { d.toggleHelp(); return; }

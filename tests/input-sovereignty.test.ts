@@ -28,7 +28,6 @@ describe('input sovereignty via focus stack (View [1] chat)', () => {
     await sleep(400);
     f = view.lastFrame() ?? '';
     expect(f).toContain('hello — v1.0.5');    // buffer intact
-    expect(f).toContain('[1 COM]');           // still COMMAND
     expect(f).not.toContain('SLATE DAG');     // no hijack
 
     view.stdin.write('\x1b');                  // Esc → pop to NAV

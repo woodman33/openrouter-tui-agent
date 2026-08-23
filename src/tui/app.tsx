@@ -127,7 +127,18 @@ function Shell({ config, graphicsType = 'auto' }: AppProps) {
   };
 
   const paletteItems = [
-    ...VIEWS.map((vd, i) => ({ label: `${vd.key} · ${vd.label}`, action: () => gotoView(i) })),
+    // p10: "Go to view/feature" — nothing depends on memorizing keys
+    ...VIEWS.map((vd, i) => ({ label: `go · [${vd.key}] ${vd.label} — ${vd.sub}`, action: () => gotoView(i) })),
+    { label: 'feature · J-BANG dispatch rail', action: () => gotoView(4) },
+    { label: 'feature · harness lanes', action: () => gotoView(4) },
+    { label: 'feature · escrow ledger + refunds', action: () => gotoView(3) },
+    { label: 'feature · receipt chain verify', action: () => gotoView(3) },
+    { label: 'feature · live log relay + passport', action: () => gotoView(2) },
+    { label: 'feature · mission DAG + capsules', action: () => gotoView(1) },
+    { label: 'feature · clips + EDL replay', action: () => gotoView(6) },
+    { label: 'feature · model explorer', action: () => { gotoView(7); setPaneFocus(2); } },
+    { label: 'feature · setup / onboarding prefs', action: () => { gotoView(7); setPaneFocus(1); } },
+    { label: 'feature · code review + dashboard', action: () => gotoView(8) },
     // v1.0.2: model switching + health live strictly here, never in a sidebar
     ...PALETTE_MODELS.map(m => ({ label: `model · ${m.label}`, action: () => agentState.switchModel(m.id) })),
     { label: 'q · Exit Application', action: safeExit }
