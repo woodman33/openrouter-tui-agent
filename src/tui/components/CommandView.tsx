@@ -3,7 +3,8 @@
 // scroll thumb, no nested boxes. Internal system chatter is filtered out
 // of the scrollback entirely.
 import React, { useState } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text } from 'ink';
+import { useKeyOwner } from '../hooks/useKeyDispatcher.js';
 import { useAgent } from '../hooks/useAgent.js';
 import { theme } from '../theme.js';
 import { handleSlashCommand } from '../../utils/slash-commands.js';
@@ -39,7 +40,11 @@ const wrap = (text: string, width: number): string[] => {
 
 interface Line { text: string; kind: 'user' | 'agent' | 'err' }
 
-export function CommandView({ agent }: { agent: Agent }) {
+interface CommandViewProps {
+  agent: Agent;
+}
+
+export function CommandView({ agent }: CommandViewProps) {
   const { w: width, h: height } = React.useContext(ViewportContext);
   const state = useAgent(agent);
   const [input, setInput] = useState('');
@@ -73,7 +78,10 @@ export function CommandView({ agent }: { agent: Agent }) {
   const end = lines.length - clamped;
   const visible = lines.slice(Math.max(0, end - viewH), end);
 
-  useInput((char, key) => {
+  // v1.0.5-keyboard-arch: keys arrive ONLY while the dispatcher's stack top
+  // is 'input:command' (claimed via Enter at nav level). Esc/Tab never reach
+  // this handler — the dispatcher owns them, so trapping is impossible.
+  useKeyOwner('input:command', (char, key) => {
     if (key.upArrow) { setScroll(s => Math.min(maxScroll, s + 1)); return; }
     if (key.downArrow) { setScroll(s => Math.max(0, s - 1)); return; }
     if (key.return) {
@@ -96,6 +104,14 @@ export function CommandView({ agent }: { agent: Agent }) {
   return (
     <Box flexDirection="column" flexGrow={1}>
       <Box flexDirection="column" flexGrow={1}>
+        {lines.length === 0 && (
+          <Box flexDirection="column" borderStyle="round" borderColor={theme.borderMuted} paddingX={1} marginTop={1}>
+            <Text bold color={theme.focus} wrap="truncate">◆ COMMAND POST — cold start</Text>
+            <Text color={theme.textSecondary} wrap="truncate">Type a mission to start — every run seals a cryptographic receipt.</Text>
+            <Text color={theme.textTertiary} wrap="truncate">[2] MISSION · DAG + capsules  [3] TELEMETRY · audit + bus  [4] ESCROW · locks + refunds</Text>
+            <Text color={theme.textTertiary} wrap="truncate">[?] keymap · [Esc] releases the keyboard to navigation</Text>
+          </Box>
+        )}
         {visible.map((l, i) => (
           <Text
             key={i}

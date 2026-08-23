@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { existsSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { humanizeLines, clockTime } from '../../utils/humanlog.js';
@@ -139,7 +140,9 @@ export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelPr
   const visibleLines = rows.slice(off, off + visibleHeight);
   const atBottom = off >= Math.max(0, rows.length - visibleHeight);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:logs')) return;
     // Only consume keys when the stage owns focus; nav stays arrow-owned
     if (zone < 0) return;
 
@@ -206,9 +209,9 @@ export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelPr
 
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1}>
-      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2}>
+      <Box borderStyle="round" borderColor={theme.borderMuted} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2}>
         <Box justifyContent="space-between">
-          <Text bold color={theme.info}>📊  TIMMY Audit Log Monitor</Text>
+          <Text bold color={theme.focus}>◆ AUDIT LOG MONITOR</Text>
           <Text color={theme.success}>● LIVE {REFRESH_MS / 1000}s</Text>
         </Box>
         <Box flexDirection="row" marginTop={1} flexWrap="wrap">
@@ -226,7 +229,7 @@ export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelPr
         </Box>
       </Box>
 
-      <Box borderStyle="round" borderColor={theme.borderDefault} paddingX={1} width={mainStageWidth - 2} height={visibleHeight + 2} flexDirection="column">
+      <Box paddingX={1} width={mainStageWidth - 2} height={visibleHeight + 2} flexDirection="column">
         {logLines.length === 0 ? (
           <Box flexGrow={1} justifyContent="center" alignItems="center" flexDirection="column">
             <Text color={theme.textSecondary} bold>● No logs written yet under logs/{activeFile}</Text>

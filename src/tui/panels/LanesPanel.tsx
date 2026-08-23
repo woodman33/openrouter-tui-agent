@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { execFileSync } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
@@ -125,15 +126,17 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
   const aliveCount = lanes.filter(l => alive[l.id]).length;
   const blockedCount = lanes.filter(l => blocked?.has(l.id)).length;
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:lanes')) return;
     if (zone < 0) return; // nav owns the keyboard
     if (tasking) {
-      if (key.escape) { setTasking(false); setDraft(''); setModalInput?.(false); return; }
+      if (key.escape) { setTasking(false); setDraft(''); __focus.release('input:lanes'); return; }
       if (key.return) {
         if (sel && draft.trim()) agent.sendTmuxCommand(sel.id, draft.trim());
         setTasking(false);
         setDraft('');
-        setModalInput?.(false);
+        __focus.release('input:lanes');
         return;
       }
       if (key.backspace || key.delete) { setDraft(d => d.slice(0, -1)); return; }
@@ -188,7 +191,7 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
     if (c === 't' || key.return) {
       if (sel) setDraft(suggested(sel.id));
       setTasking(true);
-      setModalInput?.(true);
+      __focus.claim('input:lanes');
       return;
     }
   }, { isActive: !inputLocked });

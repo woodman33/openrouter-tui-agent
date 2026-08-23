@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { execFileSync } from 'child_process';
 import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
@@ -55,15 +56,17 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
     return () => clearInterval(t);
   }, [idx, agent.tmuxSessions.length]);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:browse')) return;
     if (zone < 0) return; // nav owns the keyboard
     if (spawning) {
-      if (key.escape) { setSpawning(false); setUrlDraft(''); setModalInput?.(false); return; }
+      if (key.escape) { setSpawning(false); setUrlDraft(''); __focus.release('input:browse'); return; }
       if (key.return) {
         agent.addBrowserPane(urlDraft.trim() || 'https://openrouter.ai');
         setSpawning(false);
         setUrlDraft('');
-        setModalInput?.(false);
+        __focus.release('input:browse');
         return;
       }
       if (key.backspace || key.delete) { setUrlDraft(d => d.slice(0, -1)); return; }
@@ -71,12 +74,12 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
       return;
     }
     if (typing) {
-      if (key.escape) { setTyping(false); setCmdDraft(''); setModalInput?.(false); return; }
+      if (key.escape) { setTyping(false); setCmdDraft(''); __focus.release('input:browse'); return; }
       if (key.return) {
         if (sel && cmdDraft.trim()) agent.sendTmuxCommand(sel.id, cmdDraft.trim(), true);
         setTyping(false);
         setCmdDraft('');
-        setModalInput?.(false);
+        __focus.release('input:browse');
         return;
       }
       if (key.backspace || key.delete) { setCmdDraft(d => d.slice(0, -1)); return; }
@@ -93,10 +96,10 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
       if (noCarb) { setCarbHint(true); return; }
       setCarbHint(false);
       setSpawning(true);
-      setModalInput?.(true);
+      __focus.claim('input:browse');
       return;
     }
-    if (c === 't' && sel) { setTyping(true); setModalInput?.(true); return; }
+    if (c === 't' && sel) { setTyping(true); __focus.claim('input:browse'); return; }
     if (c === 'k' && sel) { agent.removeTmuxSession(sel.id); setIdx(i => Math.max(0, i - 1)); return; }
   }, { isActive: !inputLocked });
 

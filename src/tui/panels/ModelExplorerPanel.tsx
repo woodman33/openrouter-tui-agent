@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
 import { GlowBorder } from '../components/GlowBorder.js';
 import { exec } from 'child_process';
@@ -81,7 +82,9 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
     updateInspectorData();
   }, [latestReceipt, refreshTrigger]);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:modelexplorer')) return;
     if (key.leftArrow || key.upArrow) {
       setActiveBtnIdx(prev => Math.max(0, prev - 1));
       return;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useWindowSize, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import type { Agent } from '../../agent/core.js';
 import { GlowBorder } from '../components/GlowBorder.js';
 import { theme } from '../theme.js';
@@ -185,7 +186,9 @@ export function DashboardPanel({ agent: _agent, setInspector }: DashboardPanelPr
     updateInspectorData(capabilities[selectedIndex]);
   }, [selectedIndex]);
 
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:dashboard')) return;
     if (key.upArrow) {
       setSelectedIndex(prev => Math.max(0, prev - 1));
       return;

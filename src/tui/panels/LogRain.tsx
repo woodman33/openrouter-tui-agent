@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { existsSync, openSync, closeSync, fstatSync, readSync } from 'fs';
 import { join } from 'path';
 import { theme } from '../theme.js';
@@ -11,7 +12,7 @@ interface LogRainProps {
 }
 
 const REFRESH_MS = 2000;
-const MAX_LINES = 120;
+const MAX_LINES = 200; // v1.0.2 mission spec: 200-line ring buffer
 const TAIL_BYTES = 64 * 1024;
 
 // Tail-only read: a CF event burst must never force a full-file parse on the
@@ -68,7 +69,9 @@ export const LogRain = memo(function LogRain({ height, focused }: LogRainProps) 
     return () => clearInterval(t);
   }, []);
 
+  const __focus = useFocus();
   useInput((_char, key) => {
+    if (!panelMayAct(__focus, 'input:rain')) return;
     if (key.downArrow) setOffset(o => Math.min(Math.max(0, rain.length - 1), o + 1));
     if (key.upArrow) setOffset(o => Math.max(0, o - 1));
   }, { isActive: focused });
@@ -77,7 +80,8 @@ export const LogRain = memo(function LogRain({ height, focused }: LogRainProps) 
   const live = offset === 0;
 
   return (
-    <Box flexDirection="column" borderStyle="single" borderColor={focused ? theme.focus : theme.borderDefault} paddingX={1} flexShrink={0} height={height}>
+    <Box flexDirection="column" borderStyle="round" borderColor={focused ? theme.focus : theme.borderMuted} paddingX={1} flexShrink={0} height={height}>
+      <Text bold color={focused ? theme.focus : theme.brandDim} wrap="truncate">{focused ? '◆' : '◇'} LIVE EVENT BUS</Text>
       <Box justifyContent="space-between">
         <Text bold color={focused ? theme.brand : theme.textSecondary}>⛆ WHAT'S HAPPENING ↓</Text>
         <Text color={live ? theme.success : theme.warning}>{live ? '▼ live' : `⏸ +${offset}`}</Text>

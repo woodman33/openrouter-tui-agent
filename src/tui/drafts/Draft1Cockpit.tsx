@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
 
 interface Draft1Props {
@@ -31,7 +32,9 @@ export function Draft1Cockpit({ activeTab, setActiveTab, width = 120, height = 3
     return () => clearInterval(timer);
   }, []);
 
+  const __focus = useFocus();
   useInput((input, key) => {
+    if (!panelMayAct(__focus, 'input:draft1')) return;
     if (key.rightArrow || input === '\t') {
       setPresetIndex((i) => (i + 1) % presets.length);
     } else if (key.leftArrow) {

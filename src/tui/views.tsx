@@ -3,7 +3,7 @@
 // [3] Telemetry & LogRain, [4] Escrow & Receipts. Legacy panels are reused
 // as content; the shell owns navigation, budget and chrome.
 import React from 'react';
-import { Box } from 'ink';
+import { Box, Text } from 'ink';
 import type { Agent } from '../agent/core.js';
 import { CommandView } from './components/CommandView.js';
 import { LogRelay } from './components/LogRelay.js';
@@ -22,13 +22,11 @@ export interface ViewStageProps {
   paneFocus: number;
   agent: Agent;
   setInspector: (d: unknown) => void;
-  setModalInput: (b: boolean) => void;
-  inputLocked: boolean;
 }
 
 const noopZone = (_z: number): void => undefined;
 
-export function ViewStage({ view, paneFocus, agent, setInspector, setModalInput, inputLocked }: ViewStageProps) {
+export function ViewStage({ view, paneFocus, agent, setInspector }: ViewStageProps) {
   const { w: width, h: height } = React.useContext(ViewportContext);
   const pane = (i: number): boolean => paneFocus === i;
 
@@ -41,9 +39,10 @@ export function ViewStage({ view, paneFocus, agent, setInspector, setModalInput,
             flexDirection="column"
             flexGrow={1}
             borderStyle="round"
-            borderColor={pane(0) ? theme.cardFocus : theme.borderMuted}
+            borderColor={pane(0) ? theme.focus : theme.borderMuted}
             paddingX={1}
           >
+            <Text bold color={pane(0) ? theme.focus : theme.brandDim} wrap="truncate">{pane(0) ? '◆' : '◇'} COMMAND POST</Text>
             <CommandView agent={agent} />
           </Box>
         </Box>
@@ -60,13 +59,13 @@ export function ViewStage({ view, paneFocus, agent, setInspector, setModalInput,
       <Box flexDirection="row" flexGrow={1}>
         <Box flexGrow={3} flexDirection="column" paddingRight={1}>
           <PaneFocusContext.Provider value={pane(0)}>
-            <SlatePanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} setModalInput={setModalInput} inputLocked={inputLocked} />
+            <SlatePanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} />
           </PaneFocusContext.Provider>
         </Box>
         <Box flexGrow={2} flexDirection="column" paddingLeft={1}>
           <ActionCards width={Math.max(30, Math.floor(width * 0.4))} />
           <PaneFocusContext.Provider value={pane(1)}>
-            <GensPanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} setModalInput={setModalInput} inputLocked={inputLocked} />
+            <GensPanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} />
           </PaneFocusContext.Provider>
         </Box>
       </Box>

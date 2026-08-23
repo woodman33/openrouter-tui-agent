@@ -50,7 +50,7 @@ export function LogRelay({ height }: { height: number }) {
   return (
     <Box flexDirection="column" flexGrow={1} borderStyle="round" borderColor={theme.borderMuted} paddingX={1}>
       <Box key="relay-title" flexShrink={0}>
-        <Text bold color={theme.neonCyan} wrap="truncate">{'LIVE INVERTED LOG RELAY & PASSPORT'}</Text>
+        <Text bold color={theme.neonCyan} wrap="truncate">{'◆ LIVE LOG RELAY & PASSPORT'}</Text>
       </Box>
       <Box key="relay-seal" flexShrink={0}>
         <Text bold color={theme.neonEmerald} wrap="truncate">

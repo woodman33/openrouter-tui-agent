@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import chalk from 'chalk';
 import { theme } from '../theme.js';
 import { execSync, exec } from 'child_process';
@@ -175,7 +176,9 @@ export function CodeReviewPanel({ agent, setInspector, focusArea = 'stage' }: Co
   };
 
   // Key navigation engine
+  const __focus = useFocus();
   useInput((char, key) => {
+    if (!panelMayAct(__focus, 'input:codereview')) return;
     if (focusArea !== 'stage') return;
 
     if (key.leftArrow || key.upArrow) {
