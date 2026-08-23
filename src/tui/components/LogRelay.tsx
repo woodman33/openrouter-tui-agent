@@ -3,17 +3,18 @@
 // seal badge. Solid card, no transparency, clamped lines.
 import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
+import { Card } from '../ui/Card.js';
 import { readEvents } from '../../utils/eventbus.js';
 import { theme } from '../theme.js';
 
 interface Ev { ts: string; kind: string; text: string }
 
 const channel = (kind: string): { badge: string; color: string } => {
-  if (kind.startsWith('escrow')) return { badge: '[ESCROW]', color: theme.brand };
-  if (kind.startsWith('dispatch')) return { badge: '[WORKER]', color: theme.focus };
+  if (kind.startsWith('escrow')) return { badge: '[ESCROW]', color: theme.accent };
+  if (kind.startsWith('dispatch')) return { badge: '[WORKER]', color: theme.accent };
   if (kind.startsWith('gen') || kind.startsWith('comfy')) return { badge: '[R2]', color: theme.accent };
-  if (kind.startsWith('receipt')) return { badge: '[SEAL]', color: theme.neonEmerald };
-  return { badge: '[BUS]', color: theme.textTertiary };
+  if (kind.startsWith('receipt')) return { badge: '[SEAL]', color: theme.seal };
+  return { badge: '[BUS]', color: theme.textMuted };
 };
 
 const stamp = (ts: string): string => {
@@ -48,12 +49,14 @@ export function LogRelay({ height }: { height: number }) {
   // title/seal are flexShrink 0 so Yoga can never collapse them (v1.0.4 fix).
   const rows = Math.max(3, height - 7);
   return (
-    <Box flexDirection="column" flexGrow={1} borderStyle="round" borderColor={theme.borderMuted} paddingX={1}>
-      <Box key="relay-title" flexShrink={0}>
-        <Text bold color={theme.neonCyan} wrap="truncate">{'◆ LIVE LOG RELAY & PASSPORT'}</Text>
-      </Box>
+    <Card
+      title="LIVE LOG RELAY"
+      purpose="passport · tailing live"
+      overflow={events.length > rows ? `…and ${events.length - rows} more · [3] full telemetry` : undefined}
+      flexGrow={1}
+    >
       <Box key="relay-seal" flexShrink={0}>
-        <Text bold color={theme.neonEmerald} wrap="truncate">
+        <Text bold color={theme.seal} wrap="truncate">
           {seal ? `[SHA-256 SEALED] ${seal.slice(7, 23)}…` : '[SHA-256 SEALED] awaiting first seal…'}
         </Text>
       </Box>
@@ -62,13 +65,13 @@ export function LogRelay({ height }: { height: number }) {
           const ch = channel(e.kind);
           return (
             <Text key={`${e.ts}-${i}`} wrap="truncate">
-              <Text color={theme.success}>{stamp(e.ts)}</Text>{' '}
+              <Text color={theme.accent}>{stamp(e.ts)}</Text>{' '}
               <Text color={ch.color}>{ch.badge}</Text>{' '}
               <Text color={theme.textSecondary}>{e.text}</Text>
             </Text>
           );
         })}
       </Box>
-    </Box>
+    </Card>
   );
 }

@@ -34,40 +34,9 @@ const clearinghouse = {
   ident: '#B49AF5',         // View 2 DAG nodes ONLY
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DEPRECATED ALIASES — Phase A migration bridge (DESIGN.md §0.2).
-// Every legacy Tokyo-Night / cyber-command token name resolves to its nearest
-// Clearinghouse meaning so the whole app re-skins in one pass with zero
-// compile errors. Phases B–E replace each usage with the canonical token
-// above, then this block is DELETED and the design-contract test locks the
-// export surface to §2 exactly. Do not add new usages of these names.
-// ─────────────────────────────────────────────────────────────────────────────
-const deprecatedAliases = {
-  brand: clearinghouse.accent,           // was purple identity → interaction cyan
-  brandDim: clearinghouse.textSecondary, // was muted purple → label grey
-  focus: clearinghouse.accent,
-  surfaceBase: clearinghouse.ground,
-  surfaceOverlay: clearinghouse.surfaceRaised,
-  textTertiary: clearinghouse.textMuted,
-  borderDefault: clearinghouse.line,
-  borderMuted: clearinghouse.line,
-  accentDim: clearinghouse.textMuted,
-  success: clearinghouse.seal,           // audit each use: seal is PROOF only
-  warning: clearinghouse.warn,
-  error: clearinghouse.danger,
-  info: clearinghouse.accent,            // info-blue deleted → links are accent
-  userColor: clearinghouse.accent,       // user text reads as interaction
-  assistantColor: clearinghouse.textPrimary,
-  toolColor: clearinghouse.textSecondary,
-  reasoningColor: clearinghouse.textMuted,
-  bgDeep: clearinghouse.surfaceRaised,   // solid overlay field
-  neonCyan: clearinghouse.accent,
-  cardFocus: clearinghouse.accent,
-  emerald: clearinghouse.accent,         // "ready" is status, not proof
-  neonEmerald: clearinghouse.seal,       // passport seal IS proof
-};
-
-export const theme = { ...clearinghouse, ...deprecatedAliases };
+// Phase E: the deprecated-alias bridge is gone. `theme` exports exactly the
+// §2 token set — tests/design-contract.test.ts locks this surface.
+export const theme = { ...clearinghouse };
 
 // TrueColor vs ANSI-256: Ink/chalk down-convert these hex tokens automatically
 // when COLORTERM!=truecolor (bare SSH, CI). Exposed so the status bar can say
@@ -85,13 +54,4 @@ export const colors = {
   danger: (t: string) => chalk.hex(theme.danger)(t),
   border: (t: string) => chalk.hex(theme.line)(t),
   bg: (t: string) => chalk.bgHex(theme.surface)(t),
-  // deprecated wrapper names (Phase B–E delete these with their call sites)
-  accentDim: (t: string) => chalk.hex(theme.textMuted)(t),
-  success: (t: string) => chalk.hex(theme.seal)(t),
-  error: (t: string) => chalk.hex(theme.danger)(t),
-  warning: (t: string) => chalk.hex(theme.warn)(t),
-  user: (t: string) => chalk.hex(theme.accent)(t),
-  assistant: (t: string) => chalk.hex(theme.textPrimary)(t),
-  tool: (t: string) => chalk.hex(theme.textSecondary)(t),
-  reasoning: (t: string) => chalk.hex(theme.textMuted).italic(t),
 };

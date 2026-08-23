@@ -18,18 +18,18 @@ export type TimmyStatus =
   | 'queued';
 
 export const STATUS_GLYPH: Record<TimmyStatus, { glyph: string; color: string; label: string }> = {
-  running:   { glyph: '●', color: theme.success, label: 'running' },
-  waiting:   { glyph: '⚠', color: theme.warning, label: 'waiting on you' },
-  created:   { glyph: '○', color: theme.textTertiary, label: 'created' },
-  completed: { glyph: '✓', color: theme.success, label: 'completed' },
-  failed:    { glyph: '✕', color: theme.error, label: 'failed' },
-  cancelled: { glyph: '', color: theme.textTertiary, label: 'cancelled' },
-  sealed:    { glyph: '⛁', color: theme.success, label: 'sealed' },
-  ready:     { glyph: '●', color: theme.success, label: 'ready · installed' },
-  missing:   { glyph: '○', color: theme.textTertiary, label: 'not installed' },
-  idle:      { glyph: '○', color: theme.textTertiary, label: 'idle' },
-  warn:      { glyph: '⚠', color: theme.warning, label: 'warning' },
-  queued:    { glyph: '◌', color: theme.warning, label: 'queued' }
+  running:   { glyph: '●', color: theme.warn, label: 'running' },
+  waiting:   { glyph: '⚠', color: theme.warn, label: 'waiting on you' },
+  created:   { glyph: '◇', color: theme.textMuted, label: 'created' },
+  completed: { glyph: '✓', color: theme.seal, label: 'completed' },
+  failed:    { glyph: '×', color: theme.danger, label: 'failed' },
+  cancelled: { glyph: '', color: theme.textMuted, label: 'cancelled' },
+  sealed:    { glyph: '●', color: theme.seal, label: 'sealed' },
+  ready:     { glyph: '●', color: theme.accent, label: 'ready · installed' },
+  missing:   { glyph: '◇', color: theme.textMuted, label: 'not installed' },
+  idle:      { glyph: '◇', color: theme.textMuted, label: 'idle' },
+  warn:      { glyph: '⚠', color: theme.warn, label: 'warning' },
+  queued:    { glyph: '●', color: theme.warn, label: 'queued' }
 };
 
 export function statusGlyph(status: TimmyStatus): { glyph: string; color: string; label: string } {

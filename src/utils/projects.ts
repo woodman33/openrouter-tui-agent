@@ -165,23 +165,23 @@ export function renderProjectSite(name: string, dir?: string): string | null {
   const html = `<!doctype html>
 <html><head><meta charset="utf-8"><title>TIMMY Slate — ${proj.name}</title>
 <style>
-body{margin:0;background:${theme.surfaceBase};color:${theme.textPrimary};font:14px/1.6 ui-monospace,Menlo,monospace}
-header{padding:20px 28px;border-bottom:1px solid ${theme.surfaceOverlay}}
-h1{color:${theme.brand};margin:0}
-.tag{color:${theme.success}}
+body{margin:0;background:${theme.ground};color:${theme.textPrimary};font:14px/1.6 ui-monospace,Menlo,monospace}
+header{padding:20px 28px;border-bottom:1px solid ${theme.surfaceRaised}}
+h1{color:${theme.accent};margin:0}
+.tag{color:${theme.accent}}
 main{padding:20px 28px;display:grid;gap:28px}
-h2{font-size:12px;letter-spacing:.25em;color:${theme.success}}
+h2{font-size:12px;letter-spacing:.25em;color:${theme.accent}}
 .refs{display:flex;gap:14px;flex-wrap:wrap}
-.refs img{height:140px;border:1px solid ${theme.surfaceOverlay}}
+.refs img{height:140px;border:1px solid ${theme.surfaceRaised}}
 figcaption{color:${theme.textSecondary};font-size:12px}
 .gens{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.gen{border:1px solid ${theme.surfaceOverlay};padding:10px}
-.gen img{width:100%;border:1px solid ${theme.surfaceOverlay}}
+.gen{border:1px solid ${theme.surfaceRaised};padding:10px}
+.gen img{width:100%;border:1px solid ${theme.surfaceRaised}}
 .meta{color:${theme.textSecondary};font-size:12px}
-footer{padding:16px 28px;color:${theme.textTertiary};border-top:1px solid ${theme.surfaceOverlay}}
+footer{padding:16px 28px;color:${theme.textMuted};border-top:1px solid ${theme.surfaceRaised}}
 </style></head>
 <body>
-<header><h1>⛁ TIMMY Slate — ${proj.name}</h1>
+<header><h1>● TIMMY Slate — ${proj.name}</h1>
 <span class="tag">visual project folder · generated ${now()}</span></header>
 <main>
 ${beats ? `<section><h2>STORYBOARD</h2><ul>${beats}</ul></section>` : ''}
@@ -267,7 +267,7 @@ export function renderCanvasPage(name: string, dir?: string): string | null {
   const html = `<!doctype html>
 <html><head><meta charset="utf-8"><title>TIMMY Slate canvas — ${proj.name}</title>
 <link rel="stylesheet" href="https://unpkg.com/tldraw@3.15.0/tldraw.css" />
-<style>html,body,#root{height:100%;margin:0;background:${theme.surfaceBase}}</style>
+<style>html,body,#root{height:100%;margin:0;background:${theme.ground}}</style>
 </head><body><div id="root"></div>
 <script type="module">
 import React from "https://esm.sh/react@18.3.1?bundle";
@@ -279,12 +279,12 @@ function sync(editor, slate) {
   editor.selectAll(); editor.deleteShapes(editor.getSelectedShapeIds());
   let x = 80;
   (slate.beats || []).forEach((b, i) => {
-    editor.createShape({ id: createShapeId(), type: "geo", x, y: 80, props: { w: Math.max(120, b.dur * 60), h: 140, fill: "semi", color: theme.brand, text: b.at + "s [" + b.label + "]\\n" + (b.text || "") } });
+    editor.createShape({ id: createShapeId(), type: "geo", x, y: 80, props: { w: Math.max(120, b.dur * 60), h: 140, fill: "semi", color: theme.accent, text: b.at + "s [" + b.label + "]\\n" + (b.text || "") } });
     x += Math.max(120, b.dur * 60) + 40;
   });
   let y = 300;
   (slate.cast || []).forEach(c => {
-    editor.createShape({ id: createShapeId(), type: "note", x: 80, y, props: { color: theme.success, text: c.id + " " + c.name + "\\n" + (c.wardrobe || "") + "\\n" + (c.emotion || "") } });
+    editor.createShape({ id: createShapeId(), type: "note", x: 80, y, props: { color: theme.accent, text: c.id + " " + c.name + "\\n" + (c.wardrobe || "") + "\\n" + (c.emotion || "") } });
     y += 160;
   });
 }
@@ -317,7 +317,7 @@ export function renderBlockingSvg(name: string, dir?: string): string | null {
     const marks = cast.map((c, ci) => {
       const x = 120 + ci * 220 + (bi % 2) * 40;
       return `
-      <g stroke={theme.success} stroke-width="3" fill="none">
+      <g stroke={theme.accent} stroke-width="3" fill="none">
         <circle cx="${x}" cy="${y + 30}" r="16"/>
         <line x1="${x}" y1="${y + 46}" x2="${x}" y2="${y + 86}"/>
         <line x1="${x}" y1="${y + 56}" x2="${x - 22}" y2="${y + 76}"/>
@@ -325,17 +325,17 @@ export function renderBlockingSvg(name: string, dir?: string): string | null {
         <line x1="${x}" y1="${y + 86}" x2="${x - 16}" y2="${y + 116}"/>
         <line x1="${x}" y1="${y + 86}" x2="${x + 16}" y2="${y + 116}"/>
       </g>
-      <text x="${x}" y="${y + 8}" fill={theme.brand} font-family="monospace" font-size="16" text-anchor="middle">${c.id} ${c.emotion || ''}</text>
+      <text x="${x}" y="${y + 8}" fill={theme.accent} font-family="monospace" font-size="16" text-anchor="middle">${c.id} ${c.emotion || ''}</text>
       <text x="${x}" y="${y + 132}" fill={theme.textSecondary} font-family="monospace" font-size="12" text-anchor="middle">${(c.wardrobe || '').slice(0, 28)}</text>`;
     }).join('');
     return `
-    <rect x="20" y="${y - 14}" width="${W - 40}" height="${beatH - 12}" fill="none" stroke={theme.surfaceOverlay}/>
+    <rect x="20" y="${y - 14}" width="${W - 40}" height="${beatH - 12}" fill="none" stroke={theme.surfaceRaised}/>
     <text x="30" y="${y + 4}" fill={theme.textPrimary} font-family="monospace" font-size="14">${b.at}s [${b.label}] ${b.text.slice(0, 60)}</text>
     ${marks}`;
   }).join('');
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-<rect width="${W}" height="${H}" fill={theme.surfaceBase}/>
-<text x="20" y="28" fill={theme.info} font-family="monospace" font-size="18">TIMMY Slate blocking — ${name} (conditioning input)</text>
+<rect width="${W}" height="${H}" fill={theme.ground}/>
+<text x="20" y="28" fill={theme.accent} font-family="monospace" font-size="18">TIMMY Slate blocking — ${name} (conditioning input)</text>
 ${figures}
 </svg>
 `;

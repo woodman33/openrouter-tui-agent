@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { HermesApproval } from '../../../hermes/events.js';
-import { theme } from '../../theme.js';
+import type { HermesApproval } from '../../hermes/events.js';
+import { theme } from '../theme.js';
 
 interface HermesApprovalInboxProps {
   approvals: HermesApproval[];
@@ -11,10 +11,10 @@ interface HermesApprovalInboxProps {
 }
 
 const KIND_COLORS: Record<HermesApproval['kind'], string> = {
-  approval: theme.warning,
-  clarify: theme.info,
-  sudo: theme.error,
-  secret: theme.error,
+  approval: theme.warn,
+  clarify: theme.accent,
+  sudo: theme.danger,
+  secret: theme.danger,
 };
 
 const VISIBLE_ROWS = 4;
@@ -40,11 +40,11 @@ export function HermesApprovalInbox({
     <Box
       flexDirection="column"
       borderStyle={open.length > 0 ? 'double' : 'single'}
-      borderColor={focused ? theme.warning : open.length > 0 ? theme.warning : theme.borderDefault}
+      borderColor={focused ? theme.warn : open.length > 0 ? theme.warn : theme.line}
       paddingX={1}
     >
       <Box justifyContent="space-between">
-        <Text bold color={theme.warning}>APPROVAL INBOX</Text>
+        <Text bold color={theme.warn}>APPROVAL INBOX</Text>
         <Text color={theme.textSecondary}>
           {open.length === 0
             ? 'no pending requests'

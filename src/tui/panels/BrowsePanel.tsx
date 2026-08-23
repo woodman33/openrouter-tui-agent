@@ -3,8 +3,9 @@ import { Box, Text, useInput } from 'ink';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { execFileSync } from 'child_process';
 import type { Agent } from '../../agent/core.js';
-import { PanelFrame } from '../components/PanelFrame.js';
-import { EmptyState } from '../components/EmptyState.js';
+import { PaneFocusContext } from '../components/PanelFrame.js';
+import { KeyHintBar } from '../components/KeyHintBar.js';
+import { Card, BudgetList, EmptyState } from '../ui/index.js';
 import { stripAnsi } from '../utils/text.js';
 import { theme } from '../theme.js';
 
@@ -32,6 +33,7 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
   const [cmdDraft, setCmdDraft] = useState('');
   const [noCarb, setNoCarb] = useState(false);
   const [carbHint, setCarbHint] = useState(false);
+  const focused = React.useContext(PaneFocusContext);
 
   useEffect(() => {
     try { execFileSync('sh', ['-c', 'command -v carbonyl'], { stdio: 'ignore' }); setNoCarb(false); }
@@ -40,6 +42,7 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
 
   const lanes = agent.tmuxSessions.filter(s => s.name.startsWith('Browser:'));
   const sel = lanes[Math.min(idx, Math.max(0, lanes.length - 1))];
+  const selIdx = Math.min(idx, Math.max(0, lanes.length - 1));
 
   useEffect(() => {
     const load = () => {
@@ -104,60 +107,60 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
   }, { isActive: !inputLocked });
 
   return (
-    <PanelFrame
-      icon="🌐"
-      title="BROWSE — DUAL-PANE WEB WORKSPACE"
-      status={`${lanes.length} browser pane${lanes.length === 1 ? '' : 's'}`}
-      statusColor={theme.info}
-      explain="Chromium in the terminal via carbonyl. Type into the pane, or delegate playwright/puppeteer/devtools automation through LANES."
-      hints={[
-        { key: 'n', label: 'new pane (url)' },
-        { key: 't', label: 'type into pane' },
-        { key: 'k', label: 'kill pane' }
-      ]}
+    <Card
+      title="Browse — dual-pane web workspace"
+      focused={focused}
+      purpose="chromium in the terminal via carbonyl · heavier automation delegates through LANES"
+      pill={{ kind: lanes.length ? 'accent' : 'muted', label: `${lanes.length} browser pane${lanes.length === 1 ? '' : 's'}` }}
+      flexGrow={1}
     >
       {carbHint && (
-        <Box flexDirection="column" borderStyle="single" borderColor={theme.warning} paddingX={1} marginBottom={1}>
-          <Text bold color={theme.warning}>carbonyl (chromium-in-terminal) not found on PATH</Text>
+        <Box flexDirection="column" marginBottom={1}>
+          <Text bold color={theme.warn}>carbonyl (chromium-in-terminal) not found on PATH</Text>
           <Text color={theme.textSecondary}>install it and [n] works. Meanwhile: SLATE [v] and any addBrowserPane call</Text>
           <Text color={theme.textSecondary}>open browser panes through the agent, and LANES covers CLI agents.</Text>
         </Box>
       )}
       {lanes.length === 0 ? (
-        <EmptyState
-          lines={[
-            'no browser panes yet.',
-            '[n] spawns carbonyl on any URL — the browser lives in the terminal,',
-            'streamed through the multiplexer like any other lane.'
-          ]}
-        />
+        <EmptyState line="no browser panes yet" action="[n] spawns carbonyl on any URL" />
       ) : (
         <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" width="34%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
-            {lanes.map((l, i) => (
-              <Text key={l.id} color={i === Math.min(idx, lanes.length - 1) ? theme.brand : theme.textPrimary} bold={i === Math.min(idx, lanes.length - 1)} wrap="truncate">
-                {i === Math.min(idx, lanes.length - 1) ? '▶ ' : '  '}🌐 {l.name.replace('Browser: ', '')}
-              </Text>
-            ))}
+          {/* the in-pane browser frame list */}
+          <Box flexDirection="column" width="34%" paddingRight={1}>
+            <BudgetList
+              items={lanes}
+              max={7}
+              offset={Math.max(0, selIdx - 6)}
+              render={(l, i) => (
+                <Text key={l.id} color={i === selIdx ? theme.accent : theme.textPrimary} bold={i === selIdx} wrap="truncate">
+                  {i === selIdx ? '▸ ' : '  '}{l.name.replace('Browser: ', '')}
+                </Text>
+              )}
+            />
           </Box>
           <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
-            <Text bold color={theme.info} wrap="truncate">live · {sel?.name}</Text>
-            {capture.map((line, i) => (
+            <Text bold color={theme.accent} wrap="truncate">live · {sel?.name}</Text>
+            {capture.slice(-12).map((line, i) => (
               <Text key={i} color={theme.textSecondary} wrap="truncate">{stripAnsi(line) || ' '}</Text>
             ))}
             {spawning && (
-              <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1}>
-                <Text color={theme.info}>url: {urlDraft || 'https://'}█</Text>
+              <Box marginTop={1}>
+                <Text color={theme.accent}>url: {urlDraft || 'https://'}█</Text>
               </Box>
             )}
             {typing && (
-              <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1}>
-                <Text color={theme.info}>→ pane: {cmdDraft}█</Text>
+              <Box marginTop={1}>
+                <Text color={theme.accent}>→ pane: {cmdDraft}█</Text>
               </Box>
             )}
           </Box>
         </Box>
       )}
-    </PanelFrame>
+      <KeyHintBar hints={[
+        { key: 'n', label: 'new pane (url)' },
+        { key: 't', label: 'type into pane' },
+        { key: 'k', label: 'kill pane' }
+      ]} />
+    </Card>
   );
 }

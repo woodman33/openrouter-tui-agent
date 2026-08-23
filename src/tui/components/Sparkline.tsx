@@ -28,5 +28,5 @@ export function sparkString(buckets: number[]): string {
 }
 
 export function Sparkline({ timestamps, nowMs, width, color }: { timestamps: string[]; nowMs: number; width?: number; color?: string }) {
-  return <Text color={color || theme.success}>{sparkString(sparkBuckets(timestamps, nowMs, width))}</Text>;
+  return <Text color={color || theme.accent}>{sparkString(sparkBuckets(timestamps, nowMs, width))}</Text>;
 }

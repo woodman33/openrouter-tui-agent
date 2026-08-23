@@ -11,7 +11,7 @@ interface ProgressBarProps {
   color?: string;
 }
 
-export function ProgressBar({ value, width = 30, label, showPercent = true, color = theme.info }: ProgressBarProps) {
+export function ProgressBar({ value, width = 30, label, showPercent = true, color = theme.accent }: ProgressBarProps) {
   const clamped = Math.max(0, Math.min(1, value));
   const safeWidth = Math.max(1, Math.floor(width));
   const filled = Math.round(clamped * safeWidth);
@@ -48,7 +48,7 @@ export function IndeterminateBar({ width = 30, label }: { width?: number; label?
 
   return (
     <Box>
-      <Text>{chalk.hex(theme.info)(chars.join(''))}</Text>
+      <Text>{chalk.hex(theme.accent)(chars.join(''))}</Text>
       {label && <Text> {label}</Text>}
     </Box>
   );

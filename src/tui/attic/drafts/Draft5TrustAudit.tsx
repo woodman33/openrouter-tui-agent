@@ -34,10 +34,10 @@ export function Draft5TrustAudit({ activeTab, setActiveTab, width = 120, height 
 
   // Reverse Merkle receipt tree (newest at top)
   const receipts = [
-    { id: 'RCP-892', root: '0x7f2a...991c', status: 'SEALED', policy: 'EU AI Act Art. 12', time: '22:47:10', color: theme.success },
-    { id: 'RCP-891', root: '0x3c1d...440e', status: 'VERIFIED', policy: 'Dual-Key Nonce', time: '22:46:50', color: theme.success },
-    { id: 'RCP-890', root: '0x99bb...112a', status: 'QUARANTINED', policy: 'Write Sandbox Gate', time: '22:46:12', color: theme.warning },
-    { id: 'RCP-889', root: '0x55ef...8831', status: 'SEALED', policy: 'Svix Webhook Trace', time: '22:45:30', color: theme.success },
+    { id: 'RCP-892', root: '0x7f2a...991c', status: 'SEALED', policy: 'EU AI Act Art. 12', time: '22:47:10', color: theme.accent },
+    { id: 'RCP-891', root: '0x3c1d...440e', status: 'VERIFIED', policy: 'Dual-Key Nonce', time: '22:46:50', color: theme.accent },
+    { id: 'RCP-890', root: '0x99bb...112a', status: 'QUARANTINED', policy: 'Write Sandbox Gate', time: '22:46:12', color: theme.warn },
+    { id: 'RCP-889', root: '0x55ef...8831', status: 'SEALED', policy: 'Svix Webhook Trace', time: '22:45:30', color: theme.accent },
   ];
 
   useEffect(() => {
@@ -65,33 +65,33 @@ export function Draft5TrustAudit({ activeTab, setActiveTab, width = 120, height 
   const rightPaneW = Math.max(30, width - 24 - leftPaneW - 4);
 
   return (
-    <Box flexDirection="column" width={width} height={height} borderStyle="round" borderColor={theme.warning}>
+    <Box flexDirection="column" width={width} height={height} borderStyle="round" borderColor={theme.warn}>
       {/* Top Security & Policy Slider Ribbon */}
-      <Box justifyContent="space-between" paddingX={1} borderStyle="single" borderColor={theme.borderDefault}>
+      <Box justifyContent="space-between" paddingX={1} borderStyle="single" borderColor={theme.line}>
         <Box gap={1}>
-          <Text color={theme.warning} bold>🛡 TIMMY AGENT TRUST OS</Text>
-          <Text color={theme.textTertiary}>|</Text>
+          <Text color={theme.warn} bold>🛡 TIMMY AGENT TRUST OS</Text>
+          <Text color={theme.textMuted}>|</Text>
           <Text color={theme.textSecondary}>Posture:</Text>
           {securityModes.map((m, idx) => (
-            <Text key={m} color={securityLevel === idx ? theme.warning : theme.textTertiary} bold={securityLevel === idx}>
+            <Text key={m} color={securityLevel === idx ? theme.warn : theme.textMuted} bold={securityLevel === idx}>
               {m}
             </Text>
           ))}
         </Box>
         <Box gap={1}>
           <Text color={theme.textSecondary}>Merkle Root:</Text>
-          <Text color={theme.success}>0x7f2a...991c</Text>
-          <Text color={theme.textTertiary}>|</Text>
-          <Text color={theme.warning}>Quarantine: 3</Text>
+          <Text color={theme.accent}>0x7f2a...991c</Text>
+          <Text color={theme.textMuted}>|</Text>
+          <Text color={theme.warn}>Quarantine: 3</Text>
         </Box>
       </Box>
 
       {/* Main Dual-Pane Section with Left Standing Rail */}
       <Box flexGrow={1} flexDirection="row">
         {/* Left Standing Menu (6 Tabs) */}
-        <Box flexDirection="column" width={22} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+        <Box flexDirection="column" width={22} borderStyle="single" borderColor={theme.line} paddingX={1}>
           <Box marginBottom={1}>
-            <Text color={theme.textTertiary} bold>── TRUST SYSTEM ──</Text>
+            <Text color={theme.textMuted} bold>── TRUST SYSTEM ──</Text>
           </Box>
           {tabs.map((tab, idx) => {
             const isSelected = activeTab === idx;
@@ -101,98 +101,98 @@ export function Draft5TrustAudit({ activeTab, setActiveTab, width = 120, height 
                 justifyContent="space-between"
                 paddingX={1}
                 borderStyle={isSelected ? 'single' : undefined}
-                borderColor={isSelected ? theme.warning : undefined}
+                borderColor={isSelected ? theme.warn : undefined}
               >
-                <Text color={isSelected ? theme.warning : theme.textSecondary} bold={isSelected}>
+                <Text color={isSelected ? theme.warn : theme.textSecondary} bold={isSelected}>
                   [{tab.key}] {tab.icon} {tab.label}
                 </Text>
-                <Text color={isSelected ? theme.success : theme.textTertiary}>
+                <Text color={isSelected ? theme.accent : theme.textMuted}>
                   {tab.badge}
                 </Text>
               </Box>
             );
           })}
-          <Box marginTop={1} flexDirection="column" borderStyle="single" borderColor={theme.surfaceOverlay} padding={1}>
-            <Text color={theme.textTertiary}>ENCLAVE: Nitro</Text>
-            <Text color={theme.textTertiary}>SVIX: Connected</Text>
-            <Text color={theme.success}>HASH: SHA-256</Text>
+          <Box marginTop={1} flexDirection="column" borderStyle="single" borderColor={theme.surfaceRaised} padding={1}>
+            <Text color={theme.textMuted}>ENCLAVE: Nitro</Text>
+            <Text color={theme.textMuted}>SVIX: Connected</Text>
+            <Text color={theme.accent}>HASH: SHA-256</Text>
           </Box>
         </Box>
 
         {/* Left Pane: Security Quarantine & Policy Gates */}
-        <Box flexDirection="column" width={leftPaneW} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
-          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
+        <Box flexDirection="column" width={leftPaneW} borderStyle="single" borderColor={theme.line} paddingX={1}>
+          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceRaised} paddingX={1}>
             <Text color={theme.textPrimary} bold>▼ SECURITY QUARANTINE & GATE APPROVAL</Text>
-            <Text color={theme.warning}>3 INTERCEPTED</Text>
+            <Text color={theme.warn}>3 INTERCEPTED</Text>
           </Box>
 
           <Box flexDirection="column" flexGrow={1} gap={1} marginTop={1}>
             {quarantineItems.map((item, idx) => (
-              <Box key={item.id} flexDirection="column" borderStyle="single" borderColor={item.risk === 'CRITICAL' ? theme.error : theme.warning} paddingX={1}>
+              <Box key={item.id} flexDirection="column" borderStyle="single" borderColor={item.risk === 'CRITICAL' ? theme.danger : theme.warn} paddingX={1}>
                 <Box justifyContent="space-between">
                   <Text color={theme.textPrimary} bold>{item.id} · [{item.agent}]</Text>
-                  <Text color={item.risk === 'CRITICAL' ? theme.error : theme.warning} bold>RISK: {item.risk}</Text>
+                  <Text color={item.risk === 'CRITICAL' ? theme.danger : theme.warn} bold>RISK: {item.risk}</Text>
                 </Box>
                 <Text color={theme.textPrimary}>{item.action}</Text>
                 <Box marginTop={1} justifyContent="space-between">
-                  <Text color={theme.textTertiary}>Tool: {item.tool}</Text>
+                  <Text color={theme.textMuted}>Tool: {item.tool}</Text>
                   <Box gap={1}>
-                    <Text color={theme.success} bold>[Y] Seal & Run</Text>
-                    <Text color={theme.error} bold>[N] Deny</Text>
-                    <Text color={theme.info} bold>[S] Cloudflare Sandbox</Text>
+                    <Text color={theme.accent} bold>[Y] Seal & Run</Text>
+                    <Text color={theme.danger} bold>[N] Deny</Text>
+                    <Text color={theme.accent} bold>[S] Cloudflare Sandbox</Text>
                   </Box>
                 </Box>
               </Box>
             ))}
           </Box>
 
-          <Box borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
+          <Box borderStyle="single" borderColor={theme.surfaceRaised} paddingX={1}>
             <Text color={theme.textSecondary}>Policy Rule: </Text>
-            <Text color={theme.success}>Require Dual-Key Nonce for production file writes</Text>
+            <Text color={theme.accent}>Require Dual-Key Nonce for production file writes</Text>
           </Box>
         </Box>
 
         {/* Right Pane: Reverse Cryptographic Merkle Receipts */}
-        <Box flexDirection="column" width={rightPaneW} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
-          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
-            <Text color={theme.warning} bold>▲ REVERSE RECEIPT LEDGER</Text>
-            <Text color={theme.success}>IMMUTABLE ↑</Text>
+        <Box flexDirection="column" width={rightPaneW} borderStyle="single" borderColor={theme.line} paddingX={1}>
+          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceRaised} paddingX={1}>
+            <Text color={theme.warn} bold>▲ REVERSE RECEIPT LEDGER</Text>
+            <Text color={theme.accent}>IMMUTABLE ↑</Text>
           </Box>
 
           <Box marginTop={1} flexDirection="column" flexGrow={1} gap={0}>
             {receipts.map((r, i) => (
-              <Box key={r.id} flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={1} marginY={0}>
+              <Box key={r.id} flexDirection="column" borderStyle="single" borderColor={theme.line} paddingX={1} marginY={0}>
                 <Box justifyContent="space-between">
                   <Text color={theme.textPrimary} bold>{r.id}</Text>
                   <Text color={r.color} bold>{r.status}</Text>
                 </Box>
-                <Text color={theme.textTertiary}>Root: {r.root}</Text>
+                <Text color={theme.textMuted}>Root: {r.root}</Text>
                 <Text color={theme.textSecondary}>Policy: {r.policy} ({r.time})</Text>
               </Box>
             ))}
           </Box>
 
-          <Box flexDirection="column" borderStyle="round" borderColor={theme.borderDefault} paddingX={1} marginTop={1}>
-            <Text color={theme.textSecondary}>Sealed Receipts: <Text color={theme.success}>142 total</Text></Text>
+          <Box flexDirection="column" borderStyle="round" borderColor={theme.line} paddingX={1} marginTop={1}>
+            <Text color={theme.textSecondary}>Sealed Receipts: <Text color={theme.accent}>142 total</Text></Text>
             <Text color={theme.textSecondary}>Svix Signature: <Text color={theme.accent}>Valid (ECDSA P-256)</Text></Text>
           </Box>
         </Box>
       </Box>
 
       {/* Bottom Contextual Descriptor */}
-      <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+      <Box flexDirection="column" borderStyle="single" borderColor={theme.line} paddingX={1}>
         <Box justifyContent="space-between">
           <Box gap={1}>
             <Text color={theme.textSecondary} bold>GOVERNANCE:</Text>
-            <Text color={theme.success}>[Y] Sign & Seal</Text>
-            <Text color={theme.error}>[N] Quarantine</Text>
-            <Text color={theme.info}>[E] Export Audit ZIP</Text>
+            <Text color={theme.accent}>[Y] Sign & Seal</Text>
+            <Text color={theme.danger}>[N] Quarantine</Text>
+            <Text color={theme.accent}>[E] Export Audit ZIP</Text>
           </Box>
-          <Text color={theme.warning}>[H] {showDescriptor ? 'Hide Help' : 'Show Help'}</Text>
+          <Text color={theme.warn}>[H] {showDescriptor ? 'Hide Help' : 'Show Help'}</Text>
         </Box>
         {showDescriptor && (
           <Box marginTop={0}>
-            <Text color={theme.textTertiary} italic>
+            <Text color={theme.textMuted} italic>
               💡 Tab 6 Audit: Left pane reviews intercepted actions & policy gates; right pane streams sealed Merkle receipts in reverse order.
             </Text>
           </Box>

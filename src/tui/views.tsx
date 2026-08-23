@@ -4,7 +4,15 @@
 // as content; the shell owns navigation, budget and chrome.
 import React from 'react';
 import { Box, Text } from 'ink';
+import { readdirSync } from 'fs';
+import { join } from 'path';
 import type { Agent } from '../agent/core.js';
+import { Card } from './ui/Card.js';
+import { HashChip } from './ui/HashChip.js';
+import { EmptyState } from './ui/EmptyState.js';
+import { listPlans } from '../utils/dispatch.js';
+import { readChain } from '../utils/receipts.js';
+import { readEvents } from '../utils/eventbus.js';
 import { CommandView } from './components/CommandView.js';
 import { LogRelay } from './components/LogRelay.js';
 import { theme } from './theme.js';
@@ -37,31 +45,111 @@ export interface ViewStageProps {
 
 const noopZone = (_z: number): void => undefined;
 
+// DESIGN.md §5.2 — HOME. Left: state line + three next-action cards +
+// sovereign chat. Right: LATEST PROOF (the only bold green) + ACTIVITY in
+// human sentences, 5 rows max.
+function HomeView({ agent, focused }: { agent: Agent; focused: boolean }) {
+  const [snap, setSnap] = React.useState<{
+    plans: number; escrows: number; receipts: number;
+    lastSeal: { hash: string; ts: string } | null; activity: string[];
+  }>({ plans: 0, escrows: 0, receipts: 0, lastSeal: null, activity: [] });
+
+  React.useEffect(() => {
+    const load = () => {
+      try {
+        const plans = listPlans();
+        let escrows = 0;
+        try { escrows = readdirSync(join(process.cwd(), '.timmy', 'escrow')).filter(f => f.endsWith('.json')).length; } catch { /* none yet */ }
+        const chain = readChain('runs');
+        const evs = readEvents(30) as { ts: string; kind: string; payload?: Record<string, unknown> }[];
+        const sealed = [...evs].reverse().find(e => e.kind === 'receipt.sealed');
+        const human = (e: { kind: string; payload?: Record<string, unknown> }): string => {
+          const p = e.payload ?? {};
+          if (e.kind === 'receipt.sealed') return `receipt sealed · ${String(p.hash ?? '').slice(7, 15)}…`;
+          if (e.kind === 'escrow.locked') return `escrow locked · ${String(p.escrow_id ?? '')}`;
+          if (e.kind === 'escrow.armed') return `escrow armed · ${String(p.escrow_id ?? '')}`;
+          if (e.kind === 'escrow.settled') return `escrow settled · refund ${String(p.refund_usd ?? '0')}`;
+          if (e.kind === 'dispatch.created') return `plan stored · ${String(p.plan_id ?? '')}`;
+          return e.kind;
+        };
+        setSnap({
+          plans: plans.length, escrows, receipts: chain.length,
+          lastSeal: sealed ? { hash: String(sealed.payload?.hash ?? ''), ts: sealed.ts } : null,
+          activity: evs.slice(-5).map(human)
+        });
+      } catch { /* stay quiet */ }
+    };
+    load();
+    const t = setInterval(load, 2500);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <Box flexDirection="row" flexGrow={1}>
+      <Box flexGrow={3} flexDirection="column" paddingRight={1}>
+        <Card
+          title="TIMMY"
+          focused={focused}
+          purpose="agents work · receipts prove it"
+          pill={{ kind: 'accent', label: 'READY' }}
+        >
+          <Text color={theme.textSecondary} wrap="truncate">
+            {snap.plans} plans · {snap.escrows} escrows · {snap.receipts} receipts
+          </Text>
+          <Box height={1} />
+          <Text color={theme.textPrimary} wrap="truncate">▸ 1 resume mission        [Enter]</Text>
+          <Text color={theme.textPrimary} wrap="truncate">▸ 2 spawn a lane           [5 then n]</Text>
+          <Text color={theme.textPrimary} wrap="truncate">▸ 3 verify receipt chain   [4]</Text>
+        </Card>
+        <Box height={1} />
+        <Card
+          title="COMMAND POST"
+          purpose="sovereign chat — Enter to speak · Esc back to nav"
+          flexGrow={1}
+        >
+          <CommandView agent={agent} />
+        </Card>
+      </Box>
+      <Box flexGrow={2} flexDirection="column" paddingLeft={1}>
+        <Card title="LATEST PROOF" purpose="the only thing that glows green">
+          {snap.lastSeal ? (
+            <>
+              <HashChip hash={snap.lastSeal.hash} sealed />
+              <Text color={theme.textMuted}>{stamp(snap.lastSeal.ts)} · runs</Text>
+            </>
+          ) : (
+            <EmptyState line="no receipts yet" action="run anything — it seals one" />
+          )}
+        </Card>
+        <Box height={1} />
+        <Card title="ACTIVITY" purpose="last five, in human sentences" overflow={snap.activity.length >= 5 ? '· tailing live' : undefined}>
+          {snap.activity.length === 0 ? (
+            <EmptyState line="quiet so far" action="[5] spawn a lane" />
+          ) : (
+            snap.activity.map((line, i) => (
+              <Text key={i} color={theme.textSecondary} wrap="truncate">{line}</Text>
+            ))
+          )}
+        </Card>
+      </Box>
+    </Box>
+  );
+}
+
+const stamp = (ts: string): string => {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
+
 export function ViewStage({ view, paneFocus, agent, setInspector }: ViewStageProps) {
   const { w: width, h: height } = React.useContext(ViewportContext);
   const pane = (i: number): boolean => paneFocus === i;
 
   if (view === 0) {
-    // v1.0.4 cyber-command: 60% round conversation card + 40% LIVE relay
-    return (
-      <Box flexDirection="row" flexGrow={1}>
-        <Box flexGrow={3} flexDirection="column" paddingRight={1}>
-          <Box
-            flexDirection="column"
-            flexGrow={1}
-            borderStyle="round"
-            borderColor={pane(0) ? theme.focus : theme.borderMuted}
-            paddingX={1}
-          >
-            <Text bold color={pane(0) ? theme.focus : theme.brandDim} wrap="truncate">{pane(0) ? '◆' : '◇'} COMMAND POST</Text>
-            <CommandView agent={agent} />
-          </Box>
-        </Box>
-        <Box flexGrow={2} flexDirection="column" paddingLeft={1}>
-          <LogRelay height={height} />
-        </Box>
-      </Box>
-    );
+    // DESIGN.md §5.2 — HOME: guided next-actions + sovereign chat left;
+    // summarized proof + activity right (raw relay lives in View 3)
+    return <HomeView agent={agent} focused={pane(0)} />;
   }
 
   if (view === 1) {

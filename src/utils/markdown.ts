@@ -90,7 +90,7 @@ export function renderMarkdown(text: string, width: number = 80): string {
       if (rendered.length > 0 && rendered[rendered.length - 1] !== '') {
         rendered.push('');
       }
-      rendered.push(chalk.hex(theme.borderDefault)('─'.repeat(boxWidth)));
+      rendered.push(chalk.hex(theme.line)('─'.repeat(boxWidth)));
       rendered.push('');
       continue;
     }

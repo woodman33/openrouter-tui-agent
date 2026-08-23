@@ -81,8 +81,8 @@ export function stepTimeline(events: HermesEvent[]): RunStep[] {
       case 'tool.error': {
         const id = str(p.toolCallId, str(p.id, ''));
         const i = toolIndex.get(id);
-        if (i !== undefined) steps[i] = { ...steps[i], glyph: '✕', color: '#ff6b6b', text: `${steps[i].text} failed` };
-        else steps.push({ id: e.id, at: e.timestamp, glyph: '✕', color: '#ff6b6b', text: `tool ${str(p.name, 'call')} failed` });
+        if (i !== undefined) steps[i] = { ...steps[i], glyph: '×', color: '#ff6b6b', text: `${steps[i].text} failed` };
+        else steps.push({ id: e.id, at: e.timestamp, glyph: '×', color: '#ff6b6b', text: `tool ${str(p.name, 'call')} failed` });
         break;
       }
       case 'approval.request':
@@ -104,19 +104,19 @@ export function stepTimeline(events: HermesEvent[]): RunStep[] {
         steps.push({ id: e.id, at: e.timestamp, glyph: '✓', color: '#79c0ff', text: 'answered' });
         break;
       case 'model.switch':
-        steps.push({ id: e.id, at: e.timestamp, glyph: '🔀', color: '#79c0ff', text: `model → ${str(p.model, '?')}` });
+        steps.push({ id: e.id, at: e.timestamp, glyph: '▸', color: '#79c0ff', text: `model → ${str(p.model, '?')}` });
         break;
       case 'provider.route': {
         const status = str(p.status);
-        if (status === 'failed') steps.push({ id: e.id, at: e.timestamp, glyph: '✕', color: '#ff6b6b', text: `${str(p.provider)} failed${str(p.reason) ? ` · ${str(p.reason).slice(0, 40)}` : ''}` });
-        else if (status === 'fallback') steps.push({ id: e.id, at: e.timestamp, glyph: '🔀', color: '#d29922', text: `fallback → ${str(p.model, str(p.provider))}` });
+        if (status === 'failed') steps.push({ id: e.id, at: e.timestamp, glyph: '×', color: '#ff6b6b', text: `${str(p.provider)} failed${str(p.reason) ? ` · ${str(p.reason).slice(0, 40)}` : ''}` });
+        else if (status === 'fallback') steps.push({ id: e.id, at: e.timestamp, glyph: '▸', color: '#d29922', text: `fallback → ${str(p.model, str(p.provider))}` });
         break;
       }
       case 'quota.warning':
         steps.push({ id: e.id, at: e.timestamp, glyph: '⚠', color: '#f5b545', text: 'quota warning' });
         break;
       case 'run.error':
-        steps.push({ id: e.id, at: e.timestamp, glyph: '✕', color: '#ff6b6b', text: `run error · ${str(p.message).slice(0, 60)}` });
+        steps.push({ id: e.id, at: e.timestamp, glyph: '×', color: '#ff6b6b', text: `run error · ${str(p.message).slice(0, 60)}` });
         break;
       default:
         break; // deltas/completes are stream noise in the timeline

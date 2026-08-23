@@ -1061,7 +1061,7 @@ export class MyDurableObject extends DurableObject {
               <!-- Builder -->
               <div style="background: var(--panel); border: 2px solid ${tier === 'builder' ? 'var(--accent)' : 'var(--border)'}; padding: 2rem; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; height: 380px;">
                 <div>
-                  <h3 style="margin-top:0; color: ${theme.brand};">Builder</h3>
+                  <h3 style="margin-top:0; color: ${theme.accent};">Builder</h3>
                   <div style="font-size: 2rem; font-weight: 800; margin: 1rem 0;">$19<span style="font-size: 1rem; color: var(--text-muted);">/mo</span></div>
                   <p style="color: var(--text-muted); font-size: 0.9rem;">Perfect for developers managing local sandbox context packs.</p>
                   <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
@@ -1286,7 +1286,7 @@ export class MyDurableObject extends DurableObject {
               .logo {
                 font-size: 1.5rem;
                 font-weight: 800;
-                background: linear-gradient(135deg, ${theme.brand}, #8b5cf6);
+                background: linear-gradient(135deg, ${theme.accent}, #8b5cf6);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 text-decoration: none;
@@ -1515,16 +1515,16 @@ export class MyDurableObject extends DurableObject {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
         <style>
           :root {
-            --bg-dark: ${theme.surfaceBase};
+            --bg-dark: ${theme.ground};
             --bg-card: #161b22;
-            --border-color: ${theme.borderDefault};
+            --border-color: ${theme.line};
             --text-primary: ${theme.textSecondary};
             --text-muted: ${theme.textSecondary};
             --purple: #8250df;
-            --blue: ${theme.info};
-            --green: ${theme.success};
-            --orange: ${theme.warning};
-            --red: ${theme.error};
+            --blue: ${theme.accent};
+            --green: ${theme.seal};
+            --orange: ${theme.warn};
+            --red: ${theme.danger};
           }
 
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1669,7 +1669,7 @@ export class MyDurableObject extends DurableObject {
             padding: 2px 4px;
             border-radius: 4px;
             font-family: 'JetBrains Mono', monospace;
-            color: ${theme.error};
+            color: ${theme.danger};
           }
 
           .context-dump {

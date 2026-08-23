@@ -1,8 +1,11 @@
+// DESIGN.md §6 — PanelFrame DELEGATES to the ui kit Card: one border-drawing
+// implementation in the app (src/tui/ui/Card.tsx). Panels keep their
+// hints/status APIs; the visual vocabulary lives in the kit.
 import React from 'react';
-import { Box, Text, useStdout } from 'ink';
 import { KeyHintBar, type KeyHint } from './KeyHintBar.js';
-import { theme } from '../theme.js';
 import { statusGlyph, type TimmyStatus } from './StatusGlyph.js';
+import { Card } from '../ui/Card.js';
+import type { PillKind } from '../ui/Pill.js';
 
 interface PanelFrameProps {
   icon: string;
@@ -15,39 +18,41 @@ interface PanelFrameProps {
   hints: KeyHint[];
   /** v1.0.1 Active Pane Invariant; defaults to the PaneFocusContext value. */
   active?: boolean;
-  children: React.ReactNode;
+  overflow?: string;
+  children?: React.ReactNode;
 }
 
 // The focused pane in a view provides this as true; every framed pane below
 // it renders theme.lineFocus chrome, everyone else drops to theme.line.
 export const PaneFocusContext = React.createContext<boolean>(true);
 
-// Consistent chrome for every tab: 1px hairline border, title + live status
-// strip, one-line plain-English explainer, content, contextual key hints.
-// All column math derives from stdout dimensions — no hardcoded buffers, so
-// split tmux panes and small viewports shrink gutters instead of wrapping
-// box-drawing characters.
-export function PanelFrame({ icon, title, status, statusKind, statusColor, explain, hints, active, children }: PanelFrameProps) {
-  const cols = useStdout().stdout?.columns ?? 80;
-  const gutter = cols >= 100 ? 2 : 1;
-  const g = statusKind ? statusGlyph(statusKind) : null;
+const pillKindFor = (kind?: TimmyStatus, live?: boolean): PillKind => {
+  if (kind === 'failed') return 'danger';
+  if (kind === 'completed') return 'seal';
+  if (kind === 'running') return 'warn';
+  if (kind === 'idle') return 'muted';
+  return live ? 'accent' : 'muted';
+};
+
+export function PanelFrame({ icon, title, status, statusKind, statusColor, explain, hints, active, overflow, children }: PanelFrameProps) {
   const ctxActive = React.useContext(PaneFocusContext);
   const isActive = active ?? ctxActive;
+  const g = statusKind ? statusGlyph(statusKind) : null;
+  void statusColor; // kit owns colors; legacy prop kept for call-site compat
+  const pill = status || g
+    ? { kind: pillKindFor(statusKind, Boolean(status)), label: `${g ? g.glyph + ' ' : ''}${status ?? g?.label ?? ''}` }
+    : undefined;
   return (
-    <Box flexDirection="column" flexGrow={1} borderStyle="round" borderColor={isActive ? theme.focus : theme.borderMuted} paddingX={gutter}>
-      {/* v1.0.5: title sits alone on the top edge; status stacks below so
-          narrow cards never collide title with status */}
-      <Box flexDirection="column" marginBottom={1} flexShrink={0}>
-        <Text bold={isActive} color={isActive ? theme.focus : theme.brandDim} wrap="truncate">{isActive ? '◆ ' : '◇ '}{icon} {title}</Text>
-        {g || status ? (
-          <Text color={statusColor ?? (g ? g.color : theme.textSecondary)} wrap="truncate">
-            {g ? `${g.glyph} ${g.label}` : ''}{g && status ? ' · ' : ''}{status ?? ''}
-          </Text>
-        ) : null}
-        {explain ? <Text color={theme.textTertiary} wrap="truncate">{explain}</Text> : null}
-      </Box>
+    <Card
+      title={`${icon} ${title}`}
+      focused={isActive}
+      purpose={explain}
+      pill={pill}
+      overflow={overflow}
+      flexGrow={1}
+    >
       {children}
       <KeyHintBar hints={hints} />
-    </Box>
+    </Card>
   );
 }

@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Text, useInput } from 'ink';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { spawnSync } from 'child_process';
 import { LANE_RUNNERS } from '../../agent/lanes.js';
+import { PaneFocusContext } from '../components/PanelFrame.js';
+import { Card } from '../ui/index.js';
 import {
   createPlan, armPlan, dispatchPlan, tailLane, pauseOrCancelLane, collectRun,
   type DispatchPlan, type StoredPlan
@@ -113,17 +115,23 @@ export function DispatchRail({ width }: { width: number }) {
   const sandbox = stored?.plan.workspace.kind ?? 'host-ephemeral';
   const thermFilled = budget <= 0 ? 0 : Math.min(5, Math.max(1, Math.round(budget * 2)));
   const therm = '▮'.repeat(thermFilled) + '░'.repeat(5 - thermFilled);
+  const focused = React.useContext(PaneFocusContext);
   return (
-    <Box flexDirection="column" width={width} borderStyle="single" borderColor={theme.brandDim} paddingX={1} flexShrink={0}>
-      <Text bold color={theme.brand} wrap="truncate">DISPATCH · J-BANG</Text>
+    <Card
+      title="Dispatch · J-Bang"
+      focused={focused}
+      purpose="plan, arm, launch harness lanes — operator token gated"
+      pill={armed ? { kind: 'accent', label: 'ARMED' } : planId ? { kind: 'warn', label: 'PLANNED' } : { kind: 'muted', label: 'IDLE' }}
+      width={width}
+    >
       <Text color={theme.textSecondary} wrap="truncate">harness  <Text color={theme.textPrimary}>{harness}</Text> ({LANE_RUNNERS[harness].label})</Text>
       <Text color={theme.textSecondary} wrap="truncate">copies   <Text color={theme.textPrimary}>{copies}</Text> · wall <Text color={theme.textPrimary}>{wallS}s</Text> · <Text color={theme.accent}>{therm} ${budget}</Text></Text>
-      <Text color={theme.textSecondary} wrap="truncate">sandbox  <Text color={theme.focus}>⛨ {sandbox}</Text> · never the live checkout</Text>
+      <Text color={theme.textSecondary} wrap="truncate">sandbox  <Text color={theme.accent}>{sandbox}</Text> · never the live checkout</Text>
       <Text color={theme.textSecondary} wrap="truncate">objective <Text color={theme.textPrimary}>{objective.slice(0, Math.max(8, width - 14)) || '—'}</Text></Text>
       <Text color={theme.textSecondary} wrap="truncate">plan     <Text color={theme.textPrimary}>{planId ?? '—'}</Text> · {stored?.lifecycle ?? 'draft'}</Text>
-      <Text color={theme.textSecondary} wrap="truncate">hash     <Text color={theme.success}>{planHash ? (expandHash ? planHash : planHash.slice(0, 8) + '…') : '— shown before launch'}</Text>{planHash ? <Text color={theme.textTertiary}> [y]copy [x]{expandHash ? 'fold' : 'expand'}</Text> : null}</Text>
-      <Text color={theme.textSecondary} wrap="truncate">armed    <Text color={armed ? theme.success : theme.warning}>{armed ? 'yes' : 'no'}</Text></Text>
-      <Text color={theme.textTertiary} wrap="truncate">{msg}</Text>
-    </Box>
+      <Text color={theme.textSecondary} wrap="truncate">hash     <Text color={theme.textPrimary}>{planHash ? (expandHash ? planHash : planHash.slice(0, 8) + '…') : '— shown before launch'}</Text>{planHash ? <Text color={theme.textMuted}> [y]copy [x]{expandHash ? 'fold' : 'expand'}</Text> : null}</Text>
+      <Text color={theme.textSecondary} wrap="truncate">armed    <Text color={armed ? theme.accent : theme.warn}>{armed ? 'yes' : 'no'}</Text></Text>
+      <Text color={theme.textMuted} wrap="truncate">{msg}</Text>
+    </Card>
   );
 }

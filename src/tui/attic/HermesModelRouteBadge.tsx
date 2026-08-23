@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { HermesModelUsage } from '../../../hermes/events.js';
-import type { HermesConnectionStatus } from '../../../hermes/client.js';
-import { theme } from '../../theme.js';
+import type { HermesModelUsage } from '../../hermes/events.js';
+import type { HermesConnectionStatus } from '../../hermes/client.js';
+import { theme } from '../theme.js';
 
 interface HermesModelRouteBadgeProps {
   status: HermesConnectionStatus;
@@ -14,10 +14,10 @@ interface HermesModelRouteBadgeProps {
 
 const STATUS_COLORS: Record<HermesConnectionStatus, string> = {
   disconnected: theme.textSecondary,
-  connecting: theme.warning,
-  ready: theme.success,
+  connecting: theme.warn,
+  ready: theme.accent,
   closed: theme.textSecondary,
-  error: theme.error,
+  error: theme.danger,
 };
 
 export function HermesModelRouteBadge({
@@ -39,13 +39,13 @@ export function HermesModelRouteBadge({
         ● {status.toUpperCase()}
       </Text>
       <Text color={theme.textSecondary}> | </Text>
-      <Text color={theme.info} wrap="truncate">
+      <Text color={theme.accent} wrap="truncate">
         {model ?? 'model: n/a'}
       </Text>
       {provider && (
         <>
           <Text color={theme.textSecondary}> via </Text>
-          <Text color={theme.info}>{provider}</Text>
+          <Text color={theme.accent}>{provider}</Text>
         </>
       )}
       <Text color={theme.textSecondary}> | </Text>
@@ -56,7 +56,7 @@ export function HermesModelRouteBadge({
       {sessionId && (
         <>
           <Text color={theme.textSecondary}> | sess </Text>
-          <Text color={theme.brand}>{sessionId.slice(0, 8)}</Text>
+          <Text color={theme.accent}>{sessionId.slice(0, 8)}</Text>
         </>
       )}
     </Box>

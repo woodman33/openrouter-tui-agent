@@ -44,8 +44,8 @@ export const PALETTE_MODELS = [
 /** Active Pane Invariant: focused card theme.lineFocus + ◆; others theme.line. */
 export function chromeFor(active: boolean): { border: string; title: string; glyph: string; bold: boolean } {
   return active
-    ? { border: theme.focus, title: theme.focus, glyph: '◆', bold: true }
-    : { border: theme.borderMuted, title: theme.brandDim, glyph: '◇', bold: false };
+    ? { border: theme.accent, title: theme.accent, glyph: '◆', bold: true }
+    : { border: theme.line, title: theme.textSecondary, glyph: '◇', bold: false };
 }
 
 /** pane counts per view — Tab cycles focus within these bounds */

@@ -4,6 +4,7 @@
 // of the scrollback entirely.
 import React, { useState } from 'react';
 import { Box, Text } from 'ink';
+import { EmptyState } from '../ui/EmptyState.js';
 import { useKeyOwner } from '../hooks/useKeyDispatcher.js';
 import { useAgent } from '../hooks/useAgent.js';
 import { theme } from '../theme.js';
@@ -56,7 +57,7 @@ export function CommandView({ agent }: CommandViewProps) {
       const content = String(m.content ?? '');
       if (!content || isNoise(content)) continue;
       if (m.role === 'user') {
-        wrap(`▶ ${content}`, Math.max(24, width - 4)).forEach((l, i) => out.push({ text: i === 0 ? l : `  ${l}`, kind: 'user' }));
+        wrap(`▸ ${content}`, Math.max(24, width - 4)).forEach((l, i) => out.push({ text: i === 0 ? l : `  ${l}`, kind: 'user' }));
       } else {
         wrap(content, Math.max(24, width - 6)).forEach(l => out.push({ text: `  ${l}`, kind: 'agent' }));
       }
@@ -65,9 +66,9 @@ export function CommandView({ agent }: CommandViewProps) {
       wrap(state.streamingText, Math.max(24, width - 6)).forEach(l => out.push({ text: `  ${l}`, kind: 'agent' }));
       out.push({ text: '  ▌', kind: 'agent' });
     } else if (state.isThinking) {
-      out.push({ text: '  ◌ thinking…', kind: 'agent' });
+      out.push({ text: '  ● thinking…', kind: 'agent' });
     }
-    if (state.error) out.push({ text: `✕ ${state.error.message}`, kind: 'err' });
+    if (state.error) out.push({ text: `× ${state.error.message}`, kind: 'err' });
     return out;
   }, [state.messages, state.isStreaming, state.streamingText, state.isThinking, state.error, width]);
 
@@ -90,7 +91,7 @@ export function CommandView({ agent }: CommandViewProps) {
       setInput('');
       if (text.startsWith('/')) {
         const res = handleSlashCommand(text, agent, state);
-        if (res) agent.emit('message:user', { role: 'assistant', content: `⚙️ ${res}`, timestamp: Date.now() });
+        if (res) agent.emit('message:user', { role: 'assistant', content: `· ${res}`, timestamp: Date.now() });
       } else {
         state.send(text);
       }
@@ -105,17 +106,12 @@ export function CommandView({ agent }: CommandViewProps) {
     <Box flexDirection="column" flexGrow={1}>
       <Box flexDirection="column" flexGrow={1}>
         {lines.length === 0 && (
-          <Box flexDirection="column" borderStyle="round" borderColor={theme.borderMuted} paddingX={1} marginTop={1}>
-            <Text bold color={theme.focus} wrap="truncate">◆ COMMAND POST — cold start</Text>
-            <Text color={theme.textSecondary} wrap="truncate">Type a mission to start — every run seals a cryptographic receipt.</Text>
-            <Text color={theme.textTertiary} wrap="truncate">[2] MISSION · DAG + capsules  [3] TELEMETRY · audit + bus  [4] ESCROW · locks + refunds</Text>
-            <Text color={theme.textTertiary} wrap="truncate">[?] keymap · [Esc] releases the keyboard to navigation</Text>
-          </Box>
+          <EmptyState line="no conversation yet — type a mission, every run seals a receipt" action="[?] keymap" />
         )}
         {visible.map((l, i) => (
           <Text
             key={i}
-            color={l.kind === 'user' ? theme.info : l.kind === 'err' ? theme.error : theme.textPrimary}
+            color={l.kind === 'user' ? theme.accent : l.kind === 'err' ? theme.danger : theme.textPrimary}
             bold={l.kind === 'user'}
             wrap="truncate"
           >
@@ -125,8 +121,8 @@ export function CommandView({ agent }: CommandViewProps) {
       </Box>
       {/* input bar lives inside the round card — no nested borders (v1.0.4) */}
       <Box flexShrink={0} marginTop={1}>
-        <Text color={theme.focus}>▶ </Text>
-        <Text color={input ? theme.textPrimary : theme.textTertiary}>{input ? `${input}▌` : `${width < 70 ? '[Type a command...]' : '[Type a command or mission prompt...]'}▌`}</Text>
+        <Text color={theme.accent}>▸ </Text>
+        <Text color={input ? theme.textPrimary : theme.textMuted}>{input ? `${input}▌` : `${width < 70 ? '[COMMAND POST…]' : '[COMMAND POST — type a mission…]'}▌`}</Text>
       </Box>
     </Box>
   );

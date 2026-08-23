@@ -63,10 +63,10 @@ export function Layout({
     <Box key={view} flexDirection="column" width={W} height={H}>
       {/* ══ HEADER — 1 row: brand · center view tabs · right pills ══ */}
       <Box paddingX={1} flexShrink={0} height={1}>
-        <Text bold color={theme.focus} wrap="truncate">[TIMMY TRUST OS v{VERSION}]</Text>
+        <Text bold color={theme.accent} wrap="truncate">[TIMMY TRUST OS v{VERSION}]</Text>
         <Box flexGrow={1} justifyContent="center">
           {VIEWS.map((vd, i) => (
-            <Text key={vd.key} bold={i === view} color={i === view ? theme.focus : theme.textTertiary} wrap="truncate">
+            <Text key={vd.key} bold={i === view} color={i === view ? theme.accent : theme.textMuted} wrap="truncate">
               {W >= 170
                 ? (i === view ? `[ ${vd.key} ${vd.label} ]` : ` ${vd.key} ${vd.label} `)
                 : W >= 140
@@ -75,8 +75,8 @@ export function Layout({
             </Text>
           ))}
         </Box>
-        <Text color={env.docker ? theme.emerald : theme.error} wrap="truncate">● DOCKER: {env.docker ? 'ACTIVE' : 'DOWN'} </Text>
-        {W >= 90 && <Text color={env.comfy ? theme.emerald : theme.error} wrap="truncate">● COMFY: {env.comfy ? 'READY' : 'OFF'} </Text>}
+        <Text color={env.docker ? theme.accent : theme.danger} wrap="truncate">● DOCKER: {env.docker ? 'ACTIVE' : 'DOWN'} </Text>
+        {W >= 90 && <Text color={env.comfy ? theme.accent : theme.danger} wrap="truncate">● COMFY: {env.comfy ? 'READY' : 'OFF'} </Text>}
         {W >= 90 && <Text color={theme.accent} wrap="truncate">COST: ${totalCost.toFixed(2)}</Text>}
       </Box>
 
@@ -92,8 +92,8 @@ export function Layout({
       {/* ══ FOOTER — 1 row, single pre-padded Text (no flex contention) ══ */}
       <Box paddingX={1} flexShrink={0}>
         <Text wrap="truncate">
-          <Text color={theme.textTertiary}>{W >= 100 ? `~/timmy · ${sess}` : ''}</Text>
-          <Text bold color={focusTop === 'nav' ? theme.success : theme.focus}>{` MODE:${(focusTop ?? 'nav').toUpperCase()}`}</Text>
+          <Text color={theme.textMuted}>{W >= 100 ? `~/timmy · ${sess}` : ''}</Text>
+          <Text bold color={focusTop === 'nav' ? theme.accent : theme.accent}>{` MODE:${(focusTop ?? 'nav').toUpperCase()}`}</Text>
           <Text color={theme.textSecondary}>{' '.repeat(Math.max(1, W - 2 - ((W >= 100 ? 10 + sess.length : 0) + 9 + footerKeysLine(Math.max(40, W - 24)).length)))}</Text>
           <Text color={theme.textSecondary}>{footerKeysLine(Math.max(40, W - 24))}</Text>
         </Text>

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Box, Text, useWindowSize, useInput } from 'ink';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import type { Agent } from '../../agent/core.js';
-import { GlowBorder } from '../components/GlowBorder.js';
+import { PaneFocusContext } from '../components/PanelFrame.js';
+import { Card, SectionRule, BudgetList, Pill, type PillKind } from '../ui/index.js';
 import { theme } from '../theme.js';
 import { truncateVisible } from '../utils/text.js';
 
@@ -24,15 +25,14 @@ interface CapabilityItem {
 }
 
 export function DashboardPanel({ agent: _agent, setInspector }: DashboardPanelProps) {
-  const { columns: width, rows: height } = useWindowSize();
+  const { columns: width } = useWindowSize();
   const terminalWidth = width || 80;
-  const terminalHeight = height || 24;
-  
-  // Fit Main Stage width nicely (width minus left/right columns)
-  const panelWidth = Math.max(20, terminalWidth - 54);
-  const bodyHeight = Math.max(8, terminalHeight - 9);
+
+  // REVIEW view: this panel owns the right half of a two-pane row
+  const panelWidth = Math.max(20, Math.floor((terminalWidth - 4) / 2) - 2);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const focused = React.useContext(PaneFocusContext);
 
   const capabilities: CapabilityItem[] = [
     {
@@ -200,61 +200,60 @@ export function DashboardPanel({ agent: _agent, setInspector }: DashboardPanelPr
   });
 
   const selectedItem = capabilities[selectedIndex];
-  const contentHeight = Math.max(1, bodyHeight - 4);
+  const activeCount = capabilities.filter(c => c.status === 'ACTIVE').length;
+
+  const pillKindFor = (status: CapabilityItem['status']): PillKind =>
+    status === 'ACTIVE' ? 'accent' : status === 'AVAILABLE' ? 'warn' : 'muted';
 
   return (
-    <Box flexDirection="column" flexGrow={1} width={panelWidth}>
-      {/* Stage Title */}
-      <Box height={1} justifyContent="space-between" width={panelWidth - 2}>
-        <Box>
-          <Text bold color={theme.warning}>📟  Systems Web Capability Map</Text>
-        </Box>
-      </Box>
+    <Card
+      title="Systems web capability map"
+      focused={focused}
+      purpose="navigate system capabilities — specs, safety scopes, and risk tiers pipe to the trust inspector"
+      pill={{ kind: 'accent', label: `${activeCount} ACTIVE` }}
+      width={panelWidth}
+      flexGrow={1}
+    >
+      {/* Systems status ticker — one muted line */}
+      <Text color={theme.textMuted} wrap="wrap">
+        "Quartermaster here: Navigate Systems Web capabilities below. Detailed specs, safety scopes, and risk tiers are piped straight to your Trust Inspector on the right in real-time."
+      </Text>
 
-      {/* Systems Status Ticker */}
-      <Box width={panelWidth - 2} marginTop={1} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
-        <Text color={theme.textSecondary}>
-          "Quartermaster here: Navigate Systems Web capabilities below. Detailed specs, safety scopes, and risk tiers are piped straight to your Trust Inspector on the right in real-time."
-        </Text>
+      <Box marginTop={1}>
+        <SectionRule label="installed system capabilities" />
       </Box>
-
-      {/* Main Split Layout */}
-      <Box flexDirection="column" width={panelWidth - 2} height={bodyHeight} marginTop={1}>
-        <GlowBorder 
-          color={theme.warning} 
-          width={panelWidth - 2} 
-          height={bodyHeight} 
-          label="⚡ INSTALLED SYSTEM CAPABILITIES" 
-        >
-          <Box flexDirection="column" paddingX={1} height={contentHeight} overflowY="hidden">
-            {capabilities.map((item, idx) => {
-              const isSelected = selectedIndex === idx;
-              const statusColor = item.status === 'ACTIVE' ? theme.success : item.status === 'AVAILABLE' ? theme.info : theme.textSecondary;
-              return (
-                <Box key={item.key} marginBottom={1} justifyContent="space-between" width={panelWidth - 6}>
-                  <Text color={isSelected ? theme.warning : theme.textPrimary} bold={isSelected}>
-                    {isSelected ? '▶ ' : '  '}
-                    {truncateVisible(item.name, panelWidth - 24)}
-                  </Text>
-                  <Box>
-                    <Text bold color={statusColor}>[{item.status}] </Text>
-                    <Text bold color={theme.textTertiary}>({item.category})</Text>
-                  </Box>
+      <Box flexDirection="column" flexGrow={1}>
+        <BudgetList
+          items={capabilities}
+          max={7}
+          offset={Math.max(0, selectedIndex - 6)}
+          render={(item, idx) => {
+            const isSelected = selectedIndex === idx;
+            return (
+              <Box key={item.key} marginBottom={1} justifyContent="space-between" width={panelWidth - 6}>
+                <Text color={isSelected ? theme.accent : theme.textPrimary} bold={isSelected}>
+                  {isSelected ? '▸ ' : '  '}
+                  {truncateVisible(item.name, panelWidth - 24)}
+                </Text>
+                <Box>
+                  <Pill kind={pillKindFor(item.status)} label={item.status} />
+                  <Text color={theme.textMuted}> ({item.category})</Text>
                 </Box>
-              );
-            })}
-          </Box>
-        </GlowBorder>
+              </Box>
+            );
+          }}
+        />
       </Box>
 
-      {/* Quick Specs overview inside Stage */}
-      <Box marginTop={1} borderStyle="single" borderColor={theme.borderDefault} paddingX={1} width={panelWidth - 2} flexDirection="column">
-        <Text color={theme.textPrimary} bold>🔌 Highlighted Specs Preview:</Text>
+      {/* Quick specs overview */}
+      <Box marginTop={1}>
+        <SectionRule label="highlighted specs preview" />
+      </Box>
+      <Box flexDirection="column" flexShrink={0}>
         <Text color={theme.textSecondary} wrap="truncate">
           Description: {selectedItem.description}
         </Text>
       </Box>
-    </Box>
+    </Card>
   );
 }
-

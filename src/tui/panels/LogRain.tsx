@@ -1,5 +1,7 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
+import { Card } from '../ui/Card.js';
+import { EmptyState } from '../ui/EmptyState.js';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { existsSync, openSync, closeSync, fstatSync, readSync } from 'fs';
 import { join } from 'path';
@@ -80,30 +82,26 @@ export const LogRain = memo(function LogRain({ height, focused }: LogRainProps) 
   const live = offset === 0;
 
   return (
-    <Box flexDirection="column" borderStyle="round" borderColor={focused ? theme.focus : theme.borderMuted} paddingX={1} flexShrink={0} height={height}>
-      <Text bold color={focused ? theme.focus : theme.brandDim} wrap="truncate">{focused ? '◆' : '◇'} LIVE EVENT BUS</Text>
-      <Box justifyContent="space-between">
-        <Text bold color={focused ? theme.brand : theme.textSecondary}>⛆ WHAT'S HAPPENING ↓</Text>
-        <Text color={live ? theme.success : theme.warning}>{live ? '▼ live' : `⏸ +${offset}`}</Text>
-      </Box>
+    <Card
+      title="LIVE EVENT BUS"
+      focused={focused}
+      purpose="the app's one ambient motion"
+      pill={live ? { kind: 'accent', label: 'LIVE' } : { kind: 'warn', label: `+${offset}` }}
+      overflow={rain.length > visible.length ? `…and ${rain.length - visible.length} more · [↑↓] scroll` : undefined}
+      height={height}
+    >
       {visible.length === 0 ? (
-        <Box flexDirection="column" marginTop={1}>
-          <Text color={theme.textSecondary}>quiet…</Text>
-          <Text color={theme.textSecondary}>events rain here</Text>
-          <Text color={theme.textSecondary}>as they happen:</Text>
-          <Text color={theme.textSecondary}>runs · models · gens</Text>
-          <Text color={theme.textSecondary}>lanes · approvals</Text>
-        </Box>
+        <EmptyState line="quiet — events rain here as they happen" action="run anything" />
       ) : (
         visible.map((ev, i) => (
-          <Text key={`${offset}-${i}`} color={i > 9 ? theme.textSecondary : ev.color} wrap="truncate">
-            {relTime(ev.ts)} {ev.icon} {ev.text.length > 56 ? ev.text.slice(0, 53) + '…' : ev.text}
+          <Text key={`${offset}-${i}`} color={i > 9 ? theme.textMuted : theme.textSecondary} wrap="truncate">
+            {relTime(ev.ts)} {ev.text.length > 56 ? ev.text.slice(0, 53) + '…' : ev.text}
           </Text>
         ))
       )}
       {telCount > 0 && (
-        <Text color={theme.textSecondary}>☁ telemetry ×{telCount} synced (hidden)</Text>
+        <Text color={theme.textMuted}>telemetry ×{telCount} synced (hidden)</Text>
       )}
-    </Box>
+    </Card>
   );
 });

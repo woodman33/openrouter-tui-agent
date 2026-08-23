@@ -5,6 +5,8 @@ import { join } from 'path';
 import { readChain, verifyChain } from '../../utils/receipts.js';
 import { theme } from '../theme.js';
 import { PanelFrame, PaneFocusContext } from './PanelFrame.js';
+import { BudgetList } from '../ui/BudgetList.js';
+import { EmptyState } from '../ui/EmptyState.js';
 import { truncateVisible } from '../utils/text.js';
 
 interface EscrowRow {
@@ -13,8 +15,8 @@ interface EscrowRow {
 }
 
 const STATE_COLOR: Record<string, string> = {
-  armed: theme.focus, locked: theme.warning, judged: theme.brand,
-  settled: theme.success, slashed: theme.error
+  armed: theme.accent, locked: theme.warn, judged: theme.accent,
+  settled: theme.accent, slashed: theme.danger
 };
 
 // v1.0.1 view [4]: clean ledger of live locks / refunds / slashes + the
@@ -50,32 +52,39 @@ export function EscrowReceiptsView({ paneFocus, width, height }: { paneFocus: nu
     <Box flexDirection="row" flexGrow={1}>
       <Box flexGrow={1} flexDirection="column" paddingRight={1}>
         <PaneFocusContext.Provider value={paneFocus === 0}>
-          <PanelFrame icon="⛁" title="ESCROW LEDGER" status={`${escrows.length} live`} hints={[]} explain="locks · draws · refunds · slashes">
+          <PanelFrame icon="●" title="ESCROW LEDGER" status={`${escrows.length} live`} hints={[]} explain="locks · draws · refunds · slashes">
             <Box flexDirection="column">
-              {escrows.length === 0 && <Text color={theme.textTertiary} wrap="truncate">no escrows armed</Text>}
-              {escrows.map(e => (
-                <Text key={e.escrow_id} color={theme.textSecondary} wrap="truncate">
-                  <Text color={STATE_COLOR[e.state] ?? theme.textTertiary}>{e.state.padEnd(8)}</Text>
-                  {' '}{truncateVisible(e.escrow_id, 12)} · ceil {e.ceiling_usd} · drawn {e.drawn_usd}
-                  {` · refund=${(e.ceiling_usd - e.drawn_usd).toFixed(2)}`}
-                  {e.qa_value !== undefined ? ` · qa ${e.qa_value}` : ''}
-                </Text>
-              ))}
+              {escrows.length === 0 && <EmptyState line="no escrows armed" action="dispatch a gated plan — [5]" />}
+              <BudgetList
+                items={escrows}
+                render={e => (
+                  <Text color={theme.textSecondary} wrap="truncate">
+                    <Text color={STATE_COLOR[e.state] ?? theme.textMuted}>{e.state.padEnd(8)}</Text>
+                    {' '}{truncateVisible(e.escrow_id, 12)} · ceil {e.ceiling_usd} · drawn {e.drawn_usd}
+                    {` · refund=${(e.ceiling_usd - e.drawn_usd).toFixed(2)}`}
+                    {e.qa_value !== undefined ? ` · qa ${e.qa_value}` : ''}
+                  </Text>
+                )}
+              />
             </Box>
           </PanelFrame>
         </PaneFocusContext.Provider>
       </Box>
       <Box flexGrow={1} flexDirection="column" paddingLeft={1}>
         <PaneFocusContext.Provider value={paneFocus === 1}>
-          <PanelFrame icon="⛓" title="RECEIPT CHAIN" status={chain.ok ? `✓ ${chain.count}` : `✕ ${chain.brokenAt ?? 'broken'}`} statusKind={chain.ok ? 'completed' : 'failed'} hints={[]} explain="merkle + chain verify, newest first">
+          <PanelFrame icon="◆" title="RECEIPT CHAIN" status={chain.ok ? `✓ ${chain.count}` : `× ${chain.brokenAt ?? 'broken'}`} statusKind={chain.ok ? 'completed' : 'failed'} hints={[]} explain="merkle + chain verify, newest first">
             <Box flexDirection="column">
-              {tail.map((r, i) => (
-                <Text key={`${r.hash}-${i}`} color={r.status === 'ok' ? theme.textSecondary : theme.error} wrap="truncate">
-                  <Text bold color={r.status === 'ok' ? theme.neonEmerald : theme.error}>{r.status === 'ok' ? '[SEALED]' : '[FAIL]'}</Text>
-                  {' '}{truncateVisible(`${r.hash} · ${r.subject}`, half - 10)}
-                </Text>
-              ))}
-              <Text color={chain.ok ? theme.focus : theme.error} wrap="truncate">
+              {tail.length === 0 && <EmptyState line="no receipts yet" action="run anything — it seals one" />}
+              <BudgetList
+                items={tail}
+                render={r => (
+                  <Text color={r.status === 'ok' ? theme.textSecondary : theme.danger} wrap="truncate">
+                    <Text bold color={r.status === 'ok' ? theme.seal : theme.danger}>{r.status === 'ok' ? '[SEALED]' : '[FAIL]'}</Text>
+                    {' '}{truncateVisible(`${r.hash} · ${r.subject}`, half - 10)}
+                  </Text>
+                )}
+              />
+              <Text color={chain.ok ? theme.accent : theme.danger} wrap="truncate">
                 {chain.ok ? '[VERIFIED] ' : '[BROKEN] '}chain {chain.ok ? `ok · ${chain.count} receipts` : `at ${chain.brokenAt}`}
               </Text>
             </Box>

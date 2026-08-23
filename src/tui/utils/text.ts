@@ -236,13 +236,13 @@ export function splitModelNameAndBlurb(name: string, fallbackDesc?: string): { c
  */
 export function getModelColors(isSelected: boolean, isActive: boolean, isUnavailable = false): { nameColor: string; descColor: string } {
   if (isUnavailable) {
-    return { nameColor: theme.textTertiary, descColor: theme.textTertiary };
+    return { nameColor: theme.textMuted, descColor: theme.textMuted };
   }
   if (isSelected) {
-    return { nameColor: theme.warning, descColor: theme.textPrimary }; // Bright yellow / light gray
+    return { nameColor: theme.warn, descColor: theme.textPrimary }; // Bright yellow / light gray
   }
   if (isActive) {
-    return { nameColor: theme.focus, descColor: theme.textSecondary }; // Bright cyan / dim gray
+    return { nameColor: theme.accent, descColor: theme.textSecondary }; // Bright cyan / dim gray
   }
   return { nameColor: theme.textPrimary, descColor: theme.textSecondary }; // Bright white / dim gray
 }

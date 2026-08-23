@@ -19,10 +19,10 @@ import { theme } from '../tui/theme.js';
 export const LOGS_PORT = (): number => Number(process.env.TIMMY_LOGS_PORT ?? 4310);
 
 const kindColor = (kind: string): string => {
-  if (kind.includes('sealed') || kind.includes('completed')) return theme.success;
-  if (kind.includes('failed') || kind.includes('broken')) return theme.error;
-  if (kind.includes('approval') || kind.includes('gated')) return theme.warning;
-  if (kind.includes('fusion') || kind.includes('run')) return theme.brand;
+  if (kind.includes('sealed') || kind.includes('completed')) return theme.seal;
+  if (kind.includes('failed') || kind.includes('broken')) return theme.danger;
+  if (kind.includes('approval') || kind.includes('gated')) return theme.warn;
+  if (kind.includes('fusion') || kind.includes('run')) return theme.accent;
   return theme.textSecondary;
 };
 
@@ -31,29 +31,29 @@ const PAGE = `<!doctype html><html><head><meta charset="utf-8">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; }
-  body { background: ${theme.surfaceBase}; color: ${theme.textPrimary}; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
-  header { display: flex; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid ${theme.surfaceRaised}; position: sticky; top: 0; background: ${theme.surfaceBase}; }
-  header .logo { color: ${theme.brand}; font-weight: 700; letter-spacing: .08em; }
-  header .dot { width: 8px; height: 8px; border-radius: 50%; background: ${theme.error}; }
-  header .dot.on { background: ${theme.success}; box-shadow: 0 0 8px ${theme.success}88; }
-  header .meta { color: ${theme.textTertiary}; }
+  body { background: ${theme.ground}; color: ${theme.textPrimary}; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  header { display: flex; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid ${theme.surfaceRaised}; position: sticky; top: 0; background: ${theme.ground}; }
+  header .logo { color: ${theme.accent}; font-weight: 700; letter-spacing: .08em; }
+  header .dot { width: 8px; height: 8px; border-radius: 50%; background: ${theme.danger}; }
+  header .dot.on { background: ${theme.accent}; box-shadow: 0 0 8px ${theme.accent}88; }
+  header .meta { color: ${theme.textMuted}; }
   header .right { margin-left: auto; display: flex; gap: 8px; }
-  button { background: ${theme.surfaceRaised}; color: ${theme.brand}; border: 1px solid ${theme.borderDefault}; border-radius: 4px; font: inherit; padding: 3px 10px; cursor: pointer; }
-  button:hover { border-color: ${theme.brand}; }
+  button { background: ${theme.surfaceRaised}; color: ${theme.accent}; border: 1px solid ${theme.line}; border-radius: 4px; font: inherit; padding: 3px 10px; cursor: pointer; }
+  button:hover { border-color: ${theme.accent}; }
   main { display: grid; grid-template-columns: 1.4fr 1fr; gap: 0; height: calc(100vh - 42px); }
   section { overflow-y: auto; padding: 12px 16px; }
   section + section { border-left: 1px solid ${theme.surfaceRaised}; }
-  h2 { color: ${theme.success}; font-size: 11px; letter-spacing: .18em; margin-bottom: 10px; }
+  h2 { color: ${theme.accent}; font-size: 11px; letter-spacing: .18em; margin-bottom: 10px; }
   .ev { display: flex; gap: 10px; padding: 2px 0; white-space: pre-wrap; word-break: break-word; }
-  .ev .ts { color: ${theme.textTertiary}; flex: 0 0 86px; }
+  .ev .ts { color: ${theme.textMuted}; flex: 0 0 86px; }
   .ev .kind { flex: 0 0 150px; font-weight: 600; }
   .ev .pl { color: ${theme.textSecondary}; }
-  .rc { border: 1px solid ${theme.surfaceRaised}; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; background: ${theme.surfaceBase}; }
+  .rc { border: 1px solid ${theme.surfaceRaised}; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; background: ${theme.ground}; }
   .rc .sub { color: ${theme.textPrimary}; }
-  .rc .hash { color: ${theme.success}; }
-  .rc .prev { color: ${theme.textTertiary}; }
-  .rc .meta { color: ${theme.textTertiary}; font-size: 11px; }
-  #verify-out { color: ${theme.warning}; padding: 6px 16px; border-top: 1px solid ${theme.surfaceRaised}; }
+  .rc .hash { color: ${theme.seal}; }
+  .rc .prev { color: ${theme.textMuted}; }
+  .rc .meta { color: ${theme.textMuted}; font-size: 11px; }
+  #verify-out { color: ${theme.warn}; padding: 6px 16px; border-top: 1px solid ${theme.surfaceRaised}; }
 </style></head><body>
 <header>
   <span class="logo">TIMMY</span><span class="meta">:: LIVE LOGS</span>
@@ -69,10 +69,10 @@ const PAGE = `<!doctype html><html><head><meta charset="utf-8">
 <script>
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const eventsEl = document.getElementById('events');
-const colors = KIND => KIND.includes('sealed')||KIND.includes('completed') ? theme.success
-  : KIND.includes('failed')||KIND.includes('broken') ? theme.error
-  : KIND.includes('approval')||KIND.includes('gated') ? theme.warning
-  : KIND.includes('fusion')||KIND.includes('run') ? theme.brand : theme.textSecondary;
+const colors = KIND => KIND.includes('sealed')||KIND.includes('completed') ? theme.seal
+  : KIND.includes('failed')||KIND.includes('broken') ? theme.danger
+  : KIND.includes('approval')||KIND.includes('gated') ? theme.warn
+  : KIND.includes('fusion')||KIND.includes('run') ? theme.accent : theme.textSecondary;
 function addEvent(ev, scroll) {
   const d = document.createElement('div'); d.className = 'ev';
   d.innerHTML = '<span class="ts">'+esc((ev.ts||'').slice(11,19))+'</span>'
@@ -100,7 +100,7 @@ document.getElementById('verify').onclick = () => {
   fetch('/verify?stream=runs').then(r=>r.json()).then(v => {
     document.getElementById('verify-out').textContent = v.ok
       ? '✓ chain intact · '+v.count+' receipts · ed25519 signed · hash-linked'
-      : '✕ chain BROKEN at '+(v.brokenAt||'?');
+      : '× chain BROKEN at '+(v.brokenAt||'?');
   });
 };
 fetch('/health').then(r=>r.json()).then(h => { document.getElementById('cwd').textContent = h.cwd; });
@@ -135,23 +135,23 @@ const MISSION_HTML = `<!doctype html><html><head><meta charset="utf-8">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; }
-  body { background: ${theme.surfaceBase}; color: ${theme.textPrimary}; font: 13px/1.5 ui-monospace, Menlo, monospace; padding: 16px; }
-  h1 { color: ${theme.brand}; font-size: 14px; letter-spacing: .12em; margin-bottom: 10px; }
-  h2 { color: ${theme.focus}; font-size: 11px; letter-spacing: .18em; margin: 14px 0 6px; }
+  body { background: ${theme.ground}; color: ${theme.textPrimary}; font: 13px/1.5 ui-monospace, Menlo, monospace; padding: 16px; }
+  h1 { color: ${theme.accent}; font-size: 14px; letter-spacing: .12em; margin-bottom: 10px; }
+  h2 { color: ${theme.accent}; font-size: 11px; letter-spacing: .18em; margin: 14px 0 6px; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  textarea { flex: 1; min-width: 320px; background: ${theme.surfaceRaised}; color: ${theme.textPrimary}; border: 1px solid ${theme.borderDefault}; border-radius: 6px; padding: 8px; font: inherit; height: 170px; }
-  button { background: ${theme.surfaceRaised}; border: 1px solid ${theme.brand}; color: ${theme.brand}; border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
-  button:hover { border-color: ${theme.focus}; color: ${theme.focus}; }
-  input { background: ${theme.surfaceRaised}; border: 1px solid ${theme.borderDefault}; color: ${theme.textPrimary}; border-radius: 6px; padding: 6px 8px; font: inherit; }
-  .plan { border: 1px solid ${theme.borderDefault}; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; background: ${theme.surfaceRaised}; }
+  textarea { flex: 1; min-width: 320px; background: ${theme.surfaceRaised}; color: ${theme.textPrimary}; border: 1px solid ${theme.line}; border-radius: 6px; padding: 8px; font: inherit; height: 170px; }
+  button { background: ${theme.surfaceRaised}; border: 1px solid ${theme.accent}; color: ${theme.accent}; border-radius: 6px; padding: 6px 12px; font: inherit; cursor: pointer; }
+  button:hover { border-color: ${theme.accent}; color: ${theme.accent}; }
+  input { background: ${theme.surfaceRaised}; border: 1px solid ${theme.line}; color: ${theme.textPrimary}; border-radius: 6px; padding: 6px 8px; font: inherit; }
+  .plan { border: 1px solid ${theme.line}; border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; background: ${theme.surfaceRaised}; }
   .plan .obj { font-weight: 600; }
   .plan .meta { color: ${theme.textSecondary}; font-size: 11px; }
-  .plan .hash { color: ${theme.success}; }
-  .err { color: ${theme.error}; margin: 6px 0; }
-  #stage { width: 260px; height: 130px; border: 1px solid ${theme.borderDefault}; background: ${theme.surfaceOverlay}; position: relative; margin: 8px 0; }
-  #actor { position: absolute; left: 20px; top: 50px; width: 24px; height: 24px; background: ${theme.brand}; border-radius: 4px; }
-  #clock { color: ${theme.warning}; }
-  .note { color: ${theme.textTertiary}; font-size: 11px; }
+  .plan .hash { color: ${theme.textPrimary}; }
+  .err { color: ${theme.danger}; margin: 6px 0; }
+  #stage { width: 260px; height: 130px; border: 1px solid ${theme.line}; background: ${theme.surfaceRaised}; position: relative; margin: 8px 0; }
+  #actor { position: absolute; left: 20px; top: 50px; width: 24px; height: 24px; background: ${theme.accent}; border-radius: 4px; }
+  #clock { color: ${theme.warn}; }
+  .note { color: ${theme.textMuted}; font-size: 11px; }
 </style></head><body>
 <h1>TIMMY :: MISSION STUDIO · compile + playback</h1>
 
@@ -181,30 +181,30 @@ const MISSION_HTML = `<!doctype html><html><head><meta charset="utf-8">
   <input id="vout" type="number" value="5" step="0.1" style="width:70px">
   <button onclick="playVid()">play fragment</button>
 </div>
-<video id="vid" controls style="max-width:480px;width:100%;margin-top:8px;border:1px solid ${theme.borderDefault}"></video>
+<video id="vid" controls style="max-width:480px;width:100%;margin-top:8px;border:1px solid ${theme.line}"></video>
 
 <h2>4 · LIVE MISSION TELEMETRY (container runs · event-bus SSE)</h2>
-<div style="max-height:180px;overflow-y:auto;border:1px solid ${theme.borderDefault};border-radius:6px;background:${theme.surfaceRaised}">
+<div style="max-height:180px;overflow-y:auto;border:1px solid ${theme.line};border-radius:6px;background:${theme.surfaceRaised}">
   <pre id="telelog" style="padding:8px;color:${theme.textSecondary};font:inherit;white-space:pre-wrap">no live run yet — arm + launch an openhands/docker plan above</pre>
 </div>
 
 <h2>5 · INSPECTORS (Merkle proof tree · USD stage hierarchy)</h2>
 <div style="display:flex;gap:12px;flex-wrap:wrap">
   <div style="flex:1;min-width:280px">
-    <h3 style="color:${theme.success}">Merkle proof</h3>
-    <textarea id="passjson" rows="4" style="width:100%;background:${theme.surfaceRaised};color:${theme.textSecondary};border:1px solid ${theme.borderDefault};border-radius:6px;font:inherit">paste AgentPass JSON</textarea>
+    <h3 style="color:${theme.seal}">Merkle proof</h3>
+    <textarea id="passjson" rows="4" style="width:100%;background:${theme.surfaceRaised};color:${theme.textSecondary};border:1px solid ${theme.line};border-radius:6px;font:inherit">paste AgentPass JSON</textarea>
     <button id="btnmerkle">inspect merkle</button>
   </div>
   <div style="flex:1;min-width:280px">
-    <h3 style="color:${theme.brand}">USD stage</h3>
-    <textarea id="scenejson" rows="4" style="width:100%;background:${theme.surfaceRaised};color:${theme.textSecondary};border:1px solid ${theme.borderDefault};border-radius:6px;font:inherit">paste UsdScene JSON</textarea>
+    <h3 style="color:${theme.accent}">USD stage</h3>
+    <textarea id="scenejson" rows="4" style="width:100%;background:${theme.surfaceRaised};color:${theme.textSecondary};border:1px solid ${theme.line};border-radius:6px;font:inherit">paste UsdScene JSON</textarea>
     <button id="btnstage">inspect stage</button>
   </div>
 </div>
-<pre id="insp" style="max-height:240px;overflow-y:auto;padding:8px;border:1px solid ${theme.borderDefault};border-radius:6px;background:${theme.surfaceRaised};color:${theme.textSecondary};font:inherit;white-space:pre-wrap"></pre>
+<pre id="insp" style="max-height:240px;overflow-y:auto;padding:8px;border:1px solid ${theme.line};border-radius:6px;background:${theme.surfaceRaised};color:${theme.textSecondary};font:inherit;white-space:pre-wrap"></pre>
 
 <h2>6 · ESCROW LEDGER (live locks · refunds · slashes)</h2>
-<pre id="escrows" style="max-height:160px;overflow-y:auto;padding:8px;border:1px solid ${theme.borderDefault};border-radius:6px;background:${theme.surfaceRaised};color:${theme.textSecondary};font:inherit;white-space:pre-wrap">no escrows yet</pre>
+<pre id="escrows" style="max-height:160px;overflow-y:auto;padding:8px;border:1px solid ${theme.line};border-radius:6px;background:${theme.surfaceRaised};color:${theme.textSecondary};font:inherit;white-space:pre-wrap">no escrows yet</pre>
 
 <script>
 async function refreshEscrows() {
@@ -261,7 +261,7 @@ async function compile() {
     const res = await fetch('/mission/compile', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ doc: JSON.parse(document.getElementById('doc').value) }) });
     r = await res.json();
   } catch (e) { out.innerHTML = '<div class="err">compile failed: ' + String(e) + '</div>'; return; }
-  for (const e of r.errors ?? []) out.innerHTML += '<div class="err">✕ ' + e + '</div>';
+  for (const e of r.errors ?? []) out.innerHTML += '<div class="err">× ' + e + '</div>';
   PLANS = r.plans ?? [];
   PLANS.forEach((p, i) => {
     out.innerHTML += '<div class="plan"><div class="obj">' + p.plan.objective + '</div>'
@@ -280,7 +280,7 @@ async function storePlan(i) {
   const el = document.getElementById('gw-' + i);
   const res = await fetch('/mission/store', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ plan: PLANS[i].plan }) });
   const r = await res.json();
-  if (!r.ok) { el.innerHTML = '<span class="err">✕ ' + (r.note ?? 'rejected') + '</span>'; return; }
+  if (!r.ok) { el.innerHTML = '<span class="err">× ' + (r.note ?? 'rejected') + '</span>'; return; }
   el.dataset.id = r.id;
   el.innerHTML = 'stored ' + r.id + ' · hash <span class="hash">' + r.plan_hash + '</span> '
     + '<input id="tok-' + i + '" placeholder="operator token (timmy approve …)" size="26"> '
@@ -416,18 +416,18 @@ async function loadPlans() {
   const r = await fetch('/dispatch');
   const plans = await r.json();
   document.getElementById('plans').innerHTML = plans.length ? plans.map(p =>
-    '<div style="border:1px solid ${theme.surfaceRaised};border-radius:6px;padding:6px 10px;background:${theme.surfaceBase}">'
-    + '<span style="color:${theme.brand}">' + p.id + '</span> '
-    + '<span style="color:${theme.success}">' + p.lifecycle + '</span> '
+    '<div style="border:1px solid ${theme.surfaceRaised};border-radius:6px;padding:6px 10px;background:${theme.ground}">'
+    + '<span style="color:${theme.accent}">' + p.id + '</span> '
+    + '<span style="color:${theme.accent}">' + p.lifecycle + '</span> '
     + '<span style="color:${theme.textSecondary}">' + p.harness + ' · ' + p.objective + '</span> '
-    + '<span style="color:${theme.textTertiary}">hash ' + (p.plan_hash || '').slice(0, 12) + '…</span>'
-    + (p.blocked ? ' <span style="color:${theme.error}">' + p.blocked.state + ': ' + p.blocked.note + '</span>' : '')
+    + '<span style="color:${theme.textMuted}">hash ' + (p.plan_hash || '').slice(0, 12) + '…</span>'
+    + (p.blocked ? ' <span style="color:${theme.danger}">' + p.blocked.state + ': ' + p.blocked.note + '</span>' : '')
     + ' <button onclick="act(\\'' + p.id + '\\',\\'arm\\')">arm</button>'
     + ' <button onclick="act(\\'' + p.id + '\\',\\'launch\\')">launch</button>'
     + ' <button onclick="act(\\'' + p.id + '\\',\\'hold\\')">hold</button>'
     + ' <button onclick="act(\\'' + p.id + '\\',\\'cancel\\')">cancel</button>'
     + ' <button onclick="act(\\'' + p.id + '\\',\\'collect\\')">collect</button>'
-    + '</div>').join('') : '<div style="color:${theme.textTertiary}">no plans — prepare one from chat (ctrl+d rail) or timmy_plan_dispatch</div>';
+    + '</div>').join('') : '<div style="color:${theme.textMuted}">no plans — prepare one from chat (ctrl+d rail) or timmy_plan_dispatch</div>';
 }
 loadPlans(); setInterval(loadPlans, 3000);
 </script>`;
@@ -438,20 +438,20 @@ const BROWSER_HTML = `<!doctype html><html><head><meta charset="utf-8">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; margin: 0; }
-  body { background: ${theme.surfaceBase}; color: ${theme.textPrimary}; font: 13px/1.5 ui-monospace, Menlo, monospace; padding: 16px; }
+  body { background: ${theme.ground}; color: ${theme.textPrimary}; font: 13px/1.5 ui-monospace, Menlo, monospace; padding: 16px; }
   header { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-  header .logo { color: ${theme.brand}; font-weight: 700; letter-spacing: .08em; }
-  button { background: ${theme.surfaceRaised}; border: 1px solid ${theme.borderDefault}; color: ${theme.brand}; border-radius: 6px; font: inherit; padding: 4px 10px; cursor: pointer; }
-  input { background: ${theme.surfaceRaised}; border: 1px solid ${theme.borderDefault}; color: ${theme.textPrimary}; border-radius: 6px; font: inherit; padding: 4px 10px; }
-  #chainstat { color: ${theme.success}; }
-  .epoch { color: ${theme.info}; margin: 14px 0 6px; letter-spacing: .12em; }
-  .rc { border: 1px solid ${theme.borderDefault}; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; background: ${theme.surfaceBase}; }
+  header .logo { color: ${theme.accent}; font-weight: 700; letter-spacing: .08em; }
+  button { background: ${theme.surfaceRaised}; border: 1px solid ${theme.line}; color: ${theme.accent}; border-radius: 6px; font: inherit; padding: 4px 10px; cursor: pointer; }
+  input { background: ${theme.surfaceRaised}; border: 1px solid ${theme.line}; color: ${theme.textPrimary}; border-radius: 6px; font: inherit; padding: 4px 10px; }
+  #chainstat { color: ${theme.seal}; }
+  .epoch { color: ${theme.accent}; margin: 14px 0 6px; letter-spacing: .12em; }
+  .rc { border: 1px solid ${theme.line}; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; background: ${theme.ground}; }
   .rc .row1 { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
   .rc .sub { color: ${theme.textPrimary}; font-weight: 600; }
-  .rc .st-ok { color: ${theme.success}; } .rc .st-failed { color: ${theme.error}; } .rc .st-denied { color: ${theme.warning}; }
-  .rc .hash { color: ${theme.success}; } .rc .prev { color: ${theme.textTertiary}; }
+  .rc .st-ok { color: ${theme.seal}; } .rc .st-failed { color: ${theme.danger}; } .rc .st-denied { color: ${theme.warn}; }
+  .rc .hash { color: ${theme.seal}; } .rc .prev { color: ${theme.textMuted}; }
   .rc .meta { color: ${theme.textSecondary}; font-size: 11px; }
-  .rc .vf { color: ${theme.info}; font-size: 11px; }
+  .rc .vf { color: ${theme.accent}; font-size: 11px; }
 </style></head><body>
 <header>
   <span class="logo">TIMMY ⛁ RECEIPT BROWSER</span>
@@ -470,7 +470,7 @@ async function load() {
   render();
   const v = await (await fetch('/verify?stream=' + stream)).json();
   document.getElementById('chainstat').textContent =
-    (v.ok ? '✓ chain intact · ' : '✕ broken @ ' + (v.brokenAt ?? '?') + ' · ') + v.count + ' receipts · epoch ' + v.current_epoch;
+    (v.ok ? '✓ chain intact · ' : '× broken @ ' + (v.brokenAt ?? '?') + ' · ') + v.count + ' receipts · epoch ' + v.current_epoch;
 }
 function render() {
   const q = document.getElementById('q').value.toLowerCase();
@@ -494,7 +494,7 @@ function render() {
 async function vf(id) {
   const stream = document.getElementById('stream').value;
   const v = await (await fetch('/verify-receipt?stream=' + stream + '&id=' + id)).json();
-  document.getElementById('vf-' + id).textContent = v.ok ? '✓ body+sig' : '✕ ' + (v.bodyOk ? 'sig' : 'body');
+  document.getElementById('vf-' + id).textContent = v.ok ? '✓ body+sig' : '× ' + (v.bodyOk ? 'sig' : 'body');
 }
 document.getElementById('q').oninput = render;
 document.getElementById('stream').onchange = load;

@@ -3,7 +3,9 @@ import { Box, Text, useInput } from 'ink';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { join } from 'path';
 import type { Agent } from '../../agent/core.js';
-import { PanelFrame } from '../components/PanelFrame.js';
+import { PaneFocusContext } from '../components/PanelFrame.js';
+import { KeyHintBar } from '../components/KeyHintBar.js';
+import { Card, BudgetList } from '../ui/index.js';
 import { listProjects, readProject, projectDir } from '../../utils/projects.js';
 import {
   ensureProjectTree, projectTree, renderProjectIndex, syncLaneLogs,
@@ -32,6 +34,7 @@ export function ProjectsPanel({ agent, zone = 0, setZone, inputLocked }: Project
   const [fidx, setFidx] = useState(0);
   const [preview, setPreview] = useState<string | null>(null);
   const [note, setNote] = useState('');
+  const focused = React.useContext(PaneFocusContext);
 
   useEffect(() => {
     const load = () => {
@@ -48,6 +51,8 @@ export function ProjectsPanel({ agent, zone = 0, setZone, inputLocked }: Project
 
   const sel = projects[Math.min(idx, Math.max(0, projects.length - 1))];
   const file = files[Math.min(fidx, Math.max(0, files.length - 1))];
+  // signature: inline gen counts — gens/ holds one file per gen-id
+  const genCount = files.filter(f => f.rel.startsWith('gens/')).length;
 
   const __focus = useFocus();
   useInput((char, key) => {
@@ -93,14 +98,56 @@ export function ProjectsPanel({ agent, zone = 0, setZone, inputLocked }: Project
     if (c === 'o' && sel && file) { setNote(`in your terminal: ${process.env.EDITOR || 'nvim'} studio/${sel}/${file.rel}`); return; }
   }, { isActive: !inputLocked });
 
+  const projIdx = Math.min(idx, projects.length - 1);
+  const fileIdx = Math.min(fidx, files.length - 1);
+
   return (
-    <PanelFrame
-      icon="🗂️"
-      title="PROJECTS — PER-PROJECT TREE"
-      status={`${projects.length} projects · ${files.length} files`}
-      statusColor={theme.brand}
-      explain="Context-optimized: PROJECT.md index first, descend only when relevant. Prompts ↔ outcomes ↔ logs ↔ receipts cross-link by gen-id."
-      hints={[
+    <Card
+      title="Projects — per-project tree"
+      focused={focused}
+      purpose="context-optimized: PROJECT.md index first, descend only when relevant · cross-linked by gen-id"
+      pill={{ kind: projects.length ? 'accent' : 'muted', label: `${projects.length} projects` }}
+      flexGrow={1}
+    >
+      {note && <Text color={theme.accent}>{note}</Text>}
+      {preview ? (
+        <Box flexDirection="column" flexGrow={1}>
+          <Text bold color={theme.accent}>preview · {file?.rel} · Esc back</Text>
+          {preview.split('\n').slice(0, 30).map((l, i) => (
+            <Text key={i} color={theme.textSecondary}>{l}</Text>
+          ))}
+        </Box>
+      ) : (
+        <Box flexDirection="row" flexGrow={1}>
+          <Box flexDirection="column" width="26%" paddingRight={1}>
+            <BudgetList
+              items={projects}
+              max={7}
+              offset={Math.max(0, projIdx - 6)}
+              render={(p, i) => (
+                <Text key={p} color={i === projIdx ? theme.accent : theme.textSecondary} bold={i === projIdx} wrap="truncate">
+                  {i === projIdx ? '▸ ' : '  '}{p}{i === projIdx ? ` · ${genCount} gens` : ''}
+                </Text>
+              )}
+            />
+          </Box>
+          <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
+            <Text bold color={theme.accent} wrap="truncate">studio/{sel || '?'}/ — {genCount} gens · PROJECT.md first</Text>
+            <BudgetList
+              items={files}
+              max={7}
+              offset={Math.max(0, Math.min(fileIdx - 6, Math.max(0, files.length - 7)))}
+              overflowHint="[↓] scroll · [p] preview"
+              render={(f, i) => (
+                <Text key={f.rel} color={i === fileIdx ? theme.textPrimary : theme.textSecondary} bold={i === fileIdx} wrap="truncate">
+                  {i === fileIdx ? '▸ ' : '  '}{f.rel.padEnd(44)} {(f.size / 1024).toFixed(1)}kb
+                </Text>
+              )}
+            />
+          </Box>
+        </Box>
+      )}
+      <KeyHintBar hints={[
         { key: '←→', label: 'pane' },
         { key: '↑↓', label: 'move' },
         { key: 'p', label: 'preview in terminal' },
@@ -108,36 +155,7 @@ export function ProjectsPanel({ agent, zone = 0, setZone, inputLocked }: Project
         { key: 'o', label: 'open in $EDITOR' },
         { key: 's', label: 'sync logs' },
         { key: 'e', label: 'training export' }
-      ]}
-    >
-      {note && <Text color={theme.success}>{note}</Text>}
-      {preview ? (
-        <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={theme.info} paddingX={1}>
-          <Text bold color={theme.info}>preview · {file?.rel} · Esc back</Text>
-          {preview.split('\n').slice(0, 30).map((l, i) => (
-            <Text key={i} color={theme.textSecondary}>{l}</Text>
-          ))}
-        </Box>
-      ) : (
-        <Box flexDirection="row" flexGrow={1}>
-          <Box flexDirection="column" width="26%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
-            {projects.map((p, i) => (
-              <Text key={p} color={i === Math.min(idx, projects.length - 1) ? theme.brand : theme.textSecondary} bold={i === Math.min(idx, projects.length - 1)} wrap="truncate">
-                {i === Math.min(idx, projects.length - 1) ? '▶ ' : '  '}📁 {p}
-              </Text>
-            ))}
-          </Box>
-          <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
-            <Text bold color={theme.brand} wrap="truncate">studio/{sel || '?'}/ — PROJECT.md first</Text>
-            {files.slice(0, 26).map((f, i) => (
-              <Text key={f.rel} color={i === Math.min(fidx, files.length - 1) ? theme.textPrimary : theme.textSecondary} bold={i === Math.min(fidx, files.length - 1)} wrap="truncate">
-                {i === Math.min(fidx, files.length - 1) ? '▶ ' : '  '}{f.rel.padEnd(44)} {(f.size / 1024).toFixed(1)}kb
-              </Text>
-            ))}
-            {files.length > 26 && <Text color={theme.textSecondary}>… {files.length - 26} more — [p] previews any of them</Text>}
-          </Box>
-        </Box>
-      )}
-    </PanelFrame>
+      ]} />
+    </Card>
   );
 }

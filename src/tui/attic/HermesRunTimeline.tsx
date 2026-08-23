@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { HermesEvent } from '../../../hermes/events.js';
-import { theme } from '../../theme.js';
+import type { HermesEvent } from '../../hermes/events.js';
+import { theme } from '../theme.js';
 
 interface HermesRunTimelineProps {
   events: HermesEvent[];
@@ -15,23 +15,23 @@ interface HermesRunTimelineProps {
 
 const TYPE_COLORS: Record<string, string> = {
   'message.delta': theme.textSecondary,
-  'message.complete': theme.success,
-  'tool.start': theme.info,
-  'tool.progress': theme.info,
-  'tool.complete': theme.info,
-  'tool.error': theme.error,
-  'approval.request': theme.warning,
-  'approval.response': theme.brand,
-  'clarify.request': theme.warning,
-  'clarify.response': theme.brand,
-  'sudo.request': theme.error,
-  'sudo.response': theme.brand,
-  'secret.request': theme.error,
-  'secret.response': theme.brand,
-  'model.switch': theme.info,
-  'provider.route': theme.info,
-  'quota.warning': theme.warning,
-  'run.error': theme.error,
+  'message.complete': theme.accent,
+  'tool.start': theme.accent,
+  'tool.progress': theme.accent,
+  'tool.complete': theme.accent,
+  'tool.error': theme.danger,
+  'approval.request': theme.warn,
+  'approval.response': theme.accent,
+  'clarify.request': theme.warn,
+  'clarify.response': theme.accent,
+  'sudo.request': theme.danger,
+  'sudo.response': theme.accent,
+  'secret.request': theme.danger,
+  'secret.response': theme.accent,
+  'model.switch': theme.accent,
+  'provider.route': theme.accent,
+  'quota.warning': theme.warn,
+  'run.error': theme.danger,
 };
 
 function summarize(event: HermesEvent, maxLen: number): string {
@@ -72,12 +72,12 @@ export function HermesRunTimeline({
     <Box
       flexDirection="column"
       borderStyle="single"
-      borderColor={focused ? theme.info : theme.borderDefault}
+      borderColor={focused ? theme.accent : theme.line}
       paddingX={1}
       flexGrow={1}
     >
       <Box justifyContent="space-between">
-        <Text bold color={theme.info}>RUN TIMELINE</Text>
+        <Text bold color={theme.accent}>RUN TIMELINE</Text>
         <Text color={theme.textSecondary}>
           {events.length === 0
             ? 'no events'
@@ -95,7 +95,7 @@ export function HermesRunTimeline({
             <Text bold color={TYPE_COLORS[event.type] ?? theme.textPrimary}>
               {event.type.padEnd(18).slice(0, 18)}
             </Text>
-            <Text color={event.severity === 'error' ? theme.error : theme.textPrimary} wrap="truncate">
+            <Text color={event.severity === 'error' ? theme.danger : theme.textPrimary} wrap="truncate">
               {' '}
               {summarize(event, summaryWidth)}
             </Text>
