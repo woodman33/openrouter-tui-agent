@@ -6,12 +6,12 @@ import { truncateVisible } from '../utils/text.js';
 
 // v1.0.5: status pills per the dual-card spec
 const LIFE_GLYPH: Record<string, { g: string; c: string }> = {
-  needs_approval: { g: '[QUEUED]', c: theme.warning },
-  armed: { g: '[QUEUED]', c: theme.warning },
-  running: { g: '[RUNNING]', c: theme.focus },
-  judging: { g: '[RUNNING]', c: theme.focus },
-  passed: { g: '[DONE]', c: theme.success },
-  failed: { g: '[FAIL]', c: theme.error }
+  needs_approval: { g: '[QUEUED]', c: theme.warn },
+  armed: { g: '[QUEUED]', c: theme.warn },
+  running: { g: '[RUNNING]', c: theme.accent },
+  judging: { g: '[RUNNING]', c: theme.accent },
+  passed: { g: '[DONE]', c: theme.accent },
+  failed: { g: '[FAIL]', c: theme.danger }
 };
 
 // v1.0.1: concise J-BANG action cards — the dispatch rail's signal without
@@ -25,12 +25,12 @@ export function ActionCards({ width }: { width: number }) {
     return () => clearInterval(t);
   }, []);
   if (!plans.length) {
-    return <Text color={theme.textTertiary} wrap="truncate">{truncateVisible('no dispatched plans yet — compile a mission and J-BANG it', width)}</Text>;
+    return <Text color={theme.textMuted} wrap="truncate">{truncateVisible('no dispatched plans yet — compile a mission and J-BANG it', width)}</Text>;
   }
   return (
     <Box flexDirection="column" flexShrink={0}>
       {plans.map(p => {
-        const life = LIFE_GLYPH[p.lifecycle] ?? { g: '·', c: theme.textTertiary };
+        const life = LIFE_GLYPH[p.lifecycle] ?? { g: '·', c: theme.textMuted };
         const line = `[J-BANG] ${p.id.slice(0, 14)} · ${p.plan.harnesses[0]} · ${p.plan.workspace.kind} · ${p.lifecycle} · sha:${p.plan_hash.slice(0, 8)}`;
         return (
           <Text key={p.id} color={theme.textSecondary} wrap="truncate">

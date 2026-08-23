@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
+import { Card } from '../ui/Card.js';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { existsSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
@@ -84,7 +85,7 @@ export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelPr
         setScrollOffset(prev => Math.min(prev, Math.max(0, last100.length - visibleHeight)));
       }
     } catch {
-      setLogLines(['✕ Failed to read log file.']);
+      setLogLines(['× Failed to read log file.']);
     }
   };
 
@@ -129,11 +130,11 @@ export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelPr
     ? humanized.events.map(e => ({ text: `${clockTime(e.ts)}  ${e.icon}  ${e.text}`, color: e.color }))
     : logLines.map(l => {
         let color = theme.textPrimary;
-        if (l.includes('[ERROR]') || l.includes('failed') || l.includes('broken')) color = theme.error;
-        else if (l.includes('[WARN]') || l.includes('approval') || l.includes('gated')) color = theme.warning;
+        if (l.includes('[ERROR]') || l.includes('failed') || l.includes('broken')) color = theme.danger;
+        else if (l.includes('[WARN]') || l.includes('approval') || l.includes('gated')) color = theme.warn;
         else if (l.includes('[DEBUG]')) color = theme.textSecondary;
-        else if (l.includes('receipt.sealed') || l.includes('completed')) color = theme.success;
-        else if (l.includes('[run.') || l.includes('fusion')) color = theme.brand;
+        else if (l.includes('receipt.sealed') || l.includes('completed')) color = theme.accent;
+        else if (l.includes('[run.') || l.includes('fusion')) color = theme.accent;
         return { text: l, color };
       });
   const off = Math.min(scrollOffset, Math.max(0, rows.length - visibleHeight));
@@ -206,28 +207,28 @@ export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelPr
   // Strict cap on main stage width to prevent stretching awkwardly in wide screens
   const panelWidth = Math.max(20, (terminalWidth || 80) - 28);
   const mainStageWidth = Math.min(84, Math.floor(panelWidth * 0.95));
+  void isSmallScreen;
 
   return (
     <Box flexDirection="column" width={mainStageWidth} paddingX={1}>
-      <Box borderStyle="round" borderColor={theme.borderMuted} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2}>
-        <Box justifyContent="space-between">
-          <Text bold color={theme.focus}>◆ AUDIT LOG MONITOR</Text>
-          <Text color={theme.success}>● LIVE {REFRESH_MS / 1000}s</Text>
-        </Box>
-        <Box flexDirection="row" marginTop={1} flexWrap="wrap">
+      <Card
+        title="AUDIT LOG MONITOR"
+        purpose={`[H] ${human ? 'raw' : 'human'} view · [F] follow ${autoFollow ? 'on' : 'off'} · [↑↓] scroll · [W] web companion`}
+        pill={{ kind: 'accent', label: `LIVE ${REFRESH_MS / 1000}s` }}
+        width={mainStageWidth - 2}
+      >
+        {/* §7: file switcher = one inline row, no bordered button grid */}
+        <Box flexDirection="row" flexWrap="wrap">
           {logFiles.map(lf => {
             const isActive = lf.key === activeFile;
             return (
-              <Box key={lf.key} borderStyle={isActive ? 'double' : 'single'} borderColor={isActive ? theme.info : theme.borderDefault} paddingX={1} marginRight={2}>
-                <Text bold color={isActive ? theme.info : theme.textPrimary}>[{lf.num}] {lf.label}</Text>
+              <Box key={lf.key} paddingX={1} marginRight={1}>
+                <Text bold={isActive} color={isActive ? theme.accent : theme.textMuted}>[{lf.num}] {lf.label}</Text>
               </Box>
             );
           })}
         </Box>
-        <Box marginTop={1}>
-          <Text color={theme.textSecondary}>[←→/1-6] switch file · [H] {human ? 'raw' : 'human'} view · [F] follow ({autoFollow ? 'ON' : 'OFF'}) · [↑↓] scroll · [W] web companion</Text>
-        </Box>
-      </Box>
+      </Card>
 
       <Box paddingX={1} width={mainStageWidth - 2} height={visibleHeight + 2} flexDirection="column">
         {logLines.length === 0 ? (
@@ -252,7 +253,7 @@ export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelPr
           ))
         )}
         {human && humanized && humanized.telemetryCount > 0 && (
-          <Text color={theme.textTertiary}>☁ {humanized.telemetryCount} telemetry sync lines collapsed</Text>
+          <Text color={theme.textMuted}>· {humanized.telemetryCount} telemetry sync lines collapsed</Text>
         )}
       </Box>
 
@@ -263,12 +264,12 @@ export function LogsPanel({ agent: _agent, setInspector, zone = 0 }: LogsPanelPr
             : `lines ${off + 1}-${Math.min(rows.length, off + visibleHeight)} of ${rows.length}${human ? ' (human view)' : ' (last 100)'}`}
           {fileStat ? ` · ${fileStat.sizeKb} KB · upd ${fileStat.mtime}` : ''}
         </Text>
-        <Text color={atBottom ? theme.success : theme.warning}>
-          {autoFollow ? '▼ following tail' : '↑ paused — [F] to resume'}
+        <Text color={atBottom ? theme.accent : theme.warn}>
+          {autoFollow ? '▸ following tail' : '↑ paused — [F] to resume'}
         </Text>
       </Box>
       <Box flexShrink={0}>
-        <Text color={theme.brand}>⌁ companion http://localhost:{LOGS_PORT()} · [w] live browser view (headless/MCP sessions)</Text>
+        <Text color={theme.accent}>⌁ companion http://localhost:{LOGS_PORT()} · [w] live browser view (headless/MCP sessions)</Text>
       </Box>
     </Box>
   );

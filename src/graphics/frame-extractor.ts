@@ -85,7 +85,7 @@ function buildRiveHtml(riveFilePath: string, width: number, height: number): str
 <html>
 <head>
 <style>
-  body { margin: 0; background: ${theme.surfaceBase}; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
+  body { margin: 0; background: ${theme.ground}; display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; overflow: hidden; }
   canvas { display: block; width: 100%; height: 100%; }
 </style>
 </head>
@@ -100,9 +100,9 @@ function buildRiveHtml(riveFilePath: string, width: number, height: number): str
 
   // State display fallback
   function drawPlaceholder(text) {
-    ctx.fillStyle = '${theme.surfaceBase}';
+    ctx.fillStyle = '${theme.ground}';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '${theme.info}';
+    ctx.fillStyle = '${theme.accent}';
     ctx.font = 'bold 20px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Rive TUI Mascot', canvas.width / 2, canvas.height / 2 - 10);

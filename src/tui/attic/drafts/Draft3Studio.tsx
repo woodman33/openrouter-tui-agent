@@ -30,10 +30,10 @@ export function Draft3Studio({ activeTab, setActiveTab, width = 120, height = 34
 
   // Inverted artifact build timeline (top-to-bottom descending)
   const buildTimeline = [
-    { id: '#G-941', target: 'worker.ts', status: 'SYNTHESIZED', cost: '$0.012', speed: '94 tok/s', color: theme.success },
+    { id: '#G-941', target: 'worker.ts', status: 'SYNTHESIZED', cost: '$0.012', speed: '94 tok/s', color: theme.accent },
     { id: '#G-940', target: 'rive-canvas.riv', status: 'COMPILED', cost: '$0.004', speed: 'RIVE-WASM', color: theme.accent },
-    { id: '#G-939', target: 'companion.tsx', status: 'VERIFIED', cost: '$0.008', speed: '120 tok/s', color: theme.info },
-    { id: '#G-938', target: 'schema.zod.ts', status: 'SEALED', cost: '$0.002', speed: '210 tok/s', color: theme.success },
+    { id: '#G-939', target: 'companion.tsx', status: 'VERIFIED', cost: '$0.008', speed: '120 tok/s', color: theme.accent },
+    { id: '#G-938', target: 'schema.zod.ts', status: 'SEALED', cost: '$0.002', speed: '210 tok/s', color: theme.accent },
     { id: '#G-937', target: 'wrangler.jsonc', status: 'OK', cost: '$0.001', speed: '340 tok/s', color: theme.textSecondary },
   ];
 
@@ -64,32 +64,32 @@ export function Draft3Studio({ activeTab, setActiveTab, width = 120, height = 34
   const rightPaneW = Math.max(30, width - navW - leftPaneW - 4);
 
   return (
-    <Box flexDirection="column" width={width} height={height} borderStyle="round" borderColor={theme.brand}>
+    <Box flexDirection="column" width={width} height={height} borderStyle="round" borderColor={theme.accent}>
       {/* Top Studio Toolbar */}
-      <Box justifyContent="space-between" paddingX={1} borderStyle="single" borderColor={theme.borderDefault}>
+      <Box justifyContent="space-between" paddingX={1} borderStyle="single" borderColor={theme.line}>
         <Box gap={1}>
-          <Text color={theme.brand} bold>✦ ARTIFACT & CODE STUDIO</Text>
-          <Text color={theme.textTertiary}>|</Text>
+          <Text color={theme.accent} bold>✦ ARTIFACT & CODE STUDIO</Text>
+          <Text color={theme.textMuted}>|</Text>
           <Text color={theme.textSecondary}>Target:</Text>
           <Text color={theme.textPrimary} bold>Cloudflare Worker + Rive WebGL</Text>
-          <Text color={theme.textTertiary}>|</Text>
+          <Text color={theme.textMuted}>|</Text>
           <Text color={theme.accent}>AST: Valid</Text>
         </Box>
         <Box gap={1}>
           <Text color={theme.textSecondary}>Rive Engine:</Text>
-          <Text color={theme.success}>● 60 FPS (State: Streaming)</Text>
-          <Text color={theme.textTertiary}>|</Text>
-          <Text color={theme.brand}>[C] {compactNav ? 'Expand Nav' : 'Collapse Nav'}</Text>
+          <Text color={theme.accent}>● 60 FPS (State: Streaming)</Text>
+          <Text color={theme.textMuted}>|</Text>
+          <Text color={theme.accent}>[C] {compactNav ? 'Expand Nav' : 'Collapse Nav'}</Text>
         </Box>
       </Box>
 
       {/* Main Dual-Pane Matrix */}
       <Box flexGrow={1} flexDirection="row">
         {/* Left Standing Menu with Collapsible Descriptors */}
-        <Box flexDirection="column" width={navW} borderStyle="single" borderColor={theme.borderDefault} paddingX={compactNav ? 0 : 1}>
+        <Box flexDirection="column" width={navW} borderStyle="single" borderColor={theme.line} paddingX={compactNav ? 0 : 1}>
           {!compactNav && (
             <Box marginBottom={1}>
-              <Text color={theme.textTertiary} bold>── STUDIO TABS ──</Text>
+              <Text color={theme.textMuted} bold>── STUDIO TABS ──</Text>
             </Box>
           )}
           {tabs.map((tab, idx) => {
@@ -101,15 +101,15 @@ export function Draft3Studio({ activeTab, setActiveTab, width = 120, height = 34
                 paddingX={compactNav ? 1 : 1}
                 marginY={0}
                 borderStyle={isSelected ? 'single' : undefined}
-                borderColor={isSelected ? theme.brand : undefined}
+                borderColor={isSelected ? theme.accent : undefined}
               >
                 <Box justifyContent={compactNav ? 'center' : 'space-between'}>
-                  <Text color={isSelected ? theme.brand : theme.textSecondary} bold={isSelected}>
+                  <Text color={isSelected ? theme.accent : theme.textSecondary} bold={isSelected}>
                     {tab.icon} {!compactNav && tab.label}
                   </Text>
                 </Box>
                 {!compactNav && showDescriptor && (
-                  <Text color={theme.textTertiary}>{tab.desc}</Text>
+                  <Text color={theme.textMuted}>{tab.desc}</Text>
                 )}
               </Box>
             );
@@ -117,25 +117,25 @@ export function Draft3Studio({ activeTab, setActiveTab, width = 120, height = 34
         </Box>
 
         {/* Left Pane: Code & AST Canvas */}
-        <Box flexDirection="column" width={leftPaneW} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+        <Box flexDirection="column" width={leftPaneW} borderStyle="single" borderColor={theme.line} paddingX={1}>
           {/* File Selector Tabs */}
-          <Box gap={1} borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
+          <Box gap={1} borderStyle="single" borderColor={theme.surfaceRaised} paddingX={1}>
             {fileTabs.map((ft, idx) => (
-              <Text key={ft} color={selectedFileTab === idx ? theme.brand : theme.textSecondary} bold={selectedFileTab === idx}>
+              <Text key={ft} color={selectedFileTab === idx ? theme.accent : theme.textSecondary} bold={selectedFileTab === idx}>
                 {ft}
               </Text>
             ))}
           </Box>
 
           {/* Syntax Highlighted Code / AST Canvas */}
-          <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1} marginTop={1}>
-            <Text color={theme.textTertiary}>// Generated Cloudflare Worker Companion Bridge</Text>
-            <Text color={theme.info}>import <Text color={theme.textPrimary}>&#123; Agent &#125;</Text> from <Text color={theme.success}>'@cloudflare/flagship'</Text>;</Text>
-            <Text color={theme.info}>import <Text color={theme.textPrimary}>&#123; RiveCanvas &#125;</Text> from <Text color={theme.success}>'@rive-app/canvas'</Text>;</Text>
+          <Box flexDirection="column" flexGrow={1} borderStyle="single" borderColor={theme.surfaceRaised} paddingX={1} marginTop={1}>
+            <Text color={theme.textMuted}>// Generated Cloudflare Worker Companion Bridge</Text>
+            <Text color={theme.accent}>import <Text color={theme.textPrimary}>&#123; Agent &#125;</Text> from <Text color={theme.accent}>'@cloudflare/flagship'</Text>;</Text>
+            <Text color={theme.accent}>import <Text color={theme.textPrimary}>&#123; RiveCanvas &#125;</Text> from <Text color={theme.accent}>'@rive-app/canvas'</Text>;</Text>
             <Text color={theme.textPrimary} />
             <Text color={theme.accent}>export default &#123;</Text>
-            <Text color={theme.textPrimary}>  async <Text color={theme.brand}>fetch</Text>(req: Request, env: Env): Promise&lt;Response&gt; &#123;</Text>
-            <Text color={theme.textPrimary}>    const agent = new Agent(&#123; mode: <Text color={theme.success}>'autonomous'</Text> &#125;);</Text>
+            <Text color={theme.textPrimary}>  async <Text color={theme.accent}>fetch</Text>(req: Request, env: Env): Promise&lt;Response&gt; &#123;</Text>
+            <Text color={theme.textPrimary}>    const agent = new Agent(&#123; mode: <Text color={theme.accent}>'autonomous'</Text> &#125;);</Text>
             <Text color={theme.textPrimary}>    const telemetry = await agent.sealReceipt();</Text>
             <Text color={theme.textPrimary}>    return Response.json(&#123; ok: true, hash: telemetry.merkleRoot &#125;);</Text>
             <Text color={theme.accent}>  &#125;</Text>
@@ -144,10 +144,10 @@ export function Draft3Studio({ activeTab, setActiveTab, width = 120, height = 34
         </Box>
 
         {/* Right Pane: Inverse Build Pipeline & Cost Meter */}
-        <Box flexDirection="column" width={rightPaneW} borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
-          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceOverlay} paddingX={1}>
-            <Text color={theme.brand} bold>▲ REVERSE BUILD PIPELINE</Text>
-            <Text color={theme.success}>NEWEST ↑</Text>
+        <Box flexDirection="column" width={rightPaneW} borderStyle="single" borderColor={theme.line} paddingX={1}>
+          <Box justifyContent="space-between" borderStyle="single" borderColor={theme.surfaceRaised} paddingX={1}>
+            <Text color={theme.accent} bold>▲ REVERSE BUILD PIPELINE</Text>
+            <Text color={theme.accent}>NEWEST ↑</Text>
           </Box>
 
           <Box marginTop={1} flexDirection="column" flexGrow={1} gap={0}>
@@ -155,35 +155,35 @@ export function Draft3Studio({ activeTab, setActiveTab, width = 120, height = 34
               <Box key={idx} justifyContent="space-between" marginY={0}>
                 <Text color={theme.textSecondary}>{item.id} {item.target}</Text>
                 <Text color={item.color} bold>{item.status}</Text>
-                <Text color={theme.textTertiary}>{item.cost}</Text>
+                <Text color={theme.textMuted}>{item.cost}</Text>
               </Box>
             ))}
           </Box>
 
-          <Box flexDirection="column" borderStyle="round" borderColor={theme.borderDefault} paddingX={1} marginTop={1}>
-            <Text color={theme.textSecondary}>Total Generation Cost: <Text color={theme.success}>$0.027</Text></Text>
+          <Box flexDirection="column" borderStyle="round" borderColor={theme.line} paddingX={1} marginTop={1}>
+            <Text color={theme.textSecondary}>Total Generation Cost: <Text color={theme.accent}>$0.027</Text></Text>
             <Text color={theme.textSecondary}>Synthesis Velocity: <Text color={theme.accent}>184 tokens/sec</Text></Text>
-            <Text color={theme.textTertiary}>AST Tree Nodes: 42 (No syntax errors)</Text>
+            <Text color={theme.textMuted}>AST Tree Nodes: 42 (No syntax errors)</Text>
           </Box>
         </Box>
       </Box>
 
       {/* Bottom Dual-Tier Action Matrix */}
-      <Box flexDirection="column" borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
+      <Box flexDirection="column" borderStyle="single" borderColor={theme.line} paddingX={1}>
         <Box justifyContent="space-between">
           <Box gap={1}>
             <Text color={theme.textSecondary} bold>ACTION MATRIX:</Text>
             {actions.map((act, idx) => (
-              <Text key={act} color={selectedAction === idx ? theme.brand : theme.textTertiary} bold={selectedAction === idx}>
+              <Text key={act} color={selectedAction === idx ? theme.accent : theme.textMuted} bold={selectedAction === idx}>
                 {act}
               </Text>
             ))}
           </Box>
-          <Text color={theme.brand}>[H] {showDescriptor ? 'Hide Help' : 'Show Help'}</Text>
+          <Text color={theme.accent}>[H] {showDescriptor ? 'Hide Help' : 'Show Help'}</Text>
         </Box>
         {showDescriptor && (
           <Box marginTop={0}>
-            <Text color={theme.textTertiary} italic>
+            <Text color={theme.textMuted} italic>
               💡 Tab 3 Studio: Left pane edits code & preview AST. Right pane displays generation lifecycle in reverse chronological order.
             </Text>
           </Box>

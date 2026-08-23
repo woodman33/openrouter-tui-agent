@@ -65,28 +65,28 @@ export function renderDashboardHtml(cwd: string = process.cwd()): string {
 <meta charset="utf-8">
 <title>${BRAND.studios} — dashboard</title>
 <style>
-body{margin:0;background:${theme.surfaceBase};color:${theme.textPrimary};font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
-header{padding:14px 18px;border-bottom:1px solid ${theme.surfaceOverlay};display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
-header h1{margin:0;font-size:16px;color:${theme.brand}}
-header .tag{color:${theme.success}}
+body{margin:0;background:${theme.ground};color:${theme.textPrimary};font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+header{padding:14px 18px;border-bottom:1px solid ${theme.surfaceRaised};display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+header h1{margin:0;font-size:16px;color:${theme.accent}}
+header .tag{color:${theme.accent}}
 header .slate{color:${theme.textSecondary}}
 main{padding:14px 18px;display:grid;gap:18px}
-section h2{font-size:12px;letter-spacing:.25em;color:${theme.success};margin:0 0 8px}
+section h2{font-size:12px;letter-spacing:.25em;color:${theme.accent};margin:0 0 8px}
 table{border-collapse:collapse;width:100%}
-td,th{border:1px solid ${theme.surfaceOverlay};padding:4px 8px;text-align:left;vertical-align:top;font-size:12px}
+td,th{border:1px solid ${theme.surfaceRaised};padding:4px 8px;text-align:left;vertical-align:top;font-size:12px}
 th{color:${theme.textSecondary}}
-.done{color:${theme.success}}.failed{color:${theme.error}}.running{color:${theme.warning}}.queued{color:${theme.textSecondary}}
+.done{color:${theme.seal}}.failed{color:${theme.danger}}.running{color:${theme.warn}}.queued{color:${theme.textSecondary}}
 .fleet{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid ${theme.surfaceOverlay};border-radius:10px;padding:2px 8px;font-size:11px;color:${theme.textPrimary}}
-.chip b{color:${theme.brand}}
+.chip{border:1px solid ${theme.surfaceRaised};border-radius:10px;padding:2px 8px;font-size:11px;color:${theme.textPrimary}}
+.chip b{color:${theme.accent}}
 .frames{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.frames img{height:72px;border:1px solid ${theme.surfaceOverlay}}
+.frames img{height:72px;border:1px solid ${theme.surfaceRaised}}
 pre{margin:0;font-size:11px;color:${theme.textSecondary};white-space:pre-wrap}
 </style>
 </head>
 <body>
 <header>
-  <h1>⛁ ${BRAND.studios}</h1>
+  <h1>● ${BRAND.studios}</h1>
   <span class="tag">${BRAND.studiosTagline}</span>
   <span class="slate">${BRAND.slate}: ${BRAND.slateTagline}</span>
 </header>

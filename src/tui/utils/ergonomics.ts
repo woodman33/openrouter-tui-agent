@@ -41,11 +41,11 @@ export const PALETTE_MODELS = [
   { id: 'qwen/qwen-2.5-coder-32b-instruct', label: 'Qwen 2.5 Coder · open weights' }
 ];
 
-/** Active Pane Invariant (v1.0.5): focused card #7dcfff + ◆; others muted. */
+/** Active Pane Invariant: focused card theme.lineFocus + ◆; others theme.line. */
 export function chromeFor(active: boolean): { border: string; title: string; glyph: string; bold: boolean } {
   return active
-    ? { border: theme.focus, title: theme.focus, glyph: '◆', bold: true }
-    : { border: theme.borderMuted, title: theme.brandDim, glyph: '◇', bold: false };
+    ? { border: theme.accent, title: theme.accent, glyph: '◆', bold: true }
+    : { border: theme.line, title: theme.textSecondary, glyph: '◇', bold: false };
 }
 
 /** pane counts per view — Tab cycles focus within these bounds */

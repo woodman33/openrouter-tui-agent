@@ -27,7 +27,7 @@ export function SignalBars({ width = 10, color = theme.accent, active = true }: 
     return BAR_FRAMES[(frame + index) % BAR_FRAMES.length];
   }).join('');
 
-  return <Text color={active ? color : theme.textTertiary}>{bars}</Text>;
+  return <Text color={active ? color : theme.textMuted}>{bars}</Text>;
 }
 
 export function ShimmerText({
@@ -74,9 +74,9 @@ export function StatusPill({
   const valueWidth = Math.max(4, safeWidth - labelWidth - 3);
 
   return (
-    <Box borderStyle="single" borderColor={active ? color : theme.borderDefault} paddingX={1} width={safeWidth}>
+    <Box borderStyle="single" borderColor={active ? color : theme.line} paddingX={1} width={safeWidth}>
       <Text color={theme.textPrimary}>{truncateVisible(label, labelWidth)}</Text>
-      <Text color={theme.textTertiary}> </Text>
+      <Text color={theme.textMuted}> </Text>
       <Text color={color} bold={active} wrap="truncate">{truncateVisible(value, valueWidth)}</Text>
     </Box>
   );

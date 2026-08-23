@@ -41,7 +41,7 @@ describe('sparkline', () => {
 describe('status glyphs', () => {
   it('is a single source of truth', () => {
     expect(statusGlyph('running').glyph).toBe('●');
-    expect(statusGlyph('sealed').glyph).toBe('⛁');
+    expect(statusGlyph('sealed').glyph).toBe('●');
     expect(statusGlyph('missing').label).toBe('not installed');
   });
 });
@@ -66,7 +66,7 @@ describe('step timeline', () => {
       ev('provider.route', '2026-08-12T12:00:07Z', { provider: 'ollama', status: 'fallback', model: 'qwen3' }),
       ev('model.switch', '2026-08-12T12:00:08Z', { model: 'qwen/qwen3.8-max' })
     ]);
-    expect(steps.map(s => s.glyph).join('')).toBe('⚠✓✕🔀🔀');
+    expect(steps.map(s => s.glyph).join('')).toBe('⚠✓×▸▸');
     expect(steps[0].text).toContain('rm -rf dist');
     expect(steps[3].text).toContain('fallback → qwen3');
   });

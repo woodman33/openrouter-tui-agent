@@ -12,7 +12,7 @@ interface GlowBorderProps {
   borderStyle?: "single" | "double" | "round" | "bold" | "singleDouble" | "doubleSingle" | "classic" | undefined;
 }
 
-export function GlowBorder({ children, color = theme.info, width = 40, height, label, borderStyle = 'round' }: GlowBorderProps) {
+export function GlowBorder({ children, color = theme.accent, width = 40, height, label, borderStyle = 'round' }: GlowBorderProps) {
   const safeWidth = Math.max(8, Math.floor(width));
   const safeHeight = height ? Math.max(3, Math.floor(height)) : undefined;
   const innerWidth = Math.max(4, safeWidth - 2);

@@ -5,7 +5,9 @@ import { execFileSync } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import type { Agent } from '../../agent/core.js';
-import { PanelFrame } from '../components/PanelFrame.js';
+import { PaneFocusContext } from '../components/PanelFrame.js';
+import { KeyHintBar } from '../components/KeyHintBar.js';
+import { Card, BudgetList, EmptyState } from '../ui/index.js';
 import { LANE_RUNNERS, DEFAULT_LANE_BINDINGS } from '../../agent/lanes.js';
 import { stripAnsi } from '../utils/text.js';
 import { osc52Copy } from '../../utils/notify.js';
@@ -38,6 +40,7 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
   const [note, setNote] = useState('');
   const [coach, setCoach] = useState(() => !existsSync(join(process.cwd(), '.timmy', '.lanes-coach')));
   const sealedRuns = useRef<Record<string, number>>({});
+  const focused = React.useContext(PaneFocusContext);
 
   // guiding UX: a concrete first task per runner, so nobody stares at six
   // green dots wondering what to do
@@ -197,13 +200,86 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
   }, { isActive: !inputLocked });
 
   return (
-    <PanelFrame
-      icon="🧑🤝‍🧑"
-      title="LANES — LIVE AGENT PANES"
-      status={`${aliveCount}/${lanes.length} alive${blockedCount ? ` · ${blockedCount} waiting on you` : ''}`}
-      statusColor={blockedCount ? theme.warning : theme.success}
-      explain="Real multiplexer sessions — you're watching their actual terminals. Delegate a task; risky commands stop for your approval."
-      hints={[
+    <Card
+      title="Lanes — live agent panes"
+      focused={focused}
+      purpose="real multiplexer sessions — you're watching their actual terminals, risky commands stop for approval"
+      pill={{
+        kind: blockedCount ? 'warn' : aliveCount ? 'accent' : 'muted',
+        label: `${aliveCount}/${lanes.length} alive${blockedCount ? ` · ${blockedCount} waiting on you` : ''}`
+      }}
+      flexGrow={1}
+    >
+      {note && <Text color={theme.accent} wrap="truncate">{note}</Text>}
+      <Box flexDirection="row" flexGrow={1}>
+        {/* lane roster */}
+        <Box flexDirection="column" width="38%" paddingRight={1}>
+          <BudgetList
+            items={lanes}
+            max={7}
+            offset={Math.max(0, selIdx - 6)}
+            render={(l, i) => {
+              const isSel = i === selIdx;
+              const runner = LANE_RUNNERS[DEFAULT_LANE_BINDINGS[l.id]];
+              const isBlocked = blocked?.has(l.id);
+              const isAlive = alive[l.id];
+              const color = isBlocked ? theme.warn : isAlive ? theme.accent : theme.textSecondary;
+              return (
+                <Box flexDirection="column">
+                  <Text color={isSel ? theme.accent : color} bold={isSel} wrap="truncate">
+                    {isSel ? '▸ ' : '  '}{isAlive ? '●' : ' '} {l.name}{isBlocked ? ' · waiting on you' : ''}
+                  </Text>
+                  <Text color={theme.textSecondary} wrap="truncate">
+                      {'   '}{runner?.blurb || runner?.label || 'shell'}{installed[l.id] === false ? ` · missing ${runner?.cmd} — install: ${runner?.install || 'add to PATH'}` : ''}{isAlive ? '' : ' · not running'}
+                  </Text>
+                  {isSel && (
+                    <Text color={theme.textSecondary} wrap="truncate">
+                      {'   '}try: {suggested(l.id)} · [t] delegates it
+                    </Text>
+                  )}
+                </Box>
+              );
+            }}
+          />
+        </Box>
+        {/* live pane output */}
+        <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
+          {sel ? (
+            <>
+              <Text bold color={theme.accent} wrap="truncate">live · ortui-{sel.id} · {sel.name}</Text>
+              {/402|Insufficient credits|Internal Server Error/.test(capture.join('\n')) && (
+                <Text color={theme.warn}>lane hit a provider error (credits/500) — raw output below · [g]/resend from chat</Text>
+              )}
+              {selBlocked && (
+                <Box flexDirection="column" marginTop={1}>
+                  <Text bold color={theme.warn}>BLOCKED — waiting on you: {selBlocked}</Text>
+                  <Text color={theme.textSecondary}>[g] approve & run · anything else leaves it parked</Text>
+                </Box>
+              )}
+              {alive[sel.id] ? (
+                capture.slice(-12).map((line, i) => (
+                  <Text key={i} color={theme.textSecondary} wrap="truncate">{stripAnsi(line) || ' '}</Text>
+                ))
+              ) : (
+                <EmptyState line="pane not running" action="[n] spawns it — you'll watch it boot here, live" />
+              )}
+              {tasking && (
+                <Box marginTop={1}>
+                  <Text color={theme.accent}>task → {sel.name}: {draft}█</Text>
+                </Box>
+              )}
+            </>
+          ) : (
+            <EmptyState line="no lanes yet — the chat home screen boots the default five" />
+          )}
+        </Box>
+      </Box>
+      {coach && !tasking && (
+        <Text color={theme.textMuted} wrap="truncate">
+          first time here? this is your crew — six real agents, not decorations · [t] delegate · [g] approve · [x] dismiss
+        </Text>
+      )}
+      <KeyHintBar hints={[
         { key: '↑↓', label: 'lane' },
         { key: 't/↵', label: 'type task' },
         { key: 'g', label: 'approve' },
@@ -212,77 +288,7 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
         { key: 'o', label: 'attach' },
         { key: 'v', label: 'tmux tabs' },
         { key: 'G', label: 'grid' }
-      ]}
-    >
-      {coach && !tasking && (
-        <Box flexDirection="column" borderStyle="single" borderColor={theme.info} paddingX={1} marginBottom={1}>
-          <Text bold color={theme.info}>first time here? this is your crew — six real agents, not decorations.</Text>
-          <Text color={theme.textSecondary}>start small: select a lane, press [t] to delegate the suggested task, watch it work live.</Text>
-          <Text color={theme.textSecondary}>risky commands park for your approval ([g]). [v] builds tmux tabs over all lanes. [x] dismisses this forever.</Text>
-        </Box>
-      )}
-      {note && <Text color={theme.success} wrap="truncate">{note}</Text>}
-      <Box flexDirection="row" flexGrow={1}>
-        {/* lane roster */}
-        <Box flexDirection="column" width="38%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
-          {lanes.map((l, i) => {
-            const isSel = i === selIdx;
-            const runner = LANE_RUNNERS[DEFAULT_LANE_BINDINGS[l.id]];
-            const isBlocked = blocked?.has(l.id);
-            const glyph = isBlocked ? '⚠' : alive[l.id] ? '●' : '○';
-            const color = isBlocked ? theme.warning : alive[l.id] ? theme.success : theme.textSecondary;
-            return (
-              <Box key={l.id} flexDirection="column" marginBottom={1}>
-                <Text color={isSel ? theme.brand : color} bold={isSel} wrap="truncate">
-                  {isSel ? '▶ ' : '  '}{glyph} {l.name}
-                </Text>
-                <Text color={theme.textSecondary} wrap="truncate">
-                    {'   '}{runner?.blurb || runner?.label || 'shell'}{installed[l.id] === false ? ` · missing ${runner?.cmd} — install: ${runner?.install || 'add to PATH'}` : ''}{alive[l.id] ? '' : ' · not running'}
-                </Text>
-                {isSel && (
-                  <Text color={theme.textSecondary} wrap="truncate">
-                    {'   '}try: {suggested(l.id)} · [t] delegates it
-                  </Text>
-                )}
-              </Box>
-            );
-          })}
-        </Box>
-        {/* live pane output */}
-        <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
-          {sel ? (
-            <>
-              <Text bold color={theme.brand} wrap="truncate">live · ortui-{sel.id} · {sel.name}</Text>
-              {/402|Insufficient credits|Internal Server Error/.test(capture.join('\n')) && (
-                <Text color={theme.warning}>⚠ lane hit a provider error (credits/500) — raw output below; [g]/resend from chat</Text>
-              )}
-              {selBlocked && (
-                <Box flexDirection="column" borderStyle="double" borderColor={theme.warning} paddingX={1} marginTop={1}>
-                  <Text bold color={theme.warning}>⚠ BLOCKED — waiting on you: {selBlocked}</Text>
-                  <Text color={theme.textSecondary}>[g] approve & run · anything else leaves it parked</Text>
-                </Box>
-              )}
-              {alive[sel.id] ? (
-                capture.map((line, i) => (
-                  <Text key={i} color={theme.textSecondary} wrap="truncate">{stripAnsi(line) || ' '}</Text>
-                ))
-              ) : (
-                <Box flexDirection="column" marginTop={1}>
-                  <Text color={theme.textSecondary}>pane not running.</Text>
-                  <Text color={theme.textSecondary}>[n] spawns it — you'll watch it boot here, live.</Text>
-                </Box>
-              )}
-              {tasking && (
-                <Box marginTop={1}>
-                  <Text color={theme.info}>task → {sel.name}: {draft}█</Text>
-                </Box>
-              )}
-            </>
-          ) : (
-            <Text color={theme.textSecondary}>no lanes yet — the chat home screen boots the default five.</Text>
-          )}
-        </Box>
-      </Box>
-    </PanelFrame>
+      ]} />
+    </Card>
   );
 }

@@ -80,8 +80,8 @@ describe('onboarding journey', () => {
     view.stdin.write('1');                    // finish → View [1]
     await sleep(400);
     f = view.lastFrame() ?? '';
-    expect(f).toContain('cold start');       // empty-state wayfinding card
-    expect(f).toContain('[2] MISSION');
+    expect(f).toContain('no conversation yet');       // empty-state wayfinding card
+    expect(f).toContain('▸ 2 spawn a lane');
 
     view.unmount();
   }, 30000);

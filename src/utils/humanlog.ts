@@ -64,54 +64,54 @@ export function humanizeLine(line: string): HumanEvent | null {
       const detail = (line.match(/"detail"\s*:\s*"([^"]*)"/) || [])[1] || '';
       if (ev === 'recorded') {
         const prov = detail.split('/')[0];
-        return { ts, icon: '🎬', color: theme.brand, text: `gen queued${prov ? ` · ${prov}` : ''}` };
+        return { ts, icon: '◆', color: theme.accent, text: `gen queued${prov ? ` · ${prov}` : ''}` };
       }
       if (ev === 'status') {
-        if (detail === 'done') return { ts, icon: '✓', color: theme.success, text: 'gen done — artifact in ledger' };
-        if (detail === 'failed') return { ts, icon: '✕', color: theme.error, text: 'gen failed — see /gens' };
-        if (detail === 'running') return { ts, icon: '●', color: theme.warning, text: 'gen running' };
-        return { ts, icon: '◌', color: theme.textTertiary, text: `gen ${detail || 'queued'}` };
+        if (detail === 'done') return { ts, icon: '✓', color: theme.accent, text: 'gen done — artifact in ledger' };
+        if (detail === 'failed') return { ts, icon: '×', color: theme.danger, text: 'gen failed — see /gens' };
+        if (detail === 'running') return { ts, icon: '●', color: theme.warn, text: 'gen running' };
+        return { ts, icon: '●', color: theme.textMuted, text: `gen ${detail || 'queued'}` };
       }
-      return { ts, icon: '🎬', color: theme.textTertiary, text: `gen ${ev}` };
+      return { ts, icon: '◆', color: theme.textMuted, text: `gen ${ev}` };
     }
     switch (ev) {
       case 'model.selected': {
         const model = (line.match(/"model"\s*:\s*"([^"]+)"/) || [])[1];
-        return { ts, icon: '🔀', color: theme.info, text: model ? `→ ${model}` : 'model selected' };
+        return { ts, icon: '▸', color: theme.accent, text: model ? `→ ${model}` : 'model selected' };
       }
       case 'model.test.started':
         return null; // noise; only outcomes matter
       case 'model.test.succeeded':
-        return { ts, icon: '✓', color: theme.success, text: 'health ok' };
+        return { ts, icon: '✓', color: theme.accent, text: 'health ok' };
       case 'model.fallback.used':
-        return { ts, icon: '🔀', color: theme.warning, text: 'provider fallback used' };
+        return { ts, icon: '▸', color: theme.warn, text: 'provider fallback used' };
       case 'openrouter.request.failed':
-        return { ts, icon: '✕', color: theme.error, text: 'openrouter request failed' };
+        return { ts, icon: '×', color: theme.danger, text: 'openrouter request failed' };
       case 'run.started':
-        return { ts, icon: '⛁', color: theme.success, text: 'run started' };
+        return { ts, icon: '●', color: theme.accent, text: 'run started' };
       default:
-        return { ts, icon: '·', color: theme.textTertiary, text: ev.replace(/\./g, ' ') };
+        return { ts, icon: '·', color: theme.textMuted, text: ev.replace(/\./g, ' ') };
     }
   }
   if (/run\.created/.test(line)) {
     const src = (line.match(/"source"\s*:\s*"([^"]+)"/) || [])[1];
-    return { ts, icon: '⛁', color: theme.success, text: `run sealed${src && src !== 'timmy' ? ` · ${src.replace('timmy-', '')}` : ''}` };
+    return { ts, icon: '●', color: theme.seal, text: `run sealed${src && src !== 'timmy' ? ` · ${src.replace('timmy-', '')}` : ''}` };
   }
   if (/model\.switch/.test(line) && (m = line.match(/"model"\s*:\s*"([^"]+)"/))) {
-    return { ts, icon: '🔀', color: theme.info, text: `model → ${m[1]}` };
+    return { ts, icon: '▸', color: theme.accent, text: `model → ${m[1]}` };
   }
-  if (/model\.test\.succeeded/.test(line)) return { ts, icon: '✓', color: theme.success, text: 'provider health ok' };
-  if (/Ctrl\+C captured/.test(line)) return { ts, icon: '⏻', color: theme.textTertiary, text: 'clean exit' };
-  if (/browser\.spawned|lane\.spawned|carbonyl/.test(line)) return { ts, icon: '🖥', color: theme.brand, text: 'browser lane opened' };
-  if (/lane\.command\.sent/.test(line)) return { ts, icon: '→', color: theme.info, text: 'task sent to lane' };
-  if (/approval\.granted/.test(line)) return { ts, icon: '✓', color: theme.success, text: 'you approved a blocked command' };
-  if (/approval\.(requested|required)|blocked command/i.test(line)) return { ts, icon: '⚠', color: theme.warning, text: 'command parked — waiting your approval' };
-  if (/Companion port|companion.{0,20}unreachable/i.test(line)) return { ts, icon: '✕', color: theme.error, text: 'companion unreachable' };
-  if (/Companion client connected/.test(line)) return { ts, icon: '☁', color: theme.textTertiary, text: 'companion joined' };
-  if (/Companion client disconnected/.test(line)) return { ts, icon: '☁', color: theme.textTertiary, text: 'companion left' };
-  if (/\[ERROR\]/.test(line)) return { ts, icon: '✕', color: theme.error, text: clean(line) };
-  if (/\[WARN\]/.test(line)) return { ts, icon: '⚠', color: theme.warning, text: clean(line) };
-  if (/failed|Failed/.test(line)) return { ts, icon: '✕', color: theme.error, text: clean(line) };
+  if (/model\.test\.succeeded/.test(line)) return { ts, icon: '✓', color: theme.accent, text: 'provider health ok' };
+  if (/Ctrl\+C captured/.test(line)) return { ts, icon: '⏻', color: theme.textMuted, text: 'clean exit' };
+  if (/browser\.spawned|lane\.spawned|carbonyl/.test(line)) return { ts, icon: '◇', color: theme.accent, text: 'browser lane opened' };
+  if (/lane\.command\.sent/.test(line)) return { ts, icon: '→', color: theme.accent, text: 'task sent to lane' };
+  if (/approval\.granted/.test(line)) return { ts, icon: '✓', color: theme.accent, text: 'you approved a blocked command' };
+  if (/approval\.(requested|required)|blocked command/i.test(line)) return { ts, icon: '⚠', color: theme.warn, text: 'command parked — waiting your approval' };
+  if (/Companion port|companion.{0,20}unreachable/i.test(line)) return { ts, icon: '×', color: theme.danger, text: 'companion unreachable' };
+  if (/Companion client connected/.test(line)) return { ts, icon: '◇', color: theme.textMuted, text: 'companion joined' };
+  if (/Companion client disconnected/.test(line)) return { ts, icon: '◇', color: theme.textMuted, text: 'companion left' };
+  if (/\[ERROR\]/.test(line)) return { ts, icon: '×', color: theme.danger, text: clean(line) };
+  if (/\[WARN\]/.test(line)) return { ts, icon: '⚠', color: theme.warn, text: clean(line) };
+  if (/failed|Failed/.test(line)) return { ts, icon: '×', color: theme.danger, text: clean(line) };
 
   const c = clean(line);
   if (c.length < 5) return null;

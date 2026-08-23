@@ -268,7 +268,7 @@ export const SLASH_COMMANDS: SlashCommand[] = [
       if (!filePath) return 'Usage: /render <file_path>';
 
       if (!existsSync(filePath)) {
-        return `✕ File not found at: "${filePath}"`;
+        return `× File not found at: "${filePath}"`;
       }
 
       try {
@@ -308,7 +308,7 @@ export const SLASH_COMMANDS: SlashCommand[] = [
                `${cardColor}│${borderReset}  ${textDim}Status:  ${borderReset}${'\x1b[32m✓ Streamed successfully to Companion Browser\x1b[0m'.padEnd(55)}\n` +
                `${cardColor}└────────────────────────────────────────────────────────┘${borderReset}`;
       } catch (err: any) {
-        return `✕ Failed to render media file: ${err.message}`;
+        return `× Failed to render media file: ${err.message}`;
       }
     }
   },
@@ -354,7 +354,7 @@ ${boldBlue}Response Status Codes:${reset}
         }
         return stdout;
       } catch (err: any) {
-        return `✕ Failed to execute stress test: ${err.message}`;
+        return `× Failed to execute stress test: ${err.message}`;
       }
     }
   },
@@ -383,7 +383,7 @@ ${boldBlue}Response Status Codes:${reset}
                `${dim}Target:${reset}   ${url}\n` +
                `${dim}Status:${reset}   ${stdout.trim()}`;
       } catch (err: any) {
-        return `✕ Failed to spawn browser: ${err.message}`;
+        return `× Failed to spawn browser: ${err.message}`;
       }
     }
   },
@@ -411,7 +411,7 @@ ${boldBlue}Response Status Codes:${reset}
                `${dim}Active elements found:${reset}\n` +
                stdout;
       } catch (err: any) {
-        return `✕ Snapshot failed: ${err.message}`;
+        return `× Snapshot failed: ${err.message}`;
       }
     }
   },
@@ -438,7 +438,7 @@ ${boldBlue}Response Status Codes:${reset}
                `${dim}Target:${reset}   ID [${refId}]\n` +
                `${dim}Status:${reset}   ${stdout.trim()}`;
       } catch (err: any) {
-        return `✕ Click failed: ${err.message}`;
+        return `× Click failed: ${err.message}`;
       }
     }
   },
@@ -471,7 +471,7 @@ ${boldBlue}Response Status Codes:${reset}
                `${dim}Location:${reset} ${path}\n` +
                `${dim}Status:${reset}   ✓ Synced and streamed to Companion Viewport Visualizer!`;
       } catch (err: any) {
-        return `✕ Screenshot capture failed: ${err.message}`;
+        return `× Screenshot capture failed: ${err.message}`;
       }
     }
   },
@@ -499,8 +499,8 @@ import React from 'react';
 
 export default function DemoDashboard() {
   return (
-    <div className="p-8 bg-[${theme.surfaceBase}] text-[${theme.textPrimary}] font-sans border border-[${theme.borderDefault}] rounded-2xl max-w-md mx-auto shadow-2xl">
-      <h1 className="text-2xl font-bold bg-gradient-to-r from-[${theme.brand}] to-[${theme.info}] bg-clip-text text-transparent">TIMMY Live Viewport</h1>
+    <div className="p-8 bg-[${theme.ground}] text-[${theme.textPrimary}] font-sans border border-[${theme.line}] rounded-2xl max-w-md mx-auto shadow-2xl">
+      <h1 className="text-2xl font-bold bg-gradient-to-r from-[${theme.accent}] to-[${theme.accent}] bg-clip-text text-transparent">TIMMY Live Viewport</h1>
       <p className="mt-2 text-sm text-[${theme.textSecondary}]">William Meldman Creator Attribution Stamp Verified.</p>
     </div>
   );
@@ -521,7 +521,7 @@ export default function DemoDashboard() {
                `Scan to load preview on Phone:\n` +
                qrAscii;
       } catch (err: any) {
-        return `✕ Visual export failed: ${err.message}`;
+        return `× Visual export failed: ${err.message}`;
       }
     }
   },
@@ -565,7 +565,7 @@ export default function DemoDashboard() {
       const kind = args.trim().toLowerCase() as HarnessKind;
       if (kind && !HARNESS_KINDS.includes(kind)) return `Usage: /harness [${HARNESS_KINDS.join('|')}]`;
       const entries = listHarnessEntries(kind || undefined);
-      const head = `⛁ TIMMY CONTINUAL HARNESS\n${harnessOverview()}`;
+      const head = `● TIMMY CONTINUAL HARNESS\n${harnessOverview()}`;
       if (entries.length === 0) {
         return `${head}\n(no entries${kind ? ` of kind "${kind}"` : ''} yet — teach TIMMY with \`/refine <kind> <title> :: <content>\`)`;
       }
@@ -603,7 +603,7 @@ export default function DemoDashboard() {
           timestamp: Date.now()
         });
       }
-      return `⛁ HARNESS REFINED (sealed ${event.stamp.slice(0, 20)}…)\n• [${kind}] ${entry.title} → v${entry.version}\n• change: ${content.length > 80 ? content.slice(0, 80) + '…' : content}\nBase system prompt untouched. State lives in .timmy/harness_state.json.`;
+      return `● HARNESS REFINED (sealed ${event.stamp.slice(0, 20)}…)\n• [${kind}] ${entry.title} → v${entry.version}\n• change: ${content.length > 80 ? content.slice(0, 80) + '…' : content}\nBase system prompt untouched. State lives in .timmy/harness_state.json.`;
     }
   },
   {
@@ -638,11 +638,11 @@ export default function DemoDashboard() {
 <meta charset="utf-8">
 <title>TIMMY Studios — ${esc(slugId)}</title>
 <style>
-body{margin:0;background:${theme.surfaceBase};color:${theme.textPrimary};font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;overflow:hidden}
+body{margin:0;background:${theme.ground};color:${theme.textPrimary};font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;overflow:hidden}
 #stage{position:relative;width:100vw;height:100vh}
 .clip{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:0;animation:beat var(--dur) linear var(--at) forwards}
-.label{color:${theme.success};letter-spacing:.3em;font-size:12px}
-h1{margin:0;color:${theme.brand};font-size:28px;text-align:center;max-width:80%}
+.label{color:${theme.accent};letter-spacing:.3em;font-size:12px}
+h1{margin:0;color:${theme.accent};font-size:28px;text-align:center;max-width:80%}
 @keyframes beat{0%{opacity:0}12%{opacity:1}88%{opacity:1}100%{opacity:0}}
 </style>
 </head>
@@ -817,7 +817,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const q = args.trim();
       const kind = q === 'image' || q === 'video' ? q : undefined;
       const rows = listGenerations({ id: kind ? undefined : q || undefined, kind }).slice(0, 12);
-      if (!rows.length) return `🎞️  No generations match. ${generationsOverview()}`;
+      if (!rows.length) return `◆  No generations match. ${generationsOverview()}`;
       const lines = rows.map(g => {
         let status = g.status;
         let artifact = g.artifact;
@@ -857,7 +857,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
         }
         return `• ${g.id}  ${g.provider.padEnd(18)} ${status.padEnd(7)}${cost !== undefined ? ` $${cost.toFixed(3)}` : ''}${g.frameCount ? ` ${g.frameCount}f` : ''}${artifact ? ` → ${artifact}` : ''}  "${g.prompt.slice(0, 44)}${g.prompt.length > 44 ? '…' : ''}"`;
       });
-      return `🎞️  GENERATION LEDGER\n${lines.join('\n')}\n\n${generationsOverview()}`;
+      return `◆  GENERATION LEDGER\n${lines.join('\n')}\n\n${generationsOverview()}`;
     }
   },
   {
@@ -875,8 +875,8 @@ document.querySelectorAll(".clip").forEach(function (el) {
         const match = listGenerations({ id: genId })[0];
         if (match) updateGeneration(match.id, { framesDir: outDir, frameCount: res.frames });
       }
-      if (!res.ok) return `🎞️  framecap failed — ${res.reason}`;
-      return `🎞️  FRAMECAP — ${res.frames} review frames (every ${FRAME_EVERY}th @${ASSUMED_FPS}fps)\n` +
+      if (!res.ok) return `◆  framecap failed — ${res.reason}`;
+      return `◆  FRAMECAP — ${res.frames} review frames (every ${FRAME_EVERY}th @${ASSUMED_FPS}fps)\n` +
              `• dir:  ${outDir}\n` +
              `• next: feed frames + prompt to the active agent for critique, then /refine or re-queue /gen`;
     }
@@ -974,7 +974,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
         age: fields[4] || undefined,
         props: fields[5] ? fields[5].split(',').map(s => s.trim()).filter(Boolean) : undefined
       });
-      if (!proj) return `✕ no project "${projName}" — /project ${projName} first`;
+      if (!proj) return `× no project "${projName}" — /project ${projName} first`;
       return `🎭 cast card ${cid.toUpperCase()} (${fields[0]}) slated into "${projName}"\n• every /gen --project ${projName} now injects the call sheet into the prompt\n• /pose ${projName} renders the blocking diagram (conditioning input)`;
     }
   },
@@ -988,7 +988,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const loc = args.replace(/--project\s+\S+/, '').trim();
       if (!loc) return 'Usage: /weather <location> [--project <p>]  — e.g. /weather "ridge lookout, oregon" --project demo-north';
       const w = fetchWx(loc);
-      if (!w) return '✕ wttr.in unreachable — check network (location spoofing is just wttr.in/<city>, no VPN needed)';
+      if (!w) return '× wttr.in unreachable — check network (location spoofing is just wttr.in/<city>, no VPN needed)';
       if (projName) {
         const proj = readProject(projName);
         if (proj) {
@@ -1010,7 +1010,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const r = shareFile(path);
       return r.ok
         ? `📤 sharing ${path}\n• code: ${r.code}  — receiver runs: croc ${r.code}\n• encrypted peer-to-peer; the code IS the auth`
-        : `✕ ${r.reason}`;
+        : `× ${r.reason}`;
     }
   },
   {
@@ -1021,7 +1021,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const r = demoTerminal();
       return r.ok
         ? `🎥 demo terminal live → ${r.url}\n• build the tabs first: LANES [w] (timmy-watch)\n${r.reason ? `• ⚠ ${r.reason}` : '• on your tailnet — safe to share the URL + login'}`
-        : `✕ ${r.reason}`;
+        : `× ${r.reason}`;
     }
   },
   {
@@ -1107,7 +1107,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const [sub, name] = args.trim().split(/\s+/);
       if (sub === 'install' && name) {
         const p = installMarketTemplate(name);
-        return p ? `🏪 installed → ${p}\n• use it: /studio --template ${name} <idea> · or Enter on it in SLATE` : `✕ not in the market — /market lists what's available`;
+        return p ? `🏪 installed → ${p}\n• use it: /studio --template ${name} <idea> · or Enter on it in SLATE` : `× not in the market — /market lists what's available`;
       }
       const rows = listMarket();
       return `🏪 TEMPLATE MARKET — ${rows.filter(r => r.installed).length}/${rows.length} installed\n` +
@@ -1123,7 +1123,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const name = args.trim().split(/\s+/)[0];
       if (!name) return 'Usage: /controlnet <project>';
       const wf = renderComfyWorkflow(name);
-      if (!wf) return `✕ no project "${name}"`;
+      if (!wf) return `× no project "${name}"`;
       return `🕸️  ControlNet workflow → ${wf}\n• conditioning.svg rendered alongside (convert to png for LoadImage)\n• call sheet rides the PROMPT node · negative guards identity/wardrobe drift\n• run: cd lab/comfy && docker compose up — queue via ComfyUI /prompt with this JSON`;
     }
   },
@@ -1141,7 +1141,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       }
       if (args.startsWith('use')) {
         const e = useBankEntry(args.replace(/^use\s+/, '').trim());
-        return e ? `🏦 ${e.label} (used ×${e.uses}):\n${e.text}` : '✕ not in the bank — /promptbank add <label> :: <text>';
+        return e ? `🏦 ${e.label} (used ×${e.uses}):\n${e.text}` : '× not in the bank — /promptbank add <label> :: <text>';
       }
       const bank = loadBank();
       return `🏦 PROMPT BANK — ${bank.length} entries (most-used first)\n` +
@@ -1159,7 +1159,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const nextId = projName ? `C${((readProject(projName)?.cast || []).length + 1)}` : undefined;
       const { card, prompt } = randomCharacter(nextId);
       if (projName) {
-        if (!readProject(projName)) return `✕ no project "${projName}" — /project ${projName} first`;
+        if (!readProject(projName)) return `× no project "${projName}" — /project ${projName} first`;
         addCastToProject(projName, card);
       }
       return `🎲 ${card.id} ${card.name} — ${card.age} · hair: ${card.hair} · wardrobe: ${card.wardrobe}\n   emotion: ${card.emotion} · props: ${card.props?.join(', ')}\n` +
@@ -1212,7 +1212,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const name = args.trim().split(/\s+/)[0];
       if (!name) return 'Usage: /rights <project>';
       const p = renderRightsLog(name);
-      return p ? `⚖️  RIGHTS/RECEIPTS LOG → ${p} (+ .json)\n• every gen with prompt, cost, artifact, receipt hash + chain link\n• a studio outsider verifies any row without lab access` : `✕ no project "${name}"`;
+      return p ? `⚖️  RIGHTS/RECEIPTS LOG → ${p} (+ .json)\n• every gen with prompt, cost, artifact, receipt hash + chain link\n• a studio outsider verifies any row without lab access` : `× no project "${name}"`;
     }
   },
   {
@@ -1226,7 +1226,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
         return [k, v.join(' ')];
       }));
       const proj = readProject(name);
-      if (!proj) return `✕ no project "${name}"`;
+      if (!proj) return `× no project "${name}"`;
       proj.sheet = {
         ...proj.sheet,
         sunrise: fields['sunrise'] || proj.sheet?.sunrise,
@@ -1266,7 +1266,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const name = args.trim().split(/\s+/)[0];
       if (!name) return 'Usage: /pose <project>';
       const svg = renderBlockingSvg(name);
-      if (!svg) return `✕ no project "${name}"`;
+      if (!svg) return `× no project "${name}"`;
       return `🕺 blocking diagram → ${svg}\n• stick figures per beat with C-ids, emotion, wardrobe — usable as scribble/pose conditioning\n• pixel-perfect poses: draw in tldraw, export PNG from the canvas`;
     }
   },
@@ -1279,7 +1279,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       if (!name || !src) return 'Usage: /ref <project> <path> [label]';
       const label = lbl.join(' ') || basename(src).replace(/\.[^.]+$/, '');
       const rel = addRefToProject(name, src, label);
-      return rel ? `🖼️  ref added → studio/${name}/${rel} (${label})` : `✕ no project "${name}" or file not found: ${src}`;
+      return rel ? `◇  ref added → studio/${name}/${rel} (${label})` : `× no project "${name}" or file not found: ${src}`;
     }
   },
   {
@@ -1290,7 +1290,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const name = args.trim().split(/\s+/)[0];
       if (!name) return 'Usage: /publish <project>';
       const sitePath = renderProjectSite(name);
-      if (!sitePath) return `✕ no project "${name}" — /project ${name} first`;
+      if (!sitePath) return `× no project "${name}" — /project ${name} first`;
       ensureDashServer();
       const url = `http://127.0.0.1:4273/studio/${name}/site/index.html`;
       if (agent && (agent as any).addBrowserPane) (agent as any).addBrowserPane(url);
@@ -1311,20 +1311,20 @@ document.querySelectorAll(".clip").forEach(function (el) {
         if (!note) return 'Usage: /porter job <note> — proposes an INERT job; nothing executes without approval';
         callSceneForge({ tool: 'sceneforge_propose_job', args: { note } })
           .then((r: any) => deliver(`📋 porter job proposed (inert): ${JSON.stringify(r).slice(0, 300)}`))
-          .catch((e: any) => deliver(`✕ porter: ${String(e?.message || e).slice(0, 160)} — set SCENEFORGE_AGENT_KEY in your shell`));
+          .catch((e: any) => deliver(`× porter: ${String(e?.message || e).slice(0, 160)} — set SCENEFORGE_AGENT_KEY in your shell`));
         return '⏳ porter job proposal dispatched — result lands in chat';
       }
       if (sub === 'caps') {
         callSceneForge({ tool: 'sceneforge_capabilities' })
           .then((r: any) => deliver(`🧰 sceneforge capabilities:\n${JSON.stringify(r, null, 1).slice(0, 700)}`))
-          .catch((e: any) => deliver(`✕ porter: ${String(e?.message || e).slice(0, 160)}`));
+          .catch((e: any) => deliver(`× porter: ${String(e?.message || e).slice(0, 160)}`));
         return '⏳ porter capabilities requested — result lands in chat';
       }
       const fleet = detectFleet();
       const fleetLines = fleet.map(f => `${String(f.rank).padStart(2)}. ${f.id.padEnd(18)} [${f.status.padEnd(9)}] ${f.forms.join('+')} — ${f.note}`);
       callSceneForge({ tool: 'sceneforge_project_status' })
         .then((r: any) => deliver(`🎛️  houdini/sceneforge (#1) live @ ${sceneForgeUrl()}:\n${JSON.stringify(r, null, 1).slice(0, 600)}`))
-        .catch((e: any) => deliver(`✕ houdini (#1): ${String(e?.message || e).slice(0, 140)} — SCENEFORGE_AGENT_KEY required`));
+        .catch((e: any) => deliver(`× houdini (#1): ${String(e?.message || e).slice(0, 140)} — SCENEFORGE_AGENT_KEY required`));
       return `🎛️  PORTER FLEET — "mcp" = sdk + mcp + api + cli\n${fleetLines.join('\n')}\n• #1 live status lands in chat · /porter caps · /porter job <note>`;
     }
   },
@@ -1417,8 +1417,8 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const lines = streams.map(s => {
         const r = verifyChain(s);
         return r.ok
-          ? `⛁ ${s.padEnd(9)} ${String(r.count).padStart(3)} receipts · chain intact`
-          : `✕ ${s.padEnd(9)} BROKEN at ${r.brokenAt} — ${r.reason}`;
+          ? `● ${s.padEnd(9)} ${String(r.count).padStart(3)} receipts · chain intact`
+          : `× ${s.padEnd(9)} BROKEN at ${r.brokenAt} — ${r.reason}`;
       });
       const allOk = streams.every(s => verifyChain(s).ok);
       return `🔐 RECEIPT VERIFICATION — ${allOk ? 'all chains intact' : 'TAMPER DETECTED'}\n${lines.join('\n')}\n• schema v1 · sha256 body hash + prev_hash link · cosign checkpoints next`;
@@ -1445,18 +1445,18 @@ document.querySelectorAll(".clip").forEach(function (el) {
         `const Beat: React.FC<{ label: string; text: string }> = ({ label, text }) => {\n` +
         `  const f = useCurrentFrame();\n` +
         `  const opacity = interpolate(f, [0, 10], [0, 1], { extrapolateRight: 'clamp' });\n` +
-        `  return (\n    <AbsoluteFill style={{ background: theme.surfaceBase, justifyContent: 'center', alignItems: 'center', opacity }}>\n` +
-        `      <div style={{ color: theme.brand, fontFamily: 'monospace', fontSize: 24 }}>[{label}]</div>\n` +
+        `  return (\n    <AbsoluteFill style={{ background: theme.ground, justifyContent: 'center', alignItems: 'center', opacity }}>\n` +
+        `      <div style={{ color: theme.accent, fontFamily: 'monospace', fontSize: 24 }}>[{label}]</div>\n` +
         `      <div style={{ color: theme.textPrimary, fontFamily: 'monospace', fontSize: 42 }}>{text}</div>\n` +
         `    </AbsoluteFill>\n  );\n};\n\n` +
-        `export const TimmySlate: React.FC = () => (\n  <AbsoluteFill style={{ background: theme.surfaceBase }}>\n${seqs}\n  </AbsoluteFill>\n);\n`, 'utf8');
+        `export const TimmySlate: React.FC = () => (\n  <AbsoluteFill style={{ background: theme.ground }}>\n${seqs}\n  </AbsoluteFill>\n);\n`, 'utf8');
       writeFileSync(join(dir, 'Root.tsx'),
         `import React from 'react';\nimport { Composition } from 'remotion';\nimport { TimmySlate } from './TimmySlate';\n\n` +
         `export const RemotionRoot: React.FC = () => (\n  <Composition id="TimmySlate" component={TimmySlate} durationInFrames={${Math.round(total * fps)}} fps={${fps}} width={1920} height={1080} />\n);\n`, 'utf8');
       writeFileSync(join(dir, 'README.md'),
         `# Remotion export — ${name || 'storyboard'}\n\nGenerated from the TIMMY Slate beat sheet (${beats.length} beats, ${total}s @ ${fps}fps).\n\n` +
         `\`\`\`bash\nnpx create-video@latest   # once, in a scratch dir; copy TimmySlate.tsx + Root.tsx into src/\nnpx remotion studio        # preview\nnpx remotion render TimmySlate out.mp4\n\`\`\`\n\nSame schema as HyperFrames + site targets: one storyboard, many compilers.\n`, 'utf8');
-      return `🎞️  Remotion scaffold → ${dir}\n• TimmySlate.tsx (${beats.length} Sequences) · Root.tsx (${Math.round(total * fps)} frames @ ${fps}fps) · README\n• next: npx remotion studio`;
+      return `◆  Remotion scaffold → ${dir}\n• TimmySlate.tsx (${beats.length} Sequences) · Root.tsx (${Math.round(total * fps)} frames @ ${fps}fps) · README\n• next: npx remotion studio`;
     }
   },
   {
@@ -1505,7 +1505,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
       const reset = '\x1b[0m';
       const dim = '\x1b[2m';
 
-      return `${boldYellow}⛁ ${BRAND.umbrella} — ${BRAND.tagline}${reset}\n` +
+      return `${boldYellow}● ${BRAND.umbrella} — ${BRAND.tagline}${reset}\n` +
              `${dim}${BRAND.studios}: ${BRAND.studiosTagline}\n` +
              `${BRAND.slate}: ${BRAND.slateTagline}${reset}\n` +
              `${boldCyan}💡 TIMMY CONSOLE SYSTEMS HELP DIRECTORY${reset}\n` +
@@ -1528,7 +1528,7 @@ document.querySelectorAll(".clip").forEach(function (el) {
              `  /render <file>— Push images, videos or media frames to companion\n` +
              `  /stress <url> — Perform high-concurrency Rust oha stress tests\n` +
              `  /qr <url>     — Generate glowing terminal QR code\n\n` +
-             `${boldMagenta}⛁ HARNESS, STUDIOS & STATS${reset}\n` +
+             `${boldMagenta}● HARNESS, STUDIOS & STATS${reset}\n` +
              `  /refine <k> <t> :: <c> — Small evidence-backed harness update (sealed)\n` +
              `  /harness [kind] — Inspect continual-harness state & refinements\n` +
              `  /studio <idea>  — Seed HyperFrames comp + carbonyl preview lane\n` +

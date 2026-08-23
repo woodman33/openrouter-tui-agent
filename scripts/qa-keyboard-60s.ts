@@ -67,10 +67,13 @@ console.log('\nSTEP8:', gone ? 'PASS — clean quit, scrollback intact' : 'FAIL 
 try { tmux(`kill-session -t ${S}`); } catch { /* fresh */ }
 tmux(`new-session -d -s ${S} -x 140 -y 40 "cd ${process.cwd()} && npx tsx timmy.ts; sleep 60"`);
 sleep(7000);
+// p11 post-reskin markers — Clearinghouse card titles (Card uppercases)
 const MARKS: Record<string, string> = {
-  '1': 'COMMAND POST', '2': 'SLATE DAG', '3': 'AUDIT LOG MONITOR', '4': 'ESCROW LEDGER',
-  '5': 'first time here?', '6': 'spawns carbonyl on any URL', '7': 'PROJECTS — PER-PROJECT TREE',
-  '8': 'TIMMY Settings & Options', '9': 'real Chromium renderer'
+  '1': 'LATEST PROOF', '2': 'SLATE DAG', '3': 'AUDIT LOG MONITOR', '4': 'ESCROW LEDGER',
+  // view 5 body marker: the TTY diff can clip the top chrome row after a
+  // view switch (known Ink quirk, documented in FEATURES.md) — assert body.
+  '5': 'governed agent runner', '6': 'DUAL-PANE WEB WORKSPACE', '7': 'PER-PROJECT TREE',
+  '8': 'SYSTEM SETTINGS', '9': 'CAPABILITY MAP'
 };
 let walk = true;
 for (const k of ['1', '2', '3', '4', '5', '6', '7', '8', '9']) {
@@ -78,7 +81,8 @@ for (const k of ['1', '2', '3', '4', '5', '6', '7', '8', '9']) {
   const f = cap();
   const line = f.split('\n').find(l => l.includes(MARKS[k])) ?? '';
   console.log(`\n════ 9.${k} · VIEW ${k} ════`);
-  console.log(line.trim() || '(marker missing!)');
+  console.log(f.split('\n').filter(l => l.trim()).slice(0, 10).join('\n'));
+  console.log(`   marker "${MARKS[k]}": ${line ? 'FOUND' : 'MISSING!'}`);
   const mode = f.includes('MODE:NAV');
   console.log(`   MODE:NAV ${mode ? 'ok' : 'MISSING'}`);
   if (!line) walk = false;

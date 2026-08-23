@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
-import { GlowBorder } from '../components/GlowBorder.js';
+import { Card, SectionRule, Metric, HashChip, Pill } from '../ui/index.js';
 import { exec } from 'child_process';
-import { PrimaryButton, SecondaryButton, WarningButton } from '../components/DesignSystem.js';
 import { getResponsiveLayout } from '../utils/responsive.js';
 
 interface ModelExplorerPanelProps {
@@ -13,10 +12,13 @@ interface ModelExplorerPanelProps {
   focusArea?: 'nav' | 'stage';
 }
 
+// Chrome stays glyph-clean (DESIGN.md §8): strip pictograph emoji from
+// content values that render inside the card.
+const stripEmoji = (s: string): string =>
+  s.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu, '').trim();
+
 export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }: ModelExplorerPanelProps) {
-  const { columns: width, rows: height } = useWindowSize();
-  const terminalHeight = height || 24;
-  const isSmallScreen = terminalHeight < 36;
+  const { columns: width } = useWindowSize();
 
   const [activeBtnIdx, setActiveBtnIdx] = useState(0);
   const [outputLog, setOutputLog] = useState<string>('Latest TIMMY tamper-evident sealed receipt.');
@@ -44,7 +46,7 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
     changed: 'Modified 3 local TSX panel components',
     manifestHash: 'sha256_e430f8219ab92cd0c07d3',
     receiptPath: 'logs/receipts/run_jti_81f292.receipt',
-    status: 'Sealed & Gated OK 🟢'
+    status: 'Sealed & Gated OK'
   };
 
   useEffect(() => {
@@ -127,10 +129,10 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
           changed: 'Verified all 5 spine panels and sealed public compliance proofs',
           manifestHash: `sha256_${Math.random().toString(16).substring(2, 10)}${Math.random().toString(16).substring(2, 10)}`,
           receiptPath: `logs/receipts/${newRunId}.receipt`,
-          status: 'Sealed & Gated OK 🟢'
+          status: 'Sealed & Gated OK'
         };
         agent.latestReceipt = nextReceipt;
-        
+
         // Notify companion sync systems
         agent.emit('run.created', {
           runId: newRunId,
@@ -147,78 +149,90 @@ export function ModelExplorerPanel({ agent, setInspector, focusArea = 'stage' }:
 
   // Responsive width calculation — match layout.tsx breakpoints
   const terminalWidth = width || 80;
-  const { mainStageWidth, isCompact } = getResponsiveLayout(terminalWidth);
+  const { mainStageWidth } = getResponsiveLayout(terminalWidth);
+  const focused = focusArea === 'stage';
 
   return (
-    <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
-      {/* 1. Header Banner & One-Line Explainer */}
-      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Text bold color={theme.brand}>🧾  TIMMY Sealed Receipt Proof</Text>
-        <Text color={theme.textSecondary}>View the latest sealed TIMMY receipt.</Text>
+    // alignSelf: SYSTEM cards fit content height — no giant blank middle
+    <Box alignSelf="flex-start">
+    <Card
+      title="TIMMY sealed receipt proof"
+      focused={focused}
+      purpose="view the latest sealed TIMMY receipt"
+      pill={copiedFlash ? { kind: 'accent', label: 'HASH COPIED' } : { kind: 'seal', label: 'SEALED' }}
+      width={mainStageWidth}
+    >
+      {/* Plain-English receipt details */}
+      <Box justifyContent="space-between">
+        <Text color={theme.textSecondary}>latest receipt</Text>
+        {sealedFlash ? <Pill kind="seal" label="RECEIPT SEALED & SECURED" /> : null}
+        {copiedFlash && !sealedFlash ? <Pill kind="accent" label="MANIFEST HASH COPIED" /> : null}
       </Box>
-
-      {/* 2. Plain English Receipt details */}
-      <Box borderStyle="round" borderColor={sealedFlash ? theme.success : copiedFlash ? theme.info : theme.info} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Box justifyContent="space-between" flexDirection="row">
-          <Text bold color={sealedFlash ? theme.success : copiedFlash ? theme.info : theme.info}>Latest TIMMY Receipt</Text>
-          {sealedFlash && <Text bold color={theme.success}> [ 🔐 RECEIPT SEALED & SECURED ] </Text>}
-          {copiedFlash && <Text bold color={theme.info}> [ 📋 MANIFEST HASH COPIED ] </Text>}
-        </Box>
-        <Box flexDirection="column" marginTop={1}>
-          <Text color={theme.textPrimary}>◈ - Run:           <Text color={theme.info} bold>{latestReceipt.runId}</Text></Text>
-          <Text color={theme.textPrimary}>◈ - Prompt:        <Text color={theme.textPrimary}>{latestReceipt.prompt}</Text></Text>
-          <Text color={theme.textPrimary}>◈ - Agent:         <Text color={theme.brand}>{latestReceipt.agent}</Text></Text>
-          <Text color={theme.textPrimary}>◈ - Tools:         <Text color={theme.warning}>{latestReceipt.tools}</Text></Text>
-          <Text color={theme.textPrimary}>◈ - What changed:  <Text color={theme.brand}>{latestReceipt.changed}</Text></Text>
-          <Text color={theme.textPrimary}>◈ - Manifest hash: <Text color={theme.success} bold>{latestReceipt.manifestHash}</Text></Text>
-          <Text color={theme.textPrimary}>◈ - Receipt file:  <Text color={theme.textSecondary} wrap="truncate">{latestReceipt.receiptPath}</Text></Text>
-          <Text color={theme.textPrimary}>◈ - Status:        <Text color={theme.success} bold>{latestReceipt.status}</Text></Text>
-        </Box>
-      </Box>
-
-      {/* 3. Action Button Deck (Stable slots, no reflow) */}
-      <Box borderStyle="round" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Box flexDirection="row" justifyContent="space-between" width={mainStageWidth - 8} flexWrap="wrap">
-          {buttons.map((btn, idx) => {
-            const isFocused = idx === activeBtnIdx;
-            if (btn.key === 'open') {
-              return <PrimaryButton key={btn.key} label={btn.label} selected={isFocused} width={18} />;
-            } else if (btn.key === 'run_proof') {
-              return <WarningButton key={btn.key} label={btn.label} selected={isFocused} width={18} />;
-            } else {
-              return <SecondaryButton key={btn.key} label={btn.label} selected={isFocused} width={18} />;
-            }
-          })}
-        </Box>
-      </Box>
-
-      {/* 4. Raw manifest expanded if toggled */}
-      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" width={mainStageWidth - 2} flexShrink={0}>
-        <Text color={theme.textSecondary}>
-          {showRawManifest 
-            ? `Raw JSON Manifest:\n{\n  "runId": "${latestReceipt.runId}",\n  "manifestHash": "${latestReceipt.manifestHash}",\n  "status": "sealed",\n  "scope": "proof.receipt.ledger"\n}` 
-            : 'Raw manifest collapsed. Select [Show Raw Manifest] action to expand.'
-          }
-        </Text>
-      </Box>
-
-      {/* 5. Console log output */}
-      <Box flexGrow={1} flexShrink={1}>
-        <GlowBorder color={theme.borderDefault} width={mainStageWidth - 2} label="💻 EVIDENCE VERIFIER CONSOLE">
-          <Box flexDirection="column" paddingX={1} minHeight={4}>
-            <Text color={theme.textSecondary}>{outputLog}</Text>
-            <Text color={theme.textSecondary}>Status: verified tamper-evident and hash-bound.</Text>
+      <Box flexDirection="column" marginTop={1}>
+        <Metric label="run" value={latestReceipt.runId} labelWidth={16} />
+        <Metric label="prompt" value={latestReceipt.prompt} labelWidth={16} />
+        <Metric label="agent" value={latestReceipt.agent} labelWidth={16} />
+        <Metric label="tools" value={latestReceipt.tools} labelWidth={16} />
+        <Metric label="what changed" value={latestReceipt.changed} labelWidth={16} />
+        <Box>
+          <Box width={16} flexShrink={0}>
+            <Text color={theme.textMuted}>manifest hash</Text>
           </Box>
-        </GlowBorder>
+          <HashChip hash={latestReceipt.manifestHash} sealed full={focused} />
+        </Box>
+        <Metric label="receipt file" value={latestReceipt.receiptPath} labelWidth={16} />
+        <Box justifyContent="space-between">
+          <Metric label="status" value={stripEmoji(String(latestReceipt.status))} labelWidth={16} />
+          <Pill kind="seal" label="SEALED" />
+        </Box>
       </Box>
 
-      {/* 6. Universal bottom input prompt */}
-      <Box borderStyle="single" borderColor={focusArea === 'stage' ? theme.brand : theme.borderDefault} paddingX={1} width={mainStageWidth - 2} flexShrink={0}>
+      {/* Action deck (stable slots, no reflow) */}
+      <Box marginTop={1}>
+        <SectionRule label="actions" />
+      </Box>
+      <Box flexDirection="row" flexWrap="wrap">
+        {buttons.map((btn, idx) => {
+          const isFocused = idx === activeBtnIdx;
+          const color = btn.key === 'run_proof' ? theme.warn : isFocused ? theme.accent : theme.textSecondary;
+          return (
+            <Box key={btn.key} marginRight={2}>
+              <Text bold={isFocused} color={color}>
+                {isFocused ? '▸ ' : '  '}[{btn.label}]
+              </Text>
+            </Box>
+          );
+        })}
+      </Box>
+
+      {/* Raw manifest, expanded on toggle */}
+      <Box marginTop={1}>
+        <SectionRule label="raw manifest" />
+      </Box>
+      <Text color={theme.textSecondary}>
+        {showRawManifest
+          ? `{\n  "runId": "${latestReceipt.runId}",\n  "manifestHash": "${latestReceipt.manifestHash}",\n  "status": "sealed",\n  "scope": "proof.receipt.ledger"\n}`
+          : 'Raw manifest collapsed. Select [Show Raw Manifest] action to expand.'
+        }
+      </Text>
+
+      {/* Evidence verifier console */}
+      <Box marginTop={1}>
+        <SectionRule label="evidence verifier console" />
+      </Box>
+      <Box flexDirection="column" flexGrow={1}>
+        <Text color={theme.textSecondary}>{outputLog}</Text>
+        <Text color={theme.textSecondary}>Status: verified tamper-evident and hash-bound.</Text>
+      </Box>
+
+      {/* Universal bottom input prompt */}
+      <Box flexShrink={0}>
         <Text color={theme.textSecondary}>[ proof ] </Text>
-        <Text color={theme.info}>▶ </Text>
+        <Text color={theme.accent}>▸ </Text>
         <Text color={theme.textPrimary}>{inputCmd}</Text>
         <Text color={theme.textSecondary}>█</Text>
       </Box>
+    </Card>
     </Box>
   );
 }

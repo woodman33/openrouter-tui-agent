@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
+import { Card } from './ui/Card.js';
 import { checkDocker, checkComfyCli } from '../utils/doctor.js';
 import { useFocus } from './hooks/useKeyDispatcher.js';
 import { appendFileSync, existsSync } from 'fs';
@@ -17,7 +18,7 @@ interface OnboardingProps {
 
 type Step = 'splash' | 'provider' | 'key' | 'cloud' | 'cloudUrl' | 'logs' | 'teachMission' | 'teachPalette' | 'teachBack' | 'done';
 
-// v1.0.5-fix: brand wordmark, cyan → purple down the rows
+// Clearinghouse wordmark: accent → text ramp down the rows (DESIGN.md §2)
 const WORDMARK = [
   '████████ ██ ███    ███ ███    ███ ██    ██',
   '   ██    ██ ████  ████ ████  ████  ██  ██ ',
@@ -25,7 +26,7 @@ const WORDMARK = [
   '   ██    ██ ██  ██  ██ ██  ██  ██    ██   ',
   '   ██    ██ ██      ██ ██      ██   ██    '
 ];
-const MARK_COLORS = ['#00f0ff', '#7dcfff', '#9ece6a', '#bb9af7', '#7a5ff0'];
+const MARK_COLORS = [theme.accent, theme.accent, theme.textPrimary, theme.textSecondary, theme.textMuted];
 
 /**
  * First-run onboarding: pick a brain (local Ollama, OpenRouter key, or both),
@@ -160,42 +161,47 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
   const ollamaLine = ollama === null
     ? 'probing localhost:11434…'
     : ollama.ok
-      ? `✔ Ollama detected — ${ollama.models.length} model(s): ${ollama.models.slice(0, 3).join(', ')}${ollama.models.length > 3 ? '…' : ''}`
-      : '✘ no local Ollama found (install: ollama.ai — optional)';
+      ? `✓ Ollama detected — ${ollama.models.length} model(s): ${ollama.models.slice(0, 3).join(', ')}${ollama.models.length > 3 ? '…' : ''}`
+      : '× no local Ollama found (install: ollama.ai — optional)';
 
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1}>
-      <Box borderStyle="double" borderColor={theme.brand} paddingX={2} flexDirection="column">
+      <Card
+        title="TIMMY · FIRST RUN"
+        focused
+        purpose="60-second setup · local-first · zero accounts required"
+        pill={{ kind: 'accent', label: 'SETUP' }}
+      >
         {step === 'splash' && (
-          <Box flexDirection="column" marginTop={1}>
+          <Box flexDirection="column">
             {WORDMARK.map((l, i) => <Text key={i} bold color={MARK_COLORS[i]}>{l}</Text>)}
-            <Text bold color={theme.focus}>Terminal-first Agent Trust OS — Flight Recorder for AI Agent Runs</Text>
+            <Text bold color={theme.accent}>Terminal-first Agent Trust OS — Flight Recorder for AI Agent Runs</Text>
             <Text color={theme.textSecondary}>Every action seals a cryptographic receipt. Targets are not receipts.</Text>
-            {envNote && <Text color={theme.warning}>{envNote}</Text>}
-            <Text color={theme.textTertiary}>[Enter] Begin setup · [q] Quit</Text>
+            {envNote && <Text color={theme.warn}>{envNote}</Text>}
+            <Text color={theme.textMuted}>[Enter] Begin setup · [q] Quit</Text>
           </Box>
         )}
         {step === 'teachMission' && (
           <Box flexDirection="column" marginTop={1}>
-            <Text bold color={theme.focus}>◆ TEACH 1/3 — press [2] to open MISSION (DAG + capsules)</Text>
-            <Text color={theme.textTertiary}>wrong keys are swallowed with a gentle hint</Text>
+            <Text bold color={theme.accent}>◆ TEACH 1/3 — press [2] MISSION (DAG + capsules)</Text>
+            <Text color={theme.textMuted}>wrong keys are swallowed with a gentle hint</Text>
           </Box>
         )}
         {step === 'teachPalette' && (
-          <Box flexDirection="column" marginTop={1} borderStyle="double" borderColor={theme.brand} paddingX={1}>
-            <Text bold color={theme.brand}>🏛️ TIMMY COMMAND PALETTE — solid overlay, numbered rows</Text>
+          <Box flexDirection="column" marginTop={1} paddingX={1}>
+            <Text bold color={theme.accent}>◆ TIMMY COMMAND PALETTE — solid overlay, numbered rows</Text>
             <Text color={theme.textSecondary}> 1. model · local qwen (on-device)</Text>
-            <Text color={theme.textTertiary}>◆ TEACH 2/3 — press [^K] to open it for real</Text>
+            <Text color={theme.textMuted}>◆ TEACH 2/3 — press [^K] to open it for real</Text>
           </Box>
         )}
         {step === 'teachBack' && (
           <Box flexDirection="column" marginTop={1}>
-            <Text bold color={theme.focus}>◆ TEACH 3/3 — press [1] to return to COMMAND</Text>
+            <Text bold color={theme.accent}>◆ TEACH 3/3 — press [1] to return to COMMAND</Text>
           </Box>
         )}
         {step !== 'splash' && (
           <>
-            <Text bold color={theme.brand}>⚡ TIMMY FIRST RUN — 60-second setup</Text>
+            <Text bold color={theme.accent}>◆ TIMMY FIRST RUN — 60-second setup</Text>
             <Text color={theme.textSecondary}>Local-first: everything works with zero accounts. The rest is enhancement.</Text>
           </>
         )}
@@ -204,9 +210,9 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
           <Box flexDirection="column" marginTop={1}>
             <Text bold color={theme.textPrimary}>1 · PICK A BRAIN — choose ONE, Enter continues</Text>
             <Text color={theme.textSecondary}>  {ollamaLine}</Text>
-            <Text color={choice === 'both' ? theme.success : theme.textPrimary}>{choice === 'both' ? '  ▶ [b]' : '  ○ [b]'} Both — OpenRouter primary, Ollama fallback (recommended)</Text>
-            <Text color={choice === 'ollama' ? theme.success : theme.textPrimary}>{choice === 'ollama' ? '  ▶ [o]' : '  ○ [o]'} Local Ollama only — offline, free, private</Text>
-            <Text color={choice === 'key' ? theme.success : theme.textPrimary}>{choice === 'key' ? '  ▶ [k]' : '  ○ [k]'} OpenRouter key only — paste a key (openrouter.ai/keys)</Text>
+            <Text color={choice === 'both' ? theme.accent : theme.textPrimary}>{choice === 'both' ? '  ▸ [b]' : '  ◇ [b]'} Both — OpenRouter primary, Ollama fallback (recommended)</Text>
+            <Text color={choice === 'ollama' ? theme.accent : theme.textPrimary}>{choice === 'ollama' ? '  ▸ [o]' : '  ◇ [o]'} Local Ollama only — offline, free, private</Text>
+            <Text color={choice === 'key' ? theme.accent : theme.textPrimary}>{choice === 'key' ? '  ▸ [k]' : '  ◇ [k]'} OpenRouter key only — paste a key (openrouter.ai/keys)</Text>
             <Text color={theme.textSecondary}>  ▶ = current choice — press its key to change it</Text>
           </Box>
         ) : (
@@ -218,9 +224,9 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
         {step === 'key' && (
           <Box flexDirection="column" marginTop={1}>
             <Text bold color={theme.textPrimary}>2 · OPENROUTER KEY (Enter to continue, Esc back)</Text>
-            <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
-              <Text color={theme.brand}>sk-or-… </Text>
-              <Text color={theme.textPrimary}>{keyInput || 'paste key (optional — Enter skips)'}</Text>
+            <Box paddingX={1}>
+              <Text color={theme.accent}>▸ sk-or-… </Text>
+              <Text color={keyInput ? theme.textPrimary : theme.textMuted}>{keyInput || 'paste key (optional — Enter skips)'}</Text>
             </Box>
           </Box>
         )}
@@ -228,7 +234,7 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
         {step === 'cloud' && (
           <Box flexDirection="column" marginTop={1}>
             <Text bold color={theme.textPrimary}>2 · CLOUDFLARE LOG SYNC (sealed receipts + companion mirror)</Text>
-            <Text color={theme.success}>  [Enter] Sync to your worker (timmy-ai-proxy.wmeldman33.workers.dev)</Text>
+            <Text color={theme.accent}>  [Enter] Sync to your worker (timmy-ai-proxy.wmeldman33.workers.dev)</Text>
             <Text color={theme.textPrimary}>  [c] Custom worker URL</Text>
             <Text color={theme.textPrimary}>  [l] Local-only logs — nothing leaves this machine</Text>
           </Box>
@@ -237,8 +243,9 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
         {step === 'cloudUrl' && (
           <Box flexDirection="column" marginTop={1}>
             <Text bold color={theme.textPrimary}>Worker URL (Enter to save)</Text>
-            <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={1}>
-              <Text color={theme.textPrimary}>{urlInput || 'https://your-worker.workers.dev'}</Text>
+            <Box paddingX={1}>
+              <Text color={theme.accent}>▸ </Text>
+              <Text color={urlInput ? theme.textPrimary : theme.textMuted}>{urlInput || 'https://your-worker.workers.dev'}</Text>
             </Box>
           </Box>
         )}
@@ -249,16 +256,16 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
             {logQ === 'base' ? (
               <>
                 <Text bold color={theme.textPrimary}>3 · LOG ORGANIZATION — question 1 of 2: where should the archive live?</Text>
-                <Text color={logBase === 'repo' ? theme.success : theme.textPrimary}>{logBase === 'repo' ? '  ▶ [1]' : '  ○ [1]'} .timmy/archive in this repo (recommended — stays with the project)</Text>
-                <Text color={logBase === 'home' ? theme.success : theme.textPrimary}>{logBase === 'home' ? '  ▶ [2]' : '  ○ [2]'} ~/TIMMY-archive — survives clones & reinstalls</Text>
+                <Text color={logBase === 'repo' ? theme.accent : theme.textPrimary}>{logBase === 'repo' ? '  ▸ [1]' : '  ◇ [1]'} .timmy/archive in this repo (recommended — stays with the project)</Text>
+                <Text color={logBase === 'home' ? theme.accent : theme.textPrimary}>{logBase === 'home' ? '  ▸ [2]' : '  ◇ [2]'} ~/TIMMY-archive — survives clones & reinstalls</Text>
                 <Text color={theme.textSecondary}>  press 1 or 2 to choose · Enter continues</Text>
               </>
             ) : (
               <>
                 <Text color={theme.textSecondary}>3a · where: {logBase === 'repo' ? '.timmy/archive' : '~/TIMMY-archive'} ✓</Text>
                 <Text bold color={theme.textPrimary}>3b · question 2 of 2: how should session folders be named?</Text>
-                <Text color={logNaming === 'date' ? theme.success : theme.textPrimary}>{logNaming === 'date' ? '  ▶ [d]' : '  ○ [d]'} folders by date (2026-08-13/session…) — recommended</Text>
-                <Text color={logNaming === 'run' ? theme.success : theme.textPrimary}>{logNaming === 'run' ? '  ▶ [r]' : '  ○ [r]'} folders by run id</Text>
+                <Text color={logNaming === 'date' ? theme.accent : theme.textPrimary}>{logNaming === 'date' ? '  ▸ [d]' : '  ◇ [d]'} folders by date (2026-08-13/session…) — recommended</Text>
+                <Text color={logNaming === 'run' ? theme.accent : theme.textPrimary}>{logNaming === 'run' ? '  ▸ [r]' : '  ◇ [r]'} folders by run id</Text>
                 <Text color={theme.textSecondary}>  press d or r to choose · Enter finishes</Text>
               </>
             )}
@@ -266,11 +273,11 @@ export function Onboarding({ agent, onDone }: OnboardingProps) {
           </Box>
         )}
 
-        {note && <Text color={theme.warning}>{note}</Text>}
+        {note && <Text color={theme.warn}>{note}</Text>}
         <Box marginTop={1}>
           <Text color={theme.textSecondary}>TIMMY never sells compute: your keys, your Ollama, your worker. We store proofs, not your traffic.</Text>
         </Box>
-      </Box>
+      </Card>
     </Box>
   );
 }

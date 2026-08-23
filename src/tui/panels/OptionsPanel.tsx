@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useWindowSize } from 'ink';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
 import { theme } from '../theme.js';
-import { GlowBorder } from '../components/GlowBorder.js';
+import { Card, SectionRule, BudgetList, Metric, Pill } from '../ui/index.js';
 import { execSync } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
@@ -45,9 +45,7 @@ interface DropdownOption {
 }
 
 export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: OptionsPanelProps) {
-  const { columns: width, rows: height } = useWindowSize();
-  const terminalHeight = height || 24;
-  const isSmallScreen = terminalHeight < 30;
+  const { columns: width } = useWindowSize();
   const [rmuxInstalled, setRmuxInstalled] = useState(false);
   const [tmuxInstalled, setTmuxInstalled] = useState(false);
   const [carbonylInstalled, setCarbonylInstalled] = useState(false);
@@ -121,9 +119,9 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
       details: [
         `• Option description: ${opt.desc}`,
         `• Current value: ${opt.current}`,
-        `• rmux status: ${rmuxInstalled ? '🟢 INSTALLED' : '🔴 NOT INSTALLED'}`,
-        `• tmux status: ${tmuxInstalled ? '🟢 ACTIVE' : '🔴 NOT INSTALLED'}`,
-        `• carbonyl status: ${carbonylInstalled ? '🟢 INSTALLED' : '🔴 NOT INSTALLED'}`,
+        `• rmux status: ${rmuxInstalled ? 'INSTALLED' : 'NOT INSTALLED'}`,
+        `• tmux status: ${tmuxInstalled ? 'ACTIVE' : 'NOT INSTALLED'}`,
+        `• carbonyl status: ${carbonylInstalled ? 'INSTALLED' : 'NOT INSTALLED'}`,
         `• Allowed choices: ${opt.choices.join(', ')}`
       ]
     });
@@ -221,10 +219,10 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
 
   // Responsive width calculation — match layout.tsx breakpoints
   const terminalWidth = width || 80;
-  const { mainStageWidth, isCompact } = getResponsiveLayout(terminalWidth);
+  const { mainStageWidth } = getResponsiveLayout(terminalWidth);
 
   // ── Deterministic column widths ──────────────────────────────────────────
-  // Available row width inside the GlowBorder (account for border + padding)
+  // Available row width inside the configuration deck (account for padding)
   const rowWidth = Math.max(30, mainStageWidth - 8);
 
   // Fixed column allocation:
@@ -271,110 +269,111 @@ export function OptionsPanel({ agent, setInspector, focusArea = 'stage' }: Optio
     return `[${raw}]`;
   }
 
+  // Auth & authority rows — Metric + seal pills (View 8 signature).
+  const authRows: { label: string; value: string; pill?: { kind: 'seal' | 'accent'; label: string } }[] = [
+    { label: 'human auth', value: 'Local' },
+    { label: 'agentpass', value: 'Active', pill: { kind: 'accent', label: 'ACTIVE' } },
+    { label: 'passports', value: 'Enabled' },
+    { label: 'visas', value: 'Enabled' },
+    { label: 'stamps', value: 'Enabled', pill: { kind: 'seal', label: 'STAMPED' } },
+    { label: 'receipts', value: 'Local', pill: { kind: 'seal', label: 'SEALED' } }
+  ];
+
   return (
-    <Box flexDirection="column" width={mainStageWidth} paddingX={1} flexGrow={1} flexShrink={1}>
-      {/* Header Banner */}
-      <Box borderStyle="single" borderColor={theme.borderDefault} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
-        <Text bold color={theme.brand}>⚙️  TIMMY Settings & Options</Text>
-        {!isCompact && (
-          <Text color={theme.textSecondary}>Change simple local settings. Runtime secrets and bindings are untouched.</Text>
-        )}
-      </Box>
+    // alignSelf: the SYSTEM card height fits its content — no giant blank middle
+    <Box alignSelf="flex-start">
+    <Card
+      title="System settings"
+      focused={focusArea === 'stage'}
+      purpose="TIMMY Settings & Options — change simple local settings · runtime secrets and bindings stay untouched"
+      pill={{ kind: 'muted', label: 'LOCAL' }}
+      width={mainStageWidth}
+    >
+      <SectionRule label="configuration deck" />
+      <BudgetList
+        items={options}
+        max={7}
+        offset={Math.max(0, activeIdx - 6)}
+        render={(opt, idx) => {
+          const isSelected = idx === activeIdx;
 
-      {/* Dynamic Settings List */}
-      <GlowBorder color={theme.borderDefault} width={Math.max(20, mainStageWidth - 2)} label="💻 COMPACT CONFIGURATION DECK">
-        <Box flexDirection="column" paddingX={1} flexGrow={1} marginY={1}>
-          {options.map((opt, idx) => {
-            const isSelected = idx === activeIdx;
+          // Build each column with strict truncation
+          const selectorStr = isSelected ? '▸ ' : '  ';
+          const labelStr = ellipsize(opt.label, LABEL_W);
+          const descStr = showDesc ? ellipsize(opt.desc, DESC_W) : '';
+          const valStr = ellipsize(formatValue(opt), VALUE_W);
 
-            // Build each column with strict truncation
-            const selectorStr = isSelected ? '▶ ' : '  ';
-            const labelStr = ellipsize(opt.label, LABEL_W);
-            const descStr = showDesc ? ellipsize(opt.desc, DESC_W) : '';
-            const valStr = ellipsize(formatValue(opt), VALUE_W);
+          // Color coding for values
+          let valColor = theme.accent;
+          if (isSelected) valColor = theme.accent;
+          const rawVal = formatValue(opt);
+          if (rawVal === '[ON]' || rawVal === '[DETECTED]') valColor = isSelected ? theme.accent : theme.accent;
+          else if (rawVal === '[OFF]' || rawVal === '[MISSING]') valColor = isSelected ? theme.danger : theme.danger;
+          else if (rawVal === '[NOT SET]') valColor = theme.textSecondary;
 
-            // Color coding for values
-            let valColor = theme.info;
-            if (isSelected) valColor = theme.brand;
-            const rawVal = formatValue(opt);
-            if (rawVal === '[ON]' || rawVal === '[DETECTED]') valColor = isSelected ? theme.success : theme.success;
-            else if (rawVal === '[OFF]' || rawVal === '[MISSING]') valColor = isSelected ? theme.error : theme.error;
-            else if (rawVal === '[NOT SET]') valColor = theme.textSecondary;
-
-            return (
-              <Box key={opt.key} flexDirection="row" height={1}>
-                {/* Selector */}
-                <Box width={SELECTOR_W} flexShrink={0}>
-                  <Text color={isSelected ? theme.brand : theme.textSecondary} bold={isSelected}>
-                    {selectorStr}
-                  </Text>
-                </Box>
-
-                {/* Label */}
-                <Box width={LABEL_W} flexShrink={0}>
-                  <Text color={isSelected ? theme.textPrimary : theme.textSecondary} bold={isSelected}>
-                    {padRight(labelStr, LABEL_W)}
-                  </Text>
-                </Box>
-
-                {/* Gap */}
-                <Box width={1} flexShrink={0}><Text> </Text></Box>
-
-                {/* Description (hidden at narrow widths) */}
-                {showDesc && (
-                  <Box width={DESC_W} flexShrink={0}>
-                    <Text color={isSelected ? theme.textPrimary : theme.textSecondary}>
-                      {padRight(descStr, DESC_W)}
-                    </Text>
-                  </Box>
-                )}
-
-                {/* Gap */}
-                <Box width={1} flexShrink={0}><Text> </Text></Box>
-
-                {/* Value (right-aligned, never overflows) */}
-                <Box width={VALUE_W} flexShrink={0} justifyContent="flex-end">
-                  <Text bold color={valColor}>
-                    {valStr}
-                  </Text>
-                </Box>
+          return (
+            <Box key={opt.key} flexDirection="row" height={1}>
+              {/* Selector */}
+              <Box width={SELECTOR_W} flexShrink={0}>
+                <Text color={isSelected ? theme.accent : theme.textSecondary} bold={isSelected}>
+                  {selectorStr}
+                </Text>
               </Box>
-            );
-          })}
-        </Box>
-      </GlowBorder>
 
-      {/* Auth & Authority Panel */}
-      <Box borderStyle="single" borderColor={theme.brand} paddingX={2} marginBottom={isSmallScreen ? 0 : 1} flexDirection="column" flexShrink={0}>
-        <Text bold color={theme.brand}>🛡️  Auth & Authority</Text>
-        <Box flexDirection="column" marginTop={1}>
-          {[
-            { label: 'Human Auth', value: 'Local', color: theme.textPrimary },
-            { label: 'AgentPass', value: 'Active', color: theme.success },
-            { label: 'Passports', value: 'Enabled', color: theme.info },
-            { label: 'Visas', value: 'Enabled', color: theme.info },
-            { label: 'Stamps', value: 'Enabled', color: theme.info },
-            { label: 'Receipts', value: 'Local', color: theme.success },
-          ].map((row) => (
-            <Box key={row.label} flexDirection="row" height={1}>
-              <Box width={Math.min(20, Math.floor(rowWidth * 0.4))} flexShrink={0}>
-                <Text color={theme.textSecondary}> • {row.label}:</Text>
+              {/* Label */}
+              <Box width={LABEL_W} flexShrink={0}>
+                <Text color={isSelected ? theme.textPrimary : theme.textSecondary} bold={isSelected}>
+                  {padRight(labelStr, LABEL_W)}
+                </Text>
               </Box>
-              <Box flexGrow={1} justifyContent="flex-end">
-                <Text bold color={row.color}>{row.value}</Text>
+
+              {/* Gap */}
+              <Box width={1} flexShrink={0}><Text> </Text></Box>
+
+              {/* Description (hidden at narrow widths) */}
+              {showDesc && (
+                <Box width={DESC_W} flexShrink={0}>
+                  <Text color={isSelected ? theme.textPrimary : theme.textSecondary}>
+                    {padRight(descStr, DESC_W)}
+                  </Text>
+                </Box>
+              )}
+
+              {/* Gap */}
+              <Box width={1} flexShrink={0}><Text> </Text></Box>
+
+              {/* Value (right-aligned, never overflows) */}
+              <Box width={VALUE_W} flexShrink={0} justifyContent="flex-end">
+                <Text bold color={valColor}>
+                  {valStr}
+                </Text>
               </Box>
             </Box>
-          ))}
-        </Box>
+          );
+        }}
+      />
+
+      {/* Auth & Authority — passport/visa/stamps, card height fits content */}
+      <Box marginTop={1}>
+        <SectionRule label="auth & authority" />
+      </Box>
+      <Box flexDirection="column">
+        {authRows.map((row) => (
+          <Box key={row.label} flexDirection="row" justifyContent="space-between" height={1}>
+            <Metric label={row.label} value={row.value} labelWidth={16} />
+            {row.pill ? <Pill kind={row.pill.kind} label={row.pill.label} /> : <Text> </Text>}
+          </Box>
+        ))}
       </Box>
 
-      {/* Active configuration prompt box - Universal bottom input */}
-      <Box borderStyle="single" borderColor={focusArea === 'stage' ? theme.brand : theme.borderDefault} paddingX={1} marginTop={isSmallScreen ? 0 : 1} flexShrink={0}>
+      {/* Universal bottom input */}
+      <Box marginTop={1} flexShrink={0}>
         <Text color={theme.textSecondary}>[ options ] </Text>
-        <Text color={theme.info}>▶ </Text>
+        <Text color={theme.accent}>▸ </Text>
         <Text color={theme.textPrimary} wrap="truncate">{inputCmd}</Text>
         <Text color={theme.textSecondary}>█</Text>
       </Box>
+    </Card>
     </Box>
   );
 }

@@ -5,6 +5,7 @@ import { existsSync, readFileSync, appendFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import type { Agent } from '../../agent/core.js';
 import { PanelFrame } from '../components/PanelFrame.js';
+import { EmptyState } from '../ui/EmptyState.js';
 import { statusGlyph } from '../components/StatusGlyph.js';
 import {
   listGenerations, updateGeneration, recordGeneration,
@@ -59,7 +60,7 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
           }
         }
       }
-      // status flips become live rain events (✓ done / ✕ failed / ● running)
+      // status flips become live rain events (✓ done / × failed / ● running)
       setGens(prev => {
         const next = listGenerations({}).slice(0, 40);
         for (const g of next) {
@@ -163,10 +164,10 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
 
   return (
     <PanelFrame
-      icon="🎬"
+      icon="◆"
       title="GENERATION CONTROL ROOM"
       status={generationsOverview()}
-      statusColor={theme.brand}
+      statusColor={theme.accent}
       explain="Queue prompts at any provider; watch statuses flip live; every run ledgered, costed, sealed."
       hints={[
         { key: '↑↓', label: 'select' },
@@ -176,19 +177,16 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
       ]}
     >
       <Box flexDirection="row" flexGrow={1}>
-        <Box flexDirection="column" width="46%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
+        <Box flexDirection="column" width="46%" paddingRight={1}>
           {gens.length === 0 && (
-            <Box flexDirection="column">
-              <Text color={theme.textSecondary}>no generations yet.</Text>
-              <Text color={theme.textSecondary}>[n] writes a prompt — ↑↓ picks a provider, ] cycles its options.</Text>
-            </Box>
+            <EmptyState line="no generations yet" action="[n] writes a prompt · ↑↓ provider · ] options" />
           )}
           {gens.map((g, i) => {
             const glyph = statusGlyph(g.status === 'done' ? 'sealed' : g.status === 'failed' ? 'failed' : g.status === 'running' ? 'running' : 'queued');
             const isSel = i === Math.min(idx, gens.length - 1);
             return (
-              <Text key={g.id} color={isSel ? theme.brand : glyph.color} bold={isSel} wrap="truncate">
-                {isSel ? '▶ ' : '  '}{glyph.glyph} {clockTime(g.created_at).slice(0, 5)} {g.provider.padEnd(16)}{g.cost_usd !== undefined ? ` $${g.cost_usd.toFixed(3)}` : ''} {g.prompt.slice(0, 22)}
+              <Text key={g.id} color={isSel ? theme.accent : glyph.color} bold={isSel} wrap="truncate">
+                {isSel ? '▸ ' : '  '}{glyph.glyph} {clockTime(g.created_at).slice(0, 5)} {g.provider.padEnd(16)}{g.cost_usd !== undefined ? ` $${g.cost_usd.toFixed(3)}` : ''} {g.prompt.slice(0, 22)}
               </Text>
             );
           })}
@@ -196,12 +194,12 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
         <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
           {sel ? (
             <>
-              <Text bold color={theme.brand} wrap="truncate">{sel.provider}{sel.model ? ` · ${sel.model}` : ''} · {sel.status}</Text>
+              <Text bold color={theme.accent} wrap="truncate">{sel.provider}{sel.model ? ` · ${sel.model}` : ''} · {sel.status}</Text>
               <Text color={theme.textSecondary}>{sel.created_at.replace('T', ' ').slice(0, 19)} · {sel.transport}{sel.cost_usd !== undefined ? ` · $${sel.cost_usd.toFixed(4)}` : ''}</Text>
               <Box marginTop={1} flexDirection="column">
                 <Text wrap="wrap">{sel.prompt}</Text>
               </Box>
-              {sel.artifact && <Text color={theme.success}>→ {sel.artifact}</Text>}
+              {sel.artifact && <Text color={theme.accent}>→ {sel.artifact}</Text>}
               {sel.framesDir && <Text color={theme.textSecondary}>frames: {sel.framesDir} ({sel.frameCount || 0})</Text>}
               {sel.log && existsSync(sel.log) && (
                 <Box flexDirection="column" marginTop={1}>
@@ -211,13 +209,13 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
                 </Box>
               )}
               {sel?.status === 'failed' && (
-                <Box flexDirection="column" borderStyle="single" borderColor={theme.error} paddingX={1} marginTop={1}>
-                  <Text bold color={theme.error}>failed — turn it into a decision:</Text>
+                <Box flexDirection="column" paddingX={1} marginTop={1}>
+                  <Text bold color={theme.danger}>failed — turn it into a decision:</Text>
                   <Text color={theme.textSecondary}>[1] reroute same prompt to a local provider (no credits needed)</Text>
                   <Text color={theme.textSecondary}>[2] log a top-up note to .timmy/notes.md</Text>
                 </Box>
               )}
-              {note && <Text color={theme.success} wrap="truncate">{note}</Text>}
+              {note && <Text color={theme.accent} wrap="truncate">{note}</Text>}
             </>
           ) : (
             <Text color={theme.textSecondary}>select a generation, or [p] to queue one.</Text>
@@ -228,15 +226,15 @@ export function GensPanel({ agent, zone = 0, setZone, setModalInput, inputLocked
             const opts = optionsFor(prov.id);
             const opt = opts.length ? opts[optIdx % opts.length] : undefined;
             return (
-              <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1}>
-                <Text bold color={theme.info}>PROVIDER — ↑↓ like the chat model rail · ] option</Text>
+              <Box flexDirection="column" marginTop={1} paddingX={1}>
+                <Text bold color={theme.accent}>PROVIDER — ↑↓ like the chat model rail · ] option</Text>
                 {win.map((p, i) => {
                   const isSel = winStart + i === provIdx;
                   const pOpts = optionsFor(p.id);
                   const pOpt = isSel && pOpts.length ? pOpts[optIdx % pOpts.length] : undefined;
                   return (
-                    <Text key={p.id} color={isSel ? theme.brand : theme.textSecondary} bold={isSel} wrap="truncate">
-                      {isSel ? '▶ ' : '  '}{p.kind === 'video' ? '🎞️' : '🖼️'} {p.id.padEnd(20)} {p.modelId || ''}{pOpt ? ` · opt: ${pOpt.label}` : ''}
+                    <Text key={p.id} color={isSel ? theme.accent : theme.textSecondary} bold={isSel} wrap="truncate">
+                      {isSel ? '▸ ' : '  '}{p.kind === 'video' ? '◆' : '◇'} {p.id.padEnd(20)} {p.modelId || ''}{pOpt ? ` · opt: ${pOpt.label}` : ''}
                     </Text>
                   );
                 })}

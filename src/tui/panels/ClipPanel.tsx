@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
-import { PanelFrame } from '../components/PanelFrame.js';
+import { PaneFocusContext } from '../components/PanelFrame.js';
+import { KeyHintBar } from '../components/KeyHintBar.js';
+import { Card, BudgetList, EmptyState } from '../ui/index.js';
 import { listClipJobs, createClipJob, detectClip, ffmpegCheat, CLIP_INSTALL, type ClipJob } from '../../utils/clip.js';
 import { runClipJob } from '../../utils/cliprunner.js';
 import { listProjects } from '../../utils/projects.js';
@@ -32,6 +34,7 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
   const [draft, setDraft] = useState('');
   const [note, setNote] = useState('');
   const [tick, setTick] = useState(0);
+  const focused = React.useContext(PaneFocusContext);
 
   useEffect(() => {
     const t = setInterval(() => setTick(x => x + 1), 3000);
@@ -85,73 +88,81 @@ export function ClipPanel({ zone = 0, setZone, setModalInput, inputLocked }: Cli
     }
   }, { isActive: !inputLocked });
 
+  const jobIdx = Math.min(idx, Math.max(0, jobs.length - 1));
+
   return (
-    <PanelFrame
-      icon="✂️"
-      title={`${BRAND.clip} — VIDEO EDITING OVER OPEN-EDIT`}
-      status={`${jobs.length} job${jobs.length === 1 ? '' : 's'} · ${st.dir ? 'open-edit ready' : 'open-edit missing'}`}
-      statusColor={theme.info}
-      explain={BRAND.clipTagline}
-      hints={[
-        { key: '↑↓', label: 'job' },
-        { key: 'n', label: 'new job' },
-        { key: 'r', label: 'run headless + seal' },
-        { key: 'o', label: 'runbook in $EDITOR' },
-        { key: 'y', label: 'yank ffmpeg lines' }
-      ]}
+    <Card
+      title={`${BRAND.clip} — video editing`}
+      focused={focused}
+      purpose={BRAND.clipTagline.charAt(0).toLowerCase() + BRAND.clipTagline.slice(1)}
+      pill={{
+        kind: st.dir ? 'accent' : 'warn',
+        label: `${jobs.length} job${jobs.length === 1 ? '' : 's'}${st.dir ? '' : ' · open-edit missing'}`
+      }}
+      flexGrow={1}
     >
       <Box flexDirection="row" flexGrow={1}>
-        <Box flexDirection="column" width="42%" paddingRight={1} borderStyle="single" borderColor={zone === 0 ? theme.brand : theme.borderDefault}>
-          {jobs.length === 0 && (
-            <Box flexDirection="column">
-              <Text color={theme.textSecondary}>no clip jobs yet.</Text>
-              <Text color={theme.textSecondary}>[n] here, or SLATE [c] on a project (links its gens).</Text>
-            </Box>
+        <Box flexDirection="column" width="42%" paddingRight={1}>
+          {jobs.length === 0 ? (
+            <EmptyState line="no clip jobs yet" action="[n] here, or SLATE [c] on a project" />
+          ) : (
+            <BudgetList
+              items={jobs}
+              max={7}
+              offset={Math.max(0, jobIdx - 6)}
+              render={(j, i) => {
+                const isSel = i === jobIdx;
+                return (
+                  <Text key={j.id} color={isSel ? theme.accent : theme.textSecondary} bold={isSel} wrap="truncate">
+                    {isSel ? '▸ ' : '  '}{j.id} · {j.project} · {j.sources.length} src · {j.status}
+                  </Text>
+                );
+              }}
+            />
           )}
-          {jobs.map((j, i) => {
-            const isSel = i === Math.min(idx, jobs.length - 1);
-            return (
-              <Text key={j.id} color={isSel ? theme.info : theme.textSecondary} bold={isSel} wrap="truncate">
-                {isSel ? '▶ ' : '  '}{j.id} · {j.project} · {j.sources.length} src · {j.status}
-              </Text>
-            );
-          })}
         </Box>
         <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
           {sel ? (
             <>
-              <Text bold color={theme.info} wrap="truncate">{sel.id} · {sel.project}</Text>
+              <Text bold color={theme.accent} wrap="truncate">{sel.id} · {sel.project}</Text>
               <Text color={theme.textSecondary} wrap="wrap">instruction: {sel.instruction}</Text>
               <Box marginTop={1} flexDirection="column">
                 {sel.sources.map((s, si) => (
                   <Text key={`${si}-${s.genId}-${s.artifact}`} color={theme.textSecondary} wrap="truncate">
-                    • {s.label} → {s.artifact}{s.receiptHash ? ` · receipt ${s.receiptHash.slice(7, 19)}` : ''}
+                    · {s.label} → {s.artifact}{s.receiptHash ? ` · receipt ${s.receiptHash.slice(7, 19)}` : ''}
                   </Text>
                 ))}
-                {sel.sources.length === 0 && <Text color={theme.textSecondary}>• no linked sources — SLATE [c] links gens with receipt hashes</Text>}
+                {sel.sources.length === 0 && <Text color={theme.textSecondary}>· no linked sources — SLATE [c] links gens with receipt hashes</Text>}
               </Box>
-              <Text color={theme.success} wrap="truncate">out: {sel.output}</Text>
+              <Text color={theme.textPrimary} wrap="truncate">out: {sel.output}</Text>
               <Box marginTop={1} flexDirection="column">
                 <Text color={theme.textSecondary}>deterministic layer ([y] yanks these):</Text>
                 {ffmpegCheat(sel.sources[0]?.artifact ?? sel.output).slice(1).map((l, li) => (
                   <Text key={`${li}-${l}`} color={theme.textSecondary} wrap="truncate">  {l}</Text>
                 ))}
               </Box>
-              {!st.dir && <Text color={theme.warning} wrap="truncate">agent layer: {st.note ?? CLIP_INSTALL}</Text>}
-              {note && <Text color={theme.success} wrap="truncate">{note}</Text>}
+              {!st.dir && <Text color={theme.warn} wrap="truncate">agent layer: {st.note ?? CLIP_INSTALL}</Text>}
+              {note && <Text color={theme.accent} wrap="truncate">{note}</Text>}
             </>
           ) : (
-            <Text color={theme.textSecondary}>select a job, or [n] to queue one.</Text>
+            <EmptyState line="select a job, or [n] to queue one" />
           )}
           {composing && (
-            <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1} flexDirection="column">
-              <Text color={theme.info}>NEW CLIP JOB — ↑↓ project · instruction:</Text>
+            <Box marginTop={1} flexDirection="column">
+              <Text color={theme.accent}>new clip job — ↑↓ project · instruction:</Text>
               <Text>{projects[projIdx] ?? '(no projects)'} ▸ {draft}█</Text>
               <Text color={theme.textSecondary}>Enter queues · Esc cancels</Text>
             </Box>
           )}
         </Box>
       </Box>
-    </PanelFrame>
+      <KeyHintBar hints={[
+        { key: '↑↓', label: 'job' },
+        { key: 'n', label: 'new job' },
+        { key: 'r', label: 'run headless + seal' },
+        { key: 'o', label: 'runbook in $EDITOR' },
+        { key: 'y', label: 'yank ffmpeg lines' }
+      ]} />
+    </Card>
   );
 }

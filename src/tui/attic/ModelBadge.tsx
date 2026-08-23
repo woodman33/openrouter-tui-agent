@@ -16,12 +16,12 @@ export function ModelBadge({ model, current, maxWidth }: ModelBadgeProps) {
 
   const providerColor = (() => {
     const m = model.toLowerCase();
-    if (m.includes('anthropic') || m.includes('claude')) return theme.warning;
-    if (m.includes('openai') || m.includes('gpt')) return theme.success;
-    if (m.includes('google') || m.includes('gemini')) return theme.info;
-    if (m.includes('meta') || m.includes('llama')) return theme.info;
-    if (m.includes('mistral')) return theme.error;
-    if (m.includes('deepseek')) return theme.brand;
+    if (m.includes('anthropic') || m.includes('claude')) return theme.warn;
+    if (m.includes('openai') || m.includes('gpt')) return theme.accent;
+    if (m.includes('google') || m.includes('gemini')) return theme.accent;
+    if (m.includes('meta') || m.includes('llama')) return theme.accent;
+    if (m.includes('mistral')) return theme.danger;
+    if (m.includes('deepseek')) return theme.accent;
     return theme.textSecondary;
   })();
 

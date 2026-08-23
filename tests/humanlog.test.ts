@@ -17,7 +17,7 @@ describe('human log layer', () => {
   it('maps agent-internal events to human words, not "gen" noise', () => {
     expect(humanizeLine('{"event":"model.selected","model":"qwen/qwen3.8-max"}')?.text).toBe('→ qwen/qwen3.8-max');
     expect(humanizeLine('{"event":"model.test.started"}')).toBeNull();
-    expect(humanizeLine('{"event":"openrouter.request.failed"}')?.icon).toBe('✕');
+    expect(humanizeLine('{"event":"openrouter.request.failed"}')?.icon).toBe('×');
     expect(humanizeLine('{"event":"model.fallback.used"}')?.text).toBe('provider fallback used');
   });
 
