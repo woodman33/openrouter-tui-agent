@@ -17,7 +17,7 @@ interface OnboardingProps {
 
 type Step = 'splash' | 'provider' | 'key' | 'cloud' | 'cloudUrl' | 'logs' | 'teachMission' | 'teachPalette' | 'teachBack' | 'done';
 
-// v1.0.5-fix: brand wordmark, cyan → purple down the rows
+// Clearinghouse wordmark: accent → text ramp down the rows (DESIGN.md §2)
 const WORDMARK = [
   '████████ ██ ███    ███ ███    ███ ██    ██',
   '   ██    ██ ████  ████ ████  ████  ██  ██ ',
@@ -25,7 +25,7 @@ const WORDMARK = [
   '   ██    ██ ██  ██  ██ ██  ██  ██    ██   ',
   '   ██    ██ ██      ██ ██      ██   ██    '
 ];
-const MARK_COLORS = ['#00f0ff', '#7dcfff', '#9ece6a', '#bb9af7', '#7a5ff0'];
+const MARK_COLORS = [theme.accent, theme.accent, theme.textPrimary, theme.textSecondary, theme.textMuted];
 
 /**
  * First-run onboarding: pick a brain (local Ollama, OpenRouter key, or both),

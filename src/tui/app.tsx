@@ -198,7 +198,7 @@ function Shell({ config, graphicsType = 'auto' }: AppProps) {
           setInspector={setInspectorSafe}
         />
 
-        {/* v1.0.4: SOLID full-card overlay — opaque #16161e field, never
+        {/* SOLID full-card overlay — opaque surfaceRaised field, never
             a transparent float over text */}
         {commandPaletteOpen && (
           <Box

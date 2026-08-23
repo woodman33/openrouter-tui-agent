@@ -3,6 +3,7 @@ import {
   layoutBudget, footerKeysLine, chromeFor, VIEWS, VIEW_PANES, PALETTE_MODELS,
   HEADER_ROWS, FOOTER_ROWS
 } from '../src/tui/utils/ergonomics.js';
+import { theme } from '../src/tui/theme.js';
 import { isNoise } from '../src/tui/components/CommandView.js';
 
 describe('v1.0.2 de-cluttered shell', () => {
@@ -31,13 +32,13 @@ describe('v1.0.2 de-cluttered shell', () => {
     expect(footerKeysLine(200)).not.toContain('J-BANG');
   });
 
-  it('Active Pane Invariant: card #7dcfff + ◆ when active, muted #292e42 + ◇ when not', () => {
+  it('Active Pane Invariant: focused card = theme.lineFocus + ◆, unfocused = theme.line + ◇', () => {
     const on = chromeFor(true);
     const off = chromeFor(false);
-    expect(on.border).toBe('#7dcfff');
+    expect(on.border).toBe(theme.lineFocus);
     expect(on.glyph).toBe('◆');
     expect(on.bold).toBe(true);
-    expect(off.border).toBe('#292e42');
+    expect(off.border).toBe(theme.line);
     expect(off.glyph).toBe('◇');
     expect(off.bold).toBe(false);
   });

@@ -19,7 +19,7 @@ interface PanelFrameProps {
 }
 
 // The focused pane in a view provides this as true; every framed pane below
-// it renders bright #7dcfff chrome, everyone else drops to muted #292e42.
+// it renders theme.lineFocus chrome, everyone else drops to theme.line.
 export const PaneFocusContext = React.createContext<boolean>(true);
 
 // Consistent chrome for every tab: 1px hairline border, title + live status
