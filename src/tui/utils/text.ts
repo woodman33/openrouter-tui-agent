@@ -47,8 +47,12 @@ export function visibleWidth(value: string): number {
 // \033 text from uninterpreted printf). Strip both so panes read clean.
 export function stripAnsi(value: string): string {
   return value
-    .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '')
-    .replace(/\\033\[[0-9;]*[a-zA-Z]/g, '')
+    // CSI, OSC (through BEL or ST), and charset selects — raw escapes must
+    // never reach the live screen (p10: they overwrote the header)
+    .replace(/\x1b\[[0-9;?]*[a-zA-Z]/g, '')
+    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)?/g, '')
+    .replace(/\x1b[()][A-B01]/g, '')
+    .replace(/\\033\[[0-9;?]*[a-zA-Z]/g, '')
     .replace(/\\n/g, ' ')
     .replace(/\s+$/, '');
 }

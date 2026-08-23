@@ -143,7 +143,7 @@ export function BrowsePanel({ agent, zone = 0, setZone, setModalInput, inputLock
           <Box flexDirection="column" flexGrow={1} paddingLeft={1}>
             <Text bold color={theme.info} wrap="truncate">live · {sel?.name}</Text>
             {capture.map((line, i) => (
-              <Text key={i} color={theme.textSecondary} wrap="truncate">{line || ' '}</Text>
+              <Text key={i} color={theme.textSecondary} wrap="truncate">{stripAnsi(line) || ' '}</Text>
             ))}
             {spawning && (
               <Box marginTop={1} borderStyle="single" borderColor={theme.info} paddingX={1}>

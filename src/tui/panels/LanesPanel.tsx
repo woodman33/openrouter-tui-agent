@@ -264,7 +264,7 @@ export function LanesPanel({ agent, zone = 0, setZone, setModalInput, inputLocke
               )}
               {alive[sel.id] ? (
                 capture.map((line, i) => (
-                  <Text key={i} color={theme.textSecondary} wrap="truncate">{line || ' '}</Text>
+                  <Text key={i} color={theme.textSecondary} wrap="truncate">{stripAnsi(line) || ' '}</Text>
                 ))
               ) : (
                 <Box flexDirection="column" marginTop={1}>

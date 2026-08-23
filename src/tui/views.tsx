@@ -9,6 +9,17 @@ import { CommandView } from './components/CommandView.js';
 import { LogRelay } from './components/LogRelay.js';
 import { theme } from './theme.js';
 import { SlatePanel } from './panels/SlatePanel.js';
+import { LanesPanel } from './panels/LanesPanel.js';
+import { DispatchRail } from './panels/DispatchRail.js';
+import { BrowsePanel } from './panels/BrowsePanel.js';
+import { FilesPanel } from './panels/FilesPanel.js';
+import { ProjectsPanel } from './panels/ProjectsPanel.js';
+import { ClipPanel } from './panels/ClipPanel.js';
+import { OptionsPanel } from './panels/OptionsPanel.js';
+import { SetupPanel } from './panels/SetupPanel.js';
+import { ModelExplorerPanel } from './panels/ModelExplorerPanel.js';
+import { CodeReviewPanel } from './panels/CodeReviewPanel.js';
+import { DashboardPanel } from './panels/DashboardPanel.js';
 import { GensPanel } from './panels/GensPanel.js';
 import { LogsPanel } from './panels/LogsPanel.js';
 import { LogRain } from './panels/LogRain.js';
@@ -90,5 +101,97 @@ export function ViewStage({ view, paneFocus, agent, setInspector }: ViewStagePro
     );
   }
 
-  return <EscrowReceiptsView paneFocus={paneFocus} width={width} height={height} />;
+  if (view === 3) {
+    return <EscrowReceiptsView paneFocus={paneFocus} width={width} height={height} />;
+  }
+
+  // p10: surface every working panel (views 5-9)
+  if (view === 4) {
+    return (
+      <Box flexDirection="row" flexGrow={1}>
+        <Box flexGrow={3} flexDirection="column" paddingRight={1}>
+          <PaneFocusContext.Provider value={pane(0)}>
+            <LanesPanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} />
+          </PaneFocusContext.Provider>
+        </Box>
+        <Box flexGrow={2} flexDirection="column" paddingLeft={1}>
+          <PaneFocusContext.Provider value={pane(1)}>
+            <DispatchRail width={Math.max(30, Math.floor(width * 0.4))} />
+          </PaneFocusContext.Provider>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (view === 5) {
+    return (
+      <Box flexDirection="row" flexGrow={1}>
+        <Box flexGrow={1} flexDirection="column" paddingRight={1}>
+          <PaneFocusContext.Provider value={pane(0)}>
+            <BrowsePanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} />
+          </PaneFocusContext.Provider>
+        </Box>
+        <Box flexGrow={1} flexDirection="column" paddingLeft={1}>
+          <PaneFocusContext.Provider value={pane(1)}>
+            <FilesPanel agent={agent} setInspector={setInspector} />
+          </PaneFocusContext.Provider>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (view === 6) {
+    return (
+      <Box flexDirection="row" flexGrow={1}>
+        <Box flexGrow={1} flexDirection="column" paddingRight={1}>
+          <PaneFocusContext.Provider value={pane(0)}>
+            <ProjectsPanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} />
+          </PaneFocusContext.Provider>
+        </Box>
+        <Box flexGrow={1} flexDirection="column" paddingLeft={1}>
+          <PaneFocusContext.Provider value={pane(1)}>
+            <ClipPanel agent={agent} setInspector={setInspector} zone={0} setZone={noopZone} />
+          </PaneFocusContext.Provider>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (view === 7) {
+    // SYSTEM: Tab selects among the three system panels
+    return (
+      <Box flexDirection="row" flexGrow={1}>
+        {paneFocus === 0 && (
+          <PaneFocusContext.Provider value={true}>
+            <OptionsPanel agent={agent} setInspector={setInspector} />
+          </PaneFocusContext.Provider>
+        )}
+        {paneFocus === 1 && (
+          <PaneFocusContext.Provider value={true}>
+            <SetupPanel agent={agent} />
+          </PaneFocusContext.Provider>
+        )}
+        {paneFocus >= 2 && (
+          <PaneFocusContext.Provider value={true}>
+            <ModelExplorerPanel agent={agent} setInspector={setInspector} />
+          </PaneFocusContext.Provider>
+        )}
+      </Box>
+    );
+  }
+
+  return (
+    <Box flexDirection="row" flexGrow={1}>
+      <Box flexGrow={1} flexDirection="column" paddingRight={1}>
+        <PaneFocusContext.Provider value={pane(0)}>
+          <CodeReviewPanel agent={agent} setInspector={setInspector} />
+        </PaneFocusContext.Provider>
+      </Box>
+      <Box flexGrow={1} flexDirection="column" paddingLeft={1}>
+        <PaneFocusContext.Provider value={pane(1)}>
+          <DashboardPanel agent={agent} setInspector={setInspector} />
+        </PaneFocusContext.Provider>
+      </Box>
+    </Box>
+  );
 }

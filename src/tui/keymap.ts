@@ -1,4 +1,6 @@
-import type { Mode } from './router.js';
+// Mode union kept local after router.tsx was quarantined to src/tui/attic/
+// (p10 audit: legacy 8-mode shell superseded by the 9-view dispatcher shell).
+export type Mode = 'brief' | 'lanes' | 'gens' | 'slate' | 'clip' | 'browse' | 'logs' | 'files';
 
 export interface KeyHint { key: string; label: string }
 

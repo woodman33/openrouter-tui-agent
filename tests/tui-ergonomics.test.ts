@@ -25,8 +25,8 @@ describe('v1.0.2 de-cluttered shell', () => {
       expect(line.length).toBeLessThanOrEqual(w);
     }
     expect(footerKeysLine(200)).toContain('[Tab] Switch Card');
-    expect(footerKeysLine(200)).toContain('[1-4] Switch View');
-    expect(footerKeysLine(200)).toContain('[^K] Model Palette');
+    expect(footerKeysLine(200)).toContain('[^K] Palette');
+    expect(footerKeysLine(200)).toContain('[1-9] Switch View');
     expect(footerKeysLine(200)).toContain('[q] Quit');
     expect(footerKeysLine(200)).not.toContain('J-BANG');
   });
@@ -42,11 +42,12 @@ describe('v1.0.2 de-cluttered shell', () => {
     expect(off.bold).toBe(false);
   });
 
-  it('four views, [1-4] keys, pane budgets for Tab focus', () => {
-    expect(VIEWS.map(v => v.key)).toEqual(['1', '2', '3', '4']);
-    expect(VIEWS.map(v => v.label)).toEqual(['COMMAND', 'MISSION', 'TELEMETRY', 'ESCROW']);
-    expect(VIEW_PANES).toHaveLength(4);
+  it('nine views, [1-9] keys, pane budgets for Tab focus', () => {
+    expect(VIEWS.map(v => v.key)).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+    expect(VIEWS.map(v => v.label)).toEqual(['COMMAND', 'MISSION', 'TELEMETRY', 'ESCROW', 'LANES', 'LIBRARY', 'PROJECTS', 'SYSTEM', 'REVIEW']);
+    expect(VIEW_PANES).toHaveLength(9);
     expect(VIEW_PANES[0]).toBe(1);
+    expect(VIEW_PANES[7]).toBe(3); // SYSTEM: options/setup/models
   });
 
   it('model switching lives in the palette, not a sidebar', () => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput, useWindowSize, useApp } from 'ink';
-import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
+import { useFocus, panelMayAct } from '../../hooks/useKeyDispatcher.js';
 import { Draft1Cockpit } from './Draft1Cockpit.js';
 import { Draft2Swarm } from './Draft2Swarm.js';
 import { Draft3Studio } from './Draft3Studio.js';

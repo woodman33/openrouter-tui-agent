@@ -49,4 +49,32 @@ describe('keyboard contract at PTY level', () => {
     send('Escape'); sleep(400);
     expect(cap()).toContain('MODE:NAV');
   }, 60000);
+
+  it('views 5-9 switch from NAV; Enter/Esc input contract holds', () => {
+    try { tmux(`kill-session -t ${S}`); } catch { /* fresh */ }
+    tmux(`new-session -d -s ${S} -x 120 -y 40 "cd ${process.cwd()} && npx tsx timmy.ts; sleep 60"`);
+    sleep(7000);
+    // body markers per view (TTY ink can clip the chrome row on
+    // capture-heavy panels; the footer MODE + body content are stable)
+    const marks: [string, string][] = [
+      ['5', 'first time here?'],
+      ['6', 'spawns carbonyl on any URL'],
+      ['7', 'PROJECTS — PER-PROJECT TREE'],
+      ['8', 'TIMMY Settings & Options'],
+      ['9', 'SANDBOX']
+    ];
+    for (const [k, mark] of marks) {
+      send(k); sleep(700);
+      const f = cap();
+      expect(f).toContain(mark);
+      expect(f).toContain('MODE:NAV');
+    }
+    send('1'); sleep(600);
+    send('Enter'); sleep(500);
+    expect(cap()).toContain('MODE:INPUT:COMMAND');
+    send('Escape'); sleep(400);
+    expect(cap()).toContain('MODE:NAV');
+    send('q'); sleep(1500);
+    expect(cap()).not.toContain('TIMMY TRUST OS');
+  }, 90000);
 });

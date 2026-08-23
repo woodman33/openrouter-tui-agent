@@ -17,13 +17,18 @@ export const VIEWS = [
   { key: '1', label: 'COMMAND', sub: 'clean conversation' },
   { key: '2', label: 'MISSION', sub: 'DAG + capsules' },
   { key: '3', label: 'TELEMETRY', sub: 'logs + rain' },
-  { key: '4', label: 'ESCROW', sub: 'ledger + receipts' }
+  { key: '4', label: 'ESCROW', sub: 'ledger + receipts' },
+  { key: '5', label: 'LANES', sub: 'harness lanes + dispatch rail' },
+  { key: '6', label: 'LIBRARY', sub: 'browse + files' },
+  { key: '7', label: 'PROJECTS', sub: 'projects + clips' },
+  { key: '8', label: 'SYSTEM', sub: 'options / setup / models (Tab)' },
+  { key: '9', label: 'REVIEW', sub: 'code review + dashboard' }
 ] as const;
 
-export const FOOTER_KEYS = '[Tab] Switch Card  [1-4] Switch View  [^K] Model Palette  [?] Help  [q] Quit';
+export const FOOTER_KEYS = '[Tab] Switch Card  [1-9] Switch View  [^K] Palette  [?] Help  [q] Quit';
 
 export const footerKeysLine = (width: number): string => {
-  const compact = '[Tab] Card  [1-4] View  [^K] Models  [q] Quit';
+  const compact = '[Tab] Card  [1-9] View  [^K] Palette  [q] Quit';
   return truncateVisible(width >= 66 ? FOOTER_KEYS : compact, width);
 };
 
@@ -44,4 +49,4 @@ export function chromeFor(active: boolean): { border: string; title: string; gly
 }
 
 /** pane counts per view — Tab cycles focus within these bounds */
-export const VIEW_PANES = [1, 2, 2, 2];
+export const VIEW_PANES = [1, 2, 2, 2, 2, 2, 2, 3, 2];

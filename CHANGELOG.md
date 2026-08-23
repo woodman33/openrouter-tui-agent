@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Feature audit + surface everything (p10, v1.0.6): `FEATURES.md` honest
+  inventory (every TUI surface, all 23 MCP tools, spine services — each row
+  execution-verified); views grow 4 → 9 (LANES / LIBRARY / PROJECTS /
+  SYSTEM / REVIEW) so every working panel is mounted and reachable by key
+  and by the ^K "Go to view/feature" section; `specs/keys-v1.md` documents
+  the dispatcher order, focus-stack semantics, and per-owner keymaps.
+- Audit tooling: `scripts/audit-panels.tsx` (headless mount census),
+  `scripts/audit-mcp-tools.ts` (stdio MCP client driving all 23 tools),
+  QA walk 1-9 in `scripts/qa-keyboard-60s.ts` + PTY contract extension.
+- Quarantine: legacy `router.tsx`, `ChatPanel.tsx`, and `drafts/` moved to
+  `src/tui/attic/` with a README — no more phantom features in audits.
+
+### Fixed
+- Raw ANSI from live lane captures no longer reaches the screen
+  (`stripAnsi` hardened + applied in LanesPanel/BrowsePanel) — it could
+  overwrite the header on real terminals.
+
+## [1.0.5] - 2026-08-23
+
 ### Changed
 - Dual-card visual overhaul (v1.0.5, refs tui3/tui6): orphan icon rail
   removed; header gains centered view tabs `[ 1 COMMAND ] … [ 4 ESCROW ]`

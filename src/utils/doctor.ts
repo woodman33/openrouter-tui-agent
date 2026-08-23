@@ -86,3 +86,11 @@ export async function runDoctor(): Promise<DoctorReport> {
   checks.push({ name: 'port 4310 (companion)', required: false, state: 'ok', note: logsUp ? 'companion live' : 'free — binds on start' });
   return { ok: checks.filter(c => c.required).every(c => c.state === 'ok'), checks };
 }
+
+// CLI shim: `npx tsx src/utils/doctor.ts preflight` (mission-grade entry)
+if (process.argv[1]?.endsWith('doctor.ts') && process.argv[2] === 'preflight') {
+  runDoctor().then(r => {
+    console.log(JSON.stringify(r, null, 2));
+    process.exit(r.ok ? 0 : 1);
+  });
+}

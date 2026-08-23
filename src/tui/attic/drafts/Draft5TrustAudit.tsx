@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { useFocus, panelMayAct } from '../hooks/useKeyDispatcher.js';
-import { theme } from '../theme.js';
+import { useFocus, panelMayAct } from '../../hooks/useKeyDispatcher.js';
+import { theme } from '../../theme.js';
 
 interface Draft5Props {
   activeTab: number;
