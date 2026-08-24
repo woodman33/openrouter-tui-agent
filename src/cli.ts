@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -130,6 +130,52 @@ if (command === 'version' || args.includes('--version') || args.includes('-v')) 
 if (command === 'start') {
   console.log('timmy start — PLANNED alias for npm start');
   process.exit(0);
+}
+
+// ── FORGE lane (p13; decisions.md D1) — new verbs only, gated, additive ──
+const forgeFlag = (n: string): string | undefined => {
+  const i = args.indexOf('--' + n);
+  return i >= 0 ? args[i + 1] : undefined;
+};
+const forgeGate = (): void => {
+  if (process.env.TIMMY_FORGE !== '1') {
+    console.log('forge lane gated — rerun with TIMMY_FORGE=1 (decisions.md D1)');
+    process.exit(2);
+  }
+};
+
+if (command === 'gen') {
+  forgeGate();
+  const { runGen } = await import('./forge/gen.js');
+  const lines = runGen({
+    sheet: forgeFlag('sheet'), provider: forgeFlag('provider'),
+    stub: args.includes('--stub'), allowSpend: args.includes('--allow-spend'),
+    slots: forgeFlag('slots')?.split(','),
+  });
+  for (const l of lines) {
+    console.log(`${l.slot_id}  req ${l.request.slice(7, 15)}…  res ${l.result.slice(7, 15)}…  ${l.local ? 'local' : 'remote'}  $${l.cost.toFixed(2)}  ${l.ms}ms  ${l.artifact}`);
+  }
+  process.exit(0);
+}
+
+if (command === 'timeline' && args[1] === 'emit') {
+  forgeGate();
+  const { emitTimeline } = await import('./forge/timeline.js');
+  const r = emitTimeline({ specPath: forgeFlag('spec'), out: forgeFlag('out') });
+  console.log(`timeline.emit · ${r.clips} clips → ${r.file} · seal ${r.seal.slice(7, 15)}…`);
+  process.exit(0);
+}
+
+if (command === 'forge') {
+  if (args[1] === 'wire') {
+    const { wireLanes } = await import('./forge/stubs.js');
+    for (const w of wireLanes()) console.log(`${w.lane}  ${w.status}  via ${w.via}  [${w.flag}]  ${w.note}`);
+    process.exit(0);
+  }
+  // glass: full TUI with the forge lane armed (view 9 right pane)
+  const tuiEntry = fileURLToPath(new URL('../cli.tsx', import.meta.url));
+  const r = spawnSync('npx', ['tsx', tuiEntry], { stdio: 'inherit', env: { ...process.env, TIMMY_FORGE: '1' } });
+  process.exit(r.status ?? 0);
 }
 
 if (command === 'clip') {
