@@ -37,6 +37,7 @@ Commands:
   version         Print package name and version
   setup           Initialize directory and template folder structure
   doctor          Check optional local capabilities without running workloads
+  chat            Open the WALNUT counterflow chat surface (--legacy = old path)
   docs verify     Verify GitBook docs structure, CLI, and safe env setup
   docs preview    Render and serve local docs preview
   docs publish    Verify GitBook auth and prepare Git Sync publication
@@ -124,7 +125,7 @@ if (command === 'start') {
 }
 
 // Modern CLI surface (mcp serve/logs/approve/events/…) lives in src/cli.ts.
-if (['mcp', 'logs', 'approve', 'events', 'epoch', 'q', 'map'].includes(command)) {
+if (['mcp', 'logs', 'approve', 'events', 'epoch', 'q', 'map', 'chat'].includes(command)) {
   const cliPath = fileURLToPath(new URL('./src/cli.ts', import.meta.url));
   const r = spawnSync(process.execPath, ['--import', 'tsx', cliPath, ...args], { stdio: 'inherit' });
   process.exit(r.status ?? 1);

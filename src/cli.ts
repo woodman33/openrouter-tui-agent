@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -130,6 +130,18 @@ if (command === 'version' || args.includes('--version') || args.includes('-v')) 
 if (command === 'start') {
   console.log('timmy start — PLANNED alias for npm start');
   process.exit(0);
+}
+
+if (command === 'chat') {
+  // WALNUT counterflow chat surface (p12; DESIGN.md §3 two-pane grammar).
+  // --legacy keeps the old chat path reachable until deliberately deleted.
+  const legacy = args.includes('--legacy');
+  const chatEntry = fileURLToPath(new URL('./tui/chatmain.tsx', import.meta.url));
+  const tuiEntry = fileURLToPath(new URL('../cli.tsx', import.meta.url));
+  const r = legacy
+    ? spawnSync('npx', ['tsx', tuiEntry], { stdio: 'inherit', env: { ...process.env, TIMMY_LEGACY_CHAT: '1' } })
+    : spawnSync('npx', ['tsx', chatEntry], { stdio: 'inherit' });
+  process.exit(r.status ?? 0);
 }
 
 if (command === 'clip') {
