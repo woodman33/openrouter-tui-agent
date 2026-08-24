@@ -37,13 +37,14 @@ adding anything.
 same 0.18.1 pin as CI). The emitter writes standard OTIO JSON; clip metadata
 carries `timmy:{receipt_hash, prev, prompt_hash, gen_id, rights}`.
 
-## D8 — CUE if-comprehensions bake at definition time
-`cue vet` evaluates `for s in slots if s.required` over an open list at
-definition time (empty), making any sheet unsatisfiable. The loader
-extracts `required_classes` into the validated payload; CUE cross-checks
-that list (len >= 1, contains hero), the per-slot `required` flag, the
-budget sum (if-free comprehension), and aspect. Reconstruction-from-chain
-and slot uniqueness stay in sheet.ts.
+## D8 — CUE open-list computations bake at definition time
+`cue vet` evaluates if-comprehensions AND list.Sum over open lists at
+definition time (empty), baking false/0 into the definition. The loader
+therefore supplies `required_classes`, `required_count`,
+`hero_required_count`, and `est_total_usd` in the validated payload; CUE
+bounds and cross-checks them (budget: est_total <= cap; required_count >=
+1; hero_required_count >= 1; per-slot `required` flag; aspect regex).
+Reconstruction-from-chain and slot uniqueness stay in sheet.ts.
 
 ## D7 — This file existed absent
 The p13 work order mandated citing decisions.md; the file did not exist.

@@ -3,8 +3,6 @@
 // uniqueness is enforced in sheet.ts (CUE has no distinct-list builtin).
 package forge
 
-import "list"
-
 #SlotClass: "terrain" | "material" | "weather" | "hero" | "other"
 
 #Slot: {
@@ -25,11 +23,11 @@ import "list"
 	aspect:         string & =~"^[0-9]+:[0-9]+$"
 	slots: [...#Slot]
 
-	// budget cap: summed estimates may not exceed the cap
-	_sum: number
-	_sum: list.Sum([ for s in slots { (s.est_cost_usd | *0) }])
+	// budget cap: loader sums the estimates (est_total_usd) because CUE
+	// list.Sum comprehensions over open lists bake at definition time (D8)
+	est_total_usd: number & >= 0
 	_budget_ok: true
-	_budget_ok: _sum <= budget_cap_usd
+	_budget_ok: est_total_usd <= budget_cap_usd
 
 	// required slots: at least one, and a required hero is mandatory.
 	// Counts are extracted by the loader (sheet.ts) — CUE if-comprehensions
