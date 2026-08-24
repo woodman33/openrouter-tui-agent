@@ -529,6 +529,29 @@ function tailLoop() {
   }, 700);
 }
 
+// WALNUT /chat mirror (work order p12 OPTIONAL): left column streams the
+// TUI conversation through Vercel streamdown; right column is the receipt
+// rain fed by SSE. READ-ONLY (§1): tails .sessions + the chain, writes nothing.
+function latestSessionPath(): string | null {
+  try {
+    const files = readdirSync('.sessions').filter(f => f.endsWith('.jsonl')).map(f => join('.sessions', f));
+    if (!files.length) return null;
+    return files.sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0] ?? null;
+  } catch { return null; }
+}
+function readSessionTail(n: number): { role: string; content: string }[] {
+  const p = latestSessionPath();
+  if (!p) return [];
+  try {
+    return readFileSync(p, 'utf8').split('\n').filter(Boolean).slice(-n)
+      .map(l => JSON.parse(l) as { role: string; content: string });
+  } catch { return []; }
+}
+function sessionSize(): number {
+  const p = latestSessionPath();
+  try { return p ? statSync(p).size : 0; } catch { return 0; }
+}
+
 export function startLogServer(opts: { port?: number; open?: boolean } = {}): Promise<number> {
   const port = opts.port ?? LOGS_PORT();
   const server = createServer((req, res) => {
@@ -536,6 +559,35 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
     if (url.pathname === '/health') {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ ok: true, cwd: process.cwd(), port }));
+      return;
+    }
+    if (url.pathname === '/chat') {
+      const page = new URL('./chatpage.html', import.meta.url);
+      res.setHeader('Content-Type', 'text/html');
+      res.end(readFileSync(page));
+      return;
+    }
+    if (url.pathname === '/chat/events') {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.write(': connected\n\n');
+      const send = (o: Record<string, unknown>): void => { res.write(`data: ${JSON.stringify(o)}\n\n`); };
+      const pushTurns = (): void => { send({ t: 'turns', turns: readSessionTail(20) }); };
+      pushTurns();
+      let chainLen = readChain('runs').length;
+      for (const r of readChain('runs').slice(-8)) send({ t: 'receipt', hash: String(r.hash).slice(7, 15) + '…', subject: r.subject, kind: r.kind, ts: String(r.ts).slice(11, 19) });
+      let sesSize = sessionSize();
+      const iv = setInterval(() => {
+        const ns = sessionSize();
+        if (ns !== sesSize) { sesSize = ns; pushTurns(); }
+        const cl = readChain('runs').length;
+        if (cl !== chainLen) {
+          for (const r of readChain('runs').slice(chainLen)) send({ t: 'receipt', hash: String(r.hash).slice(7, 15) + '…', subject: r.subject, kind: r.kind, ts: String(r.ts).slice(11, 19) });
+          chainLen = cl;
+        }
+      }, 700);
+      res.on('close', () => clearInterval(iv));
       return;
     }
     if (url.pathname === '/events') {
