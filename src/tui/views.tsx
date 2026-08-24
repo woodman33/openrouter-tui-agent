@@ -28,6 +28,7 @@ import { SetupPanel } from './panels/SetupPanel.js';
 import { ModelExplorerPanel } from './panels/ModelExplorerPanel.js';
 import { CodeReviewPanel } from './panels/CodeReviewPanel.js';
 import { DashboardPanel } from './panels/DashboardPanel.js';
+import { ForgePanel } from '../forge/ForgePanel.js';
 import { GensPanel } from './panels/GensPanel.js';
 import { LogsPanel } from './panels/LogsPanel.js';
 import { LogRain } from './panels/LogRain.js';
@@ -277,7 +278,10 @@ export function ViewStage({ view, paneFocus, agent, setInspector }: ViewStagePro
       </Box>
       <Box flexGrow={1} flexDirection="column" paddingLeft={1}>
         <PaneFocusContext.Provider value={pane(1)}>
-          <DashboardPanel agent={agent} setInspector={setInspector} />
+          {/* p13 FORGE glass (D1): flag-gated swap; demo path unchanged */}
+          {process.env.TIMMY_FORGE === '1'
+            ? <ForgePanel width={Math.max(30, Math.floor(width / 2))} />
+            : <DashboardPanel agent={agent} setInspector={setInspector} />}
         </PaneFocusContext.Provider>
       </Box>
     </Box>
