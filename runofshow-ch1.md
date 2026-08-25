@@ -45,3 +45,34 @@ Walnut vocabulary needs no code: `timmy seal` takes arbitrary subjects;
    MiniMax-H3 weights are locally loadable; fleet.json is the verdict.
 
 Phase B remains armed on "MERGE WORD". Nothing in Phase B/C executes early.
+
+---
+
+## REHEARSAL — 2026-08-25, on v1.0.7.1 (rehearsal-ch1.cast)
+
+Actor qwen-rehearsal; all seals --meta dry=1; photo hash = sha256 of a
+placeholder file (scan.capture meta photo_sha256); throwaway 901, forward
+rotation to live 902. Total runtime 4557ms.
+
+| Beat | ms | rc | Note |
+|------|----|----|------|
+| doctor | 1479 | 0 | cold bin |
+| verify pre | 240 | 1 | STUMBLE (see below) |
+| rotate 901 | 223 | 0 | throwaway open |
+| retail.intake | 257 | 0 | |
+| provenance.request | 249 | 0 | |
+| box.verify | 328 | 0 | |
+| pack.open | 271 | 0 | |
+| scan.capture | 261 | 0 | photo_sha256 pinned |
+| card.ident | 264 | 0 | |
+| grade.estimate | 256 | 0 | |
+| rotate 902 | 193 | 0 | forward, live |
+| verify post | 203 | 0 | ok:true on live segment 902 |
+
+FLAGGED STUMBLE (report only, no code fix): verify-pre rc=1 — epoch-2 segment
+broken at rc_mt8iqfq9_wbnv (prev_hash mismatch). Cause: the parallel vitest
+suite seals some tests into the REAL chain concurrently; two appends raced
+the same prev. Epoch-1 break (rc_msvbkiwz_zrcm) is the known legacy incident.
+Rehearsal segments 900/901 verify clean; post-rotation live segment green.
+Follow-up candidate (out of scope here): isolate chain-writing tests to a
+tmp dir, or serialize appends with the existing chain lock.
