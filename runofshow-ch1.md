@@ -30,3 +30,18 @@ narrate it.
 
 Walnut vocabulary needs no code: `timmy seal` takes arbitrary subjects;
 `--meta k=v` pairs ride in `sources[0]` (pr, head sha, cast_hash, dry, …).
+
+---
+
+## SHOWRUNNER Phase C — ARMED (executes ONLY on "TUESDAY GATE")
+
+1. ComfyUI: confirm LTX-2 weights (Docker volume first — COMFY:READY); if
+   absent, download; smoke-gen 540p/2s from a stub prompt; seal gen.result
+   with local:true only if no API key was used.
+2. Emit fleet.json: every reachable provider with computed local:true|false —
+   the truth table the film narrates from.
+3. df -h check; report headroom. Nothing else.
+4. Probe Unsloth Desktop's local endpoint; add provider row; check whether
+   MiniMax-H3 weights are locally loadable; fleet.json is the verdict.
+
+Phase B remains armed on "MERGE WORD". Nothing in Phase B/C executes early.
