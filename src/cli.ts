@@ -132,6 +132,46 @@ if (command === 'start') {
   process.exit(0);
 }
 
+if (command === 'seal') {
+  // Generic sealing verb (SHOWRUNNER Phase A-FIX): thin CLI wrapper over
+  // the same appendReceipt path the chat uses. Subjects are data — no
+  // whitelist, so Walnut's vocabulary requires no code. DESIGN.md §1:
+  // appends through the canonical writer, never edits chain logic.
+  const meta: Record<string, string> = {};
+  const subject: string[] = [];
+  for (let i = 1; i < args.length; i++) {
+    const a = String(args[i]);
+    if (a === '--meta') {
+      const kv = String(args[++i] ?? '');
+      const eq = kv.indexOf('=');
+      if (eq > 0) meta[kv.slice(0, eq)] = kv.slice(eq + 1);
+    } else if (a === '--json') {
+      continue;
+    } else {
+      subject.push(a);
+    }
+  }
+  const subj = subject.join(' ').trim();
+  if (!subj) {
+    console.error('usage: timmy seal <subject> [--meta k=v]…');
+    process.exit(2);
+  }
+  const { appendReceipt } = await import('./utils/receipts.js');
+  const r = appendReceipt('runs', {
+    kind: 'seal', subject: subj, policy: 'auto', sources: [meta],
+  } as never);
+  console.log(`sealed ${r.hash.slice(0, 16)}… · ${subj}`);
+  process.exit(0);
+}
+
+if (command === 'verify') {
+  // Read-only chain verify (SHOWRUNNER Phase A-FIX). Exit 1 on broken link.
+  const { verifyChain } = await import('./utils/receipts.js');
+  const v = verifyChain('runs');
+  console.log(`ok:${v.ok} receipts:${v.count} epochs:${v.segments.length}`);
+  process.exit(v.ok ? 0 : 1);
+}
+
 if (command === 'clip') {
   // Headless clip runner: list jobs, or run one deterministically and seal it.
   const sub = args[1];
