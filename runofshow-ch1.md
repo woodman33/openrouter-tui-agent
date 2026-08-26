@@ -76,3 +76,33 @@ the same prev. Epoch-1 break (rc_msvbkiwz_zrcm) is the known legacy incident.
 Rehearsal segments 900/901 verify clean; post-rotation live segment green.
 Follow-up candidate (out of scope here): isolate chain-writing tests to a
 tmp dir, or serialize appends with the existing chain lock.
+
+---
+
+## POST-FILM QUEUE — appended 2026-08-25 by owner word (DO NOT IMPLEMENT NOW)
+
+(a) Serialize chain appends — lock or single-writer queue.
+    evidence=rc_mt8iqfq9_wbnv (epoch-2 prev_hash race, parallel test
+    appends). BLOCKS NIGHT SHIFT.
+(b) Isolate all chain-writing tests to tmp dirs per the forge pattern
+    (tests/forge.test.ts mkdtemp + dir param).
+(c) Audit ledger for test-junk receipts; report count only.
+
+Incident scars sealed 2026-08-25: chain.incident ×2 (epoch-2
+rc_mt8iqfq9_wbnv cause=parallel-test-append-race; epoch-1 rc_msvbkiwz_zrcm
+cause=legacy-incident), both status=documented. Verify green after:
+ok:true receipts:538 epochs:5.
+
+MONDAY PLAN CONFIRMED UNCHANGED: fresh WALNUT rotation (forward, new epoch),
+film.plan is the FIRST seal of that epoch, epoch-scoped verify green.
+Phases B (MERGE WORD) and C (TUESDAY GATE) stay armed.
+
+---
+
+## FILMING TAG DIFF — v1.0.7.1..v1.0.7.2 (CURTAIN CALL 2026-08-26)
+
+Exact file list: package.json, src/version.ts, scripts/timmy-doctor.ts
+(version plumbing + doctor proof header ONLY) plus rehearsal-ch1.cast and
+runofshow-ch1.md carried from the already-approved #31. Walnut verb paths
+(src/cli.ts, timmy.ts, src/utils/receipts.ts, src/forge/, src/tui/): ZERO
+changed bytes. FILE FROZEN after this commit; further changes need owner word.
