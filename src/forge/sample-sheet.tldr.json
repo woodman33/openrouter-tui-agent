@@ -1,0 +1,23 @@
+{
+  "tldrawVersion": "2.0.0",
+  "sheet_id": "sheet-lighthouse",
+  "budget_cap_usd": 2.0,
+  "aspect": "16:9",
+  "shapes": {
+    "shape:hero": {
+      "id": "shape:hero", "type": "frame",
+      "meta": { "slot_id": "slot-hero-1", "class": "hero", "required": true,
+        "prompt": "a lighthouse keeper who trusts receipts", "provider_pref": "stub", "est_cost_usd": 0.5 }
+    },
+    "shape:terrain": {
+      "id": "shape:terrain", "type": "frame",
+      "meta": { "slot_id": "slot-terrain-1", "class": "terrain", "required": true,
+        "prompt": "fog bank over black water at sodium-light dusk", "provider_pref": "stub", "est_cost_usd": 0.4 }
+    },
+    "shape:weather": {
+      "id": "shape:weather", "type": "frame",
+      "meta": { "slot_id": "slot-weather-1", "class": "weather", "required": false,
+        "prompt": "drizzle, wind off the sea", "provider_pref": "stub", "est_cost_usd": 0.3 }
+    }
+  }
+}
