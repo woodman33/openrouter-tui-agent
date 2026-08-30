@@ -1,6 +1,7 @@
 import { getWorkspaceEvidenceStatus } from '../src/utils/workspace-evidence.js';
 import { depsDoctor, networkDoctor, hardwareDoctor, printRows } from '../src/utils/doctors.js';
 import { runDoctor } from '../src/utils/doctor.js';
+import { VERSION } from '../src/version.js';
 
 function parseArgs(argv: string[]) {
   const command = argv.find((arg) => !arg.startsWith('-')) || 'doctor';
@@ -22,6 +23,8 @@ async function printDoctor(json = false): Promise<void> {
   }
 
   console.log('TIMMY Doctor');
+  // shadow-purge proof header (2026-08-26): true version + true ledger path
+  console.log(`v${VERSION} · ledger ${process.cwd()}/.timmy`);
   console.log('');
   console.log(`RMUX Installed: ${rmux.installed ? 'YES' : 'NO'}`);
   console.log(`RMUX Version: ${rmux.version || 'not detected'}`);
