@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { tmpdir, homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { readChain, appendReceipt } from '../utils/receipts.js';
+import { readChain, appendReceipt, type Receipt } from '../utils/receipts.js';
 import { forgeEnabled, sha256 } from './gen.js';
 
 export interface TimelineSpec {
@@ -32,6 +32,29 @@ export function validateTimelineSpec(spec: TimelineSpec): void {
 
 const OTIO_PY = join(homedir(), '.local', 'share', 'uv', 'tools', 'opentimelineio', 'bin', 'python');
 
+interface GenResultSource {
+  slot_id?: string;
+  sheet_id?: string;
+  local?: boolean;
+}
+
+const genSource = (r: Receipt): GenResultSource | undefined =>
+  Array.isArray(r.sources) ? (r.sources as GenResultSource[])[0] : undefined;
+
+function latestGenResults(gens: Receipt[]): Receipt[] {
+  const latestSheetId = [...gens].reverse().map(genSource).find(s => typeof s?.sheet_id === 'string')?.sheet_id;
+  const scoped = latestSheetId ? gens.filter(g => genSource(g)?.sheet_id === latestSheetId) : gens;
+  const order: string[] = [];
+  const latestBySlot = new Map<string, Receipt>();
+  for (const g of scoped) {
+    const src = genSource(g);
+    const key = src?.slot_id ? `${src.sheet_id ?? 'legacy'}:${src.slot_id}` : g.hash;
+    if (!latestBySlot.has(key)) order.push(key);
+    latestBySlot.set(key, g);
+  }
+  return order.map(k => latestBySlot.get(k)).filter((g): g is Receipt => Boolean(g));
+}
+
 export function emitTimeline(opts: { specPath?: string; out?: string; dir?: string } = {}): { file: string; clips: number; seal: string } {
   if (!forgeEnabled()) throw new Error('forge lane gated: run with TIMMY_FORGE=1 (D1)');
   const dir = opts.dir ?? process.cwd();
@@ -39,16 +62,16 @@ export function emitTimeline(opts: { specPath?: string; out?: string; dir?: stri
     ? { ...DEFAULT_SPEC, ...JSON.parse(readFileSync(opts.specPath, 'utf8')) as Partial<TimelineSpec> }
     : DEFAULT_SPEC;
   validateTimelineSpec(spec);
-  const gens = readChain('runs', dir).filter(r => r.kind === 'gen.result');
+  const gens = latestGenResults(readChain('runs', dir).filter(r => r.kind === 'gen.result'));
   if (gens.length === 0) throw new Error('no gen.result receipts to cut — run timmy gen first');
   const clips = gens.map(g => {
-    const src = Array.isArray(g.sources) ? (g.sources as { slot_id?: string; local?: boolean }[])[0] : undefined;
+    const src = genSource(g);
     return {
       OTIO_SCHEMA: 'Clip.2',
       metadata: {
         timmy: {
           receipt_hash: g.hash, prev: g.prev_hash, prompt_hash: g.prompt_hash ?? '',
-          gen_id: g.id, rights: spec.rights_line, slot_id: src?.slot_id ?? '',
+          gen_id: g.id, rights: spec.rights_line, slot_id: src?.slot_id ?? '', sheet_id: src?.sheet_id ?? '',
         },
       },
       name: `forge ${src?.slot_id ?? g.id}`,

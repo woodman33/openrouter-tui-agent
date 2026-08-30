@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { runGen, forgeEnabled } from '../src/forge/gen.js';
+import { runGen, forgeEnabled, sha256 } from '../src/forge/gen.js';
 import { emitTimeline } from '../src/forge/timeline.js';
 import { loadSheet, validateSheet } from '../src/forge/sheet.js';
 import { wireLanes } from '../src/forge/stubs.js';
@@ -95,6 +95,16 @@ describe('gen cycle on stub (D2, D4, D5)', () => {
     const lines = runGen({ sheet: sheetPath, stub: true, dir, slots: ['slot-hero-1'] });
     expect(lines.map(l => l.slot_id)).toEqual(['slot-hero-1']);
   });
+  it('keeps repeated fills as distinct sealed artifacts', () => {
+    const first = runGen({ sheet: sheetPath, stub: true, dir, slots: ['slot-hero-1'] })[0];
+    const firstBytes = readFileSync(first.artifact);
+    const second = runGen({ sheet: sheetPath, stub: true, dir, slots: ['slot-hero-1'] })[0];
+    expect(second.artifact).not.toBe(first.artifact);
+    expect(readFileSync(first.artifact)).toEqual(firstBytes);
+    for (const r of readChain('runs', dir).filter(x => x.kind === 'gen.result')) {
+      expect(r.output_sha256).toBe(sha256(readFileSync((r.artifacts ?? [])[0])));
+    }
+  });
   it('chain verifies after a full cycle (§1 intact)', () => {
     runGen({ sheet: sheetPath, stub: true, dir });
     expect(verifyChain('runs', dir).ok).toBe(true);
@@ -120,5 +130,14 @@ describe('timeline emit (D3, D6)', () => {
   });
   it('refuses to emit with no gen.result receipts', () => {
     expect(() => emitTimeline({ dir })).toThrow(/no gen.result/);
+  });
+  it('emits only the latest gen result per slot', () => {
+    runGen({ sheet: sheetPath, stub: true, dir });
+    runGen({ sheet: sheetPath, stub: true, dir });
+    const latest = readChain('runs', dir).filter(x => x.kind === 'gen.result').slice(-3).map(x => x.hash);
+    const r = emitTimeline({ dir });
+    expect(r.clips).toBe(3);
+    const tl = JSON.parse(readFileSync(r.file, 'utf8')) as { tracks: { children: { children: { metadata: { timmy: { receipt_hash: string } } }[] }[] } };
+    expect(tl.tracks.children[0].children.map(c => c.metadata.timmy.receipt_hash)).toEqual(latest);
   });
 });

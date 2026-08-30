@@ -30,10 +30,10 @@ export interface GenLine { slot_id: string; request: string; result: string; art
 const pathUsesNoKey = (provider: string): boolean =>
   provider === 'stub' || (provider === 'comfy' && !process.env.COMFY_CLOUD_API_KEY && !process.env.COMFY_CLOUD_TOKEN);
 
-function dispatch(slot: ForgeSlot, provider: string, promptHash: string, allowSpend: boolean, dir: string): { artifact: string; bytes: Buffer; cost: number; model: string } {
+function dispatch(slot: ForgeSlot, provider: string, promptHash: string, requestHash: string, allowSpend: boolean, dir: string): { artifact: string; bytes: Buffer; cost: number; model: string } {
   const outDir = join(dir, '.timmy', 'forge');
   mkdirSync(outDir, { recursive: true });
-  const out = join(outDir, `${slot.slot_id}.bin`);
+  const out = join(outDir, `${slot.slot_id}-${requestHash.slice(7, 19)}.bin`);
   if (provider === 'stub') {
     const bytes = Buffer.from(`TIMMY-FORGE-STUB ${slot.slot_id} ${promptHash} ${slot.prompt}`);
     writeFileSync(out, bytes);
@@ -74,17 +74,17 @@ export function runGen(opts: GenOpts): GenLine[] {
     const req = appendReceipt('runs', {
       kind: 'gen.request', subject: `forge ${slot.slot_id} · ${slot.prompt.slice(0, 40)}`,
       policy: 'auto', prompt_hash: promptHash, model_requested: slot.provider_pref,
-      via: provider, sources: [{ slot_id: slot.slot_id, class: slot.class, required: slot.required, est_cost_usd: slot.est_cost_usd ?? 0 }],
+      via: provider, sources: [{ sheet_id: sheet.sheet_id, slot_id: slot.slot_id, class: slot.class, required: slot.required, est_cost_usd: slot.est_cost_usd ?? 0 }],
     } as never, dir);
     const t0 = Date.now();
-    const d = dispatch(slot, provider, promptHash, Boolean(opts.allowSpend), dir);
+    const d = dispatch(slot, provider, promptHash, req.hash, Boolean(opts.allowSpend), dir);
     const ms = Date.now() - t0;
     const local = pathUsesNoKey(provider);
     const res = appendReceipt('runs', {
       kind: 'gen.result', subject: `forge ${slot.slot_id} · ${slot.prompt.slice(0, 40)}`,
       policy: 'auto', prompt_hash: promptHash, model_resolved: d.model, via: provider,
       ms, cost_usd: d.cost, output_sha256: sha256(d.bytes), artifacts: [d.artifact],
-      status: 'ok', sources: [{ slot_id: slot.slot_id, local }],
+      status: 'ok', sources: [{ sheet_id: sheet.sheet_id, slot_id: slot.slot_id, local }],
     } as never, dir);
     lines.push({ slot_id: slot.slot_id, request: req.hash, result: res.hash, artifact: d.artifact, local, cost: d.cost, ms });
   }
