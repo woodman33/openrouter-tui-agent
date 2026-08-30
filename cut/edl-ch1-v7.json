@@ -1,0 +1,101 @@
+{
+ "version": 7,
+ "vo": "vo/vo-ch1.mp3",
+ "vo_sha256": "0a82d82a897a8f2d06a4659558141aa02e9e2c06a97894dd763166be15a44a73",
+ "captions": "cut/captions-ch1.ass",
+ "total_s": 55.963,
+ "beats": [
+  {
+   "kind": "title",
+   "t": [
+    0,
+    6.612
+   ],
+   "file": "01-terminal.mp4"
+  },
+  {
+   "kind": "scroll",
+   "t": [
+    6.612,
+    14.137
+   ]
+  },
+  {
+   "kind": "wrap",
+   "t": [
+    14.137,
+    17.617
+   ],
+   "file": "02b-wrap-4s.mp4"
+  },
+  {
+   "kind": "proofstack",
+   "t": [
+    17.617,
+    28.703
+   ],
+   "shots": [
+    "03-proof-photogenic.mp4",
+    "04-proof-letter.mp4",
+    "05-proof-verify.mp4"
+   ],
+   "stamps": [
+    {
+     "at": 23.16,
+     "verb": "retail.intake",
+     "id": "rc_mtduhfs6_jorn"
+    },
+    {
+     "at": 25.599,
+     "verb": "gift.intake",
+     "id": "rc_mtduiaze_u6as"
+    },
+    {
+     "at": 27.594,
+     "verb": "box.verify",
+     "id": "rc_mtduj68w_0faa"
+    }
+   ]
+  },
+  {
+   "kind": "hero",
+   "t": [
+    28.703,
+    33.962
+   ],
+   "file": "06-hero.mp4",
+   "stamp": {
+    "at": 31.07,
+    "verb": "pack.open",
+    "id": "rc_mtdujlvj_zeqo"
+   }
+  },
+  {
+   "kind": "hinge",
+   "t": [
+    33.962,
+    39.303
+   ]
+  },
+  {
+   "kind": "smash",
+   "t": [
+    39.303,
+    44.563
+   ],
+   "red": [
+    "REFUSED rc_msvbkiwz_zrcm",
+    "REFUSED rc_mt8iqfq9_wbnv"
+   ]
+  },
+  {
+   "kind": "end",
+   "t": [
+    44.563,
+    55.962999999999994
+   ],
+   "cta_in": 48.77,
+   "chips_in": 51.279
+  }
+ ]
+}

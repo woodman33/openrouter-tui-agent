@@ -1,0 +1,80 @@
+[
+ {
+  "line": 1,
+  "text": "This is Timmy \u2014 a terminal agent that writes a receipt for everything it does.",
+  "t_in": 0.3,
+  "t_out": 6.612
+ },
+ {
+  "line": 2,
+  "text": "Every action is hashed, signed, and chained.",
+  "t_in": 6.612,
+  "t_out": 10.172
+ },
+ {
+  "line": 3,
+  "text": "Nothing gets deleted, and nothing gets rewritten.",
+  "t_in": 10.172,
+  "t_out": 14.137
+ },
+ {
+  "line": 4,
+  "text": "Tonight, we put it to work on a card break.",
+  "t_in": 14.137,
+  "t_out": 17.617
+ },
+ {
+  "line": 5,
+  "text": "Every box went into the record before the wrap ever came off \u2014 the ones we bought, and the one Fanatics sent us, with the letter on file.",
+  "t_in": 17.617,
+  "t_out": 28.703
+ },
+ {
+  "line": 6,
+  "text": "By the time the first pack was opened, the proof already existed.",
+  "t_in": 28.703,
+  "t_out": 33.962
+ },
+ {
+  "line": 7,
+  "text": "You don't have to trust any of it,",
+  "t_in": 33.962,
+  "t_out": 36.713
+ },
+ {
+  "line": 8,
+  "text": "because you can check all of it.",
+  "t_in": 36.713,
+  "t_out": 39.303
+ },
+ {
+  "line": 9,
+  "text": "And when a bad record showed up, Timmy didn't argue \u2014 it refused.",
+  "t_in": 39.303,
+  "t_out": 44.563
+ },
+ {
+  "line": 10,
+  "text": "Agents that can't lie about what they did.",
+  "t_in": 44.563,
+  "t_out": 47.961
+ },
+ {
+  "line": 11,
+  "text": "Timmy TUI.",
+  "t_in": 47.961,
+  "t_out": 48.77
+ },
+ {
+  "line": 12,
+  "text": "Buy the break, keep the proof \u2014",
+  "t_in": 48.77,
+  "t_out": 51.279
+ },
+ {
+  "line": 13,
+  "text": "and if you build agents, build them on receipts.",
+  "t_in": 51.279,
+  "t_out": 55.163
+ }
+]
