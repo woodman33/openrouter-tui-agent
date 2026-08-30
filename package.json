@@ -49,6 +49,7 @@
     "pretest": "npm run brand:guard && npm run version:generate",
     "prepack": "npm run build",
     "brand:guard": "bash scripts/brand-guard.sh",
+    "typecheck:native": "tsgo --noEmit",
     "typecheck:worker": "tsc -p workers/ai-proxy",
     "agent": "tsx src/mcp/agent-server.ts",
     "cmcp": "tsx src/mcp/cmcp-bridge.ts",
