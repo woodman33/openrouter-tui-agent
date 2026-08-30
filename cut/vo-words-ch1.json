@@ -1,0 +1,657 @@
+[
+ {
+  "word": "This",
+  "t_in": 0.0,
+  "t_out": 0.2
+ },
+ {
+  "word": "is",
+  "t_in": 0.2,
+  "t_out": 0.4
+ },
+ {
+  "word": "Timmy,",
+  "t_in": 0.4,
+  "t_out": 0.84
+ },
+ {
+  "word": "a",
+  "t_in": 1.42,
+  "t_out": 1.54
+ },
+ {
+  "word": "terminal",
+  "t_in": 1.54,
+  "t_out": 1.88
+ },
+ {
+  "word": "agent",
+  "t_in": 1.88,
+  "t_out": 2.26
+ },
+ {
+  "word": "that",
+  "t_in": 2.26,
+  "t_out": 2.56
+ },
+ {
+  "word": "writes",
+  "t_in": 2.56,
+  "t_out": 2.8
+ },
+ {
+  "word": "a",
+  "t_in": 2.8,
+  "t_out": 3.02
+ },
+ {
+  "word": "receipt",
+  "t_in": 3.02,
+  "t_out": 3.4
+ },
+ {
+  "word": "for",
+  "t_in": 3.4,
+  "t_out": 3.66
+ },
+ {
+  "word": "everything",
+  "t_in": 3.66,
+  "t_out": 4.22
+ },
+ {
+  "word": "it",
+  "t_in": 4.22,
+  "t_out": 4.52
+ },
+ {
+  "word": "does.",
+  "t_in": 4.52,
+  "t_out": 5.08
+ },
+ {
+  "word": "Every",
+  "t_in": 5.86,
+  "t_out": 6.1
+ },
+ {
+  "word": "action",
+  "t_in": 6.1,
+  "t_out": 6.58
+ },
+ {
+  "word": "is",
+  "t_in": 6.58,
+  "t_out": 6.86
+ },
+ {
+  "word": "hashed,",
+  "t_in": 6.86,
+  "t_out": 7.6
+ },
+ {
+  "word": "signed,",
+  "t_in": 7.92,
+  "t_out": 8.38
+ },
+ {
+  "word": "and",
+  "t_in": 8.66,
+  "t_out": 8.76
+ },
+ {
+  "word": "chained.",
+  "t_in": 8.76,
+  "t_out": 9.1
+ },
+ {
+  "word": "Nothing",
+  "t_in": 10.12,
+  "t_out": 10.34
+ },
+ {
+  "word": "gets",
+  "t_in": 10.34,
+  "t_out": 10.6
+ },
+ {
+  "word": "deleted,",
+  "t_in": 10.6,
+  "t_out": 11.14
+ },
+ {
+  "word": "and",
+  "t_in": 11.64,
+  "t_out": 11.78
+ },
+ {
+  "word": "nothing",
+  "t_in": 11.78,
+  "t_out": 12.1
+ },
+ {
+  "word": "gets",
+  "t_in": 12.1,
+  "t_out": 12.38
+ },
+ {
+  "word": "rewritten.",
+  "t_in": 12.38,
+  "t_out": 12.8
+ },
+ {
+  "word": "Tonight,",
+  "t_in": 14.08,
+  "t_out": 14.38
+ },
+ {
+  "word": "we",
+  "t_in": 14.98,
+  "t_out": 15.2
+ },
+ {
+  "word": "put",
+  "t_in": 15.2,
+  "t_out": 15.4
+ },
+ {
+  "word": "it",
+  "t_in": 15.4,
+  "t_out": 15.54
+ },
+ {
+  "word": "to",
+  "t_in": 15.54,
+  "t_out": 15.68
+ },
+ {
+  "word": "work",
+  "t_in": 15.68,
+  "t_out": 15.92
+ },
+ {
+  "word": "on",
+  "t_in": 15.92,
+  "t_out": 16.24
+ },
+ {
+  "word": "a",
+  "t_in": 16.24,
+  "t_out": 16.42
+ },
+ {
+  "word": "card",
+  "t_in": 16.42,
+  "t_out": 16.58
+ },
+ {
+  "word": "break.",
+  "t_in": 16.58,
+  "t_out": 16.9
+ },
+ {
+  "word": "Every",
+  "t_in": 17.96,
+  "t_out": 18.24
+ },
+ {
+  "word": "box",
+  "t_in": 18.24,
+  "t_out": 18.6
+ },
+ {
+  "word": "went",
+  "t_in": 18.6,
+  "t_out": 18.88
+ },
+ {
+  "word": "into",
+  "t_in": 18.88,
+  "t_out": 19.18
+ },
+ {
+  "word": "the",
+  "t_in": 19.18,
+  "t_out": 19.32
+ },
+ {
+  "word": "record",
+  "t_in": 19.32,
+  "t_out": 19.62
+ },
+ {
+  "word": "before",
+  "t_in": 19.62,
+  "t_out": 20.04
+ },
+ {
+  "word": "the",
+  "t_in": 20.04,
+  "t_out": 20.26
+ },
+ {
+  "word": "wrap",
+  "t_in": 20.26,
+  "t_out": 20.56
+ },
+ {
+  "word": "ever",
+  "t_in": 20.56,
+  "t_out": 20.98
+ },
+ {
+  "word": "came",
+  "t_in": 20.98,
+  "t_out": 21.28
+ },
+ {
+  "word": "off.",
+  "t_in": 21.28,
+  "t_out": 21.62
+ },
+ {
+  "word": "The",
+  "t_in": 22.28,
+  "t_out": 22.46
+ },
+ {
+  "word": "ones",
+  "t_in": 22.46,
+  "t_out": 22.68
+ },
+ {
+  "word": "we",
+  "t_in": 22.68,
+  "t_out": 22.92
+ },
+ {
+  "word": "bought",
+  "t_in": 22.92,
+  "t_out": 23.24
+ },
+ {
+  "word": "and",
+  "t_in": 23.24,
+  "t_out": 23.84
+ },
+ {
+  "word": "the",
+  "t_in": 23.84,
+  "t_out": 23.98
+ },
+ {
+  "word": "one",
+  "t_in": 23.98,
+  "t_out": 24.22
+ },
+ {
+  "word": "fanatics",
+  "t_in": 24.22,
+  "t_out": 24.82
+ },
+ {
+  "word": "sent",
+  "t_in": 24.82,
+  "t_out": 25.26
+ },
+ {
+  "word": "us",
+  "t_in": 25.26,
+  "t_out": 25.66
+ },
+ {
+  "word": "with",
+  "t_in": 25.66,
+  "t_out": 26.14
+ },
+ {
+  "word": "the",
+  "t_in": 26.14,
+  "t_out": 26.32
+ },
+ {
+  "word": "letter",
+  "t_in": 26.32,
+  "t_out": 26.58
+ },
+ {
+  "word": "on",
+  "t_in": 26.58,
+  "t_out": 26.94
+ },
+ {
+  "word": "file.",
+  "t_in": 26.94,
+  "t_out": 27.32
+ },
+ {
+  "word": "By",
+  "t_in": 28.12,
+  "t_out": 28.68
+ },
+ {
+  "word": "the",
+  "t_in": 28.68,
+  "t_out": 28.84
+ },
+ {
+  "word": "time",
+  "t_in": 28.84,
+  "t_out": 29.06
+ },
+ {
+  "word": "the",
+  "t_in": 29.06,
+  "t_out": 29.26
+ },
+ {
+  "word": "first",
+  "t_in": 29.26,
+  "t_out": 29.54
+ },
+ {
+  "word": "pack",
+  "t_in": 29.54,
+  "t_out": 29.78
+ },
+ {
+  "word": "was",
+  "t_in": 29.78,
+  "t_out": 30.0
+ },
+ {
+  "word": "opened,",
+  "t_in": 30.0,
+  "t_out": 30.56
+ },
+ {
+  "word": "the",
+  "t_in": 31.04,
+  "t_out": 31.08
+ },
+ {
+  "word": "proof",
+  "t_in": 31.08,
+  "t_out": 31.36
+ },
+ {
+  "word": "already",
+  "t_in": 31.36,
+  "t_out": 31.98
+ },
+ {
+  "word": "existed.",
+  "t_in": 31.98,
+  "t_out": 32.68
+ },
+ {
+  "word": "You",
+  "t_in": 33.72,
+  "t_out": 33.94
+ },
+ {
+  "word": "don't",
+  "t_in": 33.94,
+  "t_out": 34.14
+ },
+ {
+  "word": "have",
+  "t_in": 34.14,
+  "t_out": 34.32
+ },
+ {
+  "word": "to",
+  "t_in": 34.32,
+  "t_out": 34.48
+ },
+ {
+  "word": "trust",
+  "t_in": 34.48,
+  "t_out": 34.78
+ },
+ {
+  "word": "any",
+  "t_in": 34.78,
+  "t_out": 35.18
+ },
+ {
+  "word": "of",
+  "t_in": 35.18,
+  "t_out": 35.38
+ },
+ {
+  "word": "it,",
+  "t_in": 35.38,
+  "t_out": 35.64
+ },
+ {
+  "word": "because",
+  "t_in": 35.9,
+  "t_out": 36.2
+ },
+ {
+  "word": "you",
+  "t_in": 36.2,
+  "t_out": 36.38
+ },
+ {
+  "word": "can",
+  "t_in": 36.38,
+  "t_out": 36.56
+ },
+ {
+  "word": "check",
+  "t_in": 36.56,
+  "t_out": 36.84
+ },
+ {
+  "word": "all",
+  "t_in": 36.84,
+  "t_out": 37.26
+ },
+ {
+  "word": "of",
+  "t_in": 37.26,
+  "t_out": 37.4
+ },
+ {
+  "word": "it.",
+  "t_in": 37.4,
+  "t_out": 37.72
+ },
+ {
+  "word": "And",
+  "t_in": 38.22,
+  "t_out": 38.34
+ },
+ {
+  "word": "when",
+  "t_in": 38.34,
+  "t_out": 38.46
+ },
+ {
+  "word": "a",
+  "t_in": 38.46,
+  "t_out": 38.62
+ },
+ {
+  "word": "bad",
+  "t_in": 38.62,
+  "t_out": 38.88
+ },
+ {
+  "word": "record",
+  "t_in": 38.88,
+  "t_out": 39.22
+ },
+ {
+  "word": "showed",
+  "t_in": 39.22,
+  "t_out": 39.5
+ },
+ {
+  "word": "up,",
+  "t_in": 39.5,
+  "t_out": 39.86
+ },
+ {
+  "word": "Timmy",
+  "t_in": 40.34,
+  "t_out": 40.5
+ },
+ {
+  "word": "didn't",
+  "t_in": 40.5,
+  "t_out": 40.78
+ },
+ {
+  "word": "argue.",
+  "t_in": 40.78,
+  "t_out": 41.16
+ },
+ {
+  "word": "It",
+  "t_in": 41.88,
+  "t_out": 42.06
+ },
+ {
+  "word": "refused.",
+  "t_in": 42.06,
+  "t_out": 42.6
+ },
+ {
+  "word": "Agents",
+  "t_in": 43.66,
+  "t_out": 43.9
+ },
+ {
+  "word": "that",
+  "t_in": 43.9,
+  "t_out": 44.16
+ },
+ {
+  "word": "can't",
+  "t_in": 44.16,
+  "t_out": 44.56
+ },
+ {
+  "word": "lie",
+  "t_in": 44.56,
+  "t_out": 44.9
+ },
+ {
+  "word": "about",
+  "t_in": 44.9,
+  "t_out": 45.2
+ },
+ {
+  "word": "what",
+  "t_in": 45.2,
+  "t_out": 45.4
+ },
+ {
+  "word": "they",
+  "t_in": 45.4,
+  "t_out": 45.54
+ },
+ {
+  "word": "did.",
+  "t_in": 45.54,
+  "t_out": 46.02
+ },
+ {
+  "word": "Timmy",
+  "t_in": 46.82,
+  "t_out": 47.28
+ },
+ {
+  "word": "T",
+  "t_in": 47.28,
+  "t_out": 47.44
+ },
+ {
+  "word": ".U",
+  "t_in": 47.44,
+  "t_out": 47.78
+ },
+ {
+  "word": ".I.",
+  "t_in": 47.78,
+  "t_out": 48.16
+ },
+ {
+  "word": "Buy",
+  "t_in": 48.94,
+  "t_out": 49.2
+ },
+ {
+  "word": "the",
+  "t_in": 49.2,
+  "t_out": 49.38
+ },
+ {
+  "word": "break.",
+  "t_in": 49.38,
+  "t_out": 49.68
+ },
+ {
+  "word": "Keep",
+  "t_in": 50.34,
+  "t_out": 50.48
+ },
+ {
+  "word": "the",
+  "t_in": 50.48,
+  "t_out": 50.7
+ },
+ {
+  "word": "proof.",
+  "t_in": 50.7,
+  "t_out": 50.94
+ },
+ {
+  "word": "And",
+  "t_in": 51.76,
+  "t_out": 51.84
+ },
+ {
+  "word": "if",
+  "t_in": 51.84,
+  "t_out": 51.96
+ },
+ {
+  "word": "you",
+  "t_in": 51.96,
+  "t_out": 52.14
+ },
+ {
+  "word": "build",
+  "t_in": 52.14,
+  "t_out": 52.38
+ },
+ {
+  "word": "agents,",
+  "t_in": 52.38,
+  "t_out": 52.92
+ },
+ {
+  "word": "build",
+  "t_in": 53.58,
+  "t_out": 53.68
+ },
+ {
+  "word": "them",
+  "t_in": 53.68,
+  "t_out": 53.92
+ },
+ {
+  "word": "on",
+  "t_in": 53.92,
+  "t_out": 54.22
+ },
+ {
+  "word": "receipts.",
+  "t_in": 54.22,
+  "t_out": 54.58
+ }
+]
