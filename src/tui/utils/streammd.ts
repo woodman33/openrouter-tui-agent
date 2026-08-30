@@ -83,7 +83,8 @@ export function renderMarkdown(md: string, width: number): string[] {
       for (const l of String(tk.text ?? '').split('\n')) out.push('  ' + dim(l.length > width - 2 ? l.slice(0, width - 3) + '…' : l));
       out.push('');
     } else if (type === 'blockquote') {
-      const inner = marked.lexer(String(tk.raw ?? '')).filter(b => b.type === 'paragraph');
+      const inner = ((tk.tokens as Token[] | undefined) ?? marked.lexer(String(tk.text ?? '')))
+        .filter(b => b.type === 'paragraph');
       for (const p of inner) out.push(...wrapRuns(inlineRuns((p as { tokens?: Token[] }).tokens), width - 4, '  ').map(l => dim(l)));
       out.push('');
     } else if (type === 'list') {

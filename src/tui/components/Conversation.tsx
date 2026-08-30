@@ -10,13 +10,14 @@ import { EmptyState } from '../ui/EmptyState.js';
 import { useKeyOwner } from '../hooks/useKeyDispatcher.js';
 import { useAgent } from '../hooks/useAgent.js';
 import { lastReceipt, appendReceipt } from '../../utils/receipts.js';
+import { chatSealMap } from '../../utils/chat-seals.js';
 import { renderMarkdown } from '../utils/streammd.js';
 import { theme } from '../theme.js';
 import { handleSlashCommand } from '../../utils/slash-commands.js';
 import type { Agent } from '../../agent/core.js';
 import { ViewportContext } from '../layout.js';
 
-interface Turn { role: 'user' | 'assistant'; text: string; seal?: string }
+interface Turn { role: 'user' | 'assistant'; text: string; seal?: string; timestamp?: number }
 interface SysLine { text: string }
 
 const animationsOn = (): boolean =>
@@ -50,10 +51,11 @@ export function Conversation({ agent, keys }: { agent: Agent; keys: 'dispatcher'
     for (const m of state.messages) {
       const content = String(m.content ?? '');
       if (!content) continue;
-      if (m.role === 'user') next.push({ role: 'user', text: content });
-      else next.push({ role: 'assistant', text: content });
+      if (m.role === 'user') next.push({ role: 'user', text: content, timestamp: m.timestamp });
+      else next.push({ role: 'assistant', text: content, timestamp: m.timestamp });
     }
     setTurns(next);
+    setSeals(s => chatSealMap(next, s));
     // when a stream just ended: foot the turn with its receipt. Prefer a seal
     // the pipeline already minted this turn; else mint one through the
     // canonical appendReceipt (READ-ONLY law: we use the chain, never edit

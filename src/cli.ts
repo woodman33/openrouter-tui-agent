@@ -93,6 +93,20 @@ function printTable(rows: { label: string; value: string }[]) {
   console.log(bottomBorder);
 }
 
+function resolveEntry(candidates: URL[]): string {
+  for (const candidate of candidates) {
+    const entry = fileURLToPath(candidate);
+    if (fs.existsSync(entry)) return entry;
+  }
+  return fileURLToPath(candidates[0]);
+}
+
+function runEntry(entry: string, env: NodeJS.ProcessEnv = process.env): ReturnType<typeof spawnSync> {
+  return entry.endsWith('.js')
+    ? spawnSync(process.execPath, [entry], { stdio: 'inherit', env })
+    : spawnSync('npx', ['tsx', entry], { stdio: 'inherit', env });
+}
+
 const args = process.argv.slice(2);
 
 // Filter out --json, --out <dir>
@@ -136,11 +150,17 @@ if (command === 'chat') {
   // WALNUT counterflow chat surface (p12; DESIGN.md §3 two-pane grammar).
   // --legacy keeps the old chat path reachable until deliberately deleted.
   const legacy = args.includes('--legacy');
-  const chatEntry = fileURLToPath(new URL('./tui/chatmain.tsx', import.meta.url));
-  const tuiEntry = fileURLToPath(new URL('../cli.tsx', import.meta.url));
+  const chatEntry = resolveEntry([
+    new URL('./tui/chatmain.tsx', import.meta.url),
+    new URL('./tui/chatmain.js', import.meta.url),
+  ]);
+  const tuiEntry = resolveEntry([
+    new URL('../cli.tsx', import.meta.url),
+    new URL('../cli.js', import.meta.url),
+  ]);
   const r = legacy
-    ? spawnSync('npx', ['tsx', tuiEntry], { stdio: 'inherit', env: { ...process.env, TIMMY_LEGACY_CHAT: '1' } })
-    : spawnSync('npx', ['tsx', chatEntry], { stdio: 'inherit' });
+    ? runEntry(tuiEntry, { ...process.env, TIMMY_LEGACY_CHAT: '1' })
+    : runEntry(chatEntry);
   process.exit(r.status ?? 0);
 }
 

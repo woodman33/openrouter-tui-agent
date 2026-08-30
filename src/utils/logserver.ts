@@ -14,6 +14,7 @@ import { spawn } from 'child_process';
 import { pathToFileURL } from 'url';
 import { readEvents, eventsPath, TimmyEvent } from './eventbus.js';
 import { readChain, verifyChain, verifySignature, hashOf } from './receipts.js';
+import { chatSealMap, shortSeal, type SealableChatTurn } from './chat-seals.js';
 import { theme } from '../tui/theme.js';
 
 export const LOGS_PORT = (): number => Number(process.env.TIMMY_LOGS_PORT ?? 4310);
@@ -539,12 +540,20 @@ function latestSessionPath(): string | null {
     return files.sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0] ?? null;
   } catch { return null; }
 }
-function readSessionTail(n: number): { role: string; content: string }[] {
+interface SessionTurn extends SealableChatTurn {
+  content: string;
+  name?: string;
+  timestamp?: number;
+}
+
+function readSessionTail(n: number): SessionTurn[] {
   const p = latestSessionPath();
   if (!p) return [];
   try {
-    return readFileSync(p, 'utf8').split('\n').filter(Boolean).slice(-n)
-      .map(l => JSON.parse(l) as { role: string; content: string });
+    const turns = readFileSync(p, 'utf8').split('\n').filter(Boolean).slice(-n)
+      .map(l => JSON.parse(l) as SessionTurn);
+    const seals = chatSealMap(turns, {}, readChain('runs'), shortSeal);
+    return turns.map((turn, index) => seals[index] ? { ...turn, seal: seals[index] } : turn);
   } catch { return []; }
 }
 function sessionSize(): number {
@@ -585,6 +594,7 @@ export function startLogServer(opts: { port?: number; open?: boolean } = {}): Pr
         if (cl !== chainLen) {
           for (const r of readChain('runs').slice(chainLen)) send({ t: 'receipt', hash: String(r.hash).slice(7, 15) + '…', subject: r.subject, kind: r.kind, ts: String(r.ts).slice(11, 19) });
           chainLen = cl;
+          pushTurns();
         }
       }, 700);
       res.on('close', () => clearInterval(iv));
