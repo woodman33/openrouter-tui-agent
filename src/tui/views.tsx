@@ -14,6 +14,7 @@ import { listPlans } from '../utils/dispatch.js';
 import { readChain } from '../utils/receipts.js';
 import { readEvents } from '../utils/eventbus.js';
 import { CommandView } from './components/CommandView.js';
+import { Conversation } from './components/Conversation.js';
 import { LogRelay } from './components/LogRelay.js';
 import { theme } from './theme.js';
 import { SlatePanel } from './panels/SlatePanel.js';
@@ -108,7 +109,9 @@ function HomeView({ agent, focused }: { agent: Agent; focused: boolean }) {
           purpose="sovereign chat — Enter to speak · Esc back to nav"
           flexGrow={1}
         >
-          <CommandView agent={agent} />
+          {process.env.TIMMY_LEGACY_CHAT === '1'
+            ? <CommandView agent={agent} />
+            : <Conversation agent={agent} keys="dispatcher" />}
         </Card>
       </Box>
       <Box flexGrow={2} flexDirection="column" paddingLeft={1}>
