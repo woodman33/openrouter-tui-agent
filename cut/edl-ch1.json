@@ -1,0 +1,20 @@
+{
+  "source": "/Users/williammeldman/Movies/Ecamm Live Recordings/Ecamm Recording on 2026-08-28 at 20.51.13.mp4",
+  "recording_start_utc": "2026-08-29T03:51:13.000Z",
+  "start_evidence": "ffprobe format_tags.creation_time (beats filename; filename 20:51:13 PDT == same instant)",
+  "duration_s": 2925.467,
+  "lane": "walnut (ffmpeg -c copy cuts of real captured assets only)",
+  "entries": [
+    { "receiptId": "rc_mtduhfs6_jorn", "verb": "retail.intake", "sha256": "sha256_eb532065e56d53971b4741f6cb0ef0a424fc3821dc9d35262875c7b3fc51a85f", "timecode": "00:01:27.230", "suggested_clip": { "in": 86.230, "out": 93.230 } },
+    { "receiptId": "rc_mtduhvdw_0tp0", "verb": "retail.intake", "sha256": "sha256_5bb468f4b8966024ccf42fb04d96f64b372e17d1d9c0d9235d9a9cbc7bcf07d9", "timecode": "00:01:47.452", "suggested_clip": { "in": 106.452, "out": 113.452 } },
+    { "receiptId": "rc_mtduiaze_u6as", "verb": "gift.intake", "sha256": "sha256_67b40d4cbd0ea1e82ef63ac0b2185486435dec01c66d9a2c84919a704026c65f", "timecode": "00:02:07.666", "suggested_clip": { "in": 126.666, "out": 133.666 } },
+    { "receiptId": "rc_mtduiqlw_ravg", "verb": "provenance.request", "sha256": "sha256_4c3c3df64b6526a2318aa3c1a9fc8ea02f490835e5f44c07557718d711f5fc70", "timecode": "00:02:27.916", "suggested_clip": { "in": 146.916, "out": 153.916 } },
+    { "receiptId": "rc_mtduj68w_0faa", "verb": "box.verify", "sha256": "sha256_25562fe9d1421751791cf88d8bb097fb0f25d96fcfcabe8abf56c5d3306c03ff", "timecode": "00:02:48.184", "suggested_clip": { "in": 167.184, "out": 174.184 } },
+    { "receiptId": "rc_mtdujlvj_zeqo", "verb": "pack.open", "sha256": "sha256_ff1f8e1187165796cb0683f3f7c44175f457fc4553b7dc84120a603e9115a70d", "timecode": "00:03:08.439", "suggested_clip": { "in": 187.439, "out": 194.439 } },
+    { "receiptId": "rc_mtduk89i_yllq", "verb": "session.heartbeat", "sha256": "sha256_7d5334d9caa452d4697fad29e57b0400df31c807356ceab886f2569e1579b51b", "timecode": "00:03:37.454", "suggested_clip": { "in": 217.454, "out": 218.454 } },
+    { "receiptId": "rc_mtdv3l4w_uxit", "verb": "session.heartbeat", "sha256": "sha256_10fda2f46c1bbe57e10b465d7c54ffbdf6dd93764316ac4231e17407267efd6e", "timecode": "00:18:40.600", "suggested_clip": { "in": 1120.600, "out": 1121.600 } },
+    { "receiptId": "rc_mtdvmxw2_m1jq", "verb": "session.heartbeat", "sha256": "sha256_49c01a845717b78d6b386bbe6368370a5068fb4324b801e0cdc90e13275be03c", "timecode": "00:33:43.594", "suggested_clip": { "in": 2023.594, "out": 2024.594 } },
+    { "receiptId": "rc_mtdw6amg_6xu6", "verb": "cut.refusals+board", "sha256": "sha256_4de23f91be647a5508461db0d6e34e58ab58c57ef9765f20c676bbf23f42fa5c", "timecode": "00:48:46.560", "suggested_clip": { "in": 2915.467, "out": 2925.467 }, "note": "CUT anchor: last heartbeat seals +1.09s past file end (recording stopped at CUT); 10s clip = final 10s of recording" },
+    { "receiptId": "rc_mtdw6amg_6xu6", "verb": "session.heartbeat", "sha256": "sha256_4de23f91be647a5508461db0d6e34e58ab58c57ef9765f20c676bbf23f42fa5c", "timecode": "00:48:46.560", "suggested_clip": { "in": 2924.467, "out": 2925.467 }, "note": "1s pulse clamped to file end" }
+  ]
+}

@@ -1,0 +1,812 @@
+{
+  "receipts": [
+    {
+      "runId": "run_proof_1785231677278",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/Code-Projects/openrouter-tui/.runs/run_proof_1785231677278.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-07-28T09:41:17.278Z",
+      "updatedAt": "2026-07-28T09:41:17.278Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780926737764",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780926737764.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-08T13:52:17.764Z",
+      "updatedAt": "2026-06-08T13:52:17.764Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780904409323",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780904409323.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-08T07:40:09.323Z",
+      "updatedAt": "2026-06-08T07:40:09.323Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780903572981",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780903572981.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-08T07:26:12.981Z",
+      "updatedAt": "2026-06-08T07:26:12.981Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780890968049",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780890968049.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-08T03:56:08.049Z",
+      "updatedAt": "2026-06-08T03:56:08.049Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780889199300",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780889199300.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-08T03:26:39.300Z",
+      "updatedAt": "2026-06-08T03:26:39.300Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780856457733",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780856457733.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-07T18:20:57.733Z",
+      "updatedAt": "2026-06-07T18:20:57.733Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780623286450",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780623286450.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-05T01:34:46.450Z",
+      "updatedAt": "2026-06-05T01:34:46.450Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780437170066",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780437170066.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T21:52:50.066Z",
+      "updatedAt": "2026-06-02T21:52:50.066Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780437131997",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780437131997.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T21:52:11.997Z",
+      "updatedAt": "2026-06-02T21:52:11.997Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780435806238",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780435806238.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T21:30:06.238Z",
+      "updatedAt": "2026-06-02T21:30:06.238Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780433314137",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780433314137.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T20:48:34.137Z",
+      "updatedAt": "2026-06-02T20:48:34.137Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780432287250",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780432287250.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T20:31:27.250Z",
+      "updatedAt": "2026-06-02T20:31:27.250Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780425931410",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780425931410.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T18:45:31.410Z",
+      "updatedAt": "2026-06-02T18:45:31.410Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780410770132",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780410770132.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T14:32:50.132Z",
+      "updatedAt": "2026-06-02T14:32:50.132Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780407295428",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780407295428.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T13:34:55.428Z",
+      "updatedAt": "2026-06-02T13:34:55.428Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780405857346",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780405857346.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T13:10:57.346Z",
+      "updatedAt": "2026-06-02T13:10:57.346Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780402490734",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780402490734.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T12:14:50.734Z",
+      "updatedAt": "2026-06-02T12:14:50.734Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780401394789",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780401394789.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T11:56:34.789Z",
+      "updatedAt": "2026-06-02T11:56:34.789Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780399468901",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780399468901.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T11:24:28.901Z",
+      "updatedAt": "2026-06-02T11:24:28.901Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780398117777",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780398117777.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T11:01:57.777Z",
+      "updatedAt": "2026-06-02T11:01:57.777Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780397142906",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780397142906.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T10:45:42.906Z",
+      "updatedAt": "2026-06-02T10:45:42.906Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780395909289",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780395909289.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T10:25:09.289Z",
+      "updatedAt": "2026-06-02T10:25:09.289Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780395270634",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780395270634.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T10:14:30.634Z",
+      "updatedAt": "2026-06-02T10:14:30.634Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780391651656",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780391651656.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T09:14:11.656Z",
+      "updatedAt": "2026-06-02T09:14:11.656Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780384589840",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780384589840.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T07:16:29.840Z",
+      "updatedAt": "2026-06-02T07:16:29.840Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780379607173",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780379607173.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T05:53:27.173Z",
+      "updatedAt": "2026-06-02T05:53:27.173Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780378531805",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780378531805.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T05:35:31.805Z",
+      "updatedAt": "2026-06-02T05:35:31.805Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780377170904",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780377170904.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T05:12:50.904Z",
+      "updatedAt": "2026-06-02T05:12:50.904Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780376947726",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780376947726.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T05:09:07.726Z",
+      "updatedAt": "2026-06-02T05:09:07.726Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780376670546",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780376670546.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T05:04:30.546Z",
+      "updatedAt": "2026-06-02T05:04:30.546Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780375950876",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780375950876.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T04:52:30.876Z",
+      "updatedAt": "2026-06-02T04:52:30.876Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780375033835",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780375033835.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T04:37:13.835Z",
+      "updatedAt": "2026-06-02T04:37:13.835Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780374963183",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780374963183.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T04:36:03.183Z",
+      "updatedAt": "2026-06-02T04:36:03.183Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780374712230",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780374712230.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T04:31:52.230Z",
+      "updatedAt": "2026-06-02T04:31:52.230Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780374279633",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780374279633.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T04:24:39.633Z",
+      "updatedAt": "2026-06-02T04:24:39.633Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780373503606",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780373503606.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T04:11:43.606Z",
+      "updatedAt": "2026-06-02T04:11:43.606Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780371596975",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780371596975.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T03:39:56.975Z",
+      "updatedAt": "2026-06-02T03:39:56.975Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780371593614",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780371593614.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T03:39:53.614Z",
+      "updatedAt": "2026-06-02T03:39:53.614Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 9,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780371550839",
+      "goal": "Verify that Antigravity can complete the production TUI laun...",
+      "prompt_hash": "sha256_b79699fff8bd90c3c5118cebc684ed7bf86c0a458bcc1283114aa4d95d6bea7b",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780371550839.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T03:39:10.839Z",
+      "updatedAt": "2026-06-02T03:39:10.839Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 23,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "run_proof_1780371127342",
+      "goal": "Verify that Antigravity can complete the production TUI launch.",
+      "phase": "proof",
+      "riskLevel": "low",
+      "receiptUrl": "file:///Users/williammeldman/Desktop/openrouter-tui/.runs/run_proof_1780371127342.agentrun/manifest.json",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "createdAt": "2026-06-02T03:32:07.342Z",
+      "updatedAt": "2026-06-02T03:32:07.342Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 19,
+        "errors": 0,
+        "approvals": 1
+      }
+    },
+    {
+      "runId": "test_run_h3o0orn",
+      "goal": "Verify TIMMY Run Receipt MVP",
+      "receiptUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev/runs/test_run_h3o0orn/receipt",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "phase": "executing",
+      "riskLevel": "safe",
+      "createdAt": "2026-05-27T12:10:15.428Z",
+      "updatedAt": "2026-05-27T12:10:15.428Z",
+      "counters": {
+        "commands": 1,
+        "outputLines": 3,
+        "errors": 0,
+        "approvals": 0
+      }
+    },
+    {
+      "runId": "intent_pack_zvjfieb",
+      "goal": "Generate TIMMY V3.2 Agent Intent Event Design Pack",
+      "receiptUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev/runs/intent_pack_zvjfieb/receipt",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "phase": "completed",
+      "riskLevel": "safe",
+      "createdAt": "2026-05-27T12:10:22.178Z",
+      "updatedAt": "2026-05-27T12:10:22.178Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 0,
+        "errors": 0,
+        "approvals": 0
+      }
+    },
+    {
+      "runId": "sim_nmmisrt",
+      "goal": "Single Simulation: safety-first implementation plan for TIMMY V3.2 agent.intent events",
+      "receiptUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev/runs/sim_nmmisrt/receipt",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "phase": "completed",
+      "riskLevel": "safe",
+      "createdAt": "2026-05-27T12:16:24.059Z",
+      "updatedAt": "2026-05-27T12:16:24.059Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 0,
+        "errors": 0,
+        "approvals": 0
+      }
+    },
+    {
+      "runId": "sim_yi8067i",
+      "goal": "Single Simulation: safety-first implementation plan for TIMMY V3.2 agent.intent events",
+      "receiptUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev/runs/sim_yi8067i/receipt",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "phase": "completed",
+      "riskLevel": "safe",
+      "createdAt": "2026-05-27T12:16:29.297Z",
+      "updatedAt": "2026-05-27T12:16:29.297Z",
+      "counters": {
+        "commands": 0,
+        "outputLines": 0,
+        "errors": 0,
+        "approvals": 0
+      }
+    },
+    {
+      "runId": "test_run_puavk9l",
+      "goal": "Verify TIMMY Run Receipt MVP",
+      "receiptUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev/runs/test_run_puavk9l/receipt",
+      "telemetryUrl": "https://openrouter-tui-agent.wmeldman33.workers.dev",
+      "phase": "executing",
+      "riskLevel": "safe",
+      "createdAt": "2026-05-27T12:21:32.723Z",
+      "updatedAt": "2026-05-27T12:21:32.723Z",
+      "counters": {
+        "commands": 1,
+        "outputLines": 5,
+        "errors": 0,
+        "approvals": 0
+      }
+    },
+    {
+      "runId": "test_run_ds1gtc0",
+      "goal": "Verify TIMMY Run Receipt MVP",
+      "receiptUrl": "http://localhost:8787/runs/test_run_ds1gtc0/receipt",
+      "telemetryUrl": "http://localhost:8787",
+      "phase": "executing",
+      "riskLevel": "safe",
+      "createdAt": "2026-05-27T22:18:46.543Z",
+      "updatedAt": "2026-05-27T22:18:46.543Z",
+      "counters": {
+        "commands": 1,
+        "outputLines": 4,
+        "errors": 0,
+        "approvals": 0
+      }
+    },
+    {
+      "runId": "test_run_vhp2ns2",
+      "goal": "Verify TIMMY Run Receipt MVP",
+      "receiptUrl": "http://localhost:8787/runs/test_run_vhp2ns2/receipt",
+      "telemetryUrl": "http://localhost:8787",
+      "phase": "executing",
+      "riskLevel": "safe",
+      "createdAt": "2026-05-27T22:27:43.843Z",
+      "updatedAt": "2026-05-27T22:27:43.843Z",
+      "counters": {
+        "commands": 1,
+        "outputLines": 6,
+        "errors": 0,
+        "approvals": 0
+      }
+    }
+  ]
+}

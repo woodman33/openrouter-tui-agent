@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "source": "/Users/williammeldman/Movies/Ecamm Live Recordings/Ecamm Recording on 2026-08-28 at 20.51.13.mp4",
+  "sourceSha256": "db4243e75743406187843862b329244769328500805df493b7a9849dad7419ec",
+  "recording_start_utc": "2026-08-29T03:51:13.000Z",
+  "hero_detection": { "method": "rms-2s-windows 05:00-29:00", "peak_tape_sec": 1288, "peak_timecode": "00:21:28", "rms_max": 10795.1, "rms_median": 326.6, "ratio": 33.05, "hero_in": 1285, "hero_out": 1295 },
+  "punch_in": "crop=1000:580:545:500 scaled to fill 1920x1080 (overhead cam region; selection not creation)",
+  "entries": [
+    { "kind": "hook", "dur": 4, "lines": ["Card breaks run on 'trust me.'", "This one runs on proof."] },
+    { "kind": "stakes", "file": "01-stakes-photogenic.mp4", "clip_sha256": "87533ce424aaeba8fe4f48bfc92a19f71de7577d2c920a3c6bc084e8fae4238d", "in": 330, "dur": 2.7, "tape": "05:30", "verb": "retail.intake", "receiptId": "rc_mtduhfs6_jorn", "sha256": "sha256_eb532065e56d53971b4741f6cb0ef0a424fc3821dc9d35262875c7b3fc51a85f", "card": ["2023-24 PANINI PHOTOGENIC NBA", "rc_mtduhfs6_jorn · eb532065…"] },
+    { "kind": "stakes", "file": "02-stakes-nattreas.mp4", "clip_sha256": "918c4506678cdd7845647ff50d706196480923133912dcd7f89e54e4431739e7", "in": 1020, "dur": 2.7, "tape": "17:00", "verb": "retail.intake", "receiptId": "rc_mtduhvdw_0tp0", "sha256": "sha256_5bb468f4b8966024ccf42fb04d96f64b372e17d1d9c0d9235d9a9cbc7bcf07d9", "card": ["2019 NATIONAL TREASURES FOOTBALL", "rc_mtduhvdw_0tp0 · 5bb468f4…"] },
+    { "kind": "stakes", "file": "03-stakes-letter.mp4", "clip_sha256": "1922747c05d15101e13de9d2e3254e221beb3ddbed162f2291f6ed7ad58147c8", "in": 1380, "dur": 2.7, "tape": "23:00", "verb": "gift.intake", "receiptId": "rc_mtduiaze_u6as", "sha256": "sha256_67b40d4cbd0ea1e82ef63ac0b2185486435dec01c66d9a2c84919a704026c65f", "card": ["2026 MARVEL MINT — GIFTED", "letter from Fanatics on file", "rc_mtduiaze_u6as · 67b40d4c…"] },
+    { "kind": "hero", "file": "04-hero.mp4", "clip_sha256": "85bd449ba6a82b3b2a40e7ad8b02d423bcb94247d2afbfe555e2a17dcab0ca88", "in": 1285, "dur": 10, "tape": "21:25", "verb": "pack.open", "receiptId": "rc_mtdujlvj_zeqo", "sha256": "sha256_ff1f8e1187165796cb0683f3f7c44175f457fc4553b7dc84120a603e9115a70d", "card": ["THE PULL — audio peak 21:28", "rc_mtdujlvj_zeqo · ff1f8e11…"] },
+    { "kind": "refusals", "file": "05-refusals.mp4", "clip_sha256": "292706515584bfcbd7d0dc2f1546b7b685aa05b4a0662b91583bb5e906fc7926", "in": 2915.467, "dur": 5, "tape": "48:35", "lines": ["REFUSED rc_msvbkiwz_zrcm", "REFUSED rc_mt8iqfq9_wbnv", "And when a record's wrong — it refuses."] },
+    { "kind": "end", "dur": 5 }
+  ]
+}

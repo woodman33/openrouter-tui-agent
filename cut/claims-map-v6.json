@@ -1,0 +1,16 @@
+{
+  "version": 6,
+  "vo_status": "UNTIMED — sentence timecodes mapped to the 45.0 build; retime when vo/vo-ch1.mp3 lands",
+  "map": [
+    { "sentence": "This is Timmy — a terminal agent that writes a receipt for everything it does.", "tc": [0, 5], "on_screen": ["rc_mtduhfm5_qt44", "rc_mtduhfs6_jorn", "rc_mtduhvdw_0tp0", "rc_mtduiaze_u6as", "rc_mtduiqlw_ravg", "rc_mtduj68w_0faa", "rc_mtdujlvj_zeqo"] },
+    { "sentence": "Every action is hashed, signed, and chained.", "tc": [5, 8.5], "on_screen": "chain scroll: epoch 903 ids (see edl chain_ids_epoch903)" },
+    { "sentence": "Nothing gets deleted, and nothing gets rewritten.", "tc": [8.5, 11.5], "on_screen": "chain scroll: epoch 903 ids" },
+    { "sentence": "Tonight, we put it to work on a card break.", "tc": [12, 14], "on_screen": [] },
+    { "sentence": "Every box went into the record before the wrap ever came off — the ones we bought, and the one Fanatics sent us, with the letter on file.", "tc": [14, 21], "on_screen": ["rc_mtduhfs6_jorn", "rc_mtduiaze_u6as", "rc_mtduj68w_0faa"] },
+    { "sentence": "By the time the first pack was opened, the proof already existed.", "tc": [21, 24], "on_screen": ["rc_mtduj68w_0faa"] },
+    { "sentence": "You don't have to trust any of it, because you can check all of it.", "tc": [22, 26], "on_screen": [] },
+    { "sentence": "And when a bad record showed up, Timmy didn't argue — it refused.", "tc": [33, 37], "on_screen": ["rc_msvbkiwz_zrcm", "rc_mt8iqfq9_wbnv"] },
+    { "sentence": "Agents that can't lie about what they did.", "tc": [37, 40], "on_screen": "end card board: ok:true receipts:598 epochs:6 + head sha" },
+    { "sentence": "Timmy TUI. Buy the break, keep the proof — and if you build agents, build them on receipts.", "tc": [40, 45], "on_screen": "end card board + github.com/woodman33/timmy-tui" }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "run_id": "run_demo_1786345485640",
+  "type": "demo",
+  "task": "demo run",
+  "created_at": "2026-08-10T07:04:45.641Z",
+  "cwd": "/Users/williammeldman/Desktop/Code-Projects/openrouter-tui",
+  "platform": "darwin",
+  "node_version": "v26.6.0",
+  "package": {
+    "name": "timmy-tui",
+    "version": "0.4.0"
+  },
+  "status": "completed",
+  "artifacts": [
+    {
+      "path": ".timmy/receipts/demo-receipt.json",
+      "sha256": "a239ad39f08f65a987eff9c999ebdd5aac95e01bc7cebd571a7483d21a0fb8d9"
+    }
+  ],
+  "receipt_sha256": "fb87d09d4111d0319953f9c3928ba6a34708e5b4434d248f1d71e5706098d315"
+}

@@ -1,0 +1,23 @@
+{
+  "version": 6,
+  "title": "CHECK ME :45 product spot",
+  "treatment_sha256": "d3abbec99fa58c23c2bc0e6056a221b2fd9658c42c057b1c9e3257bcd5c0ed80",
+  "vo_status": "UNTIMED (vo/vo-ch1.mp3 absent; signed URL SignatureDoesNotMatch) — built to 45.0",
+  "source": "/Users/williammeldman/Movies/Ecamm Live Recordings/Ecamm Recording on 2026-08-28 at 20.51.13.mp4",
+  "sourceSha256": "db4243e75743406187843862b329244769328500805df493b7a9849dad7419ec",
+  "chain_ids_epoch903": ["rc_mtduhfm5_qt44", "rc_mtduhfs6_jorn", "rc_mtduhvdw_0tp0", "rc_mtduiaze_u6as", "rc_mtduiqlw_ravg", "rc_mtduj68w_0faa", "rc_mtdujlvj_zeqo", "rc_mtduk89i_yllq", "rc_mtduliqa_ysyh", "rc_mtdumt6x_4sws", "rc_mtdw6amg_6xu6"],
+  "beats": [
+    { "t": [0, 8], "kind": "terminal", "file": "01-terminal.mp4", "clip_sha256": "d0047452f157ba941d4a6b60cb90d105a640ee0da7792b7f4d28a6fd0c1ce99e", "mono": "TIMMY TUI", "grotesk": "a terminal agent that writes receipts.", "duck_db": -12 },
+    { "t": [8, 12], "kind": "chainscroll", "mono": "hashed. signed. chained." },
+    { "t": [12, 14], "kind": "wrap", "file": "02-wrap-macro.mp4", "clip_sha256": "cb05a6bc796f8079f4e31afe5bb76eff173de4eee8bb5a281cb658a8e1e4bcde", "duck_db": -12 },
+    { "t": [14, 22], "kind": "proofstack", "shots": [
+      { "file": "03-proof-photogenic.mp4", "clip_sha256": "2bacb85e31420d80173eb834cbc10b10ae94064d0995b52cbc8adc18b6cb5467", "on": "bought", "stamp": { "verb": "retail.intake", "id": "rc_mtduhfs6_jorn" } },
+      { "file": "04-proof-letter.mp4", "clip_sha256": "1922747c05d15101e13de9d2e3254e221beb3ddbed162f2291f6ed7ad58147c8", "on": "Fanatics", "stamp": { "verb": "gift.intake", "id": "rc_mtduiaze_u6as" } },
+      { "file": "05-proof-verify.mp4", "clip_sha256": "efa69fe28ac51cafe898d4e203954515f86cb4a916755cb604ef25e330fe2732", "on": "opened", "stamp": { "verb": "box.verify", "id": "rc_mtduj68w_0faa" } }
+    ]},
+    { "t": [22, 26], "kind": "hinge", "white": "you don't have to trust any of it.", "phosphor": "you can check all of it." },
+    { "t": [26, 33], "kind": "hero", "file": "06-hero.mp4", "clip_sha256": "85bd449ba6a82b3b2a40e7ad8b02d423bcb94247d2afbfe555e2a17dcab0ca88", "audio": "full", "stamp_at_s": 6.0, "stamp": { "verb": "pack.open", "id": "rc_mtdujlvj_zeqo" } },
+    { "t": [33, 37], "kind": "smash", "red": ["REFUSED rc_msvbkiwz_zrcm", "REFUSED rc_mt8iqfq9_wbnv"], "grotesk": "it doesn't get argued. it gets refused." },
+    { "t": [37, 45], "kind": "end" }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "sourceFile": "/Users/williammeldman/Movies/Ecamm Live Recordings/Ecamm Recording on 2026-08-28 at 20.51.13.mp4",
+  "sourceSha256": "db4243e75743406187843862b329244769328500805df493b7a9849dad7419ec",
+  "extraction": "ffmpeg -ss <in> -t <out-in>, scale=1920:1080, re-encoded libx264 crf18 + aac 128k for frame accuracy (permitted: selection/arrangement of real pixels, not creation); source audio kept; max drift vs EDL 0.029s",
+  "clips": [
+    { "file": "01-retail-intake.mp4", "receiptId": "rc_mtduhfs6_jorn", "verb": "retail.intake", "sha256": "4e2f21aa4cb2a3a932cbc82baf0cf4039e88c92810193a3c8ebf102192422023", "in": 86.230, "out": 93.230 },
+    { "file": "02-retail-intake-nattreas.mp4", "receiptId": "rc_mtduhvdw_0tp0", "verb": "retail.intake", "sha256": "52cb1fcf5f905f6842f6d2c14198b3f53398ac21221e236e3618a5f796baad06", "in": 106.452, "out": 113.452 },
+    { "file": "03-gift-intake.mp4", "receiptId": "rc_mtduiaze_u6as", "verb": "gift.intake", "sha256": "310834e4eb50d870c9ae8726b3cb36f5e4a9e6028a44d380eda37a73d0d614a4", "in": 126.666, "out": 133.666 },
+    { "file": "04-provenance-request.mp4", "receiptId": "rc_mtduiqlw_ravg", "verb": "provenance.request", "sha256": "8b89039f026ceda04bda344f5dcef71de74683a37987872b670b4d0b90d71e90", "in": 146.916, "out": 153.916 },
+    { "file": "05-box-verify.mp4", "receiptId": "rc_mtduj68w_0faa", "verb": "box.verify", "sha256": "3b6f9ae5c7fabdc6e9d94a5afe90856b6db6c5f110d8eeef7dfc3cd0b40a0d6b", "in": 167.184, "out": 174.184 },
+    { "file": "06-pack-open.mp4", "receiptId": "rc_mtdujlvj_zeqo", "verb": "pack.open", "sha256": "50315c2854bc2c72b8eda9a254bc4b39f3f7acc718d4e3ee93046dffd5ca47fb", "in": 187.439, "out": 194.439 },
+    { "file": "07-heartbeat-1.mp4", "receiptId": "rc_mtduk89i_yllq", "verb": "session.heartbeat", "sha256": "2eb1337ab0546df936988b533a9d452f2bd7aa9375a986090f0978d6a85daf53", "in": 217.454, "out": 218.454 },
+    { "file": "08-heartbeat-16.mp4", "receiptId": "rc_mtdv3l4w_uxit", "verb": "session.heartbeat", "sha256": "9b5ee24f7247ae9df8ddcb73efb3bd3b8866b84ecb562a138d5b2f00db4e567d", "in": 1120.600, "out": 1121.600 },
+    { "file": "09-heartbeat-31.mp4", "receiptId": "rc_mtdvmxw2_m1jq", "verb": "session.heartbeat", "sha256": "18db762db0c42459cb36e61a249e0e8957ecc112f03fd0546e9d0db41594bb62", "in": 2023.594, "out": 2024.594 },
+    { "file": "10-finale-refusals.mp4", "receiptId": "rc_mtdw6amg_6xu6", "verb": "cut.refusals+board", "sha256": "292706515584bfcbd7d0dc2f1546b7b685aa05b4a0662b91583bb5e906fc7926", "in": 2915.467, "out": 2925.467 },
+    { "file": "11-heartbeat-final.mp4", "receiptId": "rc_mtdw6amg_6xu6", "verb": "session.heartbeat", "sha256": "f11cfd184d8c7908486830f4f2f3dc9bb0a9d2728323039398eb9eb254554672", "in": 2924.467, "out": 2925.467 }
+  ]
+}
