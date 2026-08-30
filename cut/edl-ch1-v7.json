@@ -1,5 +1,5 @@
 {
- "version": "7.2",
+ "version": "8",
  "vo": "vo/vo-ch1.mp3",
  "vo_sha256": "0a82d82a897a8f2d06a4659558141aa02e9e2c06a97894dd763166be15a44a73",
  "captions": "cut/captions-ch1.ass",
@@ -12,7 +12,7 @@
     0,
     6.16
    ],
-   "file": "01-terminal.mp4"
+   "file": "v8/01-title-live.mp4"
   },
   {
    "kind": "scroll",
@@ -27,7 +27,7 @@
     14.38,
     18.26
    ],
-   "file": "02b-wrap-4s.mp4"
+   "file": "v8/02-wrap-live.mp4"
   },
   {
    "kind": "proofstack",
@@ -36,11 +36,11 @@
     28.42
    ],
    "shots": [
-    "v2/01-stakes-photogenic.mp4",
-    "03-proof-photogenic.mp4",
+    "v8/03-box-live.mp4",
+    "v8/04-receipt-live.mp4",
     [
-     "07-marvelmint-box.mp4",
-     "04-proof-letter.mp4"
+     "v8/05-mint-live.mp4",
+     "v8/06-letter-live.mp4"
     ]
    ],
    "stamps": [
