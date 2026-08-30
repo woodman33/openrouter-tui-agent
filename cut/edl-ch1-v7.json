@@ -1,87 +1,101 @@
 {
- "version": 7,
+ "version": "7.2",
  "vo": "vo/vo-ch1.mp3",
  "vo_sha256": "0a82d82a897a8f2d06a4659558141aa02e9e2c06a97894dd763166be15a44a73",
  "captions": "cut/captions-ch1.ass",
- "total_s": 55.963,
+ "timing": "word-locked (faster-whisper small.en)",
+ "total_s": 55.68,
  "beats": [
   {
    "kind": "title",
    "t": [
     0,
-    6.612
+    6.16
    ],
    "file": "01-terminal.mp4"
   },
   {
    "kind": "scroll",
    "t": [
-    6.612,
-    14.137
+    6.16,
+    14.38
    ]
   },
   {
    "kind": "wrap",
    "t": [
-    14.137,
-    17.617
+    14.38,
+    18.26
    ],
    "file": "02b-wrap-4s.mp4"
   },
   {
    "kind": "proofstack",
    "t": [
-    17.617,
-    28.703
+    18.26,
+    28.42
    ],
    "shots": [
+    "v2/01-stakes-photogenic.mp4",
     "03-proof-photogenic.mp4",
-    "04-proof-letter.mp4",
-    "05-proof-verify.mp4"
+    [
+     "07-marvelmint-box.mp4",
+     "04-proof-letter.mp4"
+    ]
    ],
    "stamps": [
     {
-     "at": 23.16,
+     "at": 23.22,
      "verb": "retail.intake",
-     "id": "rc_mtduhfs6_jorn"
+     "id": "rc_mtduhfs6_jorn",
+     "card": "photogenic-box"
     },
     {
-     "at": 25.599,
+     "at": 24.22,
+     "verb": "retail.intake",
+     "id": "rc_mtduhfs6_jorn",
+     "card": "photogenic-receipt"
+    },
+    {
+     "at": 24.52,
      "verb": "gift.intake",
-     "id": "rc_mtduiaze_u6as"
-    },
-    {
-     "at": 27.594,
-     "verb": "box.verify",
-     "id": "rc_mtduj68w_0faa"
+     "id": "rc_mtduiaze_u6as",
+     "card": "marvel-mint-box+fanatics-letter"
     }
    ]
   },
   {
    "kind": "hero",
    "t": [
-    28.703,
-    33.962
+    28.42,
+    34.02
    ],
    "file": "06-hero.mp4",
-   "stamp": {
-    "at": 31.07,
-    "verb": "pack.open",
-    "id": "rc_mtdujlvj_zeqo"
-   }
+   "stamps": [
+    {
+     "at": 30.3,
+     "verb": "box.verify",
+     "id": "rc_mtduj68w_0faa"
+    },
+    {
+     "at": 31.38,
+     "verb": "pack.open",
+     "id": "rc_mtdujlvj_zeqo"
+    }
+   ]
   },
   {
    "kind": "hinge",
    "t": [
-    33.962,
-    39.303
+    34.02,
+    38.52
    ]
   },
   {
    "kind": "smash",
    "t": [
-    39.303,
-    44.563
+    38.52,
+    43.96
    ],
    "red": [
     "REFUSED rc_msvbkiwz_zrcm",
@@ -91,11 +105,11 @@
   {
    "kind": "end",
    "t": [
-    44.563,
-    55.962999999999994
+    43.96,
+    55.68
    ],
-   "cta_in": 48.77,
-   "chips_in": 51.279
+   "cta_in": 49.24,
+   "chips_in": 52.06
   }
  ]
 }

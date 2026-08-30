@@ -1,0 +1,147 @@
+{
+ "version": "7.2",
+ "captions": "cut/captions-ch1.ass",
+ "vo": "vo/vo-ch1.mp3",
+ "narration": "disclosed-synthetic",
+ "map": [
+  {
+   "line": 1,
+   "text": "This is Timmy \u2014 a terminal agent that writes a receipt for everything it does.",
+   "tc": [
+    0.3,
+    6.612
+   ],
+   "on_screen": [
+    "rc_mtduhfm5_qt44",
+    "rc_mtduhfs6_jorn",
+    "rc_mtduhvdw_0tp0",
+    "rc_mtduiaze_u6as",
+    "rc_mtduiqlw_ravg",
+    "rc_mtduj68w_0faa",
+    "rc_mtdujlvj_zeqo"
+   ]
+  },
+  {
+   "line": 2,
+   "text": "Every action is hashed, signed, and chained.",
+   "tc": [
+    6.612,
+    10.172
+   ],
+   "on_screen": "chain scroll panel: epoch 903 ids"
+  },
+  {
+   "line": 3,
+   "text": "Nothing gets deleted, and nothing gets rewritten.",
+   "tc": [
+    10.172,
+    14.137
+   ],
+   "on_screen": "chain scroll panel: epoch 903 ids"
+  },
+  {
+   "line": 4,
+   "text": "Tonight, we put it to work on a card break.",
+   "tc": [
+    14.137,
+    17.617
+   ],
+   "on_screen": []
+  },
+  {
+   "line": 5,
+   "text": "Every box went into the record before the wrap ever came off \u2014 the ones we bought, and the one Fanatics sent us, with the letter on file.",
+   "tc": [
+    17.617,
+    28.703
+   ],
+   "on_screen": [
+    "rc_mtduhfs6_jorn",
+    "rc_mtduhfs6_jorn",
+    "rc_mtduiaze_u6as"
+   ],
+   "cards": [
+    "photogenic-box -> retail.intake rc_mtduhfs6_jorn",
+    "photogenic-receipt -> retail.intake rc_mtduhfs6_jorn",
+    "marvel-mint-box+fanatics-letter -> gift.intake rc_mtduiaze_u6as"
+   ]
+  },
+  {
+   "line": 6,
+   "text": "By the time the first pack was opened, the proof already existed.",
+   "tc": [
+    28.703,
+    33.962
+   ],
+   "on_screen": [
+    "rc_mtdujlvj_zeqo"
+   ]
+  },
+  {
+   "line": 7,
+   "text": "You don't have to trust any of it,",
+   "tc": [
+    33.962,
+    36.713
+   ],
+   "on_screen": []
+  },
+  {
+   "line": 8,
+   "text": "because you can check all of it.",
+   "tc": [
+    36.713,
+    39.303
+   ],
+   "on_screen": []
+  },
+  {
+   "line": 9,
+   "text": "And when a bad record showed up, Timmy didn't argue \u2014 it refused.",
+   "tc": [
+    39.303,
+    44.563
+   ],
+   "on_screen": [
+    "rc_msvbkiwz_zrcm",
+    "rc_mt8iqfq9_wbnv"
+   ]
+  },
+  {
+   "line": 10,
+   "text": "Agents that can't lie about what they did.",
+   "tc": [
+    44.563,
+    47.961
+   ],
+   "on_screen": "end card board + head sha"
+  },
+  {
+   "line": 11,
+   "text": "Timmy TUI.",
+   "tc": [
+    47.961,
+    48.77
+   ],
+   "on_screen": "end card board + head sha"
+  },
+  {
+   "line": 12,
+   "text": "Buy the break, keep the proof \u2014",
+   "tc": [
+    48.77,
+    51.279
+   ],
+   "on_screen": "end card board + head sha"
+  },
+  {
+   "line": 13,
+   "text": "and if you build agents, build them on receipts.",
+   "tc": [
+    51.279,
+    55.163
+   ],
+   "on_screen": "end card board + head sha"
+  }
+ ]
+}
