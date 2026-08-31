@@ -1,0 +1,762 @@
+[
+ {
+  "word": "This",
+  "t_in": 0.0,
+  "t_out": 0.2
+ },
+ {
+  "word": "is",
+  "t_in": 0.2,
+  "t_out": 0.44
+ },
+ {
+  "word": "Timmy,",
+  "t_in": 0.44,
+  "t_out": 0.9
+ },
+ {
+  "word": "a",
+  "t_in": 1.58,
+  "t_out": 1.7
+ },
+ {
+  "word": "terminal",
+  "t_in": 1.7,
+  "t_out": 2.06
+ },
+ {
+  "word": "AI",
+  "t_in": 2.06,
+  "t_out": 2.54
+ },
+ {
+  "word": "agent",
+  "t_in": 2.54,
+  "t_out": 2.9
+ },
+ {
+  "word": "that",
+  "t_in": 2.9,
+  "t_out": 3.14
+ },
+ {
+  "word": "writes",
+  "t_in": 3.14,
+  "t_out": 3.4
+ },
+ {
+  "word": "a",
+  "t_in": 3.4,
+  "t_out": 3.56
+ },
+ {
+  "word": "receipt",
+  "t_in": 3.56,
+  "t_out": 3.88
+ },
+ {
+  "word": "for",
+  "t_in": 3.88,
+  "t_out": 4.14
+ },
+ {
+  "word": "everything",
+  "t_in": 4.14,
+  "t_out": 4.68
+ },
+ {
+  "word": "it",
+  "t_in": 4.68,
+  "t_out": 5.02
+ },
+ {
+  "word": "does.",
+  "t_in": 5.02,
+  "t_out": 5.66
+ },
+ {
+  "word": "Every",
+  "t_in": 6.34,
+  "t_out": 6.34
+ },
+ {
+  "word": "prompt,",
+  "t_in": 6.34,
+  "t_out": 6.78
+ },
+ {
+  "word": "every",
+  "t_in": 7.36,
+  "t_out": 7.56
+ },
+ {
+  "word": "command,",
+  "t_in": 7.56,
+  "t_out": 8.0
+ },
+ {
+  "word": "every",
+  "t_in": 8.64,
+  "t_out": 8.9
+ },
+ {
+  "word": "action,",
+  "t_in": 8.9,
+  "t_out": 9.42
+ },
+ {
+  "word": "hashed,",
+  "t_in": 10.0,
+  "t_out": 10.38
+ },
+ {
+  "word": "signed,",
+  "t_in": 10.66,
+  "t_out": 11.08
+ },
+ {
+  "word": "and",
+  "t_in": 11.3,
+  "t_out": 11.42
+ },
+ {
+  "word": "chained.",
+  "t_in": 11.42,
+  "t_out": 11.72
+ },
+ {
+  "word": "Nothing",
+  "t_in": 12.48,
+  "t_out": 12.7
+ },
+ {
+  "word": "deleted,",
+  "t_in": 12.7,
+  "t_out": 13.14
+ },
+ {
+  "word": "nothing",
+  "t_in": 13.9,
+  "t_out": 14.1
+ },
+ {
+  "word": "hidden.",
+  "t_in": 14.1,
+  "t_out": 14.46
+ },
+ {
+  "word": "Other",
+  "t_in": 15.32,
+  "t_out": 15.46
+ },
+ {
+  "word": "agents",
+  "t_in": 15.46,
+  "t_out": 15.86
+ },
+ {
+  "word": "ask",
+  "t_in": 15.86,
+  "t_out": 16.28
+ },
+ {
+  "word": "for",
+  "t_in": 16.28,
+  "t_out": 16.54
+ },
+ {
+  "word": "your",
+  "t_in": 16.54,
+  "t_out": 16.68
+ },
+ {
+  "word": "trust.",
+  "t_in": 16.68,
+  "t_out": 17.08
+ },
+ {
+  "word": "Timmy",
+  "t_in": 17.9,
+  "t_out": 18.1
+ },
+ {
+  "word": "hands",
+  "t_in": 18.1,
+  "t_out": 18.38
+ },
+ {
+  "word": "you",
+  "t_in": 18.38,
+  "t_out": 18.6
+ },
+ {
+  "word": "proof.",
+  "t_in": 18.6,
+  "t_out": 18.94
+ },
+ {
+  "word": "Tonight's",
+  "t_in": 19.84,
+  "t_out": 20.0
+ },
+ {
+  "word": "example,",
+  "t_in": 20.0,
+  "t_out": 20.38
+ },
+ {
+  "word": "a",
+  "t_in": 21.12,
+  "t_out": 21.28
+ },
+ {
+  "word": "card",
+  "t_in": 21.28,
+  "t_out": 21.52
+ },
+ {
+  "word": "break.",
+  "t_in": 21.52,
+  "t_out": 21.82
+ },
+ {
+  "word": "Every",
+  "t_in": 22.78,
+  "t_out": 23.04
+ },
+ {
+  "word": "box",
+  "t_in": 23.04,
+  "t_out": 23.38
+ },
+ {
+  "word": "went",
+  "t_in": 23.38,
+  "t_out": 23.66
+ },
+ {
+  "word": "into",
+  "t_in": 23.66,
+  "t_out": 23.94
+ },
+ {
+  "word": "the",
+  "t_in": 23.94,
+  "t_out": 24.06
+ },
+ {
+  "word": "record",
+  "t_in": 24.06,
+  "t_out": 24.36
+ },
+ {
+  "word": "before",
+  "t_in": 24.36,
+  "t_out": 24.7
+ },
+ {
+  "word": "the",
+  "t_in": 24.7,
+  "t_out": 24.88
+ },
+ {
+  "word": "wrap",
+  "t_in": 24.88,
+  "t_out": 25.14
+ },
+ {
+  "word": "ever",
+  "t_in": 25.14,
+  "t_out": 25.58
+ },
+ {
+  "word": "came",
+  "t_in": 25.58,
+  "t_out": 25.84
+ },
+ {
+  "word": "off.",
+  "t_in": 25.84,
+  "t_out": 26.22
+ },
+ {
+  "word": "The",
+  "t_in": 26.72,
+  "t_out": 27.02
+ },
+ {
+  "word": "ones",
+  "t_in": 27.02,
+  "t_out": 27.22
+ },
+ {
+  "word": "we",
+  "t_in": 27.22,
+  "t_out": 27.44
+ },
+ {
+  "word": "bought,",
+  "t_in": 27.44,
+  "t_out": 27.74
+ },
+ {
+  "word": "and",
+  "t_in": 28.4,
+  "t_out": 28.5
+ },
+ {
+  "word": "the",
+  "t_in": 28.5,
+  "t_out": 28.62
+ },
+ {
+  "word": "one",
+  "t_in": 28.62,
+  "t_out": 28.86
+ },
+ {
+  "word": "fanatics",
+  "t_in": 28.86,
+  "t_out": 29.4
+ },
+ {
+  "word": "sent",
+  "t_in": 29.4,
+  "t_out": 29.84
+ },
+ {
+  "word": "us,",
+  "t_in": 29.84,
+  "t_out": 30.32
+ },
+ {
+  "word": "letter",
+  "t_in": 30.72,
+  "t_out": 31.02
+ },
+ {
+  "word": "and",
+  "t_in": 31.02,
+  "t_out": 31.36
+ },
+ {
+  "word": "all.",
+  "t_in": 31.36,
+  "t_out": 31.7
+ },
+ {
+  "word": "By",
+  "t_in": 32.78,
+  "t_out": 32.9
+ },
+ {
+  "word": "the",
+  "t_in": 32.9,
+  "t_out": 33.04
+ },
+ {
+  "word": "time",
+  "t_in": 33.04,
+  "t_out": 33.24
+ },
+ {
+  "word": "the",
+  "t_in": 33.24,
+  "t_out": 33.4
+ },
+ {
+  "word": "first",
+  "t_in": 33.4,
+  "t_out": 33.66
+ },
+ {
+  "word": "pack",
+  "t_in": 33.66,
+  "t_out": 33.94
+ },
+ {
+  "word": "was",
+  "t_in": 33.94,
+  "t_out": 34.14
+ },
+ {
+  "word": "opened,",
+  "t_in": 34.14,
+  "t_out": 34.66
+ },
+ {
+  "word": "the",
+  "t_in": 35.12,
+  "t_out": 35.2
+ },
+ {
+  "word": "proof",
+  "t_in": 35.2,
+  "t_out": 35.58
+ },
+ {
+  "word": "already",
+  "t_in": 35.58,
+  "t_out": 36.18
+ },
+ {
+  "word": "existed.",
+  "t_in": 36.18,
+  "t_out": 36.8
+ },
+ {
+  "word": "You",
+  "t_in": 37.6,
+  "t_out": 37.74
+ },
+ {
+  "word": "don't",
+  "t_in": 37.74,
+  "t_out": 37.94
+ },
+ {
+  "word": "have",
+  "t_in": 37.94,
+  "t_out": 38.1
+ },
+ {
+  "word": "to",
+  "t_in": 38.1,
+  "t_out": 38.24
+ },
+ {
+  "word": "trust",
+  "t_in": 38.24,
+  "t_out": 38.5
+ },
+ {
+  "word": "any",
+  "t_in": 38.5,
+  "t_out": 38.8
+ },
+ {
+  "word": "of",
+  "t_in": 38.8,
+  "t_out": 38.94
+ },
+ {
+  "word": "it,",
+  "t_in": 38.94,
+  "t_out": 39.26
+ },
+ {
+  "word": "because",
+  "t_in": 39.44,
+  "t_out": 39.68
+ },
+ {
+  "word": "you",
+  "t_in": 39.68,
+  "t_out": 39.86
+ },
+ {
+  "word": "can",
+  "t_in": 39.86,
+  "t_out": 40.0
+ },
+ {
+  "word": "check",
+  "t_in": 40.0,
+  "t_out": 40.3
+ },
+ {
+  "word": "all",
+  "t_in": 40.3,
+  "t_out": 40.74
+ },
+ {
+  "word": "of",
+  "t_in": 40.74,
+  "t_out": 40.88
+ },
+ {
+  "word": "it.",
+  "t_in": 40.88,
+  "t_out": 41.24
+ },
+ {
+  "word": "And",
+  "t_in": 41.7,
+  "t_out": 41.86
+ },
+ {
+  "word": "when",
+  "t_in": 41.86,
+  "t_out": 41.98
+ },
+ {
+  "word": "a",
+  "t_in": 41.98,
+  "t_out": 42.1
+ },
+ {
+  "word": "bad",
+  "t_in": 42.1,
+  "t_out": 42.32
+ },
+ {
+  "word": "record",
+  "t_in": 42.32,
+  "t_out": 42.64
+ },
+ {
+  "word": "showed",
+  "t_in": 42.64,
+  "t_out": 42.92
+ },
+ {
+  "word": "up,",
+  "t_in": 42.92,
+  "t_out": 43.28
+ },
+ {
+  "word": "Timmy",
+  "t_in": 43.66,
+  "t_out": 43.84
+ },
+ {
+  "word": "didn't",
+  "t_in": 43.84,
+  "t_out": 44.16
+ },
+ {
+  "word": "argue.",
+  "t_in": 44.16,
+  "t_out": 44.5
+ },
+ {
+  "word": "It",
+  "t_in": 45.08,
+  "t_out": 45.28
+ },
+ {
+  "word": "refused.",
+  "t_in": 45.28,
+  "t_out": 45.76
+ },
+ {
+  "word": "It",
+  "t_in": 46.56,
+  "t_out": 46.7
+ },
+ {
+  "word": "was",
+  "t_in": 46.7,
+  "t_out": 46.8
+ },
+ {
+  "word": "never",
+  "t_in": 46.8,
+  "t_out": 47.12
+ },
+ {
+  "word": "about",
+  "t_in": 47.12,
+  "t_out": 47.42
+ },
+ {
+  "word": "cards.",
+  "t_in": 47.42,
+  "t_out": 47.88
+ },
+ {
+  "word": "Any",
+  "t_in": 48.6,
+  "t_out": 48.82
+ },
+ {
+  "word": "agent,",
+  "t_in": 48.82,
+  "t_out": 49.3
+ },
+ {
+  "word": "any",
+  "t_in": 49.76,
+  "t_out": 49.94
+ },
+ {
+  "word": "workflow.",
+  "t_in": 49.94,
+  "t_out": 50.44
+ },
+ {
+  "word": "If",
+  "t_in": 51.2,
+  "t_out": 51.42
+ },
+ {
+  "word": "it",
+  "t_in": 51.42,
+  "t_out": 51.56
+ },
+ {
+  "word": "acted,",
+  "t_in": 51.56,
+  "t_out": 52.04
+ },
+ {
+  "word": "there's",
+  "t_in": 52.42,
+  "t_out": 52.7
+ },
+ {
+  "word": "a",
+  "t_in": 52.7,
+  "t_out": 52.78
+ },
+ {
+  "word": "receipt.",
+  "t_in": 52.78,
+  "t_out": 53.12
+ },
+ {
+  "word": "Timmy",
+  "t_in": 54.04,
+  "t_out": 54.48
+ },
+ {
+  "word": "TUI.",
+  "t_in": 54.48,
+  "t_out": 55.1
+ },
+ {
+  "word": "Code",
+  "t_in": 56.16,
+  "t_out": 56.3
+ },
+ {
+  "word": "it,",
+  "t_in": 56.3,
+  "t_out": 56.56
+ },
+ {
+  "word": "browse",
+  "t_in": 57.08,
+  "t_out": 57.16
+ },
+ {
+  "word": "it,",
+  "t_in": 57.16,
+  "t_out": 57.64
+ },
+ {
+  "word": "render",
+  "t_in": 57.86,
+  "t_out": 58.02
+ },
+ {
+  "word": "it.",
+  "t_in": 58.02,
+  "t_out": 58.42
+ },
+ {
+  "word": "Timmy",
+  "t_in": 59.1,
+  "t_out": 59.32
+ },
+ {
+  "word": "proves",
+  "t_in": 59.32,
+  "t_out": 59.74
+ },
+ {
+  "word": "every",
+  "t_in": 59.74,
+  "t_out": 60.22
+ },
+ {
+  "word": "move.",
+  "t_in": 60.22,
+  "t_out": 60.62
+ },
+ {
+  "word": "If",
+  "t_in": 61.38,
+  "t_out": 61.46
+ },
+ {
+  "word": "you",
+  "t_in": 61.46,
+  "t_out": 61.64
+ },
+ {
+  "word": "use",
+  "t_in": 61.64,
+  "t_out": 62.06
+ },
+ {
+  "word": "or",
+  "t_in": 62.06,
+  "t_out": 62.24
+ },
+ {
+  "word": "build",
+  "t_in": 62.24,
+  "t_out": 62.64
+ },
+ {
+  "word": "AI",
+  "t_in": 62.64,
+  "t_out": 63.14
+ },
+ {
+  "word": "agents,",
+  "t_in": 63.14,
+  "t_out": 63.68
+ },
+ {
+  "word": "Timmy",
+  "t_in": 64.26,
+  "t_out": 64.48
+ },
+ {
+  "word": "keeps",
+  "t_in": 64.48,
+  "t_out": 64.68
+ },
+ {
+  "word": "them",
+  "t_in": 64.68,
+  "t_out": 64.98
+ },
+ {
+  "word": "honest.",
+  "t_in": 64.98,
+  "t_out": 65.46
+ },
+ {
+  "word": "Live",
+  "t_in": 66.4,
+  "t_out": 66.58
+ },
+ {
+  "word": "and",
+  "t_in": 66.58,
+  "t_out": 66.92
+ },
+ {
+  "word": "die",
+  "t_in": 66.92,
+  "t_out": 67.24
+ },
+ {
+  "word": "by",
+  "t_in": 67.24,
+  "t_out": 67.56
+ },
+ {
+  "word": "the",
+  "t_in": 67.56,
+  "t_out": 67.72
+ },
+ {
+  "word": "receipts.",
+  "t_in": 67.72,
+  "t_out": 68.04
+ }
+]

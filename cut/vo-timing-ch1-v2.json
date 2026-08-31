@@ -1,0 +1,886 @@
+[
+ {
+  "line": 1,
+  "text": "This is Timmy \u2014 a terminal AI agent that writes a receipt for everything it does.",
+  "t_in": 0.15,
+  "t_out": 5.463,
+  "words": [
+   {
+    "w": "This",
+    "t_in": 0.15,
+    "t_out": 0.35
+   },
+   {
+    "w": "is",
+    "t_in": 0.35,
+    "t_out": 0.59
+   },
+   {
+    "w": "Timmy,",
+    "t_in": 0.59,
+    "t_out": 1.05
+   },
+   {
+    "w": "a",
+    "t_in": 1.73,
+    "t_out": 1.85
+   },
+   {
+    "w": "terminal",
+    "t_in": 1.85,
+    "t_out": 2.21
+   },
+   {
+    "w": "AI",
+    "t_in": 2.21,
+    "t_out": 2.69
+   },
+   {
+    "w": "agent",
+    "t_in": 2.69,
+    "t_out": 3.05
+   },
+   {
+    "w": "that",
+    "t_in": 3.05,
+    "t_out": 3.29
+   },
+   {
+    "w": "writes",
+    "t_in": 3.29,
+    "t_out": 3.55
+   },
+   {
+    "w": "a",
+    "t_in": 3.55,
+    "t_out": 3.71
+   },
+   {
+    "w": "receipt",
+    "t_in": 3.71,
+    "t_out": 4.03
+   },
+   {
+    "w": "for",
+    "t_in": 4.03,
+    "t_out": 4.29
+   },
+   {
+    "w": "everything",
+    "t_in": 4.29,
+    "t_out": 4.83
+   },
+   {
+    "w": "it",
+    "t_in": 4.83,
+    "t_out": 5.17
+   },
+   {
+    "w": "does.",
+    "t_in": 5.17,
+    "t_out": 5.81
+   }
+  ]
+ },
+ {
+  "line": 2,
+  "text": "Every prompt, every command, every action \u2014 hashed, signed, and chained.",
+  "t_in": 5.763,
+  "t_out": 10.676,
+  "words": [
+   {
+    "w": "Every",
+    "t_in": 5.863,
+    "t_out": 5.863
+   },
+   {
+    "w": "prompt,",
+    "t_in": 5.863,
+    "t_out": 6.303
+   },
+   {
+    "w": "every",
+    "t_in": 6.883,
+    "t_out": 7.083
+   },
+   {
+    "w": "command,",
+    "t_in": 7.083,
+    "t_out": 7.523
+   },
+   {
+    "w": "every",
+    "t_in": 8.163,
+    "t_out": 8.423
+   },
+   {
+    "w": "action,",
+    "t_in": 8.423,
+    "t_out": 8.943
+   },
+   {
+    "w": "hashed,",
+    "t_in": 9.523,
+    "t_out": 9.903
+   },
+   {
+    "w": "signed,",
+    "t_in": 10.183,
+    "t_out": 10.603
+   },
+   {
+    "w": "and",
+    "t_in": 10.823,
+    "t_out": 10.943
+   },
+   {
+    "w": "chained.",
+    "t_in": 10.943,
+    "t_out": 11.243
+   }
+  ]
+ },
+ {
+  "line": 3,
+  "text": "Nothing deleted. Nothing hidden.",
+  "t_in": 10.976,
+  "t_out": 12.816,
+  "words": [
+   {
+    "w": "Nothing",
+    "t_in": 11.076,
+    "t_out": 11.296
+   },
+   {
+    "w": "deleted,",
+    "t_in": 11.296,
+    "t_out": 11.736
+   },
+   {
+    "w": "nothing",
+    "t_in": 12.496,
+    "t_out": 12.696
+   },
+   {
+    "w": "hidden.",
+    "t_in": 12.696,
+    "t_out": 13.056
+   }
+  ]
+ },
+ {
+  "line": 4,
+  "text": "Other agents ask for your trust. Timmy hands you proof.",
+  "t_in": 13.116,
+  "t_out": 16.621,
+  "words": [
+   {
+    "w": "Other",
+    "t_in": 13.216,
+    "t_out": 13.356
+   },
+   {
+    "w": "agents",
+    "t_in": 13.356,
+    "t_out": 13.756
+   },
+   {
+    "w": "ask",
+    "t_in": 13.756,
+    "t_out": 14.176
+   },
+   {
+    "w": "for",
+    "t_in": 14.176,
+    "t_out": 14.436
+   },
+   {
+    "w": "your",
+    "t_in": 14.436,
+    "t_out": 14.576
+   },
+   {
+    "w": "trust.",
+    "t_in": 14.576,
+    "t_out": 14.976
+   },
+   {
+    "w": "Timmy",
+    "t_in": 15.796,
+    "t_out": 15.996
+   },
+   {
+    "w": "hands",
+    "t_in": 15.996,
+    "t_out": 16.276
+   },
+   {
+    "w": "you",
+    "t_in": 16.276,
+    "t_out": 16.496
+   },
+   {
+    "w": "proof.",
+    "t_in": 16.496,
+    "t_out": 16.836
+   }
+  ]
+ },
+ {
+  "line": 5,
+  "text": "Tonight's example \u2014 a card break.",
+  "t_in": 16.921,
+  "t_out": 18.734,
+  "words": [
+   {
+    "w": "Tonight's",
+    "t_in": 17.021,
+    "t_out": 17.181
+   },
+   {
+    "w": "Tonight's",
+    "t_in": 17.021,
+    "t_out": 17.181
+   },
+   {
+    "w": "example,",
+    "t_in": 17.181,
+    "t_out": 17.561
+   },
+   {
+    "w": "a",
+    "t_in": 18.301,
+    "t_out": 18.461
+   },
+   {
+    "w": "card",
+    "t_in": 18.461,
+    "t_out": 18.701
+   },
+   {
+    "w": "break.",
+    "t_in": 18.701,
+    "t_out": 19.001
+   }
+  ]
+ },
+ {
+  "line": 6,
+  "text": "Every box went into the record before the wrap ever came off \u2014 the ones we bought, and the one Fanatics sent us, letter and all.",
+  "t_in": 19.034,
+  "t_out": 27.158,
+  "words": [
+   {
+    "w": "Every",
+    "t_in": 19.134,
+    "t_out": 19.394
+   },
+   {
+    "w": "box",
+    "t_in": 19.394,
+    "t_out": 19.734
+   },
+   {
+    "w": "went",
+    "t_in": 19.734,
+    "t_out": 20.014
+   },
+   {
+    "w": "into",
+    "t_in": 20.014,
+    "t_out": 20.294
+   },
+   {
+    "w": "the",
+    "t_in": 20.294,
+    "t_out": 20.414
+   },
+   {
+    "w": "record",
+    "t_in": 20.414,
+    "t_out": 20.714
+   },
+   {
+    "w": "before",
+    "t_in": 20.714,
+    "t_out": 21.054
+   },
+   {
+    "w": "the",
+    "t_in": 21.054,
+    "t_out": 21.234
+   },
+   {
+    "w": "wrap",
+    "t_in": 21.234,
+    "t_out": 21.494
+   },
+   {
+    "w": "ever",
+    "t_in": 21.494,
+    "t_out": 21.934
+   },
+   {
+    "w": "came",
+    "t_in": 21.934,
+    "t_out": 22.194
+   },
+   {
+    "w": "off.",
+    "t_in": 22.194,
+    "t_out": 22.574
+   },
+   {
+    "w": "The",
+    "t_in": 23.074,
+    "t_out": 23.374
+   },
+   {
+    "w": "ones",
+    "t_in": 23.374,
+    "t_out": 23.574
+   },
+   {
+    "w": "we",
+    "t_in": 23.574,
+    "t_out": 23.794
+   },
+   {
+    "w": "bought,",
+    "t_in": 23.794,
+    "t_out": 24.094
+   },
+   {
+    "w": "and",
+    "t_in": 24.754,
+    "t_out": 24.854
+   },
+   {
+    "w": "the",
+    "t_in": 24.854,
+    "t_out": 24.974
+   },
+   {
+    "w": "one",
+    "t_in": 24.974,
+    "t_out": 25.214
+   },
+   {
+    "w": "fanatics",
+    "t_in": 25.214,
+    "t_out": 25.754
+   },
+   {
+    "w": "sent",
+    "t_in": 25.754,
+    "t_out": 26.194
+   },
+   {
+    "w": "us,",
+    "t_in": 26.194,
+    "t_out": 26.674
+   },
+   {
+    "w": "letter",
+    "t_in": 27.074,
+    "t_out": 27.374
+   },
+   {
+    "w": "and",
+    "t_in": 27.374,
+    "t_out": 27.714
+   },
+   {
+    "w": "all.",
+    "t_in": 27.714,
+    "t_out": 28.054
+   }
+  ]
+ },
+ {
+  "line": 7,
+  "text": "By the time the first pack was opened, the proof already existed.",
+  "t_in": 27.458,
+  "t_out": 31.545,
+  "words": [
+   {
+    "w": "By",
+    "t_in": 27.558,
+    "t_out": 27.678
+   },
+   {
+    "w": "the",
+    "t_in": 27.678,
+    "t_out": 27.818
+   },
+   {
+    "w": "time",
+    "t_in": 27.818,
+    "t_out": 28.018
+   },
+   {
+    "w": "the",
+    "t_in": 28.018,
+    "t_out": 28.178
+   },
+   {
+    "w": "first",
+    "t_in": 28.178,
+    "t_out": 28.438
+   },
+   {
+    "w": "pack",
+    "t_in": 28.438,
+    "t_out": 28.718
+   },
+   {
+    "w": "was",
+    "t_in": 28.718,
+    "t_out": 28.918
+   },
+   {
+    "w": "opened,",
+    "t_in": 28.918,
+    "t_out": 29.438
+   },
+   {
+    "w": "the",
+    "t_in": 29.898,
+    "t_out": 29.978
+   },
+   {
+    "w": "proof",
+    "t_in": 29.978,
+    "t_out": 30.358
+   },
+   {
+    "w": "already",
+    "t_in": 30.358,
+    "t_out": 30.958
+   },
+   {
+    "w": "existed.",
+    "t_in": 30.958,
+    "t_out": 31.578
+   }
+  ]
+ },
+ {
+  "line": 8,
+  "text": "You don't have to trust any of it,",
+  "t_in": 31.845,
+  "t_out": 33.755,
+  "words": [
+   {
+    "w": "You",
+    "t_in": 31.945,
+    "t_out": 32.085
+   },
+   {
+    "w": "don't",
+    "t_in": 32.085,
+    "t_out": 32.285
+   },
+   {
+    "w": "don't",
+    "t_in": 32.085,
+    "t_out": 32.285
+   },
+   {
+    "w": "have",
+    "t_in": 32.285,
+    "t_out": 32.445
+   },
+   {
+    "w": "to",
+    "t_in": 32.445,
+    "t_out": 32.585
+   },
+   {
+    "w": "trust",
+    "t_in": 32.585,
+    "t_out": 32.845
+   },
+   {
+    "w": "any",
+    "t_in": 32.845,
+    "t_out": 33.145
+   },
+   {
+    "w": "of",
+    "t_in": 33.145,
+    "t_out": 33.285
+   },
+   {
+    "w": "it,",
+    "t_in": 33.285,
+    "t_out": 33.605
+   }
+  ]
+ },
+ {
+  "line": 9,
+  "text": "because you can check all of it.",
+  "t_in": 34.055,
+  "t_out": 36.105,
+  "words": [
+   {
+    "w": "because",
+    "t_in": 34.155,
+    "t_out": 34.395
+   },
+   {
+    "w": "you",
+    "t_in": 34.395,
+    "t_out": 34.575
+   },
+   {
+    "w": "can",
+    "t_in": 34.575,
+    "t_out": 34.715
+   },
+   {
+    "w": "check",
+    "t_in": 34.715,
+    "t_out": 35.015
+   },
+   {
+    "w": "all",
+    "t_in": 35.015,
+    "t_out": 35.455
+   },
+   {
+    "w": "of",
+    "t_in": 35.455,
+    "t_out": 35.595
+   },
+   {
+    "w": "it.",
+    "t_in": 35.595,
+    "t_out": 35.955
+   }
+  ]
+ },
+ {
+  "line": 10,
+  "text": "And when a bad record showed up, Timmy didn't argue \u2014 it refused.",
+  "t_in": 36.555,
+  "t_out": 40.411,
+  "words": [
+   {
+    "w": "And",
+    "t_in": 36.655,
+    "t_out": 36.815
+   },
+   {
+    "w": "when",
+    "t_in": 36.815,
+    "t_out": 36.935
+   },
+   {
+    "w": "a",
+    "t_in": 36.935,
+    "t_out": 37.055
+   },
+   {
+    "w": "bad",
+    "t_in": 37.055,
+    "t_out": 37.275
+   },
+   {
+    "w": "record",
+    "t_in": 37.275,
+    "t_out": 37.595
+   },
+   {
+    "w": "showed",
+    "t_in": 37.595,
+    "t_out": 37.875
+   },
+   {
+    "w": "up,",
+    "t_in": 37.875,
+    "t_out": 38.235
+   },
+   {
+    "w": "Timmy",
+    "t_in": 38.615,
+    "t_out": 38.795
+   },
+   {
+    "w": "didn't",
+    "t_in": 38.795,
+    "t_out": 39.115
+   },
+   {
+    "w": "didn't",
+    "t_in": 38.795,
+    "t_out": 39.115
+   },
+   {
+    "w": "argue.",
+    "t_in": 39.115,
+    "t_out": 39.455
+   },
+   {
+    "w": "It",
+    "t_in": 40.035,
+    "t_out": 40.235
+   },
+   {
+    "w": "refused.",
+    "t_in": 40.235,
+    "t_out": 40.715
+   }
+  ]
+ },
+ {
+  "line": 11,
+  "text": "It was never about cards. Any agent, any workflow \u2014 if it acted, there's a receipt.",
+  "t_in": 40.711,
+  "t_out": 46.583,
+  "words": [
+   {
+    "w": "It",
+    "t_in": 40.811,
+    "t_out": 40.951
+   },
+   {
+    "w": "was",
+    "t_in": 40.951,
+    "t_out": 41.051
+   },
+   {
+    "w": "never",
+    "t_in": 41.051,
+    "t_out": 41.371
+   },
+   {
+    "w": "about",
+    "t_in": 41.371,
+    "t_out": 41.671
+   },
+   {
+    "w": "cards.",
+    "t_in": 41.671,
+    "t_out": 42.131
+   },
+   {
+    "w": "Any",
+    "t_in": 42.851,
+    "t_out": 43.071
+   },
+   {
+    "w": "agent,",
+    "t_in": 43.071,
+    "t_out": 43.551
+   },
+   {
+    "w": "any",
+    "t_in": 44.011,
+    "t_out": 44.191
+   },
+   {
+    "w": "workflow.",
+    "t_in": 44.191,
+    "t_out": 44.691
+   },
+   {
+    "w": "If",
+    "t_in": 45.451,
+    "t_out": 45.671
+   },
+   {
+    "w": "it",
+    "t_in": 45.671,
+    "t_out": 45.811
+   },
+   {
+    "w": "acted,",
+    "t_in": 45.811,
+    "t_out": 46.291
+   },
+   {
+    "w": "there's",
+    "t_in": 46.671,
+    "t_out": 46.951
+   },
+   {
+    "w": "there's",
+    "t_in": 46.671,
+    "t_out": 46.951
+   },
+   {
+    "w": "a",
+    "t_in": 46.951,
+    "t_out": 47.031
+   },
+   {
+    "w": "receipt.",
+    "t_in": 47.031,
+    "t_out": 47.371
+   }
+  ]
+ },
+ {
+  "line": 12,
+  "text": "Timmy TUI.",
+  "t_in": 46.883,
+  "t_out": 48.193,
+  "words": [
+   {
+    "w": "Timmy",
+    "t_in": 46.983,
+    "t_out": 47.423
+   },
+   {
+    "w": "TUI.",
+    "t_in": 47.423,
+    "t_out": 48.043
+   }
+  ]
+ },
+ {
+  "line": 13,
+  "text": "Code it, browse it, render it \u2014 Timmy proves every move. If you use or build AI agents, Timmy keeps them honest. Live and die by the receipts.",
+  "t_in": 48.693,
+  "t_out": 59.211,
+  "words": [
+   {
+    "w": "Code",
+    "t_in": 48.793,
+    "t_out": 48.933
+   },
+   {
+    "w": "it,",
+    "t_in": 48.933,
+    "t_out": 49.193
+   },
+   {
+    "w": "browse",
+    "t_in": 49.713,
+    "t_out": 49.793
+   },
+   {
+    "w": "it,",
+    "t_in": 49.793,
+    "t_out": 50.273
+   },
+   {
+    "w": "render",
+    "t_in": 50.493,
+    "t_out": 50.653
+   },
+   {
+    "w": "it.",
+    "t_in": 50.653,
+    "t_out": 51.053
+   },
+   {
+    "w": "Timmy",
+    "t_in": 51.733,
+    "t_out": 51.953
+   },
+   {
+    "w": "proves",
+    "t_in": 51.953,
+    "t_out": 52.373
+   },
+   {
+    "w": "every",
+    "t_in": 52.373,
+    "t_out": 52.853
+   },
+   {
+    "w": "move.",
+    "t_in": 52.853,
+    "t_out": 53.253
+   },
+   {
+    "w": "If",
+    "t_in": 54.013,
+    "t_out": 54.093
+   },
+   {
+    "w": "you",
+    "t_in": 54.093,
+    "t_out": 54.273
+   },
+   {
+    "w": "use",
+    "t_in": 54.273,
+    "t_out": 54.693
+   },
+   {
+    "w": "or",
+    "t_in": 54.693,
+    "t_out": 54.873
+   },
+   {
+    "w": "build",
+    "t_in": 54.873,
+    "t_out": 55.273
+   },
+   {
+    "w": "AI",
+    "t_in": 55.273,
+    "t_out": 55.773
+   },
+   {
+    "w": "agents,",
+    "t_in": 55.773,
+    "t_out": 56.313
+   },
+   {
+    "w": "Timmy",
+    "t_in": 56.893,
+    "t_out": 57.113
+   },
+   {
+    "w": "keeps",
+    "t_in": 57.113,
+    "t_out": 57.313
+   },
+   {
+    "w": "them",
+    "t_in": 57.313,
+    "t_out": 57.613
+   },
+   {
+    "w": "honest.",
+    "t_in": 57.613,
+    "t_out": 58.093
+   },
+   {
+    "w": "Live",
+    "t_in": 59.033,
+    "t_out": 59.213
+   },
+   {
+    "w": "and",
+    "t_in": 59.213,
+    "t_out": 59.553
+   },
+   {
+    "w": "die",
+    "t_in": 59.553,
+    "t_out": 59.873
+   },
+   {
+    "w": "by",
+    "t_in": 59.873,
+    "t_out": 60.193
+   },
+   {
+    "w": "the",
+    "t_in": 60.193,
+    "t_out": 60.353
+   },
+   {
+    "w": "receipts.",
+    "t_in": 60.353,
+    "t_out": 60.673
+   }
+  ]
+ }
+]

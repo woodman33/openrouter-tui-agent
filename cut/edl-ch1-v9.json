@@ -1,0 +1,157 @@
+{
+ "version": 9,
+ "script": "script/ch1-v2.txt",
+ "vo": "vo/ch1-v2-segmaster-t.wav",
+ "vo_source_sha256": "3a214cf609eeb485c32b26776402fb025bcc8e10e2399ed3e27e576c6056e494",
+ "total_s": 60.211,
+ "beats": [
+  {
+   "kind": "title",
+   "t": [
+    0.0,
+    5.763
+   ],
+   "file": "v8/01-title-live.mp4"
+  },
+  {
+   "kind": "typeon",
+   "t": [
+    5.763,
+    10.976
+   ]
+  },
+  {
+   "kind": "scroll",
+   "t": [
+    10.976,
+    13.116
+   ]
+  },
+  {
+   "kind": "diffcard",
+   "t": [
+    13.116,
+    16.921
+   ]
+  },
+  {
+   "kind": "slate",
+   "t": [
+    16.921,
+    19.034
+   ]
+  },
+  {
+   "kind": "proofstack",
+   "t": [
+    19.034,
+    27.458
+   ],
+   "layout": [
+    [
+     "v8/03-box-live.mp4",
+     0.0,
+     1.6
+    ],
+    [
+     "v8/04-receipt-live.mp4",
+     1.6,
+     3.2
+    ],
+    [
+     "v8/05-mint-live.mp4",
+     3.2,
+     4.06
+    ],
+    [
+     "v8/06-letter-live.mp4",
+     4.06,
+     8.424
+    ]
+   ],
+   "stamps": [
+    {
+     "at": 19.234,
+     "verb": "retail.intake",
+     "id": "rc_mtduhfs6_jorn"
+    },
+    {
+     "at": 20.834,
+     "verb": "retail.intake",
+     "id": "rc_mtduhfs6_jorn"
+    },
+    {
+     "at": 22.334,
+     "verb": "gift.intake",
+     "id": "rc_mtduiaze_u6as"
+    },
+    {
+     "at": 23.134,
+     "verb": "gift.intake",
+     "id": "rc_mtduiaze_u6as"
+    }
+   ]
+  },
+  {
+   "kind": "hero",
+   "t": [
+    27.458,
+    31.845
+   ],
+   "file": "06-hero.mp4",
+   "stamps": [
+    {
+     "at": 29.297,
+     "verb": "box.verify",
+     "id": "rc_mtduj68w_0faa"
+    },
+    {
+     "at": 29.992,
+     "verb": "pack.open",
+     "id": "rc_mtdujlvj_zeqo"
+    }
+   ]
+  },
+  {
+   "kind": "hinge",
+   "t": [
+    31.845,
+    36.555
+   ]
+  },
+  {
+   "kind": "smash",
+   "t": [
+    36.555,
+    40.711
+   ],
+   "red": [
+    "REFUSED rc_msvbkiwz_zrcm",
+    "REFUSED rc_mt8iqfq9_wbnv"
+   ]
+  },
+  {
+   "kind": "ledger",
+   "t": [
+    40.711,
+    46.883
+   ]
+  },
+  {
+   "kind": "brand",
+   "t": [
+    46.883,
+    48.693
+   ]
+  },
+  {
+   "kind": "end",
+   "t": [
+    48.693,
+    60.211
+   ],
+   "cta_in": 49.092999999999996,
+   "chips_in": 49.893
+  }
+ ]
+}
