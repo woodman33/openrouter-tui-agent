@@ -49,44 +49,39 @@
    ],
    "layout": [
     [
-     "v8/03-box-live.mp4",
+     "v8/04-receipt-live.mp4",
      0.0,
-     1.6
+     1.65
     ],
     [
-     "v8/04-receipt-live.mp4",
-     1.6,
-     3.2
+     "v8/03-box-live.mp4",
+     1.65,
+     3.3
     ],
     [
      "v8/05-mint-live.mp4",
-     3.2,
-     4.06
+     3.3,
+     5.86
     ],
     [
      "v8/06-letter-live.mp4",
-     4.06,
+     5.86,
      8.424
     ]
    ],
    "stamps": [
     {
-     "at": 19.234,
+     "at": 20.784,
      "verb": "retail.intake",
      "id": "rc_mtduhfs6_jorn"
     },
     {
-     "at": 20.834,
-     "verb": "retail.intake",
-     "id": "rc_mtduhfs6_jorn"
-    },
-    {
-     "at": 22.334,
+     "at": 22.434,
      "verb": "gift.intake",
      "id": "rc_mtduiaze_u6as"
     },
     {
-     "at": 23.134,
+     "at": 24.994,
      "verb": "gift.intake",
      "id": "rc_mtduiaze_u6as"
     }
@@ -145,13 +140,31 @@
    ]
   },
   {
-   "kind": "end",
+   "kind": "endv10",
    "t": [
     48.693,
     60.211
    ],
    "cta_in": 49.092999999999996,
-   "chips_in": 49.893
+   "chips_in": 49.893,
+   "caps": [
+    [
+     "captures/cap1.mp4",
+     48.693,
+     49.713
+    ],
+    [
+     "captures/cap2.mp4",
+     49.713,
+     50.493
+    ],
+    [
+     "captures/cap3.mp4",
+     50.493,
+     52.493
+    ]
+   ],
+   "end_at": 52.493
   }
  ]
 }
