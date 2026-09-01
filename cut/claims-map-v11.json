@@ -1,0 +1,161 @@
+{
+ "version": 11,
+ "script": "script/ch1-v2.txt",
+ "vo": "vo/ch1-v2-segmaster-t.wav",
+ "map": [
+  {
+   "line": 1,
+   "text": "This is Timmy \u2014 a terminal AI agent that writes a receipt for everything it does.",
+   "tc": [
+    0.15,
+    5.463
+   ],
+   "on_screen": [
+    "live terminal seals printing (title pull 85.6-95.1)"
+   ]
+  },
+  {
+   "line": 2,
+   "text": "Every prompt, every command, every action \u2014 hashed, signed, and chained.",
+   "tc": [
+    5.763,
+    10.676
+   ],
+   "on_screen": [
+    "type-on: prompt>hashed command>signed action>chained"
+   ]
+  },
+  {
+   "line": 3,
+   "text": "Nothing deleted. Nothing hidden.",
+   "tc": [
+    10.976,
+    12.816
+   ],
+   "on_screen": [
+    "chain scroll: epoch 903 ids"
+   ]
+  },
+  {
+   "line": 4,
+   "text": "Other agents ask for your trust. Timmy hands you proof.",
+   "tc": [
+    13.116,
+    16.621
+   ],
+   "on_screen": [
+    "diff card: - trust me / + verify me"
+   ]
+  },
+  {
+   "line": 5,
+   "text": "Tonight's example \u2014 a card break.",
+   "tc": [
+    16.921,
+    18.734
+   ],
+   "on_screen": [
+    "slate: EXAMPLE 001: THE BREAK"
+   ]
+  },
+  {
+   "line": 6,
+   "text": "Every box went into the record before the wrap ever came off \u2014 the ones we bought, and the one Fanatics sent us, letter and all.",
+   "tc": [
+    19.034,
+    27.158
+   ],
+   "on_screen": [
+    "rc_mtduhfs6_jorn (receipt)",
+    "rc_mtduhfs6_jorn (box)",
+    "rc_mtduiaze_u6as (gift box full-frame >=2.5s)",
+    "rc_mtduiaze_u6as (letter >=2.5s)"
+   ]
+  },
+  {
+   "line": 7,
+   "text": "By the time the first pack was opened, the proof already existed.",
+   "tc": [
+    27.458,
+    31.545
+   ],
+   "on_screen": [
+    "rc_mtduj68w_0faa",
+    "rc_mtdujlvj_zeqo"
+   ]
+  },
+  {
+   "line": 8,
+   "text": "You don't have to trust any of it,",
+   "tc": [
+    31.845,
+    33.755
+   ],
+   "on_screen": [
+    "hinge: timmy verify ok:true card"
+   ]
+  },
+  {
+   "line": 9,
+   "text": "because you can check all of it.",
+   "tc": [
+    34.055,
+    36.105
+   ],
+   "on_screen": [
+    "hinge: timmy verify ok:true card"
+   ]
+  },
+  {
+   "line": 10,
+   "text": "And when a bad record showed up, Timmy didn't argue \u2014 it refused.",
+   "tc": [
+    36.555,
+    40.411
+   ],
+   "on_screen": [
+    "rc_msvbkiwz_zrcm",
+    "rc_mt8iqfq9_wbnv"
+   ]
+  },
+  {
+   "line": 11,
+   "text": "It was never about cards. Any agent, any workflow \u2014 if it acted, there's a receipt.",
+   "tc": [
+    40.711,
+    46.583
+   ],
+   "on_screen": [
+    "ledger: real repo verbs (34)"
+   ]
+  },
+  {
+   "line": 12,
+   "text": "Timmy TUI.",
+   "tc": [
+    46.883,
+    48.193
+   ],
+   "on_screen": [
+    "brand: TIMMY TUI."
+   ]
+  },
+  {
+   "line": 13,
+   "text": "Code it, browse it, render it \u2014 Timmy proves every move. If you use or build AI agents, Timmy keeps them honest. Live and die by the receipts.",
+   "tc": [
+    48.693,
+    59.211
+   ],
+   "on_screen": [
+    "capture.intake cap1 @ code onset 48.693",
+    "capture.intake cap2 @ browse onset 49.713",
+    "capture.intake cap3 @ render onset 50.493",
+    "live end card through tail"
+   ]
+  }
+ ],
+ "cite_sync_spec": "L6: letter >=30% AND box >=30% (supersedes letter-only >=50%); L13: code/browse/render captures at verb onsets",
+ "spec_change_disclosed": true,
+ "redaction": "redact/redact.map.json sealed; PII removed per \u00a710; see deviation note"
+}
