@@ -1,9 +1,9 @@
 {
- "version": 9,
- "script": "script/ch1-v2.txt",
- "vo": "vo/ch1-v2-segmaster-t.wav",
+ "version": 12,
+ "script": "script/ch1-v2.1.txt",
+ "vo": "vo/ch1-v2.1-segmaster.wav",
  "vo_source_sha256": "3a214cf609eeb485c32b26776402fb025bcc8e10e2399ed3e27e576c6056e494",
- "total_s": 60.211,
+ "total_s": 65.0,
  "beats": [
   {
    "kind": "title",
@@ -136,35 +136,35 @@
    "kind": "brand",
    "t": [
     46.883,
-    48.693
+    50.6
    ]
   },
   {
    "kind": "endv10",
    "t": [
-    48.693,
-    60.211
+    50.6,
+    65.0
    ],
-   "cta_in": 49.092999999999996,
-   "chips_in": 49.893,
    "caps": [
     [
      "captures/cap1.mp4",
-     48.693,
-     49.713
+     50.6,
+     51.52
     ],
     [
      "captures/cap2.mp4",
-     49.713,
-     50.493
+     51.52,
+     52.3
     ],
     [
      "captures/cap3.mp4",
-     50.493,
-     52.493
+     52.3,
+     54.3
     ]
    ],
-   "end_at": 52.493
+   "end_at": 54.3,
+   "vo_end": 59.9,
+   "slogan_in": 60.5
   }
  ]
 }
