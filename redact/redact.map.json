@@ -1,0 +1,120 @@
+{
+ "version": 12,
+ "method": "clean-plate: blank-paper fill once per ref frame; per-frame SIFT+findHomography warp; 2px feather; grain-match; no generative passes; v2: foot name/title/email box added at 5 refs (0/0.7/1.4/2.1/2.7s) tracking letter drift; regrain via tool grain-match",
+ "deviation": "bottom letterhead line blanked IN FULL (domain @FANATICS.COM not preserved): pixel tracking could not isolate the MIKE token under hand motion; hard PII gate wins. Fanatics provenance retained in claims.map.",
+ "regions": [
+  {
+   "shot": "receipt",
+   "frames": [
+    0,
+    113
+   ],
+   "bbox": [
+    838,
+    34,
+    132,
+    30
+   ],
+   "reason": "phone (Tel +14157224560)"
+  },
+  {
+   "shot": "receipt",
+   "frames": [
+    0,
+    113
+   ],
+   "bbox": [
+    580,
+    160,
+    165,
+    68
+   ],
+   "reason": "SKU digits + barcode"
+  },
+  {
+   "shot": "receipt",
+   "frames": [
+    0,
+    113
+   ],
+   "bbox": [
+    752,
+    763,
+    448,
+    30
+   ],
+   "reason": "street address line"
+  },
+  {
+   "shot": "letter",
+   "frames": [
+    0,
+    124
+   ],
+   "bbox": [
+    465,
+    370,
+    425,
+    235
+   ],
+   "reason": "LFG! handwriting"
+  },
+  {
+   "shot": "letter",
+   "frames": [
+    0,
+    124
+   ],
+   "bbox": [
+    875,
+    575,
+    395,
+    185
+   ],
+   "reason": "signature"
+  },
+  {
+   "shot": "letter",
+   "frames": [
+    0,
+    124
+   ],
+   "bbox": [
+    595,
+    900,
+    400,
+    40
+   ],
+   "reason": "MICHAEL HERMALYN name line"
+  },
+  {
+   "shot": "letter",
+   "frames": [
+    0,
+    124
+   ],
+   "bbox": [
+    560,
+    935,
+    480,
+    40
+   ],
+   "reason": "bottom line incl MIKE local-part (domain lost, see deviation)"
+  },
+  {
+   "shot": "letter",
+   "frames": [
+    0,
+    124
+   ],
+   "bbox": [
+    600,
+    760,
+    480,
+    220
+   ],
+   "reason": "printed name MICHAEL HERMALYN + title/email foot (v1 warp lost it at later frames)"
+  }
+ ],
+ "v2_cites_v1": "sha256_c085164c6"
+}
