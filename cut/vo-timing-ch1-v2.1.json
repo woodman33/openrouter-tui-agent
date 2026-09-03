@@ -3,853 +3,853 @@
   "line": 1,
   "text": "This is Timmy \u2014 a terminal AI agent that writes a receipt for everything it does.",
   "t_in": 0.15,
-  "t_out": 5.81,
+  "t_out": 5.463,
   "words": [
    {
     "w": "This",
-    "t_in": 0.15,
-    "t_out": 0.35
+    "t_in": 0.3,
+    "t_out": 0.5
    },
    {
     "w": "is",
-    "t_in": 0.35,
-    "t_out": 0.59
+    "t_in": 0.5,
+    "t_out": 0.74
    },
    {
     "w": "Timmy,",
-    "t_in": 0.59,
-    "t_out": 1.05
+    "t_in": 0.74,
+    "t_out": 1.2
    },
    {
     "w": "a",
-    "t_in": 1.73,
-    "t_out": 1.85
+    "t_in": 1.88,
+    "t_out": 2.0
    },
    {
     "w": "terminal",
-    "t_in": 1.85,
-    "t_out": 2.21
+    "t_in": 2.0,
+    "t_out": 2.36
    },
    {
     "w": "AI",
-    "t_in": 2.21,
-    "t_out": 2.69
+    "t_in": 2.36,
+    "t_out": 2.84
    },
    {
     "w": "agent",
-    "t_in": 2.69,
-    "t_out": 3.05
+    "t_in": 2.84,
+    "t_out": 3.2
    },
    {
     "w": "that",
-    "t_in": 3.05,
-    "t_out": 3.29
+    "t_in": 3.2,
+    "t_out": 3.44
    },
    {
     "w": "writes",
-    "t_in": 3.29,
-    "t_out": 3.55
+    "t_in": 3.44,
+    "t_out": 3.7
    },
    {
     "w": "a",
-    "t_in": 3.55,
-    "t_out": 3.71
+    "t_in": 3.7,
+    "t_out": 3.86
    },
    {
     "w": "receipt",
-    "t_in": 3.71,
-    "t_out": 4.03
+    "t_in": 3.86,
+    "t_out": 4.18
    },
    {
     "w": "for",
-    "t_in": 4.03,
-    "t_out": 4.29
+    "t_in": 4.18,
+    "t_out": 4.44
    },
    {
     "w": "everything",
-    "t_in": 4.29,
-    "t_out": 4.83
+    "t_in": 4.44,
+    "t_out": 4.98
    },
    {
     "w": "it",
-    "t_in": 4.83,
-    "t_out": 5.17
+    "t_in": 4.98,
+    "t_out": 5.32
    },
    {
     "w": "does.",
-    "t_in": 5.17,
-    "t_out": 5.81
+    "t_in": 5.32,
+    "t_out": 5.96
    }
   ]
  },
  {
   "line": 2,
   "text": "Every prompt, every command, every action \u2014 hashed, signed, and chained.",
-  "t_in": 6.11,
-  "t_out": 11.49,
+  "t_in": 5.763,
+  "t_out": 10.676,
   "words": [
    {
     "w": "Every",
-    "t_in": 6.11,
-    "t_out": 6.11
+    "t_in": 5.533,
+    "t_out": 5.533
    },
    {
     "w": "prompt,",
-    "t_in": 6.11,
-    "t_out": 6.55
+    "t_in": 5.533,
+    "t_out": 5.973
    },
    {
     "w": "every",
-    "t_in": 7.13,
-    "t_out": 7.33
+    "t_in": 6.553,
+    "t_out": 6.753
    },
    {
     "w": "command,",
-    "t_in": 7.33,
-    "t_out": 7.77
+    "t_in": 6.753,
+    "t_out": 7.193
    },
    {
     "w": "every",
-    "t_in": 8.41,
-    "t_out": 8.67
+    "t_in": 7.833,
+    "t_out": 8.093
    },
    {
     "w": "action,",
-    "t_in": 8.67,
-    "t_out": 9.19
+    "t_in": 8.093,
+    "t_out": 8.613
    },
    {
     "w": "hashed,",
-    "t_in": 9.77,
-    "t_out": 10.15
+    "t_in": 9.193,
+    "t_out": 9.573
    },
    {
     "w": "signed,",
-    "t_in": 10.43,
-    "t_out": 10.85
+    "t_in": 9.853,
+    "t_out": 10.273
    },
    {
     "w": "and",
-    "t_in": 11.07,
-    "t_out": 11.19
+    "t_in": 10.493,
+    "t_out": 10.613
    },
    {
     "w": "chained.",
-    "t_in": 11.19,
-    "t_out": 11.49
+    "t_in": 10.613,
+    "t_out": 10.913
    }
   ]
  },
  {
   "line": 3,
   "text": "Nothing deleted. Nothing hidden.",
-  "t_in": 11.79,
-  "t_out": 13.77,
+  "t_in": 10.976,
+  "t_out": 12.816,
   "words": [
    {
     "w": "Nothing",
-    "t_in": 11.79,
-    "t_out": 12.01
+    "t_in": 10.286,
+    "t_out": 10.506
    },
    {
     "w": "deleted,",
-    "t_in": 12.01,
-    "t_out": 12.45
+    "t_in": 10.506,
+    "t_out": 10.946
    },
    {
     "w": "nothing",
-    "t_in": 13.21,
-    "t_out": 13.41
+    "t_in": 11.706,
+    "t_out": 11.906
    },
    {
     "w": "hidden.",
-    "t_in": 13.41,
-    "t_out": 13.77
+    "t_in": 11.906,
+    "t_out": 12.266
    }
   ]
  },
  {
   "line": 4,
   "text": "Other agents ask for your trust. Timmy hands you proof.",
-  "t_in": 14.07,
-  "t_out": 17.69,
+  "t_in": 13.116,
+  "t_out": 16.621,
   "words": [
    {
     "w": "Other",
-    "t_in": 14.07,
-    "t_out": 14.21
+    "t_in": 11.866,
+    "t_out": 12.006
    },
    {
     "w": "agents",
-    "t_in": 14.21,
-    "t_out": 14.61
+    "t_in": 12.006,
+    "t_out": 12.406
    },
    {
     "w": "ask",
-    "t_in": 14.61,
-    "t_out": 15.03
+    "t_in": 12.406,
+    "t_out": 12.826
    },
    {
     "w": "for",
-    "t_in": 15.03,
-    "t_out": 15.29
+    "t_in": 12.826,
+    "t_out": 13.086
    },
    {
     "w": "your",
-    "t_in": 15.29,
-    "t_out": 15.43
+    "t_in": 13.086,
+    "t_out": 13.226
    },
    {
     "w": "trust.",
-    "t_in": 15.43,
-    "t_out": 15.83
+    "t_in": 13.226,
+    "t_out": 13.626
    },
    {
     "w": "Timmy",
-    "t_in": 16.65,
-    "t_out": 16.85
+    "t_in": 14.446,
+    "t_out": 14.646
    },
    {
     "w": "hands",
-    "t_in": 16.85,
-    "t_out": 17.13
+    "t_in": 14.646,
+    "t_out": 14.926
    },
    {
     "w": "you",
-    "t_in": 17.13,
-    "t_out": 17.35
+    "t_in": 14.926,
+    "t_out": 15.146
    },
    {
     "w": "proof.",
-    "t_in": 17.35,
-    "t_out": 17.69
+    "t_in": 15.146,
+    "t_out": 15.486
    }
   ]
  },
  {
   "line": 5,
   "text": "Tonight's example \u2014 a card break.",
-  "t_in": 17.99,
-  "t_out": 19.97,
+  "t_in": 16.921,
+  "t_out": 18.734,
   "words": [
    {
     "w": "Tonight's",
-    "t_in": 17.99,
-    "t_out": 18.15
+    "t_in": 14.911,
+    "t_out": 15.071
    },
    {
     "w": "Tonight's",
-    "t_in": 17.99,
-    "t_out": 18.15
+    "t_in": 14.911,
+    "t_out": 15.071
    },
    {
     "w": "example,",
-    "t_in": 18.15,
-    "t_out": 18.53
+    "t_in": 15.071,
+    "t_out": 15.451
    },
    {
     "w": "a",
-    "t_in": 19.27,
-    "t_out": 19.43
+    "t_in": 16.191,
+    "t_out": 16.351
    },
    {
     "w": "card",
-    "t_in": 19.43,
-    "t_out": 19.67
+    "t_in": 16.351,
+    "t_out": 16.591
    },
    {
     "w": "break.",
-    "t_in": 19.67,
-    "t_out": 19.97
+    "t_in": 16.591,
+    "t_out": 16.891
    }
   ]
  },
  {
   "line": 6,
   "text": "Every box went into the record before the wrap ever came off \u2014 the ones we bought, and the one Fanatics sent us, letter and all.",
-  "t_in": 20.27,
-  "t_out": 29.19,
+  "t_in": 19.034,
+  "t_out": 27.158,
   "words": [
    {
     "w": "Every",
-    "t_in": 20.27,
-    "t_out": 20.53
+    "t_in": 16.524,
+    "t_out": 16.784
    },
    {
     "w": "box",
-    "t_in": 20.53,
-    "t_out": 20.87
+    "t_in": 16.784,
+    "t_out": 17.124
    },
    {
     "w": "went",
-    "t_in": 20.87,
-    "t_out": 21.15
+    "t_in": 17.124,
+    "t_out": 17.404
    },
    {
     "w": "into",
-    "t_in": 21.15,
-    "t_out": 21.43
+    "t_in": 17.404,
+    "t_out": 17.684
    },
    {
     "w": "the",
-    "t_in": 21.43,
-    "t_out": 21.55
+    "t_in": 17.684,
+    "t_out": 17.804
    },
    {
     "w": "record",
-    "t_in": 21.55,
-    "t_out": 21.85
+    "t_in": 17.804,
+    "t_out": 18.104
    },
    {
     "w": "before",
-    "t_in": 21.85,
-    "t_out": 22.19
+    "t_in": 18.104,
+    "t_out": 18.444
    },
    {
     "w": "the",
-    "t_in": 22.19,
-    "t_out": 22.37
+    "t_in": 18.444,
+    "t_out": 18.624
    },
    {
     "w": "wrap",
-    "t_in": 22.37,
-    "t_out": 22.63
+    "t_in": 18.624,
+    "t_out": 18.884
    },
    {
     "w": "ever",
-    "t_in": 22.63,
-    "t_out": 23.07
+    "t_in": 18.884,
+    "t_out": 19.324
    },
    {
     "w": "came",
-    "t_in": 23.07,
-    "t_out": 23.33
+    "t_in": 19.324,
+    "t_out": 19.584
    },
    {
     "w": "off.",
-    "t_in": 23.33,
-    "t_out": 23.71
+    "t_in": 19.584,
+    "t_out": 19.964
    },
    {
     "w": "The",
-    "t_in": 24.21,
-    "t_out": 24.51
+    "t_in": 20.464,
+    "t_out": 20.764
    },
    {
     "w": "ones",
-    "t_in": 24.51,
-    "t_out": 24.71
+    "t_in": 20.764,
+    "t_out": 20.964
    },
    {
     "w": "we",
-    "t_in": 24.71,
-    "t_out": 24.93
+    "t_in": 20.964,
+    "t_out": 21.184
    },
    {
     "w": "bought,",
-    "t_in": 24.93,
-    "t_out": 25.23
+    "t_in": 21.184,
+    "t_out": 21.484
    },
    {
     "w": "and",
-    "t_in": 25.89,
-    "t_out": 25.99
+    "t_in": 22.144,
+    "t_out": 22.244
    },
    {
     "w": "the",
-    "t_in": 25.99,
-    "t_out": 26.11
+    "t_in": 22.244,
+    "t_out": 22.364
    },
    {
     "w": "one",
-    "t_in": 26.11,
-    "t_out": 26.35
+    "t_in": 22.364,
+    "t_out": 22.604
    },
    {
     "w": "fanatics",
-    "t_in": 26.35,
-    "t_out": 26.89
+    "t_in": 22.604,
+    "t_out": 23.144
    },
    {
     "w": "sent",
-    "t_in": 26.89,
-    "t_out": 27.33
+    "t_in": 23.144,
+    "t_out": 23.584
    },
    {
     "w": "us,",
-    "t_in": 27.33,
-    "t_out": 27.81
+    "t_in": 23.584,
+    "t_out": 24.064
    },
    {
     "w": "letter",
-    "t_in": 28.21,
-    "t_out": 28.51
+    "t_in": 24.464,
+    "t_out": 24.764
    },
    {
     "w": "and",
-    "t_in": 28.51,
-    "t_out": 28.85
+    "t_in": 24.764,
+    "t_out": 25.104
    },
    {
     "w": "all.",
-    "t_in": 28.85,
-    "t_out": 29.19
+    "t_in": 25.104,
+    "t_out": 25.444
    }
   ]
  },
  {
   "line": 7,
   "text": "By the time the first pack was opened, the proof already existed.",
-  "t_in": 29.49,
-  "t_out": 33.51,
+  "t_in": 27.458,
+  "t_out": 31.545,
   "words": [
    {
     "w": "By",
-    "t_in": 29.49,
-    "t_out": 29.61
+    "t_in": 24.168,
+    "t_out": 24.288
    },
    {
     "w": "the",
-    "t_in": 29.61,
-    "t_out": 29.75
+    "t_in": 24.288,
+    "t_out": 24.428
    },
    {
     "w": "time",
-    "t_in": 29.75,
-    "t_out": 29.95
+    "t_in": 24.428,
+    "t_out": 24.628
    },
    {
     "w": "the",
-    "t_in": 29.95,
-    "t_out": 30.11
+    "t_in": 24.628,
+    "t_out": 24.788
    },
    {
     "w": "first",
-    "t_in": 30.11,
-    "t_out": 30.37
+    "t_in": 24.788,
+    "t_out": 25.048
    },
    {
     "w": "pack",
-    "t_in": 30.37,
-    "t_out": 30.65
+    "t_in": 25.048,
+    "t_out": 25.328
    },
    {
     "w": "was",
-    "t_in": 30.65,
-    "t_out": 30.85
+    "t_in": 25.328,
+    "t_out": 25.528
    },
    {
     "w": "opened,",
-    "t_in": 30.85,
-    "t_out": 31.37
+    "t_in": 25.528,
+    "t_out": 26.048
    },
    {
     "w": "the",
-    "t_in": 31.83,
-    "t_out": 31.91
+    "t_in": 26.508,
+    "t_out": 26.588
    },
    {
     "w": "proof",
-    "t_in": 31.91,
-    "t_out": 32.29
+    "t_in": 26.588,
+    "t_out": 26.968
    },
    {
     "w": "already",
-    "t_in": 32.29,
-    "t_out": 32.89
+    "t_in": 26.968,
+    "t_out": 27.568
    },
    {
     "w": "existed.",
-    "t_in": 32.89,
-    "t_out": 33.51
+    "t_in": 27.568,
+    "t_out": 28.188
    }
   ]
  },
  {
   "line": 8,
   "text": "You don't have to trust any of it,",
-  "t_in": 33.81,
-  "t_out": 35.47,
+  "t_in": 31.845,
+  "t_out": 33.755,
   "words": [
    {
     "w": "You",
-    "t_in": 33.81,
-    "t_out": 33.95
+    "t_in": 28.055,
+    "t_out": 28.195
    },
    {
     "w": "don't",
-    "t_in": 33.95,
-    "t_out": 34.15
+    "t_in": 28.195,
+    "t_out": 28.395
    },
    {
     "w": "don't",
-    "t_in": 33.95,
-    "t_out": 34.15
+    "t_in": 28.195,
+    "t_out": 28.395
    },
    {
     "w": "have",
-    "t_in": 34.15,
-    "t_out": 34.31
+    "t_in": 28.395,
+    "t_out": 28.555
    },
    {
     "w": "to",
-    "t_in": 34.31,
-    "t_out": 34.45
+    "t_in": 28.555,
+    "t_out": 28.695
    },
    {
     "w": "trust",
-    "t_in": 34.45,
-    "t_out": 34.71
+    "t_in": 28.695,
+    "t_out": 28.955
    },
    {
     "w": "any",
-    "t_in": 34.71,
-    "t_out": 35.01
+    "t_in": 28.955,
+    "t_out": 29.255
    },
    {
     "w": "of",
-    "t_in": 35.01,
-    "t_out": 35.15
+    "t_in": 29.255,
+    "t_out": 29.395
    },
    {
     "w": "it,",
-    "t_in": 35.15,
-    "t_out": 35.47
+    "t_in": 29.395,
+    "t_out": 29.715
    }
   ]
  },
  {
   "line": 9,
   "text": "because you can check all of it.",
-  "t_in": 35.77,
-  "t_out": 37.57,
+  "t_in": 34.055,
+  "t_out": 36.105,
   "words": [
    {
     "w": "because",
-    "t_in": 35.77,
-    "t_out": 36.01
+    "t_in": 30.385,
+    "t_out": 30.625
    },
    {
     "w": "you",
-    "t_in": 36.01,
-    "t_out": 36.19
+    "t_in": 30.625,
+    "t_out": 30.805
    },
    {
     "w": "can",
-    "t_in": 36.19,
-    "t_out": 36.33
+    "t_in": 30.805,
+    "t_out": 30.945
    },
    {
     "w": "check",
-    "t_in": 36.33,
-    "t_out": 36.63
+    "t_in": 30.945,
+    "t_out": 31.245
    },
    {
     "w": "all",
-    "t_in": 36.63,
-    "t_out": 37.07
+    "t_in": 31.245,
+    "t_out": 31.685
    },
    {
     "w": "of",
-    "t_in": 37.07,
-    "t_out": 37.21
+    "t_in": 31.685,
+    "t_out": 31.825
    },
    {
     "w": "it.",
-    "t_in": 37.21,
-    "t_out": 37.57
+    "t_in": 31.825,
+    "t_out": 32.185
    }
   ]
  },
  {
   "line": 10,
   "text": "And when a bad record showed up, Timmy didn't argue \u2014 it refused.",
-  "t_in": 37.87,
-  "t_out": 41.93,
+  "t_in": 36.555,
+  "t_out": 40.411,
   "words": [
    {
     "w": "And",
-    "t_in": 37.87,
-    "t_out": 38.03
+    "t_in": 32.725,
+    "t_out": 32.885
    },
    {
     "w": "when",
-    "t_in": 38.03,
-    "t_out": 38.15
+    "t_in": 32.885,
+    "t_out": 33.005
    },
    {
     "w": "a",
-    "t_in": 38.15,
-    "t_out": 38.27
+    "t_in": 33.005,
+    "t_out": 33.125
    },
    {
     "w": "bad",
-    "t_in": 38.27,
-    "t_out": 38.49
+    "t_in": 33.125,
+    "t_out": 33.345
    },
    {
     "w": "record",
-    "t_in": 38.49,
-    "t_out": 38.81
+    "t_in": 33.345,
+    "t_out": 33.665
    },
    {
     "w": "showed",
-    "t_in": 38.81,
-    "t_out": 39.09
+    "t_in": 33.665,
+    "t_out": 33.945
    },
    {
     "w": "up,",
-    "t_in": 39.09,
-    "t_out": 39.45
+    "t_in": 33.945,
+    "t_out": 34.305
    },
    {
     "w": "Timmy",
-    "t_in": 39.83,
-    "t_out": 40.01
+    "t_in": 34.685,
+    "t_out": 34.865
    },
    {
     "w": "didn't",
-    "t_in": 40.01,
-    "t_out": 40.33
+    "t_in": 34.865,
+    "t_out": 35.185
    },
    {
     "w": "didn't",
-    "t_in": 40.01,
-    "t_out": 40.33
+    "t_in": 34.865,
+    "t_out": 35.185
    },
    {
     "w": "argue.",
-    "t_in": 40.33,
-    "t_out": 40.67
+    "t_in": 35.185,
+    "t_out": 35.525
    },
    {
     "w": "It",
-    "t_in": 41.25,
-    "t_out": 41.45
+    "t_in": 36.105,
+    "t_out": 36.305
    },
    {
     "w": "refused.",
-    "t_in": 41.45,
-    "t_out": 41.93
+    "t_in": 36.305,
+    "t_out": 36.785
    }
   ]
  },
  {
   "line": 11,
   "text": "It was never about cards. Any agent, any workflow \u2014 if it acted, there's a receipt.",
-  "t_in": 42.38,
-  "t_out": 48.94,
+  "t_in": 40.711,
+  "t_out": 46.583,
   "words": [
    {
     "w": "It",
-    "t_in": 42.38,
-    "t_out": 42.52
+    "t_in": 36.531,
+    "t_out": 36.671
    },
    {
     "w": "was",
-    "t_in": 42.52,
-    "t_out": 42.62
+    "t_in": 36.671,
+    "t_out": 36.771
    },
    {
     "w": "never",
-    "t_in": 42.62,
-    "t_out": 42.94
+    "t_in": 36.771,
+    "t_out": 37.091
    },
    {
     "w": "about",
-    "t_in": 42.94,
-    "t_out": 43.24
+    "t_in": 37.091,
+    "t_out": 37.391
    },
    {
     "w": "cards.",
-    "t_in": 43.24,
-    "t_out": 43.7
+    "t_in": 37.391,
+    "t_out": 37.851
    },
    {
     "w": "Any",
-    "t_in": 44.42,
-    "t_out": 44.64
+    "t_in": 38.571,
+    "t_out": 38.791
    },
    {
     "w": "agent,",
-    "t_in": 44.64,
-    "t_out": 45.12
+    "t_in": 38.791,
+    "t_out": 39.271
    },
    {
     "w": "any",
-    "t_in": 45.58,
-    "t_out": 45.76
+    "t_in": 39.731,
+    "t_out": 39.911
    },
    {
     "w": "workflow.",
-    "t_in": 45.76,
-    "t_out": 46.26
+    "t_in": 39.911,
+    "t_out": 40.411
    },
    {
     "w": "If",
-    "t_in": 47.02,
-    "t_out": 47.24
+    "t_in": 41.171,
+    "t_out": 41.391
    },
    {
     "w": "it",
-    "t_in": 47.24,
-    "t_out": 47.38
+    "t_in": 41.391,
+    "t_out": 41.531
    },
    {
     "w": "acted,",
-    "t_in": 47.38,
-    "t_out": 47.86
+    "t_in": 41.531,
+    "t_out": 42.011
    },
    {
     "w": "there's",
-    "t_in": 48.24,
-    "t_out": 48.52
+    "t_in": 42.391,
+    "t_out": 42.671
    },
    {
     "w": "there's",
-    "t_in": 48.24,
-    "t_out": 48.52
+    "t_in": 42.391,
+    "t_out": 42.671
    },
    {
     "w": "a",
-    "t_in": 48.52,
-    "t_out": 48.6
+    "t_in": 42.671,
+    "t_out": 42.751
    },
    {
     "w": "receipt.",
-    "t_in": 48.6,
-    "t_out": 48.94
+    "t_in": 42.751,
+    "t_out": 43.091
    }
   ]
  },
  {
   "line": 12,
   "text": "Timmy TUI.",
-  "t_in": 49.24,
-  "t_out": 50.3,
+  "t_in": 46.883,
+  "t_out": 48.193,
   "words": [
    {
     "w": "Timmy",
-    "t_in": 49.24,
-    "t_out": 49.68
+    "t_in": 42.083,
+    "t_out": 42.523
    },
    {
     "w": "TUI.",
-    "t_in": 49.68,
-    "t_out": 50.3
+    "t_in": 42.523,
+    "t_out": 43.143
    }
   ]
  },
  {
   "line": 13,
   "text": "Code it, browse it, render it \u2014 Timmy proves every move. If you use or build AI agents, Timmy keeps them honest.",
-  "t_in": 50.6,
-  "t_out": 59.9,
+  "t_in": 48.243,
+  "t_out": 55.82,
   "words": [
    {
     "w": "Code",
-    "t_in": 50.6,
-    "t_out": 50.74
+    "t_in": 48.323,
+    "t_out": 48.463
    },
    {
     "w": "it,",
-    "t_in": 50.74,
-    "t_out": 51.0
+    "t_in": 48.463,
+    "t_out": 48.723
    },
    {
     "w": "browse",
-    "t_in": 51.52,
-    "t_out": 51.6
+    "t_in": 48.903,
+    "t_out": 48.983
    },
    {
     "w": "it,",
-    "t_in": 51.6,
-    "t_out": 52.08
+    "t_in": 48.983,
+    "t_out": 49.463
    },
    {
     "w": "render",
-    "t_in": 52.3,
-    "t_out": 52.46
+    "t_in": 49.563,
+    "t_out": 49.723
    },
    {
     "w": "it.",
-    "t_in": 52.46,
-    "t_out": 52.86
+    "t_in": 49.723,
+    "t_out": 50.123
    },
    {
     "w": "Timmy",
-    "t_in": 53.54,
-    "t_out": 53.76
+    "t_in": 50.353,
+    "t_out": 50.573
    },
    {
     "w": "proves",
-    "t_in": 53.76,
-    "t_out": 54.18
+    "t_in": 50.573,
+    "t_out": 50.993
    },
    {
     "w": "every",
-    "t_in": 54.18,
-    "t_out": 54.66
+    "t_in": 50.993,
+    "t_out": 51.473
    },
    {
     "w": "move.",
-    "t_in": 54.66,
-    "t_out": 55.06
+    "t_in": 51.473,
+    "t_out": 51.873
    },
    {
     "w": "If",
-    "t_in": 55.82,
-    "t_out": 55.9
+    "t_in": 52.023,
+    "t_out": 52.103
    },
    {
     "w": "you",
-    "t_in": 55.9,
-    "t_out": 56.08
+    "t_in": 52.103,
+    "t_out": 52.283
    },
    {
     "w": "use",
-    "t_in": 56.08,
-    "t_out": 56.5
+    "t_in": 52.283,
+    "t_out": 52.703
    },
    {
     "w": "or",
-    "t_in": 56.5,
-    "t_out": 56.68
+    "t_in": 52.703,
+    "t_out": 52.883
    },
    {
     "w": "build",
-    "t_in": 56.68,
-    "t_out": 57.08
+    "t_in": 52.883,
+    "t_out": 53.283
    },
    {
     "w": "AI",
-    "t_in": 57.08,
-    "t_out": 57.58
+    "t_in": 53.283,
+    "t_out": 53.783
    },
    {
     "w": "agents,",
-    "t_in": 57.58,
-    "t_out": 58.12
+    "t_in": 53.783,
+    "t_out": 54.323
    },
    {
     "w": "Timmy",
-    "t_in": 58.7,
-    "t_out": 58.92
+    "t_in": 54.353,
+    "t_out": 54.573
    },
    {
     "w": "keeps",
-    "t_in": 58.92,
-    "t_out": 59.12
+    "t_in": 54.573,
+    "t_out": 54.773
    },
    {
     "w": "them",
-    "t_in": 59.12,
-    "t_out": 59.42
+    "t_in": 54.773,
+    "t_out": 55.073
    },
    {
     "w": "honest.",
-    "t_in": 59.42,
-    "t_out": 59.9
+    "t_in": 55.073,
+    "t_out": 55.553
    }
   ]
  }

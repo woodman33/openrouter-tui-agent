@@ -1,9 +1,9 @@
 {
- "version": 12,
+ "version": 13,
  "script": "script/ch1-v2.1.txt",
- "vo": "vo/ch1-v2.1-segmaster.wav",
+ "vo": "vo/ch1-v13-segmaster.wav",
  "vo_source_sha256": "3a214cf609eeb485c32b26776402fb025bcc8e10e2399ed3e27e576c6056e494",
- "total_s": 65.0,
+ "total_s": 60.82,
  "beats": [
   {
    "kind": "title",
@@ -11,7 +11,8 @@
     0.0,
     5.763
    ],
-   "file": "v8/01-title-live.mp4"
+   "file": "v8/01-title-live.mp4",
+   "scrim": true
   },
   {
    "kind": "typeon",
@@ -60,12 +61,12 @@
     ],
     [
      "v8/05-mint-live.mp4",
-     3.3,
-     5.86
+     3.0,
+     5.56
     ],
     [
      "v8/06-letter-r5.mp4",
-     5.86,
+     5.56,
      8.424
     ]
    ],
@@ -85,7 +86,8 @@
      "verb": "gift.intake",
      "id": "rc_mtduiaze_u6as"
     }
-   ]
+   ],
+   "scrim": true
   },
   {
    "kind": "hero",
@@ -105,7 +107,8 @@
      "verb": "pack.open",
      "id": "rc_mtdujlvj_zeqo"
     }
-   ]
+   ],
+   "scrim": true
   },
   {
    "kind": "hinge",
@@ -136,35 +139,35 @@
    "kind": "brand",
    "t": [
     46.883,
-    50.6
+    48.243
    ]
   },
   {
    "kind": "endv10",
    "t": [
-    50.6,
-    65.0
+    48.243,
+    60.82
    ],
    "caps": [
     [
      "captures/cap1.mp4",
-     50.6,
-     51.52
+     48.32,
+     48.9
     ],
     [
      "captures/cap2.mp4",
-     51.52,
-     52.3
+     48.9,
+     49.64
     ],
     [
      "captures/cap3.mp4",
-     52.3,
-     54.3
+     49.64,
+     51.64
     ]
    ],
-   "end_at": 54.3,
-   "vo_end": 59.9,
-   "slogan_in": 60.5
+   "end_at": 52.1,
+   "vo_end": 55.82,
+   "slogan_in": 56.42
   }
  ]
 }

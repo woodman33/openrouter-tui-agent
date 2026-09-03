@@ -1,0 +1,65 @@
+{
+ "schema": "scorecard/1",
+ "cut": "v13",
+ "measured_against": {
+  "file": "renders/trailer-ch1-v13.mp4",
+  "sha256": "dc8db64635417a7145af1ba533461e1be27aa79f9776c44448e9864dc7a5198c",
+  "vo": "vo/ch1-v13-segmaster.wav"
+ },
+ "gates": [
+  {
+   "gate": "runtime",
+   "result": "pass",
+   "value": 60.885,
+   "spec": "<=61.0",
+   "basis": "gate.rebase sha256_b937b79d4"
+  },
+  {
+   "gate": "coverage",
+   "result": "pass",
+   "value": "12 beats tile 0..60.82"
+  },
+  {
+   "gate": "motion-floor",
+   "result": "pass",
+   "value": "freezedetect 0 events"
+  },
+  {
+   "gate": "cut-on-rise-p95",
+   "result": "pass",
+   "value": "title/proofstack/hero/endv10 rising"
+  },
+  {
+   "gate": "cite-sync",
+   "result": "pass",
+   "value": "mint 31.5% / letter 31.6%"
+  },
+  {
+   "gate": "click",
+   "result": "pass",
+   "value": "joins+tails tapered; L13 splices mid-silence"
+  },
+  {
+   "gate": "pii.scan",
+   "result": "pass",
+   "value": "0 personal tokens"
+  },
+  {
+   "gate": "captions",
+   "result": "pass",
+   "value": "imports v2.1; whisper 150/146 (apostrophe artifacts only)"
+  },
+  {
+   "gate": "text.collision",
+   "result": "pass",
+   "value": "0 sites on v13",
+   "control": "sha256_8f98a37c4 (FAIL on v12 c0d69a9c, 75 sites)"
+  },
+  {
+   "gate": "vo-tail-spectral",
+   "result": "pass",
+   "value": "sibilance 259ms >= 80ms; taper ok",
+   "control": "sha256_52d59f5db (FAIL on v12 c0d69a9c, delta 23dB)"
+  }
+ ]
+}

@@ -1,0 +1,67 @@
+{
+ "schema": "roster/1",
+ "version": 1,
+ "gates": [
+  {
+   "id": "runtime",
+   "spec": "total_s <= 61.0",
+   "tool": "ffprobe",
+   "basis": "gate.rebase sha256_b937b79d42f9b836d39346b1b3b033b768d7028b8e5778c9981d8033548481d8 (58.0 -> 61.0, evidence: pause-table)",
+   "status": "admitted"
+  },
+  {
+   "id": "coverage",
+   "spec": "beats tile 0..total_s with no gap/overlap; luma<8 black at head/tail of footage beats",
+   "tool": "tools/edl-lint.py",
+   "status": "admitted"
+  },
+  {
+   "id": "motion-floor",
+   "spec": "freezedetect n=0.003 d=0.5 = 0 events on the final render",
+   "tool": "ffmpeg freezedetect",
+   "status": "admitted"
+  },
+  {
+   "id": "cut-on-rise-p95",
+   "spec": "footage pulls: in @ beat head drops structural-zero first sample and lands above floor; out @ last-1s window >=60% p95 and slope>0",
+   "tool": "tools/motion-curve.py",
+   "status": "admitted"
+  },
+  {
+   "id": "cite-sync",
+   "spec": "L6: mint >=30% AND letter >=30% of L6\u2229beat; L13 captures at verb onsets",
+   "tool": "claims-map audit",
+   "status": "admitted"
+  },
+  {
+   "id": "click",
+   "spec": "10ms afades at every segmaster join and tail; join discontinuity + taper verified",
+   "tool": "wave audit",
+   "status": "admitted"
+  },
+  {
+   "id": "pii.scan",
+   "spec": "zero personal-PII tokens in letter window (tesseract psm6, caption band excluded; script-locked brand names are not PII)",
+   "tool": "tesseract",
+   "status": "admitted"
+  },
+  {
+   "id": "captions",
+   "spec": "captions import the locked timing json; lines equal the locked script",
+   "tool": "comp import + timing diff",
+   "status": "admitted"
+  },
+  {
+   "id": "text.collision",
+   "spec": "no intersecting text bboxes across distinct lines on graphics beats",
+   "tool": "tools/text-collision.py",
+   "status": "admitted"
+  },
+  {
+   "id": "vo-tail-spectral",
+   "spec": "VO tail tapers below 10% inside the 10ms fade; no broadband click at final fade (HF ratio bounded when the tail carries energy; silent tail judged on taper + discontinuity)",
+   "tool": "tools/vo-tail-spectral.py",
+   "status": "admitted"
+  }
+ ]
+}
