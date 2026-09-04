@@ -1,7 +1,7 @@
 {
  "version": 13,
  "script": "script/ch1-v2.1.txt",
- "vo": "vo/ch1-v14-segmaster.wav",
+ "vo": "vo/ch1-v15-segmaster.wav",
  "vo_source_sha256": "3a214cf609eeb485c32b26776402fb025bcc8e10e2399ed3e27e576c6056e494",
  "total_s": 60.238,
  "beats": [
@@ -65,7 +65,7 @@
      5.56
     ],
     [
-     "v8/06-letter-r6.mp4",
+     "v8/06-letter-r7.mp4",
      5.56,
      8.424
     ]

@@ -1,0 +1,79 @@
+{
+ "schema": "scorecard/1",
+ "cut": "v15",
+ "measured_against": {
+  "file": "renders/trailer-ch1-v15.mp4",
+  "sha256": "f345a9790ed11ebf04f44f54b2eeb63ddb8b70840c74289cecb069148caee6df",
+  "vo": "vo/ch1-v15-segmaster.wav"
+ },
+ "gates": [
+  {
+   "gate": "runtime",
+   "result": "pass",
+   "value": 60.288
+  },
+  {
+   "gate": "coverage",
+   "result": "pass",
+   "value": "12 beats 0..60.238"
+  },
+  {
+   "gate": "motion-floor",
+   "result": "pass",
+   "value": 0
+  },
+  {
+   "gate": "cut-on-rise-p95",
+   "result": "pass",
+   "value": "footage pulls rising"
+  },
+  {
+   "gate": "cite-sync",
+   "result": "pass",
+   "value": "mint 31.5% letter 31.6%"
+  },
+  {
+   "gate": "mint-hold",
+   "result": "pass",
+   "value": 2.56
+  },
+  {
+   "gate": "letter-hold",
+   "result": "pass",
+   "value": 2.864
+  },
+  {
+   "gate": "click",
+   "result": "pass",
+   "value": 0
+  },
+  {
+   "gate": "pii.scan",
+   "result": "pass",
+   "value": 0
+  },
+  {
+   "gate": "captions",
+   "result": "pass",
+   "value": "whisper 100%"
+  },
+  {
+   "gate": "text.collision",
+   "result": "pass",
+   "value": 0,
+   "control": "sha256_8f98a37c4"
+  },
+  {
+   "gate": "vo-tail-spectral",
+   "result": "pass",
+   "value": "sibilance ok",
+   "control": "sha256_52d59f5db"
+  },
+  {
+   "gate": "patch-detectability",
+   "result": "pass",
+   "value": "0 fails (BRANCH B bars)",
+   "control": "sha256_e10705d4c"
+  }
+ ]
+}
