@@ -1,6 +1,6 @@
 {
- "version": 13,
- "method": "clean-plate: blank-paper fill once per ref frame; per-frame SIFT+findHomography warp; 2px feather; grain-match; no generative passes; v2: foot name/title/email box added at 5 refs (0/0.7/1.4/2.1/2.7s) tracking letter drift; regrain via tool grain-match; v3: BRANCH B designed redaction \u2014 matte black bars (8,8,8) exactly at removed extents, tracked via homography, no outline, no label on paper. BRANCH A (clean-plate) attempted twice, failed patch gate.",
+ "version": 15,
+ "method": "clean-plate: blank-paper fill once per ref frame; per-frame SIFT+findHomography warp; 2px feather; grain-match; no generative passes; v2: foot name/title/email box added at 5 refs (0/0.7/1.4/2.1/2.7s) tracking letter drift; regrain via tool grain-match; v3: BRANCH B designed redaction \u2014 matte black bars (8,8,8) exactly at removed extents, tracked via homography, no outline, no label on paper. BRANCH A (clean-plate) attempted twice, failed patch gate.; v4: BAR MODE \u2014 exactly two tracked matte-black bars (body+sig as one block, foot as one block), extents=union removed bbox x1.08, square, no outline/label. Replaces v15 three-bar patchwork. Glyph-leak sweep: zero ink outside bars.; v5: two padded matte-black bars from frozen ref x1.05 (+pad), clamped at KEEP, homography-tracked; kept set (ONE/8-26-26/Will-) verified visible at 25.6/26.4/27.6; pii 0",
  "deviation": "bottom letterhead line blanked IN FULL (domain @FANATICS.COM not preserved): pixel tracking could not isolate the MIKE token under hand motion; hard PII gate wins. Fanatics provenance retained in claims.map.",
  "regions": [
   {
@@ -117,7 +117,10 @@
   }
  ],
  "v2_cites_v1": "sha256_c085164c6",
- "branch": "B",
+ "branch": "B-bars",
  "branch_reason": "BRANCH A clean-plate could not pass patch-detectability gate after 2 attempts (inpaint cannot match moving hand-shadow + real grain); BRANCH B designed bars are honest per \u00a710",
- "v3_cites_v2": "sha256_322eadeda"
+ "v3_cites_v2": "sha256_322eadeda",
+ "bars": 2,
+ "v4_cites_v3": "sha256_b099f62de",
+ "v5_cites_v4": "sha256_570825cd8"
 }
