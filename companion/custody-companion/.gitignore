@@ -1,4 +1,5 @@
 /build
+/bundle
 /.internal
 /.editor_settings
 /.deps

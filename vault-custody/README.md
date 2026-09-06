@@ -13,7 +13,7 @@ All taps land on `/t`. Two mirror modes, one CMAC parameter (`c`), whose name is
 
 `tt` is the NTAG 424 DNA TagTamper status mirror, permanent then current: `CC` never opened, `OO` open now, `OC` opened and reclosed (the resealed box).
 
-What `/t` does, in order: verify the SUN message (`src/lib/sun.ts`, NXP AN12196 algorithm, WebCrypto only), refuse replay (counter must move forward per UID), seal a `custody.tap` receipt into the unit's chain (`src/lib/chain.ts`, same canon + sha256 shape as Timmy's root chain), then redirect the phone to `/r/<serial>?tap=<receipt>&n=<counter>&tt=<status>`. Refusals go to `/verify?refused=<reason>`. Add `&format=json` to get the outcome as JSON instead of a redirect (the Custody Companion uses this).
+What `/t` does, in order: verify the SUN message (`src/lib/sun.ts`, NXP AN12196 algorithm, WebCrypto only), refuse replay (counter must move forward per UID), seal a `custody.tap` receipt into the unit's chain (`src/lib/chain.ts`, same canon + sha256 shape as Timmy's root chain), then redirect the phone to `/r/<serial>?tap=<receipt>&n=<counter>&tt=<status>`. Refusals go to `/verify?refused=<reason>`. Add `&format=json` to get the outcome as JSON instead of a redirect. Add `&app=1` to land in the Custody Companion instead of the receipt page.
 
 ## The pages
 
@@ -54,6 +54,16 @@ npm run preview   # wrangler pages dev on the build
 ```
 
 Bindings (all optional, see `wrangler.jsonc`): `CUSTODY_KV` for replay + chains, `CUSTODY_KEYS` (secret) for per-batch keys, `TIMMY_EDGE_URL` + `TIMMY_EDGE_TOKEN` to mirror every tap as an event on the Timmy run store. Deploy is the owner's word: `npx wrangler pages deploy dist`.
+
+## Custody Companion (HTML5 Defold + Rive)
+
+`/companion/` is the Custody Companion: a Defold HTML5 build (project in `../companion/custody-companion`, 720×1280) with the Rive extension. It reads the unit's chain from `/api/chain/<serial>` on the same origin and drives the HUD and the Rive model. Launch it from a tag: `/t?…&app=1` verifies the tap, seals the receipt, and redirects to `/companion/?serial=<serial>&tap=<hash8>&n=<counter>&tt=<status>`. The receipt page also links to it.
+
+The HUD (`main/hud.gui`) shows only what the chain API returns: serial, state (orange when a human opened it, phosphor otherwise), product and series, where it was sealed, where it was opened, the number of signed taps and whether the chain verifies, the chain head, and the tap that launched the app. `main/custody.script` owns the fetch and sets `BadgeVM.state` on the Rive model when the exported Badge artboard is present; until Will's export lands the model shows the placeholder splash artboard.
+
+The project uses its own render script, `render/custody.render_script`, derived from the extension's `rive.render_script`. It exists because of one HTML5 bug found with a WebGL state probe against the deployed bundle: Rive's WebGL renderer leaves its stencil function (EQUAL, ref 128) and a zero stencil write mask in the real GL state, and Defold's OpenGL adapter applies stencil state lazily as a diff against what it last applied, so the GUI pass's ALWAYS never reached GL and every HUD fragment failed the stencil test. The script parks the stencil state on values the GUI never uses before the Rive pass (Defold applies them at the blit draw), then sets the GUI values, which now register as a change.
+
+The bundle is not committed. `node ../lanes/defold/build.mjs` produces it with bob.jar pinned to the installed engine, through the Defold build server (native Rive extension), copies it into `public/companion/`, and seals a `defold.build` receipt in the root chain carrying the bob, JDK, engine, input, output, and .riv hashes. `--skip-build` re-hashes and re-seals an existing bundle; `--no-seal` skips the receipt.
 
 ## Rive badge (state transitions)
 

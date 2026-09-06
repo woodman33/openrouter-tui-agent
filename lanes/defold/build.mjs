@@ -17,7 +17,8 @@ const PROJECT = join(ROOT, 'companion', 'custody-companion');
 const ENGINE_SHA = '574678c7d44be490d874fbed2d0ae6211feec4d9';
 const BOB = join(here, '.cache', `bob-${ENGINE_SHA.slice(0, 8)}.jar`);
 const BOB_URL = `https://d.defold.com/archive/${ENGINE_SHA}/bob/bob.jar`;
-const BUNDLE = join(PROJECT, 'build', 'js-web');
+// bob reserves <project>/build for itself; bundle beside it.
+const BUNDLE = join(PROJECT, 'bundle', 'wasm-web');
 const SITE_OUT = join(ROOT, 'vault-custody', 'public', 'companion');
 const args = new Set(process.argv.slice(2));
 
@@ -50,7 +51,8 @@ if (!existsSync(BOB)) {
   run('curl', ['-sSL', '-o', BOB, BOB_URL]);
 }
 const bobSha = sha(BOB);
-const javaVersion = execFileSync(JAVA,['-version'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).toString().split('\n')[0] || '';
+const javaProbe = spawnSync(JAVA, ['-version'], { encoding: 'utf8' });
+const javaVersion = ((javaProbe.stderr || '') + (javaProbe.stdout || '')).split('\n')[0].trim();
 const bobVersion = execFileSync(JAVA,['-jar', BOB, '--version'], { encoding: 'utf8' }).trim();
 
 // 2. Inputs: every project file + the .riv.
@@ -64,7 +66,7 @@ if (!args.has('--skip-build')) {
   rmSync(BUNDLE, { recursive: true, force: true });
   run(JAVA, ['-jar', BOB, '--email', 'ci@timmy.local', '--auth', 'none', 'resolve'], { cwd: PROJECT });
   run(JAVA, ['-jar', BOB,
-    '--platform', 'js-web', '--architectures', 'wasm-web,js-web',
+    '--platform', 'wasm-web', '--architectures', 'wasm-web',
     '--archive', '--variant', 'release', '--build-server', 'https://build.defold.com',
     '--bundle-output', BUNDLE, 'build', 'bundle'], { cwd: PROJECT });
 }
@@ -73,7 +75,7 @@ if (!args.has('--skip-build')) {
 const bundleDir = readdirSync(BUNDLE).map((n) => join(BUNDLE, n)).find((p) => statSync(p).isDirectory());
 if (!bundleDir) throw new Error('no bundle produced');
 const outputs = walk(bundleDir).map((p) => ({ path: p.slice(bundleDir.length + 1), sha256: sha(p), bytes: statSync(p).size }));
-const engineFiles = outputs.filter((o) => /dmengine.*\.(wasm|js)$/.test(o.path));
+const engineFiles = outputs.filter((o) => /\.wasm$|_wasm\.js$|dmloader\.js$|dmengine.*\.js$/.test(o.path));
 const outputsSha = createHash('sha256').update(JSON.stringify(outputs)).digest('hex');
 
 // 5. Copy into the custody site (served at /companion/).

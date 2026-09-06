@@ -73,7 +73,7 @@ const openedAt = u.opened ? fmtDate(u.opened.at) : '';
   </section>
 
   {!opened && <button class="btn" type="button" disabled>Claim it · ships with the pilot</button>}
-  <a class="btn companion" href={`/companion/index.html?serial=${u.serial}`}>Open in the Custody Companion</a>
+  <a class="btn companion" href={`/companion/?serial=${u.serial}`}>Open in the Custody Companion</a>
 
   <p slot="foot">Locations are city-level and owner-shared. Identities are hashed; only the owner sees their own name.</p>
 

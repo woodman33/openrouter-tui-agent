@@ -91,7 +91,7 @@ export async function handleTap(search: URLSearchParams, deps: TapDeps): Promise
   //    the tag address carries app=1 (HTML5 Defold + Rive, served at /companion/).
   const unit = unitFor(tag.serial);
   const app = search.get('app') === '1';
-  const to = new URL(app ? '/companion/index.html' : `/r/${tag.serial}`, 'https://x');
+  const to = new URL(app ? '/companion/' : `/r/${tag.serial}`, 'https://x');
   if (app) to.searchParams.set('serial', tag.serial);
   to.searchParams.set('tap', rec.hash.slice(0, 8));
   to.searchParams.set('n', String(r.readCounter));
