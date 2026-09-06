@@ -1,72 +1,394 @@
 {
-  "kind": "mission",
-  "name": "Vault Custody × Timmy · build ledger",
-  "date": "2026-09-05",
-  "note": "One frame per project in the ORDER OF BUILD. Each project's first deliverable is its capsule node. Compiles through slate-compiler (MissionMapDoc) → DispatchPlans; the board never launches, the controller does.",
-  "frames": [
-    { "id": "f1", "title": "1 · Vault Custody tap-to-verify", "owner": "claude", "paths": ["vault-custody/**"] },
-    { "id": "f2", "title": "2 · Code Mode on the worker", "owner": "claude", "paths": ["workers/**"] },
-    { "id": "f3", "title": "3 · Receipted Defold lane + Custody Companion", "owner": "claude", "paths": ["lanes/**", "companion/**"] },
-    { "id": "f4", "title": "4 · Observer evidence (Roboflow)", "owner": "claude", "paths": ["lanes/**"] },
-    { "id": "f5", "title": "5 · Slate 3D", "owner": "claude", "paths": ["companion/**", "workers/**"] },
-    { "id": "f6", "title": "6 · Sparks judge mesh (fleet rank)", "owner": "claude", "paths": ["fleet/**"] }
-  ],
-  "nodes": [
-    { "id": "p1.capsule", "frame": "f1", "kind": "capsule", "objective": "SUN verifier passes the NXP AN12196 vectors; a real tag URL hits /t, verifies, and redirects to the receipt page; six pages live on Astro/Pages; every tap and every order sealed as a receipt.", "workspace": "host-ephemeral", "copies": 1, "wall_ms": 14400000, "max_spend": 0, "acceptance": ["vitest: AN12196 sun1/sun2/sun3/plain vectors pass, corrupted CMAC rejected", "GET /t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086 → 302 to /r/<serial>", "six routes render: /r sealed, /r opened, /c, /relic, /m, /log", "receipt chain verify ok after the build"] },
-    { "id": "p1.harness", "frame": "f1", "kind": "harness", "harness": "opencode", "workspace": "host-ephemeral" },
-    { "id": "p1.gate", "frame": "f1", "kind": "gate", "approval": "manual" },
-    { "id": "p1.artifact", "frame": "f1", "kind": "artifact", "path": "vault-custody/" },
-
-    { "id": "p2.capsule", "frame": "f2", "kind": "capsule", "objective": "POST /code on timmy-ai-proxy runs one generated script per agent task against every edge tool through a Worker Loader sandbox; the script and its output seal as one receipt; operator token still gates paid or destructive calls.", "workspace": "host-ephemeral", "copies": 1, "wall_ms": 14400000, "max_spend": 0, "acceptance": ["health reports code_mode:true", "a task that lists tools, verifies a tap, and reads a chain runs as one script", "receipt carries script_sha256 + output_sha256 + tool call list", "unauthorized POST /code → 401"] },
-    { "id": "p2.harness", "frame": "f2", "kind": "harness", "harness": "opencode", "workspace": "host-ephemeral" },
-    { "id": "p2.gate", "frame": "f2", "kind": "gate", "approval": "manual" },
-    { "id": "p2.artifact", "frame": "f2", "kind": "artifact", "path": "workers/ai-proxy/" },
-
-    { "id": "p3.capsule", "frame": "f3", "kind": "capsule", "objective": "The Custody Companion (HTML5 Defold + Rive) is built by a receipted Defold lane, launched from the /t tap redirect, and reads the box's chain from the custody API. This is the Fanatics demo.", "workspace": "host-ephemeral", "copies": 1, "wall_ms": 28800000, "max_spend": 0, "acceptance": ["bob.jar + engine hashes in env_lock", ".riv sha256 bound in the build receipt", "HTML5 bundle opens from /t redirect on a phone", "companion renders the chain for VC0007"] },
-    { "id": "p3.harness", "frame": "f3", "kind": "harness", "harness": "defold", "workspace": "host-ephemeral" },
-    { "id": "p3.gate", "frame": "f3", "kind": "gate", "approval": "manual" },
-    { "id": "p3.artifact", "frame": "f3", "kind": "artifact", "path": "lanes/defold/" },
-
-    { "id": "p4.capsule", "frame": "f4", "kind": "capsule", "objective": "Roboflow detect runs on every lane screenshot starting with the Defold lane; boxes are stored as board shapes carrying the receipt hash. Honest not_configured until ROBOFLOW_API_KEY lands.", "workspace": "host-ephemeral", "copies": 1, "wall_ms": 7200000, "max_spend": 0, "acceptance": ["one Defold lane screenshot → detect → annotations on the board", "receipt evidence lists the detection result hash"] },
-    { "id": "p4.harness", "frame": "f4", "kind": "harness", "harness": "opencode", "workspace": "host-ephemeral" },
-    { "id": "p4.gate", "frame": "f4", "kind": "gate", "approval": "manual" },
-    { "id": "p4.artifact", "frame": "f4", "kind": "artifact", "path": "lanes/observer/" },
-
-    { "id": "p5.capsule", "frame": "f5", "kind": "capsule", "objective": "The current mission board renders in 3D inside the companion with live lane pods. Decisions accepted in advance: mission + blueprint boards first, existing Durable Object as the sync room, Three.js inside the companion page, this ledger as the first board.", "workspace": "host-ephemeral", "copies": 1, "wall_ms": 28800000, "max_spend": 0, "acceptance": ["two browsers share one board through the Durable Object", "3D view shows frames as rooms and capsules as pods", "pod state follows receipt lifecycle"] },
-    { "id": "p5.harness", "frame": "f5", "kind": "harness", "harness": "opencode", "workspace": "host-ephemeral" },
-    { "id": "p5.gate", "frame": "f5", "kind": "gate", "approval": "manual" },
-    { "id": "p5.artifact", "frame": "f5", "kind": "artifact", "path": "companion/slate3d/" },
-
-    { "id": "p6.capsule", "frame": "f6", "kind": "capsule", "objective": "Judges resolve by fleet rank: local judges if present, else the OpenRouter cheap tier; every judge receipt records which tier judged. Will-only benefit, not a product feature.", "workspace": "host-ephemeral", "copies": 1, "wall_ms": 7200000, "max_spend": 0, "acceptance": ["fleet entry 'local-judges' with detect probes", "fusion receipt carries judge_tier", "no behavior change when no local judge is reachable"] },
-    { "id": "p6.harness", "frame": "f6", "kind": "harness", "harness": "opencode", "workspace": "host-ephemeral" },
-    { "id": "p6.gate", "frame": "f6", "kind": "gate", "approval": "manual" },
-    { "id": "p6.artifact", "frame": "f6", "kind": "artifact", "path": "fleet/" }
-  ],
-  "edges": [
-    { "from": "p1.capsule", "to": "p1.harness", "kind": "harness" },
-    { "from": "p1.harness", "to": "p1.gate", "kind": "gate" },
-    { "from": "p1.gate", "to": "p1.artifact", "kind": "artifact" },
-    { "from": "p2.capsule", "to": "p2.harness", "kind": "harness" },
-    { "from": "p2.harness", "to": "p2.gate", "kind": "gate" },
-    { "from": "p2.gate", "to": "p2.artifact", "kind": "artifact" },
-    { "from": "p3.capsule", "to": "p3.harness", "kind": "harness" },
-    { "from": "p3.harness", "to": "p3.gate", "kind": "gate" },
-    { "from": "p3.gate", "to": "p3.artifact", "kind": "artifact" },
-    { "from": "p4.capsule", "to": "p4.harness", "kind": "harness" },
-    { "from": "p4.harness", "to": "p4.gate", "kind": "gate" },
-    { "from": "p4.gate", "to": "p4.artifact", "kind": "artifact" },
-    { "from": "p5.capsule", "to": "p5.harness", "kind": "harness" },
-    { "from": "p5.harness", "to": "p5.gate", "kind": "gate" },
-    { "from": "p5.gate", "to": "p5.artifact", "kind": "artifact" },
-    { "from": "p6.capsule", "to": "p6.harness", "kind": "harness" },
-    { "from": "p6.harness", "to": "p6.gate", "kind": "gate" },
-    { "from": "p6.gate", "to": "p6.artifact", "kind": "artifact" },
-
-    { "from": "p3.capsule", "to": "p1.capsule", "kind": "depends" },
-    { "from": "p3.capsule", "to": "p2.capsule", "kind": "depends" },
-    { "from": "p4.capsule", "to": "p3.capsule", "kind": "depends" },
-    { "from": "p5.capsule", "to": "p1.capsule", "kind": "depends" },
-    { "from": "p5.capsule", "to": "p2.capsule", "kind": "depends" },
-    { "from": "p5.capsule", "to": "p3.capsule", "kind": "depends" }
-  ]
+ "kind": "mission",
+ "name": "Vault Custody × Timmy · build ledger",
+ "date": "2026-09-05",
+ "note": "One frame per project in the ORDER OF BUILD. Each project's first deliverable is its capsule node. Compiles through slate-compiler (MissionMapDoc) → DispatchPlans; the board never launches, the controller does.",
+ "frames": [
+  {
+   "id": "f1",
+   "title": "1 · Vault Custody tap-to-verify",
+   "owner": "claude",
+   "paths": [
+    "vault-custody/**"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "f2",
+   "title": "2 · Code Mode on the worker",
+   "owner": "claude",
+   "paths": [
+    "workers/**"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "f3",
+   "title": "3 · Receipted Defold lane + Custody Companion",
+   "owner": "claude",
+   "paths": [
+    "lanes/**",
+    "companion/**"
+   ],
+   "status": "done"
+  },
+  {
+   "id": "f4",
+   "title": "4 · Observer evidence (Roboflow)",
+   "owner": "claude",
+   "paths": [
+    "lanes/**"
+   ],
+   "status": "active"
+  },
+  {
+   "id": "f5",
+   "title": "5 · Slate 3D",
+   "owner": "claude",
+   "paths": [
+    "companion/**",
+    "workers/**"
+   ],
+   "status": "active"
+  },
+  {
+   "id": "f6",
+   "title": "6 · Sparks judge mesh (fleet rank)",
+   "owner": "claude",
+   "paths": [
+    "fleet/**"
+   ],
+   "status": "next"
+  }
+ ],
+ "nodes": [
+  {
+   "id": "p1.capsule",
+   "frame": "f1",
+   "kind": "capsule",
+   "objective": "SUN verifier passes the NXP AN12196 vectors; a real tag URL hits /t, verifies, and redirects to the receipt page; six pages live on Astro/Pages; every tap and every order sealed as a receipt.",
+   "workspace": "host-ephemeral",
+   "copies": 1,
+   "wall_ms": 14400000,
+   "max_spend": 0,
+   "acceptance": [
+    "vitest: AN12196 sun1/sun2/sun3/plain vectors pass, corrupted CMAC rejected",
+    "GET /t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086 → 302 to /r/<serial>",
+    "six routes render: /r sealed, /r opened, /c, /relic, /m, /log",
+    "receipt chain verify ok after the build"
+   ]
+  },
+  {
+   "id": "p1.harness",
+   "frame": "f1",
+   "kind": "harness",
+   "harness": "opencode",
+   "workspace": "host-ephemeral"
+  },
+  {
+   "id": "p1.gate",
+   "frame": "f1",
+   "kind": "gate",
+   "approval": "manual"
+  },
+  {
+   "id": "p1.artifact",
+   "frame": "f1",
+   "kind": "artifact",
+   "path": "vault-custody/"
+  },
+  {
+   "id": "p2.capsule",
+   "frame": "f2",
+   "kind": "capsule",
+   "objective": "POST /code on timmy-ai-proxy runs one generated script per agent task against every edge tool through a Worker Loader sandbox; the script and its output seal as one receipt; operator token still gates paid or destructive calls.",
+   "workspace": "host-ephemeral",
+   "copies": 1,
+   "wall_ms": 14400000,
+   "max_spend": 0,
+   "acceptance": [
+    "health reports code_mode:true",
+    "a task that lists tools, verifies a tap, and reads a chain runs as one script",
+    "receipt carries script_sha256 + output_sha256 + tool call list",
+    "unauthorized POST /code → 401"
+   ]
+  },
+  {
+   "id": "p2.harness",
+   "frame": "f2",
+   "kind": "harness",
+   "harness": "opencode",
+   "workspace": "host-ephemeral"
+  },
+  {
+   "id": "p2.gate",
+   "frame": "f2",
+   "kind": "gate",
+   "approval": "manual"
+  },
+  {
+   "id": "p2.artifact",
+   "frame": "f2",
+   "kind": "artifact",
+   "path": "workers/ai-proxy/"
+  },
+  {
+   "id": "p3.capsule",
+   "frame": "f3",
+   "kind": "capsule",
+   "objective": "The Custody Companion (HTML5 Defold + Rive) is built by a receipted Defold lane, launched from the /t tap redirect, and reads the box's chain from the custody API. This is the Fanatics demo.",
+   "workspace": "host-ephemeral",
+   "copies": 1,
+   "wall_ms": 28800000,
+   "max_spend": 0,
+   "acceptance": [
+    "bob.jar + engine hashes in env_lock",
+    ".riv sha256 bound in the build receipt",
+    "HTML5 bundle opens from /t redirect on a phone",
+    "companion renders the chain for VC0007"
+   ]
+  },
+  {
+   "id": "p3.harness",
+   "frame": "f3",
+   "kind": "harness",
+   "harness": "defold",
+   "workspace": "host-ephemeral"
+  },
+  {
+   "id": "p3.gate",
+   "frame": "f3",
+   "kind": "gate",
+   "approval": "manual"
+  },
+  {
+   "id": "p3.artifact",
+   "frame": "f3",
+   "kind": "artifact",
+   "path": "lanes/defold/"
+  },
+  {
+   "id": "p4.capsule",
+   "frame": "f4",
+   "kind": "capsule",
+   "objective": "Roboflow detect runs on every lane screenshot starting with the Defold lane; boxes are stored as board shapes carrying the receipt hash. Honest not_configured until ROBOFLOW_API_KEY lands.",
+   "workspace": "host-ephemeral",
+   "copies": 1,
+   "wall_ms": 7200000,
+   "max_spend": 0,
+   "acceptance": [
+    "one Defold lane screenshot → detect → annotations on the board",
+    "receipt evidence lists the detection result hash"
+   ]
+  },
+  {
+   "id": "p4.harness",
+   "frame": "f4",
+   "kind": "harness",
+   "harness": "opencode",
+   "workspace": "host-ephemeral"
+  },
+  {
+   "id": "p4.gate",
+   "frame": "f4",
+   "kind": "gate",
+   "approval": "manual"
+  },
+  {
+   "id": "p4.artifact",
+   "frame": "f4",
+   "kind": "artifact",
+   "path": "lanes/observer/"
+  },
+  {
+   "id": "p5.capsule",
+   "frame": "f5",
+   "kind": "capsule",
+   "objective": "The current mission board renders in 3D inside the companion with live lane pods. Decisions accepted in advance: mission + blueprint boards first, existing Durable Object as the sync room, Three.js inside the companion page, this ledger as the first board.",
+   "workspace": "host-ephemeral",
+   "copies": 1,
+   "wall_ms": 28800000,
+   "max_spend": 0,
+   "acceptance": [
+    "two browsers share one board through the Durable Object",
+    "3D view shows frames as rooms and capsules as pods",
+    "pod state follows receipt lifecycle"
+   ]
+  },
+  {
+   "id": "p5.harness",
+   "frame": "f5",
+   "kind": "harness",
+   "harness": "opencode",
+   "workspace": "host-ephemeral"
+  },
+  {
+   "id": "p5.gate",
+   "frame": "f5",
+   "kind": "gate",
+   "approval": "manual"
+  },
+  {
+   "id": "p5.artifact",
+   "frame": "f5",
+   "kind": "artifact",
+   "path": "companion/slate3d/"
+  },
+  {
+   "id": "p6.capsule",
+   "frame": "f6",
+   "kind": "capsule",
+   "objective": "Judges resolve by fleet rank: local judges if present, else the OpenRouter cheap tier; every judge receipt records which tier judged. Will-only benefit, not a product feature.",
+   "workspace": "host-ephemeral",
+   "copies": 1,
+   "wall_ms": 7200000,
+   "max_spend": 0,
+   "acceptance": [
+    "fleet entry 'local-judges' with detect probes",
+    "fusion receipt carries judge_tier",
+    "no behavior change when no local judge is reachable"
+   ]
+  },
+  {
+   "id": "p6.harness",
+   "frame": "f6",
+   "kind": "harness",
+   "harness": "opencode",
+   "workspace": "host-ephemeral"
+  },
+  {
+   "id": "p6.gate",
+   "frame": "f6",
+   "kind": "gate",
+   "approval": "manual"
+  },
+  {
+   "id": "p6.artifact",
+   "frame": "f6",
+   "kind": "artifact",
+   "path": "fleet/"
+  }
+ ],
+ "edges": [
+  {
+   "from": "p1.capsule",
+   "to": "p1.harness",
+   "kind": "harness"
+  },
+  {
+   "from": "p1.harness",
+   "to": "p1.gate",
+   "kind": "gate"
+  },
+  {
+   "from": "p1.gate",
+   "to": "p1.artifact",
+   "kind": "artifact"
+  },
+  {
+   "from": "p2.capsule",
+   "to": "p2.harness",
+   "kind": "harness"
+  },
+  {
+   "from": "p2.harness",
+   "to": "p2.gate",
+   "kind": "gate"
+  },
+  {
+   "from": "p2.gate",
+   "to": "p2.artifact",
+   "kind": "artifact"
+  },
+  {
+   "from": "p3.capsule",
+   "to": "p3.harness",
+   "kind": "harness"
+  },
+  {
+   "from": "p3.harness",
+   "to": "p3.gate",
+   "kind": "gate"
+  },
+  {
+   "from": "p3.gate",
+   "to": "p3.artifact",
+   "kind": "artifact"
+  },
+  {
+   "from": "p4.capsule",
+   "to": "p4.harness",
+   "kind": "harness"
+  },
+  {
+   "from": "p4.harness",
+   "to": "p4.gate",
+   "kind": "gate"
+  },
+  {
+   "from": "p4.gate",
+   "to": "p4.artifact",
+   "kind": "artifact"
+  },
+  {
+   "from": "p5.capsule",
+   "to": "p5.harness",
+   "kind": "harness"
+  },
+  {
+   "from": "p5.harness",
+   "to": "p5.gate",
+   "kind": "gate"
+  },
+  {
+   "from": "p5.gate",
+   "to": "p5.artifact",
+   "kind": "artifact"
+  },
+  {
+   "from": "p6.capsule",
+   "to": "p6.harness",
+   "kind": "harness"
+  },
+  {
+   "from": "p6.harness",
+   "to": "p6.gate",
+   "kind": "gate"
+  },
+  {
+   "from": "p6.gate",
+   "to": "p6.artifact",
+   "kind": "artifact"
+  },
+  {
+   "from": "p3.capsule",
+   "to": "p1.capsule",
+   "kind": "depends"
+  },
+  {
+   "from": "p3.capsule",
+   "to": "p2.capsule",
+   "kind": "depends"
+  },
+  {
+   "from": "p4.capsule",
+   "to": "p3.capsule",
+   "kind": "depends"
+  },
+  {
+   "from": "p5.capsule",
+   "to": "p1.capsule",
+   "kind": "depends"
+  },
+  {
+   "from": "p5.capsule",
+   "to": "p2.capsule",
+   "kind": "depends"
+  },
+  {
+   "from": "p5.capsule",
+   "to": "p3.capsule",
+   "kind": "depends"
+  }
+ ]
 }

@@ -7,3 +7,5 @@ public/companion/
 *.local
 .env
 .env.*
+.video/
+*.mp4

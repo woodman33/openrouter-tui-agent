@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slate 3D · ledger board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0A1628; --navy-raised: #12233d; --line: #1c3358;
+    --phosphor: #33FF66; --orange: #FF8C1A; --red: #FF3B3B;
+    --text: #E6EDF3; --muted: #6b7a90;
+    --human: 'Space Grotesk', system-ui, sans-serif;
+    --chain: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    --u: 8px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--navy); color: var(--text); font-family: var(--human); overflow: hidden; }
+  #scene { position: fixed; inset: 0; }
+  #labels { position: fixed; inset: 0; pointer-events: none; }
+  .lbl { font: 500 12px/1.2 var(--chain); color: var(--text); white-space: nowrap; letter-spacing: 0.02em; text-shadow: 0 1px 2px rgba(0,0,0,.8); }
+  .lbl.frame { font: 700 15px/1.2 var(--human); color: var(--text); letter-spacing: 0.01em; }
+  .lbl.frame small { display: block; font: 400 11px/1.3 var(--chain); color: var(--muted); }
+  .lbl.node { color: var(--muted); font-size: 11px; }
+  .lbl.node b { color: var(--text); font-weight: 600; }
+  .lbl.lane { color: var(--muted); }
+  .lbl.lane.lit { color: var(--phosphor); }
+  .lbl.lane.human { color: var(--orange); }
+  .lbl.lane.refusal { color: var(--red); }
+  .lbl.lane .age { display: block; font-size: 10px; color: var(--muted); }
+  .hud { position: fixed; z-index: 2; padding: calc(var(--u) * 2) calc(var(--u) * 3); pointer-events: none; }
+  .hud.tl { left: 0; top: 0; }
+  .hud.tr { right: 0; top: 0; text-align: right; }
+  .hud.bl { left: 0; bottom: 0; }
+  .hud.br { right: 0; bottom: 0; }
+  h1 { margin: 0; font: 700 21px/1.1 var(--human); letter-spacing: -0.01em; }
+  h1 span { color: var(--phosphor); }
+  .sub { margin-top: calc(var(--u) / 2); font: 400 12px/1.4 var(--chain); color: var(--muted); }
+  .bus { font: 500 12px/1.4 var(--chain); color: var(--muted); }
+  .bus .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: var(--u); vertical-align: middle; }
+  .bus.live { color: var(--phosphor); }
+  .bus.live .dot { background: var(--phosphor); box-shadow: 0 0 10px var(--phosphor); }
+  .legend { display: flex; gap: calc(var(--u) * 2); font: 400 11px/1.4 var(--chain); color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .ticker { list-style: none; margin: 0; padding: 0; font: 400 11px/1.5 var(--chain); color: var(--muted); min-width: 360px; }
+  .ticker li { display: grid; grid-template-columns: 64px 1fr; gap: var(--u); }
+  .ticker li.chain { color: var(--phosphor); }
+  .ticker li.human { color: var(--orange); }
+  .ticker li.refusal { color: var(--red); }
+  .ticker li.slate { color: var(--text); }
+  .ticker li time { color: var(--muted); }
+  .note { margin-top: var(--u); font: 400 11px/1.4 var(--chain); color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { .bus.live .dot { box-shadow: none; } }
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="labels"></div>
+  <div class="hud tl">
+    <h1>SLATE <span>3D</span></h1>
+    <div class="sub" id="board-name">loading the board</div>
+  </div>
+  <div class="hud tr">
+    <div class="bus" id="bus"><span class="dot"></span><span id="bus-text">bus connecting</span></div>
+    <div class="note" id="bus-source"></div>
+  </div>
+  <div class="hud bl">
+    <div class="legend">
+      <span><i style="background:var(--phosphor)"></i>chain event</span>
+      <span><i style="background:var(--orange)"></i>human act</span>
+      <span><i style="background:var(--red)"></i>refusal</span>
+      <span><i style="background:var(--line)"></i>unlit · failed or quiet</span>
+    </div>
+    <div class="note">the viewer spawns nothing · every transition goes through the controller</div>
+  </div>
+  <div class="hud br">
+    <ul class="ticker" id="ticker"></ul>
+  </div>
+  <script type="module" src="./slate3d.js"></script>
+</body>
+</html>
