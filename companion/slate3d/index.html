@@ -30,6 +30,17 @@
   .lbl.lane.human { color: var(--orange); }
   .lbl.lane.refusal { color: var(--red); }
   .lbl.lane .age { display: block; font-size: 10px; color: var(--muted); }
+  .lbl.sheet { white-space: normal; width: 200px; padding: 8px 10px; background: rgba(10, 22, 40, 0.88); border: 1px solid var(--line); border-radius: 8px; font-size: 10.5px; line-height: 1.4; color: var(--text); }
+  .lbl.sheet h4 { margin: 0 0 6px; font: 700 13px/1.2 var(--human); color: var(--text); }
+  .lbl.sheet h4 small { display: block; font: 400 10px/1.4 var(--chain); color: var(--muted); }
+  .lbl.sheet dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+  .lbl.sheet dt { color: var(--phosphor); }
+  .lbl.sheet dd { margin: 0; color: var(--text); }
+  .lbl.sheet dd span { color: var(--muted); }
+  .lbl.sheet dd i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--line); }
+  .lbl.frame .orders { color: var(--phosphor); }
+  .lbl.frame .orders.blocked { color: var(--muted); }
+  .lbl.frame .orders.active { color: var(--orange); }
   .hud { position: fixed; z-index: 2; padding: calc(var(--u) * 2) calc(var(--u) * 3); pointer-events: none; }
   .hud.tl { left: 0; top: 0; }
   .hud.tr { right: 0; top: 0; text-align: right; }

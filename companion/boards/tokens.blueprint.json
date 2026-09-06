@@ -1,0 +1,44 @@
+{
+ "kind": "blueprint",
+ "name": "Design tokens",
+ "source": "design/tokens.json",
+ "date": "2026-09-06",
+ "note": "The reference sheet every mission capsule cites for colour, type and grid. Product mode is every dark or verify surface and the companion; paper mode is the customer-facing custody page.",
+ "sheets": [
+  {
+   "id": "product-colour",
+   "title": "Product · colour",
+   "rows": [
+    { "label": "navy", "value": "#0A1628", "note": "ground, every dark or verify surface" },
+    { "label": "navy-2", "value": "#101F38", "note": "raised surface" },
+    { "label": "navy-line", "value": "#1B2E4D", "note": "hairline" },
+    { "label": "phosphor", "value": "#33FF66", "note": "chain: hashes, sealed, verified, receipts. Never a button." },
+    { "label": "orange", "value": "#FF8C1A", "note": "human: actions, owners, taps, buttons" },
+    { "label": "red", "value": "#FF3B3B", "note": "refusal only. Tamper is orange." },
+    { "label": "text", "value": "#E6EDF7", "note": "human text on navy" }
+   ]
+  },
+  {
+   "id": "type",
+   "title": "Type · scale ×1.333 on 16",
+   "rows": [
+    { "label": "human", "value": "Space Grotesk", "note": "human text" },
+    { "label": "chain", "value": "JetBrains Mono", "note": "chain text: ids, hashes, receipts" },
+    { "label": "-1 · 0 · 1", "value": "12 · 16 · 21.3", "note": "px" },
+    { "label": "2 · 3 · 4", "value": "28.4 · 37.9 · 50.5", "note": "px" },
+    { "label": "5", "value": "67.3", "note": "px, display only" }
+   ]
+  },
+  {
+   "id": "grid",
+   "title": "Grid · 8 px",
+   "rows": [
+    { "label": "unit", "value": "8 px", "note": "every gap and inset is a multiple" },
+    { "label": "panels", "value": "8", "note": "corner radius" },
+    { "label": "controls", "value": "4", "note": "corner radius" },
+    { "label": "chips", "value": "pill", "note": "full radius" },
+    { "label": "paper mode", "value": "second mode", "note": "the physical object; navy/phosphor stays the chain" }
+   ]
+  }
+ ]
+}

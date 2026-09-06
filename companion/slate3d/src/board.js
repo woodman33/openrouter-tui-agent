@@ -12,6 +12,21 @@ const SLOT = {
   result: { x: 2.9, z: 2.2 },
 };
 
+// blueprint sheets stand to the right of the last slab
+export const SHEET = { w: 6.4, h: 4.6, gap: 5.6, z: -1.0 };
+
+export function layoutSheets(blueprints, totalW) {
+  const sheets = [];
+  let x = totalW + SLAB.gap + SHEET.w / 2;
+  for (const bp of blueprints) {
+    for (const s of bp.sheets ?? []) {
+      sheets.push({ ...s, board: bp.name, source: bp.source, x, y: SHEET.h / 2, z: SHEET.z });
+      x += SHEET.w + SHEET.gap;
+    }
+  }
+  return sheets;
+}
+
 export function layoutBoard(board, lanes) {
   const frames = board.frames.map((f, i) => ({
     ...f,

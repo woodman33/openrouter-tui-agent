@@ -9,7 +9,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { layoutBoard, SLAB } from './board.js';
+import { layoutBoard, layoutSheets, SLAB, SHEET } from './board.js';
 import { connectBus, laneOf, classOf } from './bus.js';
 
 const T = {
@@ -165,14 +165,42 @@ function pushTicker(ev, cls, lane) {
 
 // ---------- build the scene from the board ----------
 async function build() {
-  const [board, laneList] = await Promise.all([
+  const [board, laneList, receiptsRes] = await Promise.all([
     fetch(`./boards/${BOARD}.mission.json`).then((r) => r.json()),
     fetch('./lanes.json').then((r) => r.json()).catch(() => []),
+    fetch('./receipts?limit=2000').then((r) => r.json()).catch(() => ({ receipts: [] })),
   ]);
-  document.getElementById('board-name').textContent = `${board.name} · kind ${board.kind} · ${board.frames.length} frames · ${board.nodes.length} nodes`;
+  // blueprint boards the mission cites render as sheets beside the slabs
+  const blueprints = (await Promise.all((board.blueprints ?? []).map((n) => fetch(`./boards/${n}.blueprint.json`).then((r) => r.json()).catch(() => null)))).filter(Boolean);
+
+  // Capsule state from the receipt lifecycle, never from a typed status:
+  // a frame lists the orders that deliver it; each order.execute receipt in
+  // the root store carries the order id in its sources. All sealed = done,
+  // one sealed as blocked = blocked, some sealed = active, none = next. A
+  // frame may name an attestation receipt (the fork attestation) that stands
+  // for orders whose receipts live in the frozen fork store.
+  const receipts = receiptsRes.receipts ?? [];
+  const byId = new Map(receipts.map((r) => [r.id, r]));
+  const orderReceipt = (ordId) => receipts.find((r) => r.subject === 'order.execute' && Array.isArray(r.sources) && r.sources.some((s) => s && s.id === ordId));
+  const statusOf = (f) => {
+    if (!Array.isArray(f.orders) || !f.orders.length) return { status: f.status ?? 'next', sealed: 0, total: 0, why: f.status ? 'declared' : 'no orders listed' };
+    const found = f.orders.map(orderReceipt);
+    const sealed = found.filter(Boolean).length;
+    const total = f.orders.length;
+    if (found.some((r) => r && r.sources.some((s) => s && s.state === 'blocked'))) return { status: 'blocked', sealed, total, why: 'an order was sealed as blocked' };
+    if (sealed === total) return { status: 'done', sealed, total, why: 'every order sealed' };
+    if (f.attested && byId.has(f.attested)) return { status: 'done', sealed, total, attested: f.attested, why: `attested by ${f.attested}` };
+    if (sealed > 0) return { status: 'active', sealed, total, why: 'some orders sealed' };
+    return { status: 'next', sealed, total, why: 'no order sealed yet' };
+  };
+  for (const f of board.frames) { const st = statusOf(f); f.status = st.status; f.state = st; }
+
+  document.getElementById('board-name').textContent = `${board.name} · kind ${board.kind} · ${board.frames.length} frames · ${board.nodes.length} nodes · ${blueprints.length} blueprint${blueprints.length === 1 ? '' : 's'} · state from ${receipts.length} receipts`;
   document.title = `Slate 3D · ${board.name}`;
   lanes = new Set(laneList.map((l) => l.id));
   const L = layoutBoard(board, laneList);
+  const sheets = layoutSheets(blueprints, L.totalW);
+  const spanW = L.totalW + (sheets.length ? SLAB.gap + sheets.length * (SHEET.w + SHEET.gap) : 0);
 
   // floor + grid
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), matFloor);
@@ -185,7 +213,7 @@ async function build() {
   scene.add(grid);
 
   // slabs
-  const STATUS_COLOR = { done: T.phosphor, active: T.orange, next: T.line };
+  const STATUS_COLOR = { done: T.phosphor, active: T.orange, blocked: T.line, next: T.line };
   const slabEdges = [];
   for (const f of L.frames) {
     const slab = new THREE.Mesh(new RoundedBoxGeometry(SLAB.w, SLAB.h, SLAB.d, 2, 0.12), matSlab);
@@ -198,7 +226,10 @@ async function build() {
     edges.position.copy(slab.position);
     scene.add(edges);
     slabEdges.push({ edges, base: edgeColor });
-    const l = label(`${f.title}<small>${f.status ?? ''}${f.paths ? ` · ${f.paths.join(' ')}` : ''}</small>`, 'frame');
+    const st = f.state ?? { total: 0 };
+    const orders = st.total ? `<span class="orders ${f.status}">${st.sealed}/${st.total} orders sealed${st.attested ? ' · attested' : ''}${f.status === 'blocked' ? ' · blocked' : ''}</span> · ` : '';
+    const l = label(`${f.title}<small>${orders}${f.status ?? ''}${f.paths ? ` · ${f.paths.join(' ')}` : ''}</small>`, 'frame');
+    l.element.title = st.why ?? '';
     l.position.set(f.cx, 0.1, f.cz + SLAB.d / 2 + 1.3);
     scene.add(l);
   }
@@ -284,9 +315,26 @@ async function build() {
   railLabel.position.set(L.center.x, 0.2, L.rail[0]?.z - 2.4);
   scene.add(railLabel);
 
-  // frame the whole floor
-  const target = new THREE.Vector3(L.center.x, 0.2, L.center.z + 0.5);
-  const fit = (L.totalW / 2) / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect) * 1.08;
+  // blueprint sheets: flat reference cards standing beside the slabs
+  for (const s of sheets) {
+    const card = new THREE.Mesh(new RoundedBoxGeometry(SHEET.w, SHEET.h, 0.08, 2, 0.06), new THREE.MeshStandardMaterial({ color: T.raised, roughness: 0.85, metalness: 0 }));
+    card.position.set(s.x, s.y + 0.4, s.z);
+    card.rotation.y = -0.3;
+    card.castShadow = true;
+    scene.add(card);
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(SHEET.w, SHEET.h, 0.08)), mkEdge(T.phosphor));
+    edges.position.copy(card.position);
+    edges.rotation.copy(card.rotation);
+    scene.add(edges);
+    const rows = (s.rows ?? []).slice(0, 8).map((r) => `<dt>${r.label}</dt><dd>${/^#[0-9a-f]{6}$/i.test(String(r.value)) ? `<i style="background:${r.value}"></i>` : ''}${r.value}${r.note ? ` <span>· ${r.note}</span>` : ''}</dd>`).join('');
+    const l = label(`<h4>${s.title}<small>blueprint · ${s.board}${s.source ? ` · ${s.source}` : ''}</small></h4><dl>${rows}</dl>`, 'sheet');
+    l.position.set(s.x, s.y + 0.4, s.z + 0.3);
+    scene.add(l);
+  }
+
+  // frame the whole floor, sheets included
+  const target = new THREE.Vector3(spanW / 2, 0.2, L.center.z + 0.5);
+  const fit = (spanW / 2) / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect) * 1.08;
   const dir = new THREE.Vector3(0.3, 0.46, 0.84).normalize();
   camera.position.copy(target).add(dir.multiplyScalar(Math.max(fit, 30)));
   controls.target.copy(target);

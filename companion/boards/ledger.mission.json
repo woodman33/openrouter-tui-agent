@@ -2,7 +2,7 @@
  "kind": "mission",
  "name": "Vault Custody × Timmy · build ledger",
  "date": "2026-09-05",
- "note": "One frame per project in the ORDER OF BUILD. Each project's first deliverable is its capsule node. Compiles through slate-compiler (MissionMapDoc) → DispatchPlans; the board never launches, the controller does.",
+ "note": "One frame per project in the ORDER OF BUILD. Each project's first deliverable is its capsule node. Compiles through slate-compiler (MissionMapDoc) → DispatchPlans; the board never launches, the controller does. Frame state is derived by the viewer from order.execute receipts in the root store (sources.id = order id); frames whose orders were sealed in the frozen fork store name the fork attestation receipt.",
  "frames": [
   {
    "id": "f1",
@@ -11,7 +11,15 @@
    "paths": [
     "vault-custody/**"
    ],
-   "status": "done"
+   "status": "done",
+   "orders": [
+    "ORD-20260905-004",
+    "ORD-20260905-005",
+    "ORD-20260906-008",
+    "ORD-20260906-009",
+    "ORD-20260906-010"
+   ],
+   "attested": "rc_mtpo7mfh_4a0e"
   },
   {
    "id": "f2",
@@ -20,7 +28,11 @@
    "paths": [
     "workers/**"
    ],
-   "status": "done"
+   "status": "done",
+   "orders": [
+    "ORD-20260905-006"
+   ],
+   "attested": "rc_mtpo7mfh_4a0e"
   },
   {
    "id": "f3",
@@ -30,7 +42,11 @@
     "lanes/**",
     "companion/**"
    ],
-   "status": "done"
+   "status": "done",
+   "orders": [
+    "ORD-20260906-017",
+    "ORD-20260906-022"
+   ]
   },
   {
    "id": "f4",
@@ -39,7 +55,10 @@
    "paths": [
     "lanes/**"
    ],
-   "status": "active"
+   "status": "active",
+   "orders": [
+    "ORD-20260906-019"
+   ]
   },
   {
    "id": "f5",
@@ -49,7 +68,11 @@
     "companion/**",
     "workers/**"
    ],
-   "status": "active"
+   "status": "active",
+   "orders": [
+    "ORD-20260906-018",
+    "ORD-20260906-021"
+   ]
   },
   {
    "id": "f6",
@@ -58,7 +81,8 @@
    "paths": [
     "fleet/**"
    ],
-   "status": "next"
+   "status": "next",
+   "orders": []
   }
  ],
  "nodes": [
@@ -390,5 +414,8 @@
    "to": "p3.capsule",
    "kind": "depends"
   }
+ ],
+ "blueprints": [
+  "tokens"
  ]
 }

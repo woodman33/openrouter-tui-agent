@@ -143,7 +143,8 @@ Acceptance for the first render
 1. seal this record as `slate.design` (done, rc_mtprtkya_5omr)
 2. build the bundle, extend the companion server and page, render, seal `slate.render` (done, rc_mtpsp5eb_qcsp)
 3. `SlateRoom` in the preview worker + the bus bridge, then the two-browser check (done, `slate.room` sealed; both viewers saw the same history and one live event)
-4. blueprint boards as sheets; capsule state from the receipt lifecycle (next)
+4. blueprint boards as sheets; capsule state from the receipt lifecycle (done: `tokens.blueprint.json` renders as three sheets beside the slabs; frame state is derived from `order.execute` receipts through `GET /slate3d/receipts`, with the fork attestation standing for orders sealed in the frozen fork store)
+5. next: the WebSocket room source in the viewer, capsule-level (not frame-level) receipts, more blueprints (doctrine, architecture)
 
 ## Found while building
 

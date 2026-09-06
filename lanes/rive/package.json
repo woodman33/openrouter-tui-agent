@@ -1,0 +1,10 @@
+{
+  "name": "@timmy/lane-rive",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Rive lane: fetch the Badge .riv from the share, verify it on the runtime the site uses, place it, seal it",
+  "dependencies": {
+    "@rive-app/canvas-advanced": "2.42.0"
+  }
+}

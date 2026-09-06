@@ -140,6 +140,27 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
   app.use('/slate3d/boards', express.static(boardsDir));
   app.use('/slate3d', express.static(slateDist));
 
+  // Receipts for Slate 3D capsule state: receipt records (never the event
+  // envelopes) from the pinned root store, filtered by subject, newest first,
+  // with their sources (the seal metadata, e.g. an order id). Read-only.
+  app.get('/slate3d/receipts', (req, res) => {
+    const subject = String(req.query.subject ?? '');
+    const limit = Math.min(2000, Math.max(1, Number(req.query.limit ?? 400)));
+    const store = path.join(busRoot, '.timmy', 'receipts', 'runs.jsonl');
+    const receipts: any[] = [];
+    try {
+      const lines = fs.readFileSync(store, 'utf8').split('\n').filter(Boolean);
+      for (let i = lines.length - 1; i >= 0 && receipts.length < limit; i--) {
+        let o: any;
+        try { o = JSON.parse(lines[i]); } catch { continue; }
+        if (!o || !o.id || !o.hash) continue;
+        if (subject && o.subject !== subject) continue;
+        receipts.push({ id: o.id, ts: o.ts, subject: o.subject, kind: o.kind, epoch: o.epoch ?? null, sources: o.sources ?? null });
+      }
+    } catch { /* no store yet */ }
+    res.json({ ok: true, subject, count: receipts.length, receipts });
+  });
+
   // Serve Clerk publishable key dynamically
   app.get('/api/clerk-config', (_req, res) => {
     res.json({
