@@ -75,8 +75,45 @@ const canon = (o: Record<string, unknown>): string =>
 export const hashOf = (o: Record<string, unknown>): string =>
   'sha256_' + crypto.createHash('sha256').update(canon(o)).digest('hex');
 
-export function receiptsDir(dir: string = process.cwd()): string {
+// STORE PIN (v10 fork fix): seals resolve to ONE canonical store regardless
+// of cwd. Resolution order: nearest ancestor .timmy/store-pin -> nearest
+// ancestor package.json's .timmy/receipts -> legacy cwd. The pin is committed,
+// so every checkout (including worktrees) resolves to the same store.
+export function rootStoreDir(dir: string = process.cwd()): string | undefined {
+  // Pass 1: a store-pin anywhere above cwd wins (sub-project package.json
+  // files must NOT shadow the canonical store — that's how the v10 fork happened).
+  let d = dir;
+  for (;;) {
+    const pin = join(d, '.timmy', 'store-pin');
+    if (existsSync(pin)) return readFileSync(pin, 'utf8').trim();
+    const p = dirname(d);
+    if (p === d) break;
+    d = p;
+  }
+  // Pass 2: legacy fallback — nearest package.json's store.
+  d = dir;
+  for (;;) {
+    if (existsSync(join(d, 'package.json'))) return join(d, '.timmy', 'receipts');
+    const p = dirname(d);
+    if (p === d) return undefined;
+    d = p;
+  }
+}
+
+// Preflight: pin the store at a repo root that has no pin yet (fresh clone or
+// a checkout that lost it). Idempotent; never overwrites an existing pin.
+export function ensureStorePin(dir: string = process.cwd()): string | undefined {
+  const found = rootStoreDir(dir);
+  if (found) return found;
+  if (!existsSync(join(dir, 'package.json'))) return undefined;
+  const pin = join(dir, '.timmy', 'store-pin');
+  mkdirSync(dirname(pin), { recursive: true });
+  writeFileSync(pin, join(dir, '.timmy', 'receipts'));
   return join(dir, '.timmy', 'receipts');
+}
+
+export function receiptsDir(dir: string = process.cwd()): string {
+  return rootStoreDir(dir) ?? join(dir, '.timmy', 'receipts');
 }
 
 export function receiptsPath(stream: string, dir?: string): string {
