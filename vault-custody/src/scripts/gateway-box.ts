@@ -59,10 +59,7 @@ export function mountGatewayBox(canvas: HTMLCanvasElement): () => void {
   const side = new THREE.MeshStandardMaterial({ color: NAVY2, roughness: 0.85, metalness: 0.05 });
   const front = new THREE.MeshStandardMaterial({ map: panel(['SERIES 001', '2026 HOBBY BOX', 'VC0007 · SEALED']), roughness: 0.8 });
   const topTex = panel(['EVERY BOX A 1/1', 'VAULT CUSTODY × TIMMY', 'trust the receipt, not the model'], 1024, 700, '#33FF66');
-  // The +Y face's UVs run away from the camera: mirror horizontally so the lid reads left→right from the front.
-  topTex.wrapS = THREE.RepeatWrapping;
-  topTex.repeat.set(-1, 1);
-  topTex.offset.set(1, 0);
+  // BoxGeometry's +Y face already reads upright from the camera's side; leave the UVs alone.
   const top = new THREE.MeshStandardMaterial({ map: topTex, roughness: 0.8 });
   const box = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), [side, side, top, side, front, side]);
   const group = new THREE.Group();
