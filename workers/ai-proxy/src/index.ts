@@ -12,6 +12,7 @@
 import { DynamicWorkerExecutor } from '@cloudflare/codemode';
 import { z } from 'zod';
 import { HttpError, runCode, type CodeRequest, type Executor } from './code.js';
+import { computeDailyHead, readLatestHead, writeDailyHead } from './head.js';
 import { type Env, edgeTools, toolTypes } from './tools.js';
 
 let windowStart = 0;
@@ -24,13 +25,29 @@ export default {
     const url = new URL(req.url);
 
     if (url.pathname === '/health') {
-      return json({ ok: true, worker: 'timmy-ai-proxy', auth: true, code_mode: !!env.LOADER, tools: edgeTools().map((t) => t.name) });
+      return json({ ok: true, worker: 'timmy-ai-proxy', auth: true, code_mode: !!env.LOADER, daily_head: !!env.CUSTODY_KV, tools: edgeTools().map((t) => t.name) });
+    }
+
+    // Public: the daily edge chain head (anyone can recompute the chains from the public log).
+    if (url.pathname === '/head' && req.method === 'GET') {
+      if (!env.CUSTODY_KV) return json({ ok: false, error: 'no CUSTODY_KV on this deployment' }, 503);
+      const head = await readLatestHead(env.CUSTODY_KV);
+      if (!head) return json({ ok: false, error: 'no head yet; the daily cron has not run' }, 404);
+      return json(head);
     }
 
     // Caller auth on everything else.
     const want = `Bearer ${env.TIMMY_EDGE_TOKEN ?? ''}`;
     if (!env.TIMMY_EDGE_TOKEN || (req.headers.get('Authorization') ?? '') !== want) {
       return json({ ok: false, error: 'unauthorized' }, 401);
+    }
+
+    // Ops: compute + publish today's head now (same code path as the daily cron).
+    if (url.pathname === '/head/compute' && req.method === 'POST') {
+      if (!env.CUSTODY_KV) return json({ ok: false, error: 'no CUSTODY_KV on this deployment' }, 503);
+      const head = await computeDailyHead(env.CUSTODY_KV);
+      await writeDailyHead(env.CUSTODY_KV, head);
+      return json({ ok: true, head });
     }
 
     if (url.pathname === '/code/tools' && req.method === 'GET') {
@@ -100,6 +117,18 @@ export default {
       return new Response(r.body, { status: r.status, headers: { 'Content-Type': 'application/json' } });
     }
 
-    return json({ ok: false, error: 'not found; routes: /health /models /chat /code /code/tools' }, 404);
+    return json({ ok: false, error: 'not found; routes: /health /head /models /chat /code /code/tools' }, 404);
+  },
+
+  // Daily cron (wrangler.toml [triggers]): walk every chain, publish the head.
+  async scheduled(_event: { scheduledTime: number }, env: Env, ctx: { waitUntil(p: Promise<unknown>): void }): Promise<void> {
+    if (!env.CUSTODY_KV) return;
+    const kv = env.CUSTODY_KV;
+    ctx.waitUntil(
+      (async () => {
+        const head = await computeDailyHead(kv);
+        await writeDailyHead(kv, head);
+      })()
+    );
   }
 };

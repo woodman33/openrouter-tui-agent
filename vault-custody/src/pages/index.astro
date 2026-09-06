@@ -1,48 +1,101 @@
 ---
-// Demo index: the six pages plus the real tap URLs (NXP AN12196 vectors).
-import Paper from '../layouts/Paper.astro';
-import { tapUrl } from '../lib/url';
-import { series } from '../lib/registry';
+// GATEWAY. The sealed box, then six hats. Hats, not accounts.
+import Product from '../layouts/Product.astro';
+import PitchNav from '../components/PitchNav.astro';
+import { HAT_ORDER, HAT_SHAPE, hats } from '../lib/hats';
 
-const base = Astro.url.origin;
-const sun1 = tapUrl(base, { mode: 'encrypted', e: 'EF963FF7828658A599F3041510671E88', c: '94EED9EE65337086', tt: 'CC' });
-const sun1broken = tapUrl(base, { mode: 'encrypted', e: 'EF963FF7828658A599F3041510671E88', c: '94EED9EE65337086', tt: 'OC' });
-const plain = tapUrl(base, { mode: 'plain', u: '041E3C8A2D6B80', n: '000006', c: '4B00064004B0B3D3' });
-const badMac = tapUrl(base, { mode: 'encrypted', e: 'EF963FF7828658A599F3041510671E88', c: '94EED9EE65337087' });
-const s = series['001'];
+const tapUrl = 'https://preview.vault-custody.pages.dev/t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086&tt=CC';
 ---
 
-<Paper title="Vault Custody × Timmy" right="pilot · Series 001">
-  <h1>Every box a 1/1.</h1>
-  <p class="sub">A receipt every box carries with it, and any phone can read. This is the pilot site: six pages and the tap route.</p>
+<Product title="Gateway" brand="VAULT CUSTODY × TIMMY" right="Series 001 · pilot · preview">
+  <PitchNav current="/" />
 
-  <section class="panel">
-    <h2>The pages</h2>
-    <ul class="tl">
-      <li><div><a href="/r/VC0001">Receipt, sealed</a></div><div class="m">Box VC0001 · Paradise counter-seal</div></li>
-      <li class="opened"><div><a href="/r/VC0007">Receipt, opened</a></div><div class="m">Box VC0007 · seal loop broken, 24 packs, 312 cards</div></li>
-      <li><div><a href="/c/VC0007-17-03">Card</a></div><div class="m">Rookie Autograph 14/99 · custody-verified</div></li>
-      <li><div><a href="/relic/VC2210-08-01">Relic</a></div><div class="m">Jersey swatch · game-tied</div></li>
-      <li><div><a href="/m">Manufacturer view</a></div><div class="m">Where the boxes went</div></li>
-      <li><div><a href="/log">Timmy log</a></div><div class="m">The custody lane, epoch 903</div></li>
-      <li><div><a href={`/s/${s.id}`}>Series 001</a></div><div class="m">Published hashes and the chain head</div></li>
+  <section class="hero">
+    <canvas id="box" class="box" aria-label="A sealed hobby box with a glowing custody band, rotating"></canvas>
+    <div class="copy">
+      <h1>Every box a 1/1.</h1>
+      <p class="sub">A receipt every box carries with it, and any phone can read. The seal signs every tap. The band remembers the break. The chain is public.</p>
+      <div class="ctas">
+        <a class="btn" href="#hats">Pick a hat</a>
+        <a class="btn ghost" href="#tap">Tap this</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="hats" class="hats">
+    <h2>Six hats.</h2>
+    <p class="sub">Hats, not accounts. One account may hold several; every chain event stamps its hat.</p>
+    <ul class="grid">
+      {HAT_ORDER.map((id) => {
+        const h = hats[id];
+        return (
+          <li class="hat">
+            <span class:list={['mark', HAT_SHAPE[id]]} aria-hidden="true"></span>
+            <h3>{h.label}</h3>
+            <p class="verb">{h.verb}.</p>
+            <p class="blurb">{h.blurb}</p>
+            <p class="who"><span class="chain-dim">{h.identity.hash}</span> · {h.identity.city}</p>
+            <a class="enter" href={`/hat/${id}`}>Enter as {h.label} →</a>
+          </li>
+        );
+      })}
     </ul>
   </section>
 
-  <section class="panel">
-    <h2>Real tap URLs</h2>
-    <p class="m">These are NXP's published AN12196 test vectors, mapped to pilot boxes. The first tap of each verifies and seals a receipt; tapping the same link again is a replay and is refused. Keys are the factory-default zero keys, demo only.</p>
-    <ul class="tl">
-      <li><div><a class="chain" href={sun1}>/t · encrypted mirror · VC0007 · loop intact</a></div><div class="m">e=EF96…1E88 · c=94EE…7086 · counter 61</div></li>
-      <li class="opened"><div><a class="chain" href={sun1broken}>/t · encrypted mirror · VC0007 · loop broken (tt=OC)</a></div><div class="m">same tag, TagTamper reports a stored break</div></li>
-      <li><div><a class="chain" href={plain}>/t · plaintext mirror · VC0003</a></div><div class="m">u=041E…6B80 · n=000006</div></li>
-      <li class="pack"><div><a class="chain" href={badMac}>/t · corrupted signature</a></div><div class="m">lands on the refusal page</div></li>
-    </ul>
+  <section id="tap" class="tap">
+    <div class="qr">
+      <img src="/qr/an12196-tap.png" width="320" height="320" alt="QR code: tap this to open the AN12196 test-vector address on the live edge" />
+    </div>
+    <div>
+      <h2>Tap this.</h2>
+      <p class="sub">This is NXP's published AN12196 test vector, mapped to box VC0007. It opens the real <span class="chain">/t</span> address on the live edge: the signature verifies, a <span class="chain">custody.tap</span> receipt seals, and the phone lands on the receipt page.</p>
+      <p class="url chain">{tapUrl}</p>
+      <p class="muted">Published vectors are fixed addresses, so this one is a demo tag: recorded, never refused as replay. A production tag writes a new address on every tap, and the old one is refused.</p>
+      <a class="btn" href={tapUrl}>Open the tap address</a>
+    </div>
   </section>
 
-  <p slot="foot">Trust the receipt, not the model.</p>
-</Paper>
+  <section class="more">
+    <a href="/demo">The six pages</a> · <a href="/s/001">Series 001</a> · <a href="/log">Custody lane</a> · <a href="/api/head">Daily head</a>
+  </section>
+
+  <script>
+    import { mountGatewayBox } from '../scripts/gateway-box';
+    const c = document.getElementById('box') as HTMLCanvasElement | null;
+    if (c) mountGatewayBox(c);
+  </script>
+</Product>
 
 <style>
-  .m a, a.chain { word-break: break-all; }
+  .hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 32px; align-items: center; margin: 16px 0 56px; }
+  .box { width: 100%; height: 480px; display: block; border-radius: 8px; background: radial-gradient(ellipse at 50% 60%, #101f38 0%, var(--navy) 70%); }
+  .hero h1 { font-size: clamp(40px, 5vw, 64px); line-height: 1; margin: 0 0 12px; }
+  .hero .sub { max-width: 44ch; font-size: 18px; }
+  .ctas { display: flex; gap: 12px; }
+  .btn { display: inline-block; background: var(--orange); color: var(--navy); font-family: var(--font-human); font-weight: 700; padding: 12px 20px; border-radius: 4px; text-decoration: none; }
+  .btn.ghost { background: transparent; color: var(--orange); border: 1px solid var(--orange); }
+  .hats h2, .tap h2 { font-family: var(--font-human); font-size: 32px; margin: 0 0 6px; }
+  .hats .sub { margin-bottom: 24px; }
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .hat { background: var(--navy-2); border: 1px solid var(--navy-line); border-radius: 8px; padding: 20px 20px 18px; display: grid; gap: 6px; font-family: var(--font-human); }
+  .hat h3 { margin: 0; font-size: 20px; }
+  .hat .verb { margin: 0; color: var(--orange); }
+  .hat .blurb { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.45; min-height: 3.6em; }
+  .hat .who { margin: 4px 0 0; font-family: var(--font-chain); font-size: 12px; color: var(--text-muted); }
+  .hat .enter { color: var(--orange); text-decoration: none; margin-top: 6px; }
+  .mark { width: 18px; height: 18px; display: inline-block; background: var(--orange); }
+  .mark.circle { border-radius: 50%; }
+  .mark.square { border-radius: 2px; }
+  .mark.diamond { transform: rotate(45deg) scale(0.85); }
+  .mark.triangle { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .mark.hexagon { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
+  .mark.ring { border-radius: 50%; background: transparent; border: 4px solid var(--orange); box-sizing: border-box; }
+  .tap { display: grid; grid-template-columns: 340px 1fr; gap: 32px; align-items: start; margin: 64px 0; background: var(--navy-2); border: 1px solid var(--navy-line); border-radius: 8px; padding: 24px; }
+  .qr img { display: block; width: 320px; height: 320px; border-radius: 4px; }
+  .url { word-break: break-all; font-size: 13px; }
+  .tap .btn { margin-top: 8px; }
+  .more { color: var(--text-2); font-family: var(--font-human); }
+  @media (max-width: 900px) { .hero, .tap { grid-template-columns: 1fr; } .box { height: 340px; } }
 </style>

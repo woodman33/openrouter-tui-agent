@@ -1,0 +1,63 @@
+---
+// Inventory sheets: locations / boxes / singles. One column set, filtered by hat.
+import Product from '../../layouts/Product.astro';
+import PitchNav from '../../components/PitchNav.astro';
+import { hats, isHat, rowsFor, SHEETS, type SheetId } from '../../lib/hats';
+
+export const prerender = false;
+
+const sheetId = Astro.params.sheet as SheetId;
+if (!SHEETS.includes(sheetId)) return new Response(null, { status: 404 });
+const hatId = Astro.cookies.get('vc_hat')?.value;
+if (!isHat(hatId)) return Astro.redirect('/#hats', 302);
+const h = hats[hatId];
+const rows = rowsFor(sheetId, hatId);
+const COLS = ['serial', 'thumbnail', 'product', 'manufactured', 'received', 'sold', 'counterparty', 'price', 'state', 'tamper', 'taps', 'chain head', 'verify'];
+---
+
+<Product title={`${h.label} · ${sheetId}`} brand="VAULT CUSTODY × TIMMY" right={`${h.label} · ${h.identity.city}`}>
+  <PitchNav current={`/me/${sheetId}`} />
+  <section class="wrap">
+    <h1 class="cap">{sheetId}</h1>
+    <p class="sub">{rows.length} rows this hat can see. Counterparty = hash + city + hat, never a name. Price only where disclosed.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>{COLS.map((c) => <th>{c}</th>)}</tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <td class="chain">{r.serial}</td>
+              <td><img class="thumb" src={r.thumb} alt="" width="56" height="56" loading="lazy" /></td>
+              <td class="human">{r.product}</td>
+              <td>{r.manufactured}</td>
+              <td>{r.received}</td>
+              <td>{r.sold}</td>
+              <td><span class="chain-dim">{r.counterparty.hash}</span> · {r.counterparty.city} · <span class="who">{r.counterparty.hat}</span></td>
+              <td class="human">{r.price}</td>
+              <td><span class="state">{r.state}</span></td>
+              <td class:list={[{ who: /broken/i.test(r.tamper) }]}>{r.tamper}</td>
+              <td>{r.taps}</td>
+              <td class="chain">{r.head}</td>
+              <td><a href={r.verify}>verify ↗</a></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small">Illustrative pilot data seeded from VC0007 and Series 001. Every row's chain head is the last receipt hash the hat can read.</p>
+  </section>
+</Product>
+
+<style>
+  .wrap { font-family: var(--font-human); }
+  .cap { text-transform: capitalize; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--navy-line); border-radius: 8px; background: var(--navy-2); }
+  table { border-collapse: collapse; width: 100%; min-width: 1500px; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--navy-line); vertical-align: middle; white-space: nowrap; }
+  th { color: var(--text-muted); font-family: var(--font-chain); font-weight: 500; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+  tr:last-child td { border-bottom: 0; }
+  td.chain, td .chain-dim { font-family: var(--font-chain); }
+  .thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 4px; display: block; }
+  .state { display: inline-block; border: 1px solid var(--navy-line); border-radius: 999px; padding: 2px 10px; color: var(--text-2); }
+  .small { font-size: 13px; }
+</style>

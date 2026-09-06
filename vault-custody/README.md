@@ -40,7 +40,9 @@ The fixtures map NXP's published AN12196 test vectors to pilot boxes, with the f
 /t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337087         → refused: bad_cmac
 ```
 
-Each verifies once; the second tap of the same address is a replay and is refused (when `CUSTODY_KV` is bound; stateless deployments report `replay_checked: false` in the receipt).
+These four registry entries are marked `demo: true`: their addresses are fixed by nature (a published vector, a printed QR), so every tap is recorded but never refused as replay, and the receipt says `replay: "demo-vector"`. Production tags never carry `demo`: the second tap of the same address is refused as replay when `CUSTODY_KV` is bound, and stateless deployments report `replay_checked: false` in the receipt.
+
+The daily head: the timmy-ai-proxy cron walks every chain in `CUSTODY_KV` at 09:05 UTC and publishes `head:<date>` at `/api/head` (and `/head` on the worker). The local anchor job in `../lanes/anchor` pulls it and seals `chain.anchor` into the Timmy root chain every morning. The edge never writes to the root chain.
 
 ## Run, test, deploy
 

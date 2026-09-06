@@ -7,6 +7,10 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "deploy:preview": "wrangler deploy --name timmy-ai-proxy-preview",
+    "secret:preview": "wrangler secret put",
+    "delete:preview": "wrangler delete --name timmy-ai-proxy-preview --force",
+    "dev:local": "wrangler dev --port 8799",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { handleTap } from '../src/lib/tap.js';
 import { MemoryStore } from '../src/lib/store.js';
 import { verifyCustodyChain } from '../src/lib/chain.js';
+import { computeSdmMac, counterLE, hex, sessionMacKey } from '../src/lib/sun.js';
 
 // AN12196 sun1 vector → registry maps its UID to box VC0007 with lastCounter 60,
 // so the published vector (counter 61) is a fresh tap exactly once.
@@ -26,14 +27,32 @@ describe('handleTap', () => {
     expect((await verifyCustodyChain(chain)).ok).toBe(true);
   });
 
-  it('refuses the same URL a second time (replay)', async () => {
+  it('refuses the same URL a second time for a production tag (replay)', async () => {
+    // A registered, non-demo bench tag: build its plaintext-mirror URL with our own
+    // primitives (zero keys), tap once, then tap the same address again.
+    const uid = hex.from('04c1a2b3c4d5e6');
+    const k = await sessionMacKey(hex.from('00000000000000000000000000000000'), uid, counterLE(1));
+    const cmac = hex.to(await computeSdmMac(k, new Uint8Array(0)));
+    const q = `u=04C1A2B3C4D5E6&n=000001&c=${cmac}`;
     const store = new MemoryStore();
-    expect((await handleTap(new URLSearchParams(SUN1), { store })).ok).toBe(true);
-    const again = await handleTap(new URLSearchParams(SUN1), { store });
+    const first = await handleTap(new URLSearchParams(q), { store });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.serial).toBe('VC0001');
+    const again = await handleTap(new URLSearchParams(q), { store });
     expect(again.ok).toBe(false);
     if (again.ok) return;
     expect(again.reason).toBe('replay');
     expect(again.redirect).toMatch(/^\/verify\?refused=replay/);
+  });
+
+  it('records but never refuses the published demo vector (fixed URL on the deck and the QR)', async () => {
+    const store = new MemoryStore();
+    const first = await handleTap(new URLSearchParams(SUN1), { store });
+    const again = await handleTap(new URLSearchParams(SUN1), { store });
+    expect(first.ok && again.ok).toBe(true);
+    const chain = await store.getChain('VC0007');
+    expect(chain.map((r) => r.data.replay)).toEqual(['fresh', 'demo-vector']);
   });
 
   it('refuses a corrupted CMAC', async () => {

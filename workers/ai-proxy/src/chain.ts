@@ -34,7 +34,7 @@ export async function sha256Hex(input: string | Uint8Array): Promise<string> {
 }
 
 export const hashOf = (o: Record<string, unknown>): Promise<string> => sha256Hex(canon(o));
-export const genesisOf = (subject: string): Promise<string> => sha256Hex(`timmy-edge:genesis:${subject}`);
+export const genesisOf = (subject: string): Promise<string> => sha256Hex(`vault-custody:genesis:${subject}`);
 
 const newId = (): string => `ec_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
 

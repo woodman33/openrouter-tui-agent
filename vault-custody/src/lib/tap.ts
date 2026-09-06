@@ -57,11 +57,15 @@ export async function handleTap(search: URLSearchParams, deps: TapDeps): Promise
 
   // 2. Replay: the counter must move forward. The tag increments it on every
   //    read, so an old URL (a screenshot, a copy) fails here.
+  //    Demo tags (the published AN12196 vectors on the deck and the QR) are
+  //    fixed URLs by nature, so they record the tap but are never refused as
+  //    replay; the receipt says so. Production tags never carry `demo`.
   const last = (await deps.store.getLastCounter(r.uid)) ?? tag.lastCounter;
-  if (r.readCounter <= last) {
+  const replayed = r.readCounter <= last;
+  if (replayed && !tag.demo) {
     return { ok: false, reason: 'replay', uid: r.uid, counter: r.readCounter, redirect: refusal('replay', `counter ${r.readCounter} already seen (last ${last})`) };
   }
-  await deps.store.setLastCounter(r.uid, r.readCounter);
+  if (!replayed) await deps.store.setLastCounter(r.uid, r.readCounter);
 
   // 3. Seal the tap into the unit's chain.
   const chain = await deps.store.getChain(tag.serial);
@@ -77,7 +81,8 @@ export async function handleTap(search: URLSearchParams, deps: TapDeps): Promise
       sig: 'valid',
       tt: r.tagTamper?.raw ?? null,
       loop: r.tagTamper ? (r.tagTamper.permanent === 'open' ? 'broken' : 'intact') : 'unreported',
-      replay_checked: deps.store.persistent
+      replay_checked: deps.store.persistent,
+      replay: replayed ? 'demo-vector' : 'fresh'
     }
   });
   await deps.store.putChain(tag.serial, chain);

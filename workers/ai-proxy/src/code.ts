@@ -136,12 +136,9 @@ export async function runCode(req: CodeRequest, env: Env, deps: CodeDeps): Promi
     approval_present: !!req.approval
   };
   const receipt = await appendEdgeReceipt(chain, { kind: 'code.run', subject: runId, data });
-  if (env.RECEIPTS) {
-    const prev = await env.RECEIPTS.get('chain:code');
-    const all = prev ? (JSON.parse(prev) as EdgeReceipt[]) : [];
-    all.push(...chain);
-    await env.RECEIPTS.put('chain:code', JSON.stringify(all));
-  }
+  // One chain per run (subject = run id), so every stored chain verifies from
+  // its own genesis and the daily head lists each run as its own subject.
+  if (env.CUSTODY_KV) await env.CUSTODY_KV.put(`chain:code:${runId}`, JSON.stringify(chain));
   return { ok: !res.error, run_id: runId, result: res.result, error: res.error, logs: res.logs, script, tool_calls: calls, receipt, chain };
 }
 

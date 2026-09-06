@@ -38,6 +38,8 @@ export interface TagRecord {
   batch: string;
   keyset: string;
   lastCounter: number;
+  /** Published test-vector tag: fixed URL, recorded but never refused as replay. */
+  demo?: boolean;
 }
 
 export const EPOCH: number = unitsJson.epoch;

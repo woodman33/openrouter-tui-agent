@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Daily edge-chain → root-chain anchor. The worker cron publishes the head at
+       09:05 UTC; this runs at 09:30 local and seals chain.anchor into the root chain.
+       Install: launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.timmy.anchor.plist
+       Remove:  launchctl bootout   gui/$(id -u)/dev.timmy.anchor -->
+  <key>Label</key>
+  <string>dev.timmy.anchor</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/node</string>
+    <string>/Users/williammeldman/Desktop/Code-Projects/timmy-tui/.claude/worktrees/vault-custody/lanes/anchor/anchor-edge-head.mjs</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>CUSTODY_HEAD_URL</key>
+    <string>https://preview.vault-custody.pages.dev/api/head</string>
+    <key>TIMMY_REPO</key>
+    <string>/Users/williammeldman/Desktop/Code-Projects/timmy-tui</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>9</integer>
+    <key>Minute</key>
+    <integer>30</integer>
+  </dict>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>StandardOutPath</key>
+  <string>/Users/williammeldman/Desktop/Code-Projects/timmy-tui/.timmy/anchor.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/williammeldman/Desktop/Code-Projects/timmy-tui/.timmy/anchor.stderr.log</string>
+</dict>
+</plist>

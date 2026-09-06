@@ -1,0 +1,60 @@
+{
+  "_note": "Hats, not accounts. One account may hold several; every chain event stamps its hat. Sessions here are SEEDED stubs (no real auth yet): signing in as a hat sets vc_hat + vc_session cookies to these ids. Identities are hashed on chain; only the owner sees their own name.",
+  "order": ["manufacturer", "distributor", "retailer", "collector", "seller", "grader"],
+  "hats": {
+    "manufacturer": {
+      "id": "manufacturer",
+      "label": "Manufacturer",
+      "verb": "Made it",
+      "blurb": "Sees the product after the loading dock for the first time: which store sold which box, when it opened, where the hits landed.",
+      "identity": { "hash": "a71c04e9", "city": "Duryea, PA", "name": "Series 001 plant" },
+      "session": "sess_mfr_series001",
+      "home": "/me/boxes"
+    },
+    "distributor": {
+      "id": "distributor",
+      "label": "Distributor",
+      "verb": "Moved it",
+      "blurb": "Pallets, lanes, regions. Tamper before sale is traced to a shipment, not a rumor.",
+      "identity": { "hash": "5d3e9b20", "city": "Reno, NV", "name": "Distributor B · region 4" },
+      "session": "sess_dist_region4",
+      "home": "/me/boxes"
+    },
+    "retailer": {
+      "id": "retailer",
+      "label": "Retailer",
+      "verb": "Sealed and sold it",
+      "blurb": "Counter-seal in under a minute. Every box leaves verifiable; a returned box with a broken seal is an opened box.",
+      "identity": { "hash": "2ad8f61c", "city": "Las Vegas, NV", "name": "Paradise Card Breaks" },
+      "session": "sess_ret_paradise",
+      "home": "/me/boxes"
+    },
+    "collector": {
+      "id": "collector",
+      "label": "Collector",
+      "verb": "Claimed and opened it",
+      "blurb": "One tap claims the box. Every pack and every card attaches to the chain as it comes out.",
+      "identity": { "hash": "0f6c2d81", "city": "Henderson, NV", "name": "W. M." },
+      "session": "sess_col_wm",
+      "home": "/me/singles"
+    },
+    "seller": {
+      "id": "seller",
+      "label": "Seller",
+      "verb": "Resold it with the chain attached",
+      "blurb": "Tap-to-list: the listing's proof is the chain. A counterfeit has no chain to show.",
+      "identity": { "hash": "e3c8d012", "city": "Phoenix, AZ", "name": "J. R." },
+      "session": "sess_sel_jr",
+      "home": "/me/singles"
+    },
+    "grader": {
+      "id": "grader",
+      "label": "Grader",
+      "verb": "Verified it at intake",
+      "blurb": "Intake compares the scan to the unboxing fingerprint: same card, no trim, before the slab.",
+      "identity": { "hash": "91b0f7aa", "city": "Santa Ana, CA", "name": "Grader intake" },
+      "session": "sess_grd_intake",
+      "home": "/me/singles"
+    }
+  }
+}

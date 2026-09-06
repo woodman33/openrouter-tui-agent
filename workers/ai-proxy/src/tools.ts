@@ -13,7 +13,7 @@ export interface Env {
   RATE_LIMIT_PER_MIN?: string;
   CUSTODY_BASE_URL?: string;
   LOADER?: unknown;
-  RECEIPTS?: { get(k: string): Promise<string | null>; put(k: string, v: string): Promise<void> };
+  CUSTODY_KV?: import("./head.js").KVLike;
 }
 
 export interface ToolCall {

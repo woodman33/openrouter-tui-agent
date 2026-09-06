@@ -1,0 +1,58 @@
+---
+// Profile: the hat you wear, the identity the chain sees, the three sheets.
+import Product from '../layouts/Product.astro';
+import PitchNav from '../components/PitchNav.astro';
+import { HAT_ORDER, HAT_SHAPE, hats, isHat, rowsFor, SHEETS } from '../lib/hats';
+
+export const prerender = false;
+
+const hatId = Astro.cookies.get('vc_hat')?.value;
+if (!isHat(hatId)) return Astro.redirect('/#hats', 302);
+const h = hats[hatId];
+const session = Astro.cookies.get('vc_session')?.value ?? '—';
+const counts = Object.fromEntries(SHEETS.map((s) => [s, rowsFor(s, hatId).length]));
+---
+
+<Product title={`${h.label} · profile`} brand="VAULT CUSTODY × TIMMY" right={`${h.label} · ${h.identity.city}`}>
+  <PitchNav current="/me" />
+  <section class="wrap">
+    <span class:list={['mark', HAT_SHAPE[hatId]]} aria-hidden="true"></span>
+    <h1>{h.identity.name}</h1>
+    <p class="sub">Wearing the <span class="who">{h.label}</span> hat. {h.verb}.</p>
+    <div class="cols">
+      <div class="card">
+        <dl class="kv">
+          <dt>on chain as</dt><dd><span class="chain">{h.identity.hash}</span> · {h.identity.city} · {h.label}</dd>
+          <dt>session</dt><dd class="chain-dim">{session}</dd>
+          <dt>stamps</dt><dd>every event this hat writes carries <span class="chain">hat={hatId}</span></dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h2>Inventory</h2>
+        <ul class="sheets">
+          {SHEETS.map((s) => (
+            <li><a href={`/me/${s}`}>{s}</a> <span class="muted">{counts[s]} rows</span></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+    <p class="others">One account may hold several hats. Switch: {HAT_ORDER.filter((x) => x !== hatId).map((x) => <a href={`/signin?hat=${x}`}>{hats[x].label}</a>)}</p>
+  </section>
+</Product>
+
+<style>
+  .wrap { font-family: var(--font-human); }
+  .mark { width: 22px; height: 22px; display: inline-block; background: var(--orange); margin-bottom: 8px; }
+  .mark.circle { border-radius: 50%; }
+  .mark.square { border-radius: 2px; }
+  .mark.diamond { transform: rotate(45deg) scale(0.85); }
+  .mark.triangle { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .mark.hexagon { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
+  .mark.ring { border-radius: 50%; background: transparent; border: 5px solid var(--orange); box-sizing: border-box; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; max-width: 1100px; }
+  .card { max-width: none; }
+  .card h2 { margin: 0 0 10px; font-size: 16px; }
+  .sheets { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; text-transform: capitalize; }
+  .sheets a { font-size: 18px; }
+  .others { margin-top: 24px; color: var(--text-2); display: flex; gap: 14px; flex-wrap: wrap; }
+</style>
