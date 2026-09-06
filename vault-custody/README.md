@@ -55,6 +55,10 @@ npm run preview   # wrangler pages dev on the build
 
 Bindings (all optional, see `wrangler.jsonc`): `CUSTODY_KV` for replay + chains, `CUSTODY_KEYS` (secret) for per-batch keys, `TIMMY_EDGE_URL` + `TIMMY_EDGE_TOKEN` to mirror every tap as an event on the Timmy run store. Deploy is the owner's word: `npx wrangler pages deploy dist`.
 
+## Rive badge (state transitions)
+
+The provenance page loads `/rive/badges.riv` when it exists and falls back to a CSS badge otherwise. The artboard lives in the Rive file open on the desktop: artboard **Badge** (240 × 72), view model **BadgeVM** with a number `state` (0 sealed, 1 opened, 2 verified), state machine **State** whose three any-state transitions crossfade the SEALED / OPENED / VERIFIED pills. The bridge cannot export: select the Badge artboard in Rive → Export → Download for runtime → save as `public/rive/badges.riv`, rebuild, deploy.
+
 ## What this proves, and what it does not
 
 It proves the PICC data came from a tag holding the meta-read key, the CMAC came from a tag holding the file-read key for this UID and counter, and the counter is new. It does not prove a card is authentic; grading does. A patient attacker with a scalpel can defeat any seal, which is why the seal photo and the signed reveal tag are the second and third factors.

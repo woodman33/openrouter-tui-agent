@@ -97,7 +97,9 @@ const payload = { serial, events, cities, hats: Object.fromEntries(Object.entrie
         const canvas = document.getElementById('badge') as HTMLCanvasElement;
         canvas.hidden = false;
         document.getElementById('badge-fallback')!.hidden = true;
-        new Rive({ src: '/rive/badges.riv', canvas, autoplay: true, stateMachines: 'State', layout: new Layout({ fit: Fit.Contain }), onLoad: function (this: unknown) { /* state input set by the runtime consumer */ } });
+        // Artboard "Badge" · state machine "State" · BadgeVM.state: 0 sealed, 1 opened, 2 verified.
+        const stateIndex = (document.getElementById('badge-fallback')!.textContent ?? '').trim() === 'opened' ? 1 : 0;
+        const rive = new Rive({ src: '/rive/badges.riv', canvas, artboard: 'Badge', autoplay: true, autoBind: true, stateMachines: 'State', layout: new Layout({ fit: Fit.Contain }), onLoad: () => { try { rive.viewModelInstance?.number('state')!.value = stateIndex; } catch { /* runtime without data binding */ } } });
       }
     } catch { /* fallback stays */ }
   </script>
