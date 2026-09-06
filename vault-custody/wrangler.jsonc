@@ -1,0 +1,17 @@
+{
+  // Vault Custody on Cloudflare Pages (Astro + @astrojs/cloudflare).
+  // Bindings are optional: without CUSTODY_KV the tap route runs stateless
+  // (replay unchecked, receipts returned but not persisted). Deploy is the
+  // owner's word: `npm run build && npx wrangler pages deploy dist`.
+  "name": "vault-custody",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": "./dist",
+  "kv_namespaces": [
+    // { "binding": "CUSTODY_KV", "id": "<create with: wrangler kv namespace create CUSTODY_KV>" }
+  ],
+  "vars": {
+    // "CUSTODY_KEYS": "{\"paradise-2026-09-12\":{\"metaReadKey\":\"…\",\"fileReadKey\":\"…\"}}"  ← use `wrangler pages secret put CUSTODY_KEYS`, never vars
+    // "TIMMY_EDGE_URL": "https://timmy-ai-proxy.<account>.workers.dev"
+  }
+}

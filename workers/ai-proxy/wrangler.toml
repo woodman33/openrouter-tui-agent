@@ -1,6 +1,7 @@
 name = "timmy-ai-proxy"
 main = "src/index.ts"
 compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
 # Secrets live HERE as Worker secrets, never on the laptop:
 #   wrangler secret put OPENROUTER_API_KEY   (upstream key)
 #   wrangler secret put TIMMY_EDGE_TOKEN     (caller auth; all routes but /health)
@@ -8,3 +9,20 @@ compatibility_date = "2026-08-01"
 # model allowlist (ALLOWED_MODELS var) + RATE_LIMIT_PER_MIN + upstream status
 # passthrough. NOTE: the 2026-08-15 live deployment predates this hardening —
 # redeploy (owner's word) or wrangler delete before relying on the edge route.
+#
+# 2026-09-05 CODE MODE: /code runs one agent-authored (or model-generated)
+# script per task in a separate Dynamic Worker isolate. Needs the Worker
+# Loader binding below; /health reports code_mode:true only when it is bound.
+# Every run seals a code.run receipt; RECEIPTS (KV) persists the chain when bound.
+
+[[worker_loaders]]
+binding = "LOADER"
+
+[vars]
+CUSTODY_BASE_URL = "https://custody.timmy.dev"
+# ALLOWED_MODELS = "google/gemini-3.7-flash,x-ai/grok-4.6"
+# RATE_LIMIT_PER_MIN = "20"
+
+# [[kv_namespaces]]
+# binding = "RECEIPTS"
+# id = "<wrangler kv namespace create RECEIPTS>"

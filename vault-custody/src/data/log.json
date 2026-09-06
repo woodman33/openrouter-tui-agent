@@ -1,0 +1,20 @@
+{
+  "_note": "The custody lane as timmy-tui renders it: one line per receipt, prev → this. Illustrative pilot data; hashes are the mock's display prefixes, not recomputed.",
+  "lane": "custody",
+  "epoch": 903,
+  "tools": ["custody.commit", "custody.seal", "custody.sell", "custody.claim", "custody.open", "custody.pack", "custody.attach", "custody.transfer", "custody.verify", "chain.head"],
+  "entries": [
+    { "seq": "903.0410", "kind": "custody.commit", "fields": "box=VC0007 series=001 contents_hash=9f3a7c1e2b8d4406", "prev": "e07b4d92", "this": "51c0e8a9", "ts": "2026-09-12T09:02:11-07:00", "via": "timmy-mcp:paradise-pos" },
+    { "seq": "903.0411", "kind": "custody.photo", "fields": "box=VC0007 kind=factory_seal n=3 sha=…", "prev": "51c0e8a9", "this": "7c19e3f0", "ts": "12:38:40" },
+    { "seq": "903.0412", "kind": "custody.seal", "fields": "box=VC0007 tag_uid=04DE…C040 type=NTAG424DNA_TT band=chipboard counter=1 sig=valid", "prev": "7c19e3f0", "this": "2ad8f61c", "ts": "12:41:03", "by": "paradise/counter-2" },
+    { "seq": "903.0413", "kind": "custody.sell", "fields": "box=VC0007 pos_receipt=48812 price=… buyer=hash(…)", "prev": "2ad8f61c", "this": "b9d4a1e7", "ts": "13:04:52", "via": "timmy-mcp:paradise-pos" },
+    { "seq": "903.0414", "kind": "custody.claim", "fields": "box=VC0007 owner=hash(…) city=Las Vegas tap=2 sig=valid counter=2", "prev": "b9d4a1e7", "this": "0f6c2d81", "ts": "13:05:19" },
+    { "seq": "903.0502", "kind": "custody.open", "fields": "box=VC0007 tamper=BROKEN stored_on_chip=true tap=4 reveal_sig=valid counter=1 city=Henderson", "prev": "0f6c2d81", "this": "c41a9b30", "ts": "2026-09-14T19:22:07-07:00", "tamper": true },
+    { "seq": "903.0503", "kind": "custody.pack", "fields": "box=VC0007 pack=1 opened cards=12", "prev": "c41a9b30", "this": "88e2f5a0", "ts": "19:24:10" },
+    { "seq": "903.0519", "kind": "custody.attach", "fields": "card=VC0007-17-03 pack=17 scan=1200dpi fp=… type=rookie_auto num=14/99", "prev": "…", "this": "5d0b7c92", "ts": "20:12:44" },
+    { "seq": "903.0526", "kind": "custody.pack", "fields": "box=VC0007 pack=24 opened cards=13", "prev": "…", "this": "a72e1f4d", "ts": "20:41:58" },
+    { "seq": "903.1188", "kind": "custody.transfer", "fields": "card=VC0007-17-03 from=hash(W.M.) to=hash(J.R.) venue=ebay ref=38-1142 price=412.00 city=Phoenix", "prev": "…", "this": "e3c8d012", "ts": "2026-10-02T08:15:31-07:00", "via": "timmy-mcp:ebay" },
+    { "seq": "903.1190", "kind": "custody.verify", "fields": "card=VC0007-17-03 fp_match=0.996 dims_delta=0.04mm result=SAME CARD, NO TRIM", "prev": "e3c8d012", "this": "91b0f7aa", "ts": "2026-10-20T14:03:09-07:00", "via": "timmy-mcp:grader-intake" },
+    { "seq": "903.1191", "kind": "chain.head", "fields": "series=001 head=91b0f7aa anchored=OpenTimestamps published=github:vault-custody/heads@2026-10-20", "note": "anyone can recompute this chain from the public log" }
+  ]
+}

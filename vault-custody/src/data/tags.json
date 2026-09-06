@@ -1,0 +1,15 @@
+{
+  "_note": "Tag registry for the pilot fixtures. Tag rolls are preloaded and assigned to a store batch, so the first tap already says which product and which store. KEYS HERE ARE THE NXP AN12196 FACTORY-DEFAULT ALL-ZERO KEYS — demo only. Production keys live in a Worker secret / KV, never in the repo. UIDs are the AN12196 published vectors so the deck's real URLs verify against the public test data.",
+  "keys": {
+    "demo": {
+      "metaReadKey": "00000000000000000000000000000000",
+      "fileReadKey": "00000000000000000000000000000000"
+    }
+  },
+  "tags": {
+    "04de5f1eacc040": { "serial": "VC0007", "role": "seal", "type": "NTAG424DNA_TT", "batch": "paradise-2026-09-12", "keyset": "demo", "lastCounter": 60 },
+    "04958caa5c5e80": { "serial": "VC0001", "role": "seal", "type": "NTAG424DNA_TT", "batch": "paradise-2026-09-12", "keyset": "demo", "lastCounter": 7 },
+    "041d3c8a2d6b80": { "serial": "VC0002", "role": "reveal", "type": "NTAG424DNA", "batch": "paradise-2026-09-12", "keyset": "demo", "lastCounter": 290 },
+    "041e3c8a2d6b80": { "serial": "VC0003", "role": "seal", "type": "NTAG424DNA_TT", "batch": "vegas-convention-2026-09-12", "keyset": "demo", "lastCounter": 5 }
+  }
+}

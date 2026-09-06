@@ -1,0 +1,19 @@
+{
+  "series": {
+    "001": {
+      "id": "001",
+      "title": "Series 001 · Paradise counter-seal pilot",
+      "product": "2026 hobby box",
+      "sealedAt": "Paradise Card Breaks · Las Vegas · from Sep 12, 2026",
+      "units": ["VC0001", "VC0002", "VC0003", "VC0007"],
+      "publishedHashes": [
+        { "serial": "VC0001", "contentsHash": "e07b4d92a1c35f80", "publishedAt": "2026-09-12T09:02:11-07:00" },
+        { "serial": "VC0002", "contentsHash": "7c19e3f02ad8f61c", "publishedAt": "2026-09-12T09:02:11-07:00" },
+        { "serial": "VC0003", "contentsHash": "51c0e8a97c19e3f0", "publishedAt": "2026-09-12T09:02:11-07:00" },
+        { "serial": "VC0007", "contentsHash": "9f3a7c1e2b8d4406", "publishedAt": "2026-09-12T09:02:11-07:00" }
+      ],
+      "head": { "hash": "91b0f7aa", "anchored": "OpenTimestamps", "published": "github:vault-custody/heads@2026-10-20", "epoch": 903 },
+      "fairness": "Break slot lists are committed by hash, shuffled by the drand / League of Entropy public beacon, nonce revealed after the break."
+    }
+  }
+}
