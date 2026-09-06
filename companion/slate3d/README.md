@@ -55,6 +55,24 @@ bus: event envelopes appended beside the receipts by `src/bus`) and
 only `{v, ts, kind, payload}` envelopes pass. A new client receives the last six
 hours from both files, then live events.
 
+## State from receipts
+
+Frames list the orders that deliver them; capsules list evidence rules. The
+companion server exposes `GET /slate3d/receipts` (receipt records from the
+pinned root store with their sources) and the worker exposes the public daily
+head of the edge chains at `/head`. The viewer derives:
+
+- frame: done when every listed order has an `order.execute` receipt whose
+  sources carry the id, blocked when one was sealed as blocked, active when
+  some are sealed, next otherwise; a frame may name an attestation receipt
+  that stands for orders sealed in a frozen fork store
+- capsule: rules `{root: <subject>, min, sources?}` count root receipts,
+  `{edge: <chain>, min}` read the daily head, `{blocked_by: <subject>}` marks
+  the capsule blocked while its evidence is incomplete
+
+Blueprint boards (`kind: blueprint`) cited by a mission render as reference
+sheets beside the slabs: tokens, doctrine, architecture.
+
 ## Lit rules
 
 - lane: `payload.harness`, else the kind prefix when it names a lane, else the

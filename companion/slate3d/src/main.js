@@ -9,7 +9,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { layoutBoard, layoutSheets, SLAB, SHEET } from './board.js';
+import { layoutBoard, layoutSheets, sheetsSpan, SLAB, SHEET } from './board.js';
 import { connectBus, laneOf, classOf } from './bus.js';
 
 const T = {
@@ -195,12 +195,37 @@ async function build() {
   };
   for (const f of board.frames) { const st = statusOf(f); f.status = st.status; f.state = st; }
 
+  // Capsule-level evidence: root receipts by subject (optionally matching a
+  // sources field) and edge chains from the worker's public daily head. A
+  // capsule is done when every rule holds, blocked when a blocked_by subject
+  // exists while evidence is incomplete, active when some rules hold.
+  const WORKER = q.get('worker') ?? 'https://timmy-ai-proxy-preview.wmeldman33.workers.dev';
+  const head = await fetch(`${WORKER.replace(/\/$/, '')}/head`, { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+  const edge = new Map((head?.heads ?? []).map((h) => [h.subject, h]));
+  const rootCount = (subject, sources) => receipts.filter((r) => r.subject === subject && (!sources || (Array.isArray(r.sources) && r.sources.some((s) => s && Object.entries(sources).every(([k, v]) => s[k] === v))))).length;
+  const ruleHolds = (rule) => {
+    if (rule.root) return rootCount(rule.root, rule.sources) >= (rule.min ?? 1);
+    if (rule.edge) return (edge.get(rule.edge)?.count ?? 0) >= (rule.min ?? 1);
+    return false;
+  };
+  const capsuleState = (n) => {
+    const rules = (n.evidence ?? []).filter((r) => !r.blocked_by);
+    const blockers = (n.evidence ?? []).filter((r) => r.blocked_by);
+    if (!rules.length) return { status: 'next', held: 0, total: 0 };
+    const held = rules.filter(ruleHolds).length;
+    if (held === rules.length) return { status: 'done', held, total: rules.length };
+    if (blockers.some((b) => rootCount(b.blocked_by) > 0)) return { status: 'blocked', held, total: rules.length };
+    if (held > 0) return { status: 'active', held, total: rules.length };
+    return { status: 'next', held, total: rules.length };
+  };
+  for (const n of board.nodes) if (n.kind === 'capsule') n.state = capsuleState(n);
+
   document.getElementById('board-name').textContent = `${board.name} · kind ${board.kind} · ${board.frames.length} frames · ${board.nodes.length} nodes · ${blueprints.length} blueprint${blueprints.length === 1 ? '' : 's'} · state from ${receipts.length} receipts`;
   document.title = `Slate 3D · ${board.name}`;
   lanes = new Set(laneList.map((l) => l.id));
   const L = layoutBoard(board, laneList);
   const sheets = layoutSheets(blueprints, L.totalW);
-  const spanW = L.totalW + (sheets.length ? SLAB.gap + sheets.length * (SHEET.w + SHEET.gap) : 0);
+  const spanW = Math.max(L.totalW, sheetsSpan(sheets));
 
   // floor + grid
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), matFloor);
@@ -237,8 +262,10 @@ async function build() {
   // nodes
   for (const n of L.nodes) {
     if (n.kind === 'capsule') {
-      const done = L.frames[n.frameIndex]?.status === 'done';
-      const active = L.frames[n.frameIndex]?.status === 'active';
+      // the capsule's own state comes from its evidence rules, not the frame
+      const cs = n.state ?? { status: 'next', held: 0, total: 0 };
+      const done = cs.status === 'done';
+      const active = cs.status === 'active';
       const m = new THREE.Mesh(
         new THREE.CapsuleGeometry(0.42, 1.5, 6, 14),
         new THREE.MeshStandardMaterial({ color: done ? 0x163a2a : active ? 0x3a2a14 : T.raised, roughness: 0.55, metalness: 0.05, emissive: done ? T.phosphor : active ? T.orange : 0x000000, emissiveIntensity: done ? 0.55 : active ? 0.35 : 0 })
@@ -247,9 +274,9 @@ async function build() {
       m.position.set(n.x, n.y + 0.5, n.z);
       m.castShadow = true;
       scene.add(m);
-      const acc = Array.isArray(n.acceptance) ? ` · ${n.acceptance.length} acceptance` : '';
-      const l = label(`<b>${n.id}</b>${acc}<br>${(n.objective ?? '').slice(0, 42)}${(n.objective ?? '').length > 42 ? '…' : ''}`, 'node');
-      l.element.title = n.objective ?? '';
+      const ev = cs.total ? ` · <span class="orders ${cs.status}">evidence ${cs.held}/${cs.total}${cs.status === 'blocked' ? ' · blocked' : ''}</span>` : '';
+      const l = label(`<b>${n.id}</b>${ev}<br>${(n.objective ?? '').slice(0, 42)}${(n.objective ?? '').length > 42 ? '…' : ''}`, 'node');
+      l.element.title = `${n.objective ?? ''}\n${(n.evidence ?? []).map((r) => `${r.root ?? r.edge ?? r.blocked_by}: ${r.why ?? ''}`).join('\n')}`;
       l.position.set(n.x, n.y + 1.35, n.z);
       scene.add(l);
     } else if (n.kind === 'harness') {
@@ -326,7 +353,10 @@ async function build() {
     edges.position.copy(card.position);
     edges.rotation.copy(card.rotation);
     scene.add(edges);
-    const rows = (s.rows ?? []).slice(0, 8).map((r) => `<dt>${r.label}</dt><dd>${/^#[0-9a-f]{6}$/i.test(String(r.value)) ? `<i style="background:${r.value}"></i>` : ''}${r.value}${r.note ? ` <span>· ${r.note}</span>` : ''}</dd>`).join('');
+    // the front row carries full sheets; rows behind show a compact head so
+    // their screen labels do not bury the row in front
+    const compact = s.row > 0;
+    const rows = (s.rows ?? []).slice(0, compact ? 2 : 8).map((r) => `<dt>${r.label}</dt><dd>${/^#[0-9a-f]{6}$/i.test(String(r.value)) ? `<i style="background:${r.value}"></i>` : ''}${r.value}${!compact && r.note ? ` <span>· ${r.note}</span>` : ''}</dd>`).join('') + (compact && (s.rows ?? []).length > 2 ? `<dt></dt><dd><span>+${(s.rows ?? []).length - 2} more</span></dd>` : '');
     const l = label(`<h4>${s.title}<small>blueprint · ${s.board}${s.source ? ` · ${s.source}` : ''}</small></h4><dl>${rows}</dl>`, 'sheet');
     l.position.set(s.x, s.y + 0.4, s.z + 0.3);
     scene.add(l);

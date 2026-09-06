@@ -35,7 +35,8 @@ export function classOf(ev) {
 }
 
 export function connectBus(opts, onEvent, onStatus) {
-  const { source = 'ws', sse, room, worker } = opts;
+  const { source = 'ws', sse, room, worker, poll = false } = opts;
+  const q_noWs = () => poll === true;
   let closed = false;
   const status = (live, text) => onStatus?.({ live, text, source });
 
@@ -48,12 +49,47 @@ export function connectBus(opts, onEvent, onStatus) {
   }
 
   if (source === 'room' && room && worker) {
-    // first call: the tail; then a cursor (`since=<seq>`) so each poll carries
-    // only new rows and stays fast enough for a live feel
+    // Preferred: the room's WebSocket (SlateRoom sends {type:'bus.tail'} on
+    // connect and {type:'bus', event} for every stored event). Fallback: the
+    // cursor poll below when the socket cannot be opened or drops twice.
     const seen = new Set();
     let first = true;
     let next = 0;
     const base = worker.replace(/\/$/, '');
+    const wsUrl = `${base.replace(/^http/, 'ws')}/runs/${encodeURIComponent(room)}/ws`;
+    let wsFailures = 0;
+    let polling = false;
+    const accept = (e, tail) => {
+      const id = e.id ?? `${e.timestamp ?? e.ts}:${e.type ?? e.kind}`;
+      if (typeof e.seq === 'number' && e.seq > next) next = e.seq;
+      if (seen.has(id)) return;
+      seen.add(id);
+      let payload = e.payload ?? e.payload_json ?? {};
+      if (typeof payload === 'string') { try { payload = JSON.parse(payload); } catch { payload = {}; } }
+      onEvent({ v: 1, ts: e.timestamp ?? e.ts, kind: e.type ?? e.kind, payload }, { tail });
+    };
+    const openWs = () => {
+      if (closed || polling) return;
+      let ws;
+      try { ws = new WebSocket(wsUrl); } catch { wsFailures = 2; startPoll(); return; }
+      ws.onopen = () => { status(true, `room ${room} live · websocket`); ws.send(JSON.stringify({ type: 'hello', client: 'slate3d' })); };
+      ws.onmessage = (m) => {
+        let msg;
+        try { msg = JSON.parse(m.data); } catch { return; }
+        if (msg.type === 'bus.tail' && Array.isArray(msg.events)) { for (const e of msg.events) accept(e, first); first = false; }
+        else if (msg.type === 'bus' && msg.event) accept(msg.event, false);
+      };
+      ws.onclose = () => {
+        if (closed) return;
+        wsFailures++;
+        status(false, `room ${room} socket closed`);
+        if (wsFailures >= 2) startPoll(); else setTimeout(openWs, 1500);
+      };
+      ws.onerror = () => { /* onclose follows */ };
+      closers.push(() => ws.close());
+    };
+    const closers = [];
+    const startPoll = () => { if (polling) return; polling = true; tick(); };
     const tick = async () => {
       if (closed) return;
       try {
@@ -62,24 +98,16 @@ export function connectBus(opts, onEvent, onStatus) {
         const j = await r.json();
         const arr = Array.isArray(j) ? j : (j.events ?? []);
         if (typeof j.next === 'number' && j.next > next) next = j.next;
-        for (const e of arr) {
-          const id = e.id ?? `${e.timestamp}:${e.type}`;
-          if (typeof e.seq === 'number' && e.seq > next) next = e.seq;
-          if (seen.has(id)) continue;
-          seen.add(id);
-          let payload = e.payload ?? e.payload_json ?? {};
-          if (typeof payload === 'string') { try { payload = JSON.parse(payload); } catch { payload = {}; } }
-          onEvent({ v: 1, ts: e.timestamp ?? e.ts, kind: e.type ?? e.kind, payload }, { tail: first });
-        }
-        status(true, `room ${room} live`);
+        for (const e of arr) accept(e, first);
+        status(true, `room ${room} live · poll`);
       } catch {
         status(false, `room ${room} unreachable`);
       }
       first = false;
       setTimeout(tick, 1500);
     };
-    tick();
-    return { close: () => { closed = true; } };
+    if (q_noWs()) startPoll(); else openWs();
+    return { close: () => { closed = true; for (const c of closers) c(); } };
   }
 
   // default: the companion WebSocket on the same origin

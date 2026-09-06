@@ -53,7 +53,8 @@ export default {
       if (!env.CUSTODY_KV) return json({ ok: false, error: 'no CUSTODY_KV on this deployment' }, 503);
       const head = await readLatestHead(env.CUSTODY_KV);
       if (!head) return json({ ok: false, error: 'no head yet; the daily cron has not run' }, 404);
-      return json(head);
+      // public data; browsers (Slate 3D capsule evidence) read it cross-origin
+      return Response.json(head, { headers: corsHeaders() });
     }
 
     // Caller auth on everything else.

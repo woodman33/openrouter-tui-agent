@@ -15,16 +15,27 @@ const SLOT = {
 // blueprint sheets stand to the right of the last slab
 export const SHEET = { w: 6.4, h: 4.6, gap: 5.6, z: -1.0 };
 
+// one row per blueprint board, rows stepping back in z, so several boards
+// stay readable and the camera span grows only with the widest row
 export function layoutSheets(blueprints, totalW) {
   const sheets = [];
-  let x = totalW + SLAB.gap + SHEET.w / 2;
+  // rows step back and half a card sideways so their screen labels interleave
+  // instead of stacking on top of each other
+  const x0 = totalW + SLAB.gap + SHEET.w / 2;
+  let row = 0;
   for (const bp of blueprints) {
+    let x = x0 + row * ((SHEET.w + SHEET.gap) / 2);
     for (const s of bp.sheets ?? []) {
-      sheets.push({ ...s, board: bp.name, source: bp.source, x, y: SHEET.h / 2, z: SHEET.z });
+      sheets.push({ ...s, board: bp.name, source: bp.source, row, x, y: SHEET.h / 2, z: SHEET.z - row * (SHEET.h + 6.5) });
       x += SHEET.w + SHEET.gap;
     }
+    row++;
   }
   return sheets;
+}
+
+export function sheetsSpan(sheets) {
+  return sheets.length ? Math.max(...sheets.map((s) => s.x + SHEET.w / 2)) : 0;
 }
 
 export function layoutBoard(board, lanes) {

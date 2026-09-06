@@ -100,6 +100,23 @@
     "GET /t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086 → 302 to /r/<serial>",
     "six routes render: /r sealed, /r opened, /c, /relic, /m, /log",
     "receipt chain verify ok after the build"
+   ],
+   "evidence": [
+    {
+     "edge": "VC0007",
+     "min": 1,
+     "why": "signed taps on the unit chain (custody.tap), anchored daily"
+    },
+    {
+     "root": "chain.anchor",
+     "min": 1,
+     "why": "edge head anchored in the root chain"
+    },
+    {
+     "root": "fork.attest",
+     "min": 1,
+     "why": "build receipts sealed in the fork store, attested"
+    }
    ]
   },
   {
@@ -135,6 +152,18 @@
     "a task that lists tools, verifies a tap, and reads a chain runs as one script",
     "receipt carries script_sha256 + output_sha256 + tool call list",
     "unauthorized POST /code → 401"
+   ],
+   "evidence": [
+    {
+     "root": "chain.anchor",
+     "min": 1,
+     "why": "daily head covers the code chains in CUSTODY_KV"
+    },
+    {
+     "root": "fork.attest",
+     "min": 1,
+     "why": "ORD-006 sealed in the fork store, attested"
+    }
    ]
   },
   {
@@ -170,6 +199,28 @@
     ".riv sha256 bound in the build receipt",
     "HTML5 bundle opens from /t redirect on a phone",
     "companion renders the chain for VC0007"
+   ],
+   "evidence": [
+    {
+     "root": "defold.build",
+     "min": 1,
+     "why": "bob, JDK, engine, .riv hashes bound"
+    },
+    {
+     "root": "rive.export",
+     "min": 1,
+     "sources": {
+      "source": "share"
+     },
+     "why": "badge from the share, verified on the runtime"
+    },
+    {
+     "root": "order.execute",
+     "sources": {
+      "id": "ORD-20260906-017"
+     },
+     "why": "companion renders the chain for VC0007"
+    }
    ]
   },
   {
@@ -203,6 +254,17 @@
    "acceptance": [
     "one Defold lane screenshot → detect → annotations on the board",
     "receipt evidence lists the detection result hash"
+   ],
+   "evidence": [
+    {
+     "root": "observer.evidence",
+     "min": 1,
+     "why": "one screenshot observed and sealed"
+    },
+    {
+     "blocked_by": "observer.blocked",
+     "why": "the observer refused (credits) and said so"
+    }
    ]
   },
   {
@@ -237,6 +299,23 @@
     "two browsers share one board through the Durable Object",
     "3D view shows frames as rooms and capsules as pods",
     "pod state follows receipt lifecycle"
+   ],
+   "evidence": [
+    {
+     "root": "slate.design",
+     "min": 1,
+     "why": "four decisions sealed"
+    },
+    {
+     "root": "slate.render",
+     "min": 1,
+     "why": "the board rendered with live pods"
+    },
+    {
+     "root": "slate.room",
+     "min": 1,
+     "why": "two browsers, one board, through the room"
+    }
    ]
   },
   {
@@ -271,6 +350,13 @@
     "fleet entry 'local-judges' with detect probes",
     "fusion receipt carries judge_tier",
     "no behavior change when no local judge is reachable"
+   ],
+   "evidence": [
+    {
+     "root": "fleet.rank",
+     "min": 1,
+     "why": "judge tier recorded by fleet rank"
+    }
    ]
   },
   {
@@ -416,6 +502,8 @@
   }
  ],
  "blueprints": [
-  "tokens"
+  "tokens",
+  "doctrine",
+  "architecture"
  ]
 }
