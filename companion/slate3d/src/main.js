@@ -11,6 +11,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { layoutBoard, layoutSheets, sheetsSpan, SLAB, SHEET } from './board.js';
 import { connectBus, laneOf, classOf } from './bus.js';
+import { capsuleState, frameStatus } from './state.js';
 
 const T = {
   navy: 0x0a1628, raised: 0x12233d, slab: 0x0f1e36, line: 0x1c3358, grid: 0x11223c,
@@ -84,6 +85,7 @@ const label = (html, cls) => {
 // ---------- state ----------
 const podsByLane = new Map(); // lane id → [pod]
 const allPods = [];
+const capsuleMeshes = []; // clickable: opens the capsule panel (emits controller calls, never spawns)
 const boardPulse = { until: 0 };
 const ticker = document.getElementById('ticker');
 const busEl = document.getElementById('bus');
@@ -173,52 +175,16 @@ async function build() {
   // blueprint boards the mission cites render as sheets beside the slabs
   const blueprints = (await Promise.all((board.blueprints ?? []).map((n) => fetch(`./boards/${n}.blueprint.json`).then((r) => r.json()).catch(() => null)))).filter(Boolean);
 
-  // Capsule state from the receipt lifecycle, never from a typed status:
-  // a frame lists the orders that deliver it; each order.execute receipt in
-  // the root store carries the order id in its sources. All sealed = done,
-  // one sealed as blocked = blocked, some sealed = active, none = next. A
-  // frame may name an attestation receipt (the fork attestation) that stands
-  // for orders whose receipts live in the frozen fork store.
+  // State from receipts, computed by the shared rules in state.js: the same
+  // module the state-table lane runs for the dossier, so the scene and the
+  // table can never disagree.
   const receipts = receiptsRes.receipts ?? [];
-  const byId = new Map(receipts.map((r) => [r.id, r]));
-  const orderReceipt = (ordId) => receipts.find((r) => r.subject === 'order.execute' && Array.isArray(r.sources) && r.sources.some((s) => s && s.id === ordId));
-  const statusOf = (f) => {
-    if (!Array.isArray(f.orders) || !f.orders.length) return { status: f.status ?? 'next', sealed: 0, total: 0, why: f.status ? 'declared' : 'no orders listed' };
-    const found = f.orders.map(orderReceipt);
-    const sealed = found.filter(Boolean).length;
-    const total = f.orders.length;
-    if (found.some((r) => r && r.sources.some((s) => s && s.state === 'blocked'))) return { status: 'blocked', sealed, total, why: 'an order was sealed as blocked' };
-    if (sealed === total) return { status: 'done', sealed, total, why: 'every order sealed' };
-    if (f.attested && byId.has(f.attested)) return { status: 'done', sealed, total, attested: f.attested, why: `attested by ${f.attested}` };
-    if (sealed > 0) return { status: 'active', sealed, total, why: 'some orders sealed' };
-    return { status: 'next', sealed, total, why: 'no order sealed yet' };
-  };
-  for (const f of board.frames) { const st = statusOf(f); f.status = st.status; f.state = st; }
-
-  // Capsule-level evidence: root receipts by subject (optionally matching a
-  // sources field) and edge chains from the worker's public daily head. A
-  // capsule is done when every rule holds, blocked when a blocked_by subject
-  // exists while evidence is incomplete, active when some rules hold.
-  const WORKER = q.get('worker') ?? 'https://timmy-ai-proxy-preview.wmeldman33.workers.dev';
-  const head = await fetch(`${WORKER.replace(/\/$/, '')}/head`, { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+  for (const f of board.frames) { const st = frameStatus(f, receipts); f.status = st.status; f.state = st; }
+  const WORKER = (q.get('worker') ?? board.worker ?? 'https://timmy-ai-proxy-preview.wmeldman33.workers.dev').replace(/\/$/, '');
+  const ROOM = q.get('room') ?? board.room ?? null;
+  const head = await fetch(`${WORKER}/head`, { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
   const edge = new Map((head?.heads ?? []).map((h) => [h.subject, h]));
-  const rootCount = (subject, sources) => receipts.filter((r) => r.subject === subject && (!sources || (Array.isArray(r.sources) && r.sources.some((s) => s && Object.entries(sources).every(([k, v]) => s[k] === v))))).length;
-  const ruleHolds = (rule) => {
-    if (rule.root) return rootCount(rule.root, rule.sources) >= (rule.min ?? 1);
-    if (rule.edge) return (edge.get(rule.edge)?.count ?? 0) >= (rule.min ?? 1);
-    return false;
-  };
-  const capsuleState = (n) => {
-    const rules = (n.evidence ?? []).filter((r) => !r.blocked_by);
-    const blockers = (n.evidence ?? []).filter((r) => r.blocked_by);
-    if (!rules.length) return { status: 'next', held: 0, total: 0 };
-    const held = rules.filter(ruleHolds).length;
-    if (held === rules.length) return { status: 'done', held, total: rules.length };
-    if (blockers.some((b) => rootCount(b.blocked_by) > 0)) return { status: 'blocked', held, total: rules.length };
-    if (held > 0) return { status: 'active', held, total: rules.length };
-    return { status: 'next', held, total: rules.length };
-  };
-  for (const n of board.nodes) if (n.kind === 'capsule') n.state = capsuleState(n);
+  for (const n of board.nodes) if (n.kind === 'capsule') n.state = capsuleState(n, receipts, edge);
 
   document.getElementById('board-name').textContent = `${board.name} · kind ${board.kind} · ${board.frames.length} frames · ${board.nodes.length} nodes · ${blueprints.length} blueprint${blueprints.length === 1 ? '' : 's'} · state from ${receipts.length} receipts`;
   document.title = `Slate 3D · ${board.name}`;
@@ -274,9 +240,10 @@ async function build() {
       m.position.set(n.x, n.y + 0.5, n.z);
       m.castShadow = true;
       scene.add(m);
+      capsuleMeshes.push({ mesh: m, node: n });
       const ev = cs.total ? ` · <span class="orders ${cs.status}">evidence ${cs.held}/${cs.total}${cs.status === 'blocked' ? ' · blocked' : ''}</span>` : '';
       const l = label(`<b>${n.id}</b>${ev}<br>${(n.objective ?? '').slice(0, 42)}${(n.objective ?? '').length > 42 ? '…' : ''}`, 'node');
-      l.element.title = `${n.objective ?? ''}\n${(n.evidence ?? []).map((r) => `${r.root ?? r.edge ?? r.blocked_by}: ${r.why ?? ''}`).join('\n')}`;
+      l.element.title = `${n.objective ?? ''}\n${cs.checks.map((c) => `${c.held === true ? '✓' : c.rule ? '✗' : '–'} ${c.line}`).join('\n')}`;
       l.position.set(n.x, n.y + 1.35, n.z);
       scene.add(l);
     } else if (n.kind === 'harness') {
@@ -370,10 +337,68 @@ async function build() {
   controls.target.copy(target);
   controls.update();
 
+  // Capsule panel: click a capsule to read its acceptance lines with their
+  // evidence, and to emit controller calls. Compile is a dry run through the
+  // controller's gateway; store returns a plan id and its hash. Nothing here
+  // arms or launches: that stays behind the operator token in the controller.
+  const panel = document.getElementById('capsule-panel');
+  const cpOut = document.getElementById('cp-out');
+  let openCapsule = null;
+  const frameDoc = (n) => {
+    const ids = new Set(board.nodes.filter((x) => x.frame === n.frame).map((x) => x.id));
+    return { nodes: board.nodes.filter((x) => ids.has(x.id)).map(({ acceptance_evidence, state, blocked_by, ...rest }) => rest), edges: board.edges.filter((e) => ids.has(e.from) && ids.has(e.to)) };
+  };
+  const emit = async (action, extra = {}) => {
+    cpOut.hidden = false;
+    cpOut.textContent = `${action} → controller…`;
+    try {
+      const r = await fetch('./emit', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, capsule: openCapsule?.id, ...extra }) });
+      const j = await r.json();
+      cpOut.textContent = JSON.stringify(j, null, 1).slice(0, 3000);
+      return j;
+    } catch (e) { cpOut.textContent = `emit failed: ${e}`; return null; }
+  };
+  const openPanel = (n) => {
+    openCapsule = n;
+    const cs = n.state ?? { status: 'next', checks: [], held: 0, total: 0 };
+    document.getElementById('cp-id').textContent = n.id;
+    const st = document.getElementById('cp-state');
+    st.textContent = `${cs.status} · evidence ${cs.held}/${cs.total}${cs.unreceipted ? ` · ${cs.unreceipted} not receipted` : ''}`;
+    st.className = `state ${cs.status}`;
+    document.getElementById('cp-objective').textContent = n.objective ?? '';
+    const ol = document.getElementById('cp-lines');
+    ol.innerHTML = cs.checks.map((c) => `<li class="${c.held === true ? 'held' : c.rule ? 'missed' : 'none'}"><i>${c.held === true ? '✓' : c.rule ? '✗' : '–'}</i><span>${c.line}<small>${c.why ?? 'no receipt maps to this line yet'}</small></span></li>`).join('');
+    cpOut.hidden = true;
+    panel.hidden = false;
+  };
+  document.getElementById('cp-close').onclick = () => { panel.hidden = true; openCapsule = null; };
+  document.getElementById('cp-compile').onclick = () => { if (openCapsule) emit('compile', { doc: frameDoc(openCapsule) }); };
+  document.getElementById('cp-store').onclick = async () => {
+    if (!openCapsule) return;
+    const c = await emit('compile', { doc: frameDoc(openCapsule) });
+    const plan = c?.plans?.find((p) => p.node_id === openCapsule.id)?.plan ?? c?.plans?.[0]?.plan;
+    if (!plan) { cpOut.textContent += '\n\nno plan compiled for this capsule; nothing sent'; return; }
+    await emit('store', { plan });
+  };
+  const ray = new THREE.Raycaster();
+  const ptr = new THREE.Vector2();
+  let downAt = null;
+  canvas.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY]; });
+  canvas.addEventListener('pointerup', (e) => {
+    if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
+    ptr.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+    ray.setFromCamera(ptr, camera);
+    const hitObj = ray.intersectObjects(capsuleMeshes.map((c) => c.mesh))[0];
+    if (hitObj) openPanel(capsuleMeshes.find((c) => c.mesh === hitObj.object).node);
+  });
+  if (q.get('open')) { const n = board.nodes.find((x) => x.id === q.get('open')); if (n) openPanel(n); }
+
   // the bus
-  const source = q.get('room') ? 'room' : q.get('sse') ? 'sse' : 'ws';
-  document.getElementById('bus-source').textContent = source === 'ws' ? 'source · companion websocket' : source === 'sse' ? `source · ${q.get('sse')}` : `source · room ${q.get('room')}`;
-  connectBus({ source, sse: q.get('sse'), room: q.get('room'), worker: q.get('worker') }, (ev, meta) => {
+  // the room is the default source when the board names one and a worker is
+  // configured; the companion socket stays available with ?source=ws
+  const source = q.get('source') ?? (q.get('sse') ? 'sse' : (ROOM && WORKER) ? 'room' : 'ws');
+  document.getElementById('bus-source').textContent = source === 'ws' ? 'source · companion websocket' : source === 'sse' ? `source · ${q.get('sse')}` : `source · room ${ROOM} @ ${WORKER.replace(/^https?:\/\//, '')}`;
+  connectBus({ source, sse: q.get('sse'), room: ROOM, worker: WORKER, poll: q.get('poll') === '1' }, (ev, meta) => {
     const cls = classOf(ev);
     const lane = laneOf(ev, lanes);
     if (lane) for (const p of podsByLane.get(lane) ?? []) hit(p, ev, cls);

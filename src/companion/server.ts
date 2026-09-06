@@ -161,6 +161,35 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
     res.json({ ok: true, subject, count: receipts.length, receipts });
   });
 
+  // Slate 3D emits controller calls; it never spawns. The scene may ask the
+  // controller (the `timmy logs` gateway on localhost) to compile a mission
+  // doc into DispatchPlans or to store one plan; arming and launching still
+  // require the operator token there. Every emit is published on the bus as
+  // slate.emit so the act itself is on record, whatever the controller says.
+  app.post('/slate3d/emit', express.json({ limit: '256kb' }), async (req, res) => {
+    const action = String(req.body?.action ?? '');
+    const capsule = String(req.body?.capsule ?? '');
+    if (!['compile', 'store'].includes(action)) { res.status(400).json({ ok: false, error: 'action must be compile or store' }); return; }
+    const gateway = `http://127.0.0.1:${process.env.TIMMY_LOGS_PORT ?? 4310}/mission/${action}`;
+    // artifact paths resolve against the checkout that serves this page (the
+    // branch the board describes), while receipts stay in the pinned root
+    const checkout = path.resolve(__dirname, '..', '..');
+    const payload = action === 'compile' ? { doc: req.body?.doc ?? { nodes: [], edges: [] }, repo_root: checkout } : { plan: req.body?.plan ?? {} };
+    let out: any;
+    try {
+      const r = await fetch(gateway, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(8000) });
+      out = await r.json();
+    } catch {
+      out = { ok: false, state: 'not_configured', note: `controller not reachable at ${gateway}; run \`timmy logs\` from the repo root` };
+    }
+    try {
+      const oneBus = path.join(busRoot, '.timmy', 'receipts', 'runs.jsonl');
+      const p = fs.existsSync(oneBus) && fs.existsSync(path.join(busRoot, 'src', 'bus', 'index.ts')) ? oneBus : busFiles[1];
+      fs.appendFileSync(p, JSON.stringify({ v: 1, ts: new Date().toISOString(), kind: `slate.emit.${action}`, payload: { capsule, ok: !!out?.ok, state: out?.state ?? null, plan_hash: out?.plan_hash ?? null, plans: Array.isArray(out?.plans) ? out.plans.length : undefined } }) + '\n');
+    } catch { /* the bus never breaks the emit */ }
+    res.json({ ok: !!out?.ok, action, capsule, gateway, ...out });
+  });
+
   // Serve Clerk publishable key dynamically
   app.get('/api/clerk-config', (_req, res) => {
     res.json({

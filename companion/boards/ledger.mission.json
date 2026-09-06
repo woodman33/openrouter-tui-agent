@@ -2,7 +2,7 @@
  "kind": "mission",
  "name": "Vault Custody × Timmy · build ledger",
  "date": "2026-09-05",
- "note": "One frame per project in the ORDER OF BUILD. Each project's first deliverable is its capsule node. Compiles through slate-compiler (MissionMapDoc) → DispatchPlans; the board never launches, the controller does. Frame state is derived by the viewer from order.execute receipts in the root store (sources.id = order id); frames whose orders were sealed in the frozen fork store name the fork attestation receipt.",
+ "note": "One frame per project in the ORDER OF BUILD. Each project's first deliverable is its capsule node. Compiles through slate-compiler (MissionMapDoc) → DispatchPlans; the board never launches, the controller does. Frame state is derived by the viewer from order.execute receipts in the root store (sources.id = order id); frames whose orders were sealed in the frozen fork store name the fork attestation receipt. Edge direction follows the compiler: harness, gate and artifact point INTO the capsule; depends points from the dependency to the dependent; the gate carries the acceptance tests.",
  "frames": [
   {
    "id": "f1",
@@ -101,21 +101,24 @@
     "six routes render: /r sealed, /r opened, /c, /relic, /m, /log",
     "receipt chain verify ok after the build"
    ],
-   "evidence": [
+   "acceptance_evidence": [
+    {
+     "root": "fork.attest",
+     "why": "the vitest run and the six routes were sealed in the fork store; the fork is attested in root"
+    },
     {
      "edge": "VC0007",
      "min": 1,
-     "why": "signed taps on the unit chain (custody.tap), anchored daily"
+     "why": "a real /t tap sealed custody.tap on the unit chain (daily head)"
+    },
+    {
+     "root": "fork.attest",
+     "why": "ORD-005 (six routes) sealed in the fork store; attested"
     },
     {
      "root": "chain.anchor",
      "min": 1,
-     "why": "edge head anchored in the root chain"
-    },
-    {
-     "root": "fork.attest",
-     "min": 1,
-     "why": "build receipts sealed in the fork store, attested"
+     "why": "the edge head anchored into the root chain; root verify runs before every anchor"
     }
    ]
   },
@@ -130,13 +133,20 @@
    "id": "p1.gate",
    "frame": "f1",
    "kind": "gate",
-   "approval": "manual"
+   "approval": "manual",
+   "acceptance": [
+    "vitest: AN12196 sun1/sun2/sun3/plain vectors pass, corrupted CMAC rejected",
+    "GET /t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086 → 302 to /r/<serial>",
+    "six routes render: /r sealed, /r opened, /c, /relic, /m, /log",
+    "receipt chain verify ok after the build"
+   ]
   },
   {
    "id": "p1.artifact",
    "frame": "f1",
    "kind": "artifact",
-   "path": "vault-custody/"
+   "path": "vault-custody/src/lib/sun.ts",
+   "dir": "vault-custody/"
   },
   {
    "id": "p2.capsule",
@@ -153,17 +163,19 @@
     "receipt carries script_sha256 + output_sha256 + tool call list",
     "unauthorized POST /code → 401"
    ],
-   "evidence": [
+   "acceptance_evidence": [
+    null,
     {
-     "root": "chain.anchor",
+     "edge_prefix": "code:",
      "min": 1,
-     "why": "daily head covers the code chains in CUSTODY_KV"
+     "why": "a code.run chain (one per run id) listed in the daily head"
     },
     {
-     "root": "fork.attest",
+     "edge_prefix": "code:",
      "min": 1,
-     "why": "ORD-006 sealed in the fork store, attested"
-    }
+     "why": "the same code.run receipt carries script_sha256, output_sha256 and the tool calls"
+    },
+    null
    ]
   },
   {
@@ -177,13 +189,20 @@
    "id": "p2.gate",
    "frame": "f2",
    "kind": "gate",
-   "approval": "manual"
+   "approval": "manual",
+   "acceptance": [
+    "health reports code_mode:true",
+    "a task that lists tools, verifies a tap, and reads a chain runs as one script",
+    "receipt carries script_sha256 + output_sha256 + tool call list",
+    "unauthorized POST /code → 401"
+   ]
   },
   {
    "id": "p2.artifact",
    "frame": "f2",
    "kind": "artifact",
-   "path": "workers/ai-proxy/"
+   "path": "workers/ai-proxy/src/code.ts",
+   "dir": "workers/ai-proxy/"
   },
   {
    "id": "p3.capsule",
@@ -200,26 +219,32 @@
     "HTML5 bundle opens from /t redirect on a phone",
     "companion renders the chain for VC0007"
    ],
-   "evidence": [
+   "acceptance_evidence": [
     {
      "root": "defold.build",
      "min": 1,
-     "why": "bob, JDK, engine, .riv hashes bound"
+     "why": "bob, JDK, engine and input hashes in the build receipt"
     },
     {
-     "root": "rive.export",
-     "min": 1,
-     "sources": {
-      "source": "share"
+     "root": "defold.build",
+     "has": {
+      "riv": "badges.riv"
      },
-     "why": "badge from the share, verified on the runtime"
+     "why": "the build receipt binds assets/badges.riv and its sha256"
     },
     {
      "root": "order.execute",
      "sources": {
       "id": "ORD-20260906-017"
      },
-     "why": "companion renders the chain for VC0007"
+     "why": "/t?...&app=1 → /companion/ redirect, checked live and sealed"
+    },
+    {
+     "root": "order.execute",
+     "sources": {
+      "id": "ORD-20260906-017"
+     },
+     "why": "HUD renders the chain for VC0007, checked live and sealed"
     }
    ]
   },
@@ -234,13 +259,20 @@
    "id": "p3.gate",
    "frame": "f3",
    "kind": "gate",
-   "approval": "manual"
+   "approval": "manual",
+   "acceptance": [
+    "bob.jar + engine hashes in env_lock",
+    ".riv sha256 bound in the build receipt",
+    "HTML5 bundle opens from /t redirect on a phone",
+    "companion renders the chain for VC0007"
+   ]
   },
   {
    "id": "p3.artifact",
    "frame": "f3",
    "kind": "artifact",
-   "path": "lanes/defold/"
+   "path": "lanes/defold/build.mjs",
+   "dir": "lanes/defold/"
   },
   {
    "id": "p4.capsule",
@@ -255,17 +287,21 @@
     "one Defold lane screenshot → detect → annotations on the board",
     "receipt evidence lists the detection result hash"
    ],
-   "evidence": [
+   "acceptance_evidence": [
     {
      "root": "observer.evidence",
      "min": 1,
-     "why": "one screenshot observed and sealed"
+     "why": "one screenshot observed (OCR + CLIP) and sealed"
     },
     {
-     "blocked_by": "observer.blocked",
-     "why": "the observer refused (credits) and said so"
+     "root": "observer.evidence",
+     "has": {
+      "ocr_sha256": ""
+     },
+     "why": "the evidence receipt carries the OCR result hash"
     }
-   ]
+   ],
+   "blocked_by": "observer.blocked"
   },
   {
    "id": "p4.harness",
@@ -278,13 +314,18 @@
    "id": "p4.gate",
    "frame": "f4",
    "kind": "gate",
-   "approval": "manual"
+   "approval": "manual",
+   "acceptance": [
+    "one Defold lane screenshot → detect → annotations on the board",
+    "receipt evidence lists the detection result hash"
+   ]
   },
   {
    "id": "p4.artifact",
    "frame": "f4",
    "kind": "artifact",
-   "path": "lanes/observer/"
+   "path": "lanes/observer/observe.mjs",
+   "dir": "lanes/observer/"
   },
   {
    "id": "p5.capsule",
@@ -300,21 +341,25 @@
     "3D view shows frames as rooms and capsules as pods",
     "pod state follows receipt lifecycle"
    ],
-   "evidence": [
+   "acceptance_evidence": [
     {
-     "root": "slate.design",
-     "min": 1,
-     "why": "four decisions sealed"
+     "root": "slate.room",
+     "sources": {
+      "both_saw_live_event": "true"
+     },
+     "why": "two isolated browsers on one room both received a live event"
     },
     {
      "root": "slate.render",
      "min": 1,
-     "why": "the board rendered with live pods"
+     "why": "the ledger rendered as slabs and pods, sealed with the image hash"
     },
     {
-     "root": "slate.room",
-     "min": 1,
-     "why": "two browsers, one board, through the room"
+     "root": "order.execute",
+     "sources": {
+      "id": "ORD-20260906-024"
+     },
+     "why": "capsule and frame state derived from receipts, sealed"
     }
    ]
   },
@@ -329,13 +374,19 @@
    "id": "p5.gate",
    "frame": "f5",
    "kind": "gate",
-   "approval": "manual"
+   "approval": "manual",
+   "acceptance": [
+    "two browsers share one board through the Durable Object",
+    "3D view shows frames as rooms and capsules as pods",
+    "pod state follows receipt lifecycle"
+   ]
   },
   {
    "id": "p5.artifact",
    "frame": "f5",
    "kind": "artifact",
-   "path": "companion/slate3d/"
+   "path": "companion/slate3d/DESIGN.md",
+   "dir": "companion/slate3d/"
   },
   {
    "id": "p6.capsule",
@@ -351,12 +402,14 @@
     "fusion receipt carries judge_tier",
     "no behavior change when no local judge is reachable"
    ],
-   "evidence": [
+   "acceptance_evidence": [
+    null,
     {
      "root": "fleet.rank",
      "min": 1,
-     "why": "judge tier recorded by fleet rank"
-    }
+     "why": "a fusion receipt records judge_tier from the fleet rank"
+    },
+    null
    ]
   },
   {
@@ -370,19 +423,25 @@
    "id": "p6.gate",
    "frame": "f6",
    "kind": "gate",
-   "approval": "manual"
+   "approval": "manual",
+   "acceptance": [
+    "fleet entry 'local-judges' with detect probes",
+    "fusion receipt carries judge_tier",
+    "no behavior change when no local judge is reachable"
+   ]
   },
   {
    "id": "p6.artifact",
    "frame": "f6",
    "kind": "artifact",
-   "path": "fleet/"
+   "path": "fleet/fleet.json",
+   "dir": "fleet/"
   }
  ],
  "edges": [
   {
-   "from": "p1.capsule",
-   "to": "p1.harness",
+   "from": "p1.harness",
+   "to": "p1.capsule",
    "kind": "harness"
   },
   {
@@ -396,8 +455,8 @@
    "kind": "artifact"
   },
   {
-   "from": "p2.capsule",
-   "to": "p2.harness",
+   "from": "p2.harness",
+   "to": "p2.capsule",
    "kind": "harness"
   },
   {
@@ -411,8 +470,8 @@
    "kind": "artifact"
   },
   {
-   "from": "p3.capsule",
-   "to": "p3.harness",
+   "from": "p3.harness",
+   "to": "p3.capsule",
    "kind": "harness"
   },
   {
@@ -426,8 +485,8 @@
    "kind": "artifact"
   },
   {
-   "from": "p4.capsule",
-   "to": "p4.harness",
+   "from": "p4.harness",
+   "to": "p4.capsule",
    "kind": "harness"
   },
   {
@@ -441,8 +500,8 @@
    "kind": "artifact"
   },
   {
-   "from": "p5.capsule",
-   "to": "p5.harness",
+   "from": "p5.harness",
+   "to": "p5.capsule",
    "kind": "harness"
   },
   {
@@ -456,8 +515,8 @@
    "kind": "artifact"
   },
   {
-   "from": "p6.capsule",
-   "to": "p6.harness",
+   "from": "p6.harness",
+   "to": "p6.capsule",
    "kind": "harness"
   },
   {
@@ -471,33 +530,33 @@
    "kind": "artifact"
   },
   {
-   "from": "p3.capsule",
-   "to": "p1.capsule",
-   "kind": "depends"
-  },
-  {
-   "from": "p3.capsule",
-   "to": "p2.capsule",
-   "kind": "depends"
-  },
-  {
-   "from": "p4.capsule",
+   "from": "p1.capsule",
    "to": "p3.capsule",
    "kind": "depends"
   },
   {
-   "from": "p5.capsule",
-   "to": "p1.capsule",
-   "kind": "depends"
-  },
-  {
-   "from": "p5.capsule",
-   "to": "p2.capsule",
-   "kind": "depends"
-  },
-  {
-   "from": "p5.capsule",
+   "from": "p2.capsule",
    "to": "p3.capsule",
+   "kind": "depends"
+  },
+  {
+   "from": "p3.capsule",
+   "to": "p4.capsule",
+   "kind": "depends"
+  },
+  {
+   "from": "p1.capsule",
+   "to": "p5.capsule",
+   "kind": "depends"
+  },
+  {
+   "from": "p2.capsule",
+   "to": "p5.capsule",
+   "kind": "depends"
+  },
+  {
+   "from": "p3.capsule",
+   "to": "p5.capsule",
    "kind": "depends"
   }
  ],
@@ -505,5 +564,7 @@
   "tokens",
   "doctrine",
   "architecture"
- ]
+ ],
+ "room": "slate:ledger",
+ "worker": "https://timmy-ai-proxy-preview.wmeldman33.workers.dev"
 }

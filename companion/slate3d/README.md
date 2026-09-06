@@ -73,6 +73,24 @@ head of the edge chains at `/head`. The viewer derives:
 Blueprint boards (`kind: blueprint`) cited by a mission render as reference
 sheets beside the slabs: tokens, doctrine, architecture.
 
+## Emitting to the controller
+
+Click a capsule: the panel lists its acceptance lines with their evidence and
+offers compile (a dry run through the controller's `/mission/compile`) and
+send (stores one plan, returns its id and hash). Both go through
+`POST /slate3d/emit` on the companion server, which forwards to the `timmy
+logs` gateway on localhost and publishes `slate.emit.*` on the bus. Arming and
+launch stay behind the operator token in the controller; the scene never
+spawns. `node lanes/slate/emit-check.mjs --capsule p6.capsule` proves it and
+seals `slate.emit`.
+
+## The state table
+
+`node lanes/slate/state-table.mjs` prints the ledger's state (frames from
+orders, capsules from acceptance evidence), writes
+`companion/boards/ledger.state.{json,md}`, and seals `slate.state`. It runs the
+same `src/state.js` the viewer bundles.
+
 ## Lit rules
 
 - lane: `payload.harness`, else the kind prefix when it names a lane, else the

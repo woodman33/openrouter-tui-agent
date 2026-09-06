@@ -28,7 +28,8 @@ function token() {
 }
 
 buildSlate();
-const server = spawn('npx', ['tsx', '-e', `import('./src/companion/server.ts').then(m => m.startCompanionServer(${PORT}))`], { cwd: ROOT, env: { ...process.env, TIMMY_REPO: REPO }, stdio: 'ignore' });
+const server = spawn('npx', ['tsx', '-e', `import('./src/companion/server.ts').then(m => m.startCompanionServer(${PORT}))`], { cwd: ROOT, env: { ...process.env, TIMMY_REPO: REPO }, stdio: 'ignore', detached: true });
+const stopServer = () => { try { process.kill(-server.pid, 'SIGTERM'); } catch { try { server.kill('SIGTERM'); } catch { /* gone */ } } };
 const base = `http://127.0.0.1:${PORT}`;
 for (let i = 0; i < 120; i++) { try { if ((await fetch(`${base}/slate3d/manifest.json`)).ok) break; } catch { /* wait */ } await new Promise((r) => setTimeout(r, 500)); }
 
@@ -57,7 +58,7 @@ try {
   result = { url, room: ROOM, worker: WORKER, posted, before, after, seen, shots };
   console.log(JSON.stringify({ room: ROOM, posted, seen, bus: after.map((a) => a.bus), lit: after.map((a) => a.lit), shots: shots.map((s) => s.sha256.slice(0, 16)) }, null, 1));
 } finally {
-  server.kill('SIGTERM');
+  stopServer();
 }
 if (!result) process.exit(1);
 const ok = result.seen.every(Boolean) && result.posted?.ok;

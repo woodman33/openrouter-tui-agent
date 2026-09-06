@@ -36,8 +36,9 @@ const boardSha = sha(boardPath);
 
 // 2. companion server against the root bus
 const server = spawn('npx', ['tsx', '-e', `import('./src/companion/server.ts').then(m => m.startCompanionServer(${PORT}))`], {
-  cwd: ROOT, env: { ...process.env, TIMMY_REPO: REPO }, stdio: ['ignore', 'pipe', 'pipe'],
+  cwd: ROOT, env: { ...process.env, TIMMY_REPO: REPO }, stdio: ['ignore', 'pipe', 'pipe'], detached: true,
 });
+const stopServer = () => { try { process.kill(-server.pid, 'SIGTERM'); } catch { try { server.kill('SIGTERM'); } catch { /* gone */ } } };
 let serverLog = '';
 server.stdout.on('data', (d) => { serverLog += d; });
 server.stderr.on('data', (d) => { serverLog += d; });
@@ -104,7 +105,7 @@ try {
   busEvent('slate.render.done', { board: BOARD, still_sha256: result.still_sha256, pods_lit: evidence.podsLit, events_seen: evidence.ticker.length });
   console.log(JSON.stringify({ url, board_sha256: boardSha, bundle: bundle.sha256, ...result }, null, 1));
 } finally {
-  server.kill('SIGTERM');
+  stopServer();
 }
 if (!result) { console.error(serverLog.slice(-2000)); process.exit(1); }
 if (result.errors.length) console.error('page errors:', result.errors);
