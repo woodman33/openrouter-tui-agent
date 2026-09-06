@@ -140,7 +140,16 @@ Acceptance for the first render
 
 ## Sequence
 
-1. seal this record as `slate.design`
-2. build the bundle, extend the companion server and page, render, seal `slate.render`
-3. `SlateRoom` in the preview worker + the bus bridge, then the two-browser check
-4. blueprint boards as sheets; capsule state from the receipt lifecycle
+1. seal this record as `slate.design` (done, rc_mtprtkya_5omr)
+2. build the bundle, extend the companion server and page, render, seal `slate.render` (done, rc_mtpsp5eb_qcsp)
+3. `SlateRoom` in the preview worker + the bus bridge, then the two-browser check (done, `slate.room` sealed; both viewers saw the same history and one live event)
+4. blueprint boards as sheets; capsule state from the receipt lifecycle (next)
+
+## Found while building
+
+- The bus moved. Main's core (`src/bus`) appends event envelopes beside the
+  receipts in `.timmy/receipts/runs.jsonl`; the legacy events file only gets
+  stragglers. The companion tail and the bridge read both and skip receipt
+  records.
+- Polling a room must use the `since` cursor; re-fetching the tail each poll
+  made a cycle take seconds and hid a live event from the first check.

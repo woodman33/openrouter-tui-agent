@@ -48,17 +48,23 @@ export function connectBus(opts, onEvent, onStatus) {
   }
 
   if (source === 'room' && room && worker) {
+    // first call: the tail; then a cursor (`since=<seq>`) so each poll carries
+    // only new rows and stays fast enough for a live feel
     const seen = new Set();
     let first = true;
+    let next = 0;
     const base = worker.replace(/\/$/, '');
     const tick = async () => {
       if (closed) return;
       try {
-        const r = await fetch(`${base}/runs/${encodeURIComponent(room)}/events`, { cache: 'no-store' });
+        const q = first ? '' : `?since=${next}`;
+        const r = await fetch(`${base}/runs/${encodeURIComponent(room)}/events${q}`, { cache: 'no-store' });
         const j = await r.json();
         const arr = Array.isArray(j) ? j : (j.events ?? []);
+        if (typeof j.next === 'number' && j.next > next) next = j.next;
         for (const e of arr) {
           const id = e.id ?? `${e.timestamp}:${e.type}`;
+          if (typeof e.seq === 'number' && e.seq > next) next = e.seq;
           if (seen.has(id)) continue;
           seen.add(id);
           let payload = e.payload ?? e.payload_json ?? {};
@@ -70,7 +76,7 @@ export function connectBus(opts, onEvent, onStatus) {
         status(false, `room ${room} unreachable`);
       }
       first = false;
-      setTimeout(tick, 2000);
+      setTimeout(tick, 1500);
     };
     tick();
     return { close: () => { closed = true; } };

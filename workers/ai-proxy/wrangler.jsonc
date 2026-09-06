@@ -20,12 +20,20 @@
   // head:<date> + head:latest (public at GET /head and at /api/head on the
   // custody site). The local anchor job (lanes/anchor) pulls it into the root chain.
   // Preview deployments: `npm run deploy:preview` (→ timmy-ai-proxy-preview).
+  //
+  // 2026-09-06 SLATE ROOM (Slate 3D decision 2): SlateRoom is a SQLite Durable
+  // Object speaking the runs/events contract of the repo's companion Durable
+  // Object (POST /runs/:id/event, GET /runs/:id/events) plus GET /runs/:id/ws.
+  // Reads are public like /head; writes need the caller token. It relays
+  // envelopes and never spawns work.
   "name": "timmy-ai-proxy",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
   "worker_loaders": [{ "binding": "LOADER" }],
   "kv_namespaces": [{ "binding": "CUSTODY_KV", "id": "8d783470266e44d9ab49143de5b88436" }],
+  "durable_objects": { "bindings": [{ "name": "SLATE_ROOM", "class_name": "SlateRoom" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SlateRoom"] }],
   "triggers": { "crons": ["5 9 * * *"] },
   "vars": {
     "CUSTODY_BASE_URL": "https://preview.vault-custody.pages.dev"

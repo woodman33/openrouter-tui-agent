@@ -14,18 +14,38 @@ import { z } from 'zod';
 import { HttpError, runCode, type CodeRequest, type Executor } from './code.js';
 import { computeDailyHead, readLatestHead, writeDailyHead } from './head.js';
 import { type Env, edgeTools, toolTypes } from './tools.js';
+import { corsHeaders, parseRunsPath, validRoom } from './room-core.js';
+export { SlateRoom } from './room.js';
 
 let windowStart = 0;
 let windowCount = 0;
 
 const json = (body: unknown, status = 200): Response => Response.json(body, { status });
 
+type RoomEnv = Env & { LOADER?: unknown; SLATE_ROOM?: DurableObjectNamespace };
+
 export default {
-  async fetch(req: Request, env: Env & { LOADER?: unknown }): Promise<Response> {
+  async fetch(req: Request, env: RoomEnv): Promise<Response> {
     const url = new URL(req.url);
 
     if (url.pathname === '/health') {
-      return json({ ok: true, worker: 'timmy-ai-proxy', auth: true, code_mode: !!env.LOADER, daily_head: !!env.CUSTODY_KV, tools: edgeTools().map((t) => t.name) });
+      return json({ ok: true, worker: 'timmy-ai-proxy', auth: true, code_mode: !!env.LOADER, daily_head: !!env.CUSTODY_KV, slate_room: !!env.SLATE_ROOM, tools: edgeTools().map((t) => t.name) });
+    }
+
+    // Slate rooms (Durable Object). Reads and the WebSocket are public like
+    // /head; writes need the caller token. The room only stores and relays.
+    const runs = parseRunsPath(url.pathname);
+    if (runs) {
+      if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders() });
+      if (!env.SLATE_ROOM) return json({ ok: false, error: 'no SLATE_ROOM binding on this deployment' }, 503);
+      if (runs.action !== 'create' && !validRoom(runs.room)) return json({ ok: false, error: 'bad room name' }, 400);
+      if (req.method === 'POST') {
+        const want = `Bearer ${env.TIMMY_EDGE_TOKEN ?? ''}`;
+        if (!env.TIMMY_EDGE_TOKEN || (req.headers.get('Authorization') ?? '') !== want) return json({ ok: false, error: 'unauthorized' }, 401);
+      }
+      if (runs.action === 'create') return json({ ok: true, note: 'rooms exist on first write' });
+      const stub = env.SLATE_ROOM.get(env.SLATE_ROOM.idFromName(runs.room));
+      return stub.fetch(req);
     }
 
     // Public: the daily edge chain head (anyone can recompute the chains from the public log).
@@ -117,7 +137,7 @@ export default {
       return new Response(r.body, { status: r.status, headers: { 'Content-Type': 'application/json' } });
     }
 
-    return json({ ok: false, error: 'not found; routes: /health /head /models /chat /code /code/tools' }, 404);
+    return json({ ok: false, error: 'not found; routes: /health /head /models /chat /code /code/tools /runs/:room/{events,event,ws}' }, 404);
   },
 
   // Daily cron (wrangler.toml [triggers]): walk every chain, publish the head.

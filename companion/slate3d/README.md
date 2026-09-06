@@ -25,6 +25,19 @@ open http://127.0.0.1:3001/slate3d/?board=ledger
 
 The companion page itself gets a SLATE 3D tab that embeds the same URL.
 
+## The room (two browsers, one board)
+
+```
+node lanes/slate/bus-bridge.mjs --room slate:ledger --replay 200        # seed + forward the live bus (ctrl-c to stop)
+node lanes/slate/room-check.mjs --room slate:ledger                     # two browsers, one live event, seals slate.room
+open "http://127.0.0.1:3001/slate3d/?board=ledger&room=slate:ledger&worker=https://timmy-ai-proxy-preview.wmeldman33.workers.dev"
+```
+
+The room is `SlateRoom` in `workers/ai-proxy` (SQLite Durable Object). Reads are
+public; writes need the worker's caller token, which the bridge reads from
+`workers/ai-proxy/.dev.vars`. The room stores and relays envelopes and never
+spawns work.
+
 ## Parameters
 
 | Query | Meaning |
