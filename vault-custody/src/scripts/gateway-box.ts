@@ -64,7 +64,8 @@ export function mountGatewayBox(canvas: HTMLCanvasElement): () => void {
   // Image-based lighting from a neutral room; the key and rim carry the mood.
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  scene.environmentIntensity = 0.5;
+  // The room's light panels are HDR-bright; keep their reflections gentle or they blow out under bloom.
+  scene.environmentIntensity = 0.3;
   pmrem.dispose();
 
   const key = new THREE.DirectionalLight(0xffe0bf, 2.4);
@@ -96,7 +97,8 @@ export function mountGatewayBox(canvas: HTMLCanvasElement): () => void {
   group.add(box);
 
   // Custody band around the girth. Dark green base, emissive driven by the intro.
-  const bandMat = new THREE.MeshStandardMaterial({ color: 0x0f4d27, emissive: PHOSPHOR, emissiveIntensity: reduce ? 0.75 : 0, roughness: 0.35, metalness: 0.1 });
+  // Matte band: no glossy reflections of the room, so only its own emissive glows.
+  const bandMat = new THREE.MeshStandardMaterial({ color: 0x0f4d27, emissive: PHOSPHOR, emissiveIntensity: reduce ? 0.9 : 0, roughness: 0.75, metalness: 0 });
   const bandT = 0.02, bandW = 0.34;
   const band = new THREE.Group();
   const mk = (w: number, h: number, d: number, x: number, y: number, z: number) => {
@@ -112,7 +114,7 @@ export function mountGatewayBox(canvas: HTMLCanvasElement): () => void {
   group.add(band);
 
   // Seal chip window on the lid (the NTAG 424 DNA TT) and the reveal tag under the lid edge.
-  const chipMat = new THREE.MeshStandardMaterial({ color: 0x0a1628, emissive: PHOSPHOR, emissiveIntensity: reduce ? 1.4 : 0, roughness: 0.3 });
+  const chipMat = new THREE.MeshStandardMaterial({ color: 0x0a1628, emissive: PHOSPHOR, emissiveIntensity: reduce ? 1.6 : 0, roughness: 0.6 });
   const chip = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.02, 40), chipMat);
   chip.position.set(0, H / 2 + bandT + 0.011, 0.12);
   group.add(chip);
@@ -142,7 +144,8 @@ export function mountGatewayBox(canvas: HTMLCanvasElement): () => void {
   const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
   // Tasteful: only the band and the chip clear the threshold, and the halo stays tight.
-  const bloom = new UnrealBloomPass(new THREE.Vector2(size().w, size().h), 0.28, 0.35, 0.9);
+  // HDR threshold above 1.0: only the chip and the band's emissive core clear it.
+  const bloom = new UnrealBloomPass(new THREE.Vector2(size().w, size().h), 0.35, 0.4, 1.05);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -181,8 +184,8 @@ export function mountGatewayBox(canvas: HTMLCanvasElement): () => void {
       camera.position.lerpVectors(CAM_START, CAM_FINAL, e);
       camera.lookAt(0, -0.1, 0);
       const ignite = Math.max(0, Math.min(1, (t - 0.9) / 0.7));
-      bandMat.emissiveIntensity = 0.75 * easeInOut(ignite);
-      chipMat.emissiveIntensity = 1.4 * easeInOut(ignite);
+      bandMat.emissiveIntensity = 0.9 * easeInOut(ignite);
+      chipMat.emissiveIntensity = 1.6 * easeInOut(ignite);
       const drift = Math.max(0, t - INTRO);
       tilt.lerp(ptr, 0.05);
       group.rotation.set(REST_ROT.x + tilt.y * 0.08, THREE.MathUtils.lerp(-1.5, REST_ROT.y, e) + drift * 0.12 + tilt.x * 0.14, 0);
