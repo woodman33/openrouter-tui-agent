@@ -87,12 +87,16 @@ export async function handleTap(search: URLSearchParams, deps: TapDeps): Promise
   });
   await deps.store.putChain(tag.serial, chain);
 
+  // 4. Where the phone goes: the receipt page, or the Custody Companion when
+  //    the tag address carries app=1 (HTML5 Defold + Rive, served at /companion/).
   const unit = unitFor(tag.serial);
-  const to = new URL(`/r/${tag.serial}`, 'https://x');
+  const app = search.get('app') === '1';
+  const to = new URL(app ? '/companion/index.html' : `/r/${tag.serial}`, 'https://x');
+  if (app) to.searchParams.set('serial', tag.serial);
   to.searchParams.set('tap', rec.hash.slice(0, 8));
   to.searchParams.set('n', String(r.readCounter));
   if (r.tagTamper) to.searchParams.set('tt', r.tagTamper.raw);
-  if (!unit) to.pathname = '/verify';
+  if (!unit && !app) to.pathname = '/verify';
   return {
     ok: true,
     serial: tag.serial,

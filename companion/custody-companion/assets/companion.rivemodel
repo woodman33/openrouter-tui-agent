@@ -1,0 +1,6 @@
+scene: "/assets/companion.rivescene"
+default_animation: ""
+material: "/defold-rive/assets/rivemodel.material"
+artboard: "Defold_Rive_template"
+coordinate_system: COORDINATE_SYSTEM_RIVE
+artboard_fit: FIT_LAYOUT

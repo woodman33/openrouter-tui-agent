@@ -1,0 +1,25 @@
+---
+// Deck end card: the QR, the address, the line. Product mode, nothing else.
+import Product from '../../layouts/Product.astro';
+const tapUrl = 'https://preview.vault-custody.pages.dev/t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086&tt=CC';
+---
+
+<Product title="Tap this" right="">
+  <section class="end">
+    <img class="qr" src="/qr/an12196-tap.png" width="420" height="420" alt="QR code that opens the tap address on the live edge" />
+    <div class="copy">
+      <h1>Tap this.</h1>
+      <p class="sub">Every box a 1/1. A receipt every box carries with it, and any phone can read.</p>
+      <p class="url mono">{tapUrl}</p>
+      <p class="chain">Trust the receipt, not the model.</p>
+    </div>
+  </section>
+</Product>
+
+<style>
+  .end { min-height: 70vh; display: grid; grid-template-columns: 420px 1fr; gap: 64px; align-items: center; }
+  .qr { display: block; width: 420px; height: 420px; border-radius: 8px; }
+  .copy h1 { font-size: var(--t5); }
+  .url { color: var(--phosphor); font-size: var(--t-1); word-break: break-all; margin: 24px 0 32px; }
+  @media (max-width: 900px) { .end { grid-template-columns: 1fr; } .qr { width: 288px; height: 288px; } }
+</style>

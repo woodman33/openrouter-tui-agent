@@ -1,0 +1,142 @@
+script: "/main/hud.gui_script"
+fonts {
+  name: "default"
+  font: "/builtins/fonts/default.font"
+}
+nodes {
+  position { x: 40.0 y: 1220.0 z: 0.0 w: 1.0 }
+  scale { x: 1.0 y: 1.0 z: 1.0 w: 1.0 }
+  size { x: 640.0 y: 40.0 z: 0.0 w: 1.0 }
+  color { x: 0.9 y: 0.93 z: 0.97 w: 1.0 }
+  type: TYPE_TEXT
+  text: "VAULT CUSTODY × TIMMY"
+  font: "default"
+  id: "title"
+  pivot: PIVOT_W
+  xanchor: XANCHOR_LEFT
+  yanchor: YANCHOR_TOP
+  adjust_mode: ADJUST_MODE_FIT
+  inherit_alpha: true
+}
+nodes {
+  position { x: 40.0 y: 1130.0 z: 0.0 w: 1.0 }
+  scale { x: 2.2 y: 2.2 z: 1.0 w: 1.0 }
+  size { x: 300.0 y: 60.0 z: 0.0 w: 1.0 }
+  color { x: 0.9 y: 0.93 z: 0.97 w: 1.0 }
+  type: TYPE_TEXT
+  text: "VC0007"
+  font: "default"
+  id: "serial"
+  pivot: PIVOT_W
+  xanchor: XANCHOR_LEFT
+  yanchor: YANCHOR_TOP
+  adjust_mode: ADJUST_MODE_FIT
+  inherit_alpha: true
+}
+nodes {
+  position { x: 40.0 y: 1060.0 z: 0.0 w: 1.0 }
+  scale { x: 1.2 y: 1.2 z: 1.0 w: 1.0 }
+  size { x: 560.0 y: 40.0 z: 0.0 w: 1.0 }
+  color { x: 0.2 y: 1.0 z: 0.4 w: 1.0 }
+  type: TYPE_TEXT
+  text: "reading the chain"
+  font: "default"
+  id: "state"
+  pivot: PIVOT_W
+  xanchor: XANCHOR_LEFT
+  yanchor: YANCHOR_TOP
+  adjust_mode: ADJUST_MODE_FIT
+  inherit_alpha: true
+}
+nodes {
+  position { x: 40.0 y: 1010.0 z: 0.0 w: 1.0 }
+  scale { x: 1.0 y: 1.0 z: 1.0 w: 1.0 }
+  size { x: 640.0 y: 40.0 z: 0.0 w: 1.0 }
+  color { x: 0.35 y: 0.42 z: 0.53 w: 1.0 }
+  type: TYPE_TEXT
+  text: ""
+  font: "default"
+  id: "product"
+  pivot: PIVOT_W
+  xanchor: XANCHOR_LEFT
+  yanchor: YANCHOR_TOP
+  adjust_mode: ADJUST_MODE_FIT
+  inherit_alpha: true
+}
+nodes {
+  position { x: 40.0 y: 300.0 z: 0.0 w: 1.0 }
+  scale { x: 1.0 y: 1.0 z: 1.0 w: 1.0 }
+  size { x: 640.0 y: 40.0 z: 0.0 w: 1.0 }
+  color { x: 0.9 y: 0.93 z: 0.97 w: 1.0 }
+  type: TYPE_TEXT
+  text: ""
+  font: "default"
+  id: "line1"
+  pivot: PIVOT_W
+  xanchor: XANCHOR_LEFT
+  yanchor: YANCHOR_BOTTOM
+  adjust_mode: ADJUST_MODE_FIT
+  inherit_alpha: true
+}
+nodes {
+  position { x: 40.0 y: 250.0 z: 0.0 w: 1.0 }
+  scale { x: 1.0 y: 1.0 z: 1.0 w: 1.0 }
+  size { x: 640.0 y: 40.0 z: 0.0 w: 1.0 }
+  color { x: 0.9 y: 0.93 z: 0.97 w: 1.0 }
+  type: TYPE_TEXT
+  text: ""
+  font: "default"
+  id: "line2"
+  pivot: PIVOT_W
+  xanchor: XANCHOR_LEFT
+  yanchor: YANCHOR_BOTTOM
+  adjust_mode: ADJUST_MODE_FIT
+  inherit_alpha: true
+}
+nodes {
+  position { x: 40.0 y: 200.0 z: 0.0 w: 1.0 }
+  scale { x: 1.0 y: 1.0 z: 1.0 w: 1.0 }
+  size { x: 640.0 y: 40.0 z: 0.0 w: 1.0 }
+  color { x: 0.9 y: 0.93 z: 0.97 w: 1.0 }
+  type: TYPE_TEXT
+  text: ""
+  font: "default"
+  id: "line3"
+  pivot: PIVOT_W
+  xanchor: XANCHOR_LEFT
+  yanchor: YANCHOR_BOTTOM
+  adjust_mode: ADJUST_MODE_FIT
+  inherit_alpha: true
+}
+nodes {
+  position { x: 40.0 y: 140.0 z: 0.0 w: 1.0 }
+  scale { x: 1.0 y: 1.0 z: 1.0 w: 1.0 }
+  size { x: 640.0 y: 40.0 z: 0.0 w: 1.0 }
+  color { x: 0.2 y: 1.0 z: 0.4 w: 1.0 }
+  type: TYPE_TEXT
+  text: ""
+  font: "default"
+  id: "head"
+  pivot: PIVOT_W
+  xanchor: XANCHOR_LEFT
+  yanchor: YANCHOR_BOTTOM
+  adjust_mode: ADJUST_MODE_FIT
+  inherit_alpha: true
+}
+nodes {
+  position { x: 40.0 y: 70.0 z: 0.0 w: 1.0 }
+  scale { x: 0.9 y: 0.9 z: 1.0 w: 1.0 }
+  size { x: 640.0 y: 40.0 z: 0.0 w: 1.0 }
+  color { x: 0.2 y: 1.0 z: 0.4 w: 1.0 }
+  type: TYPE_TEXT
+  text: "trust the receipt, not the model"
+  font: "default"
+  id: "foot"
+  pivot: PIVOT_W
+  xanchor: XANCHOR_LEFT
+  yanchor: YANCHOR_BOTTOM
+  adjust_mode: ADJUST_MODE_FIT
+  inherit_alpha: true
+}
+material: "/builtins/materials/gui.material"
+adjust_reference: ADJUST_REFERENCE_PARENT

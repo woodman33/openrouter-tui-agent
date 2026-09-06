@@ -1,0 +1,45 @@
+-- HUD: product-mode readout of the chain. Phosphor = chain text, orange = the
+-- human. Values arrive from custody.script; nothing here invents data.
+local PHOSPHOR = vmath.vector4(0.2, 1.0, 0.4, 1)
+local ORANGE = vmath.vector4(1.0, 0.55, 0.1, 1)
+local TEXT = vmath.vector4(0.9, 0.93, 0.97, 1)
+local MUTED = vmath.vector4(0.35, 0.42, 0.53, 1)
+
+local function set(id, text, color)
+	local n = gui.get_node(id)
+	gui.set_text(n, text or "")
+	if color then gui.set_color(n, color) end
+end
+
+function init(self)
+	set("title", "VAULT CUSTODY × TIMMY", TEXT)
+	set("serial", "", TEXT)
+	set("state", "", PHOSPHOR)
+	set("product", "", MUTED)
+	set("line1", "", TEXT)
+	set("line2", "", TEXT)
+	set("line3", "", TEXT)
+	set("head", "", PHOSPHOR)
+	set("foot", "trust the receipt, not the model", PHOSPHOR)
+end
+
+function on_message(self, message_id, message)
+	if message_id == hash("loading") then
+		set("serial", message.serial, TEXT)
+		set("state", "reading the chain", MUTED)
+	elseif message_id == hash("chain") then
+		set("serial", message.serial, TEXT)
+		set("state", string.upper(message.state), message.state == "opened" and ORANGE or PHOSPHOR)
+		set("product", message.product .. "  series " .. message.series, MUTED)
+		set("line1", "sealed  " .. message.sealed_where, TEXT)
+		set("line2", message.opened_city ~= "" and ("opened  " .. message.opened_city) or "seal intact", TEXT)
+		set("line3", string.format("%d signed taps  %s", message.taps, message.verify), TEXT)
+		local h = "head " .. message.head
+		if message.tap and message.tap ~= "" then h = h .. "  this tap " .. message.tap end
+		set("head", h, PHOSPHOR)
+	elseif message_id == hash("chain_error") then
+		set("state", "REFUSED", vmath.vector4(1, 0.23, 0.23, 1))
+		set("line1", "could not read the chain for " .. tostring(message.serial), MUTED)
+		set("line2", "status " .. tostring(message.status), MUTED)
+	end
+end

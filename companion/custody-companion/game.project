@@ -1,0 +1,25 @@
+[bootstrap]
+main_collection = /main/main.collectionc
+render = /defold-rive/lua/rive.renderc
+
+[script]
+shared_state = 1
+
+[display]
+width = 720
+height = 1280
+high_dpi = 1
+
+[project]
+title = CustodyCompanion
+version = 0.1.0
+dependencies#0 = https://github.com/defold/extension-rive/archive/main.zip
+
+[html5]
+scale_mode = fit
+show_fullscreen_button = 0
+show_made_with_defold = 0
+custom_heap_size = 268435456
+
+[graphics]
+opengl_version_hint = 42

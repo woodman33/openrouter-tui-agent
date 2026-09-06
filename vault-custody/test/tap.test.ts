@@ -83,6 +83,13 @@ describe('handleTap', () => {
     expect(chain[0].data).toMatchObject({ tt: 'OC', loop: 'broken' });
   });
 
+  it('app=1 sends the phone to the Custody Companion with the serial and the tap', async () => {
+    const out = await handleTap(new URLSearchParams(SUN1 + '&app=1'), { store: new MemoryStore() });
+    expect(out.ok).toBe(true);
+    if (!out.ok) return;
+    expect(out.redirect).toMatch(/^\/companion\/index\.html\?serial=VC0007&tap=[0-9a-f]{8}&n=61$/);
+  });
+
   it('plain mirror: bench tag verifies to VC0003', async () => {
     const out = await handleTap(new URLSearchParams('u=041E3C8A2D6B80&n=000006&c=4B00064004B0B3D3'), { store: new MemoryStore() });
     expect(out.ok).toBe(true);
