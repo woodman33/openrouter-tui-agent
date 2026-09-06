@@ -22,7 +22,7 @@ const payload = { serial, events, cities, hats: Object.fromEntries(Object.entrie
       <h1>{serial} <span class="muted">·</span> <span class="human">{unit?.product ?? 'unit'}</span></h1>
       <p class="sub">{events.length} chain events, every one stamped with its hat. One list, two views.</p>
     </div>
-    <div class="badgebox" id="badge-slot"><canvas id="badge" width="120" height="120" hidden></canvas><span id="badge-fallback" class:list={['badge', unit?.state]}>{unit?.state ?? 'unknown'}</span></div>
+    <div class="badgebox" id="badge-slot"><canvas id="badge" width="240" height="72" hidden aria-label={`custody state ${unit?.state ?? 'unknown'}`}></canvas><span id="badge-fallback" class:list={['badge', unit?.state]}>{unit?.state ?? 'unknown'}</span></div>
   </section>
 
   <div class="toggle" role="tablist">
@@ -99,7 +99,8 @@ const payload = { serial, events, cities, hats: Object.fromEntries(Object.entrie
         document.getElementById('badge-fallback')!.hidden = true;
         // Artboard "Badge" · state machine "State" · BadgeVM.state: 0 sealed, 1 opened, 2 verified.
         const stateIndex = (document.getElementById('badge-fallback')!.textContent ?? '').trim() === 'opened' ? 1 : 0;
-        const rive = new Rive({ src: '/rive/badges.riv', canvas, artboard: 'Badge', autoplay: true, autoBind: true, stateMachines: 'State', layout: new Layout({ fit: Fit.Contain }), onLoad: () => { try { const n = rive.viewModelInstance?.number('state'); if (n) n.value = stateIndex; } catch { /* runtime without data binding */ } } });
+        // Share export a9d01cc3… (rive.export): artboard Badge 240×72, BadgeVM.state drives T_Sealed / T_Opened / T_Verified.
+        const rive = new Rive({ src: '/rive/badges.riv', canvas, artboard: 'Badge', autoplay: true, autoBind: true, stateMachine: 'State', layout: new Layout({ fit: Fit.Contain }), onLoad: () => { rive.resizeDrawingSurfaceToCanvas(); try { const n = rive.viewModelInstance?.number('state'); if (n) n.value = stateIndex; } catch { /* runtime without data binding */ } } });
       }
     } catch { /* fallback stays */ }
   </script>
@@ -113,7 +114,10 @@ const payload = { serial, events, cities, hats: Object.fromEntries(Object.entrie
 <style>
   .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; font-family: var(--font-human); }
   .head h1 { font-size: 30px; margin: 0.2em 0 0.2em; }
-  .badgebox { display: grid; place-items: center; min-width: 120px; }
+  .badgebox { display: grid; place-items: center; min-width: 240px; }
+  .badgebox canvas { width: 240px; height: 72px; }
+  /* the class rule below would beat the user-agent [hidden] rule; keep hidden meaning hidden */
+  .badgebox [hidden] { display: none !important; }
   .badge { display: inline-block; border: 1px solid var(--orange); color: var(--orange); border-radius: 999px; padding: 6px 14px; font-family: var(--font-chain); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
   .badge.sealed { border-color: var(--phosphor); color: var(--phosphor); }
   .toggle { display: flex; align-items: center; gap: 8px; margin: 8px 0 12px; flex-wrap: wrap; }

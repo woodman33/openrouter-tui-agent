@@ -74,7 +74,8 @@ function init(self)
 	msg.post("#hud", "loading", { serial = self.serial })
 	local url = origin() .. "/api/chain/" .. self.serial
 	http.request(url, "GET", function(_, _, response) on_chain(self, response) end, { ["Accept"] = "application/json" })
-	if rive then pcall(rive.play_state_machine, "#rive", nil) end
+	-- Badge artboard (share export a9d01cc3…): state machine "State", BadgeVM auto-bound.
+	if rive then pcall(rive.play_state_machine, "#rive", "State") end
 end
 
 function on_input(self, action_id, action)

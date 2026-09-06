@@ -1,6 +1,7 @@
 scene: "/assets/companion.rivescene"
-default_animation: ""
-material: "/defold-rive/assets/rivemodel.material"
-artboard: "Defold_Rive_template"
+default_state_machine: "State"
+artboard: "Badge"
 coordinate_system: COORDINATE_SYSTEM_RIVE
-artboard_fit: FIT_LAYOUT
+artboard_fit: FIT_CONTAIN
+artboard_alignment: ALIGNMENT_CENTER
+auto_bind: true
