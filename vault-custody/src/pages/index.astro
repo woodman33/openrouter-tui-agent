@@ -1,101 +1,172 @@
 ---
-// GATEWAY. The sealed box, then six hats. Hats, not accounts.
+// GATEWAY. The sealed box, how the seal holds, six hats, tap this.
 import Product from '../layouts/Product.astro';
 import PitchNav from '../components/PitchNav.astro';
-import { HAT_ORDER, HAT_SHAPE, hats } from '../lib/hats';
+import { HAT_ORDER, HAT_SHAPE, hats, type HatId } from '../lib/hats';
 
 const tapUrl = 'https://preview.vault-custody.pages.dev/t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086&tt=CC';
+const ART: Record<HatId, string | null> = {
+  collector: '/img/tap.png',
+  manufacturer: '/img/vault.png',
+  retailer: '/img/theirbox.png',
+  distributor: null,
+  seller: '/img/slab.png',
+  grader: '/img/chest.png'
+};
+const facts = [
+  { title: 'Signed taps', body: 'The NTAG 424 DNA seal signs every tap with a per-tag key and a counter. A copy or a photo fails on the first tap.' },
+  { title: 'Tamper memory', body: 'The band runs through the seal. Break it and the chip stores the break forever and reports it at the next tap.' },
+  { title: 'A public chain', body: 'Every event is a receipt with prev and this. The head is published daily and anyone can recompute it from the log.' }
+];
 ---
 
-<Product title="Gateway" brand="VAULT CUSTODY × TIMMY" right="Series 001 · pilot · preview">
+<Product title="Gateway" right="Series 001 pilot">
   <PitchNav current="/" />
 
   <section class="hero">
-    <canvas id="box" class="box" aria-label="A sealed hobby box with a glowing custody band, rotating"></canvas>
+    <div class="stage rise" style="--d:0ms">
+      <canvas id="box" class="box" aria-label="A sealed hobby box with a glowing custody band"></canvas>
+    </div>
     <div class="copy">
-      <h1>Every box a 1/1.</h1>
-      <p class="sub">A receipt every box carries with it, and any phone can read. The seal signs every tap. The band remembers the break. The chain is public.</p>
-      <div class="ctas">
+      <h1 class="rise" style="--d:180ms">Every box a 1/1.</h1>
+      <p class="sub rise" style="--d:300ms">A receipt every box carries with it, and any phone can read. The seal signs the tap. The band remembers the break.</p>
+      <div class="ctas rise" style="--d:420ms">
         <a class="btn" href="#hats">Pick a hat</a>
-        <a class="btn ghost" href="#tap">Tap this</a>
+        <a class="btn ghost" href="/p/VC0007">See the provenance</a>
       </div>
     </div>
   </section>
 
-  <section id="hats" class="hats">
+  <section class="section seal rv" id="seal">
+    <figure class="paper">
+      <img src="/img/two_seal_box_diagram.svg" width="1200" height="620" alt="Diagram of the two-seal box: the custody band over the lid, the seal chip through the band window, and the reveal tag under the lid" loading="lazy" />
+    </figure>
+    <div class="facts">
+      <h2>It goes on the box you already make.</h2>
+      {facts.map((f) => (
+        <div class="fact">
+          <h3>{f.title}</h3>
+          <p>{f.body}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section rv" id="hats">
     <h2>Six hats.</h2>
-    <p class="sub">Hats, not accounts. One account may hold several; every chain event stamps its hat.</p>
-    <ul class="grid">
+    <p class="sub">Hats, not accounts. One account may hold several, and every chain event stamps its hat.</p>
+    <ul class="bento">
       {HAT_ORDER.map((id) => {
         const h = hats[id];
+        const art = ART[id];
         return (
-          <li class="hat">
-            <span class:list={['mark', HAT_SHAPE[id]]} aria-hidden="true"></span>
-            <h3>{h.label}</h3>
-            <p class="verb">{h.verb}.</p>
-            <p class="blurb">{h.blurb}</p>
-            <p class="who"><span class="chain-dim">{h.identity.hash}</span> · {h.identity.city}</p>
-            <a class="enter" href={`/hat/${id}`}>Enter as {h.label} →</a>
+          <li class:list={['hat', id, { plain: !art }]} style={art ? `--art:url(${art})` : undefined}>
+            <a href={`/hat/${id}`} class="hat-link">
+              <span class="hat-top"><i class:list={['mark', HAT_SHAPE[id]]} aria-hidden="true"></i><span class="who">{h.verb}.</span></span>
+              <span class="hat-name">{h.label}</span>
+              <span class="hat-blurb">{h.blurb}</span>
+              <span class="hat-enter">Enter as {h.label}</span>
+            </a>
           </li>
         );
       })}
     </ul>
   </section>
 
-  <section id="tap" class="tap">
-    <div class="qr">
-      <img src="/qr/an12196-tap.png" width="320" height="320" alt="QR code: tap this to open the AN12196 test-vector address on the live edge" />
-    </div>
-    <div>
-      <h2>Tap this.</h2>
-      <p class="sub">This is NXP's published AN12196 test vector, mapped to box VC0007. It opens the real <span class="chain">/t</span> address on the live edge: the signature verifies, a <span class="chain">custody.tap</span> receipt seals, and the phone lands on the receipt page.</p>
-      <p class="url chain">{tapUrl}</p>
-      <p class="muted">Published vectors are fixed addresses, so this one is a demo tag: recorded, never refused as replay. A production tag writes a new address on every tap, and the old one is refused.</p>
-      <a class="btn" href={tapUrl}>Open the tap address</a>
+  <section class="section rv" id="tap">
+    <div class="tapband">
+      <img class="qr" src="/qr/an12196-tap.png" width="288" height="288" alt="QR code that opens the AN12196 test-vector tap address on the live edge" loading="lazy" />
+      <div class="tapcopy">
+        <h2>Tap this.</h2>
+        <p class="sub">NXP's published AN12196 vector, mapped to box VC0007. It opens the real tap address on the live edge: the signature verifies, a receipt seals, the phone lands on the receipt page.</p>
+        <p class="url mono">{tapUrl}</p>
+        <a class="btn" href={tapUrl}>Open the tap address</a>
+      </div>
     </div>
   </section>
 
-  <section class="more">
-    <a href="/demo">The six pages</a> · <a href="/s/001">Series 001</a> · <a href="/log">Custody lane</a> · <a href="/api/head">Daily head</a>
-  </section>
+  <footer class="foot rv">
+    <nav aria-label="More"><a href="/demo">The six pages</a><a href="/s/001">Series 001</a><a href="/log">Custody lane</a><a href="/api/head">Daily head</a></nav>
+    <p class="chain">Trust the receipt, not the model.</p>
+  </footer>
 
   <script>
     import { mountGatewayBox } from '../scripts/gateway-box';
     const c = document.getElementById('box') as HTMLCanvasElement | null;
     if (c) mountGatewayBox(c);
+
+    // Scroll reveals: pre-state only when motion is allowed, so the page is
+    // complete at rest for thumbnails, no-JS, and reduced motion.
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && 'IntersectionObserver' in window) {
+      const els = document.querySelectorAll<HTMLElement>('.rv');
+      els.forEach((el) => el.classList.add('rv-pre'));
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) if (e.isIntersecting) { e.target.classList.add('rv-in'); io.unobserve(e.target); }
+      }, { threshold: 0.12 });
+      els.forEach((el) => io.observe(el));
+    }
   </script>
 </Product>
 
 <style>
-  .hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 32px; align-items: center; margin: 16px 0 56px; }
-  .box { width: 100%; height: 480px; display: block; border-radius: 8px; background: radial-gradient(ellipse at 50% 60%, #101f38 0%, var(--navy) 70%); }
-  .hero h1 { font-size: clamp(40px, 5vw, 64px); line-height: 1; margin: 0 0 12px; }
-  .hero .sub { max-width: 44ch; font-size: 18px; }
-  .ctas { display: flex; gap: 12px; }
-  .btn { display: inline-block; background: var(--orange); color: var(--navy); font-family: var(--font-human); font-weight: 700; padding: 12px 20px; border-radius: 4px; text-decoration: none; }
-  .btn.ghost { background: transparent; color: var(--orange); border: 1px solid var(--orange); }
-  .hats h2, .tap h2 { font-family: var(--font-human); font-size: 32px; margin: 0 0 6px; }
-  .hats .sub { margin-bottom: 24px; }
-  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
-  .hat { background: var(--navy-2); border: 1px solid var(--navy-line); border-radius: 8px; padding: 20px 20px 18px; display: grid; gap: 6px; font-family: var(--font-human); }
-  .hat h3 { margin: 0; font-size: 20px; }
-  .hat .verb { margin: 0; color: var(--orange); }
-  .hat .blurb { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.45; min-height: 3.6em; }
-  .hat .who { margin: 4px 0 0; font-family: var(--font-chain); font-size: 12px; color: var(--text-muted); }
-  .hat .enter { color: var(--orange); text-decoration: none; margin-top: 6px; }
-  .mark { width: 18px; height: 18px; display: inline-block; background: var(--orange); }
-  .mark.circle { border-radius: 50%; }
-  .mark.square { border-radius: 2px; }
-  .mark.diamond { transform: rotate(45deg) scale(0.85); }
-  .mark.triangle { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
-  .mark.hexagon { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
-  .mark.ring { border-radius: 50%; background: transparent; border: 4px solid var(--orange); box-sizing: border-box; }
-  .tap { display: grid; grid-template-columns: 340px 1fr; gap: 32px; align-items: start; margin: 64px 0; background: var(--navy-2); border: 1px solid var(--navy-line); border-radius: 8px; padding: 24px; }
-  .qr img { display: block; width: 320px; height: 320px; border-radius: 4px; }
-  .url { word-break: break-all; font-size: 13px; }
-  .tap .btn { margin-top: 8px; }
-  .more { color: var(--text-2); font-family: var(--font-human); }
-  @media (max-width: 900px) { .hero, .tap { grid-template-columns: 1fr; } .box { height: 340px; } }
+  /* Hero: asymmetric split, the object first. */
+  .hero { display: grid; grid-template-columns: 1.25fr 1fr; gap: 40px; align-items: center; margin-top: 16px; min-height: 560px; }
+  .stage { position: relative; }
+  .box { width: 100%; height: 560px; display: block; border-radius: 8px; background: radial-gradient(ellipse at 50% 62%, #12213c 0%, var(--navy) 68%); }
+  .copy h1 { font-size: var(--t5); }
+  .ctas { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+
+  /* Seal anatomy: the diagram is the physical object, so it sits on paper. */
+  .seal { display: grid; grid-template-columns: 5fr 7fr; gap: 48px; align-items: center; }
+  .paper { margin: 0; background: #F4F2EC; border-radius: 8px; padding: 24px; }
+  .paper img { display: block; width: 100%; height: auto; }
+  .facts h2 { margin-bottom: 8px; }
+  .fact { border-top: 1px solid var(--navy-line); padding: 24px 0 8px; margin-top: 24px; display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: baseline; }
+  .fact p { color: var(--text-2); max-width: 52ch; line-height: 1.5; }
+
+  /* Hats: bento, six cells, five on the deck renders, one tinted. */
+  .bento { list-style: none; margin: 40px 0 0; padding: 0; display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 200px; gap: 16px; }
+  .hat { grid-column: span 3; position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--navy-line); background: var(--navy-2); }
+  .hat.collector { grid-column: span 6; grid-row: span 2; }
+  .hat.manufacturer { grid-column: span 6; }
+  .hat.seller, .hat.grader { grid-column: span 6; }
+  .hat::before { content: ''; position: absolute; inset: 0; background: var(--art) center / cover no-repeat; opacity: 0.78; transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; }
+  .hat.plain::before { background: linear-gradient(140deg, var(--navy-3), var(--navy-2)); opacity: 1; }
+  .hat::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 22, 40, 0.05) 0%, rgba(10, 22, 40, 0.55) 45%, rgba(10, 22, 40, 0.94) 100%); }
+  .hat:hover::before { transform: scale(1.04); opacity: 0.9; }
+  .hat-link { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; height: 100%; padding: 20px; color: var(--text); text-decoration: none; }
+  .hat-top { display: inline-flex; align-items: center; gap: 10px; font-size: var(--t-1); }
+  .hat-name { font-family: var(--font-human); font-weight: 700; font-size: var(--t2); line-height: 1; letter-spacing: -0.01em; }
+  .hat.collector .hat-name { font-size: var(--t4); }
+  .hat-blurb { color: var(--text-2); font-size: var(--t-1); line-height: 1.45; max-width: 44ch; }
+  .hat:not(.collector):not(.manufacturer) .hat-blurb { display: none; }
+  .hat-enter { color: var(--orange); font-size: var(--t-1); margin-top: 4px; }
+  .hat-link:hover .hat-enter { text-decoration: underline; }
+
+  /* Tap this: one band, the QR at print size. */
+  .tapband { display: grid; grid-template-columns: 288px 1fr; gap: 40px; align-items: center; background: var(--navy-2); border: 1px solid var(--navy-line); border-radius: 8px; padding: 32px; }
+  .qr { display: block; width: 288px; height: 288px; border-radius: 4px; }
+  .url { color: var(--phosphor); font-size: var(--t-1); word-break: break-all; margin: 16px 0 20px; }
+
+  .foot { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--navy-line); }
+  .foot nav { display: flex; gap: 24px; flex-wrap: wrap; }
+  .foot nav a { color: var(--text-2); text-decoration: none; }
+  .foot nav a:hover { color: var(--orange); }
+  .foot .chain { font-size: var(--t-1); }
+
+  @media (max-width: 1000px) {
+    .hero { grid-template-columns: 1fr; min-height: 0; }
+    .box { height: 380px; }
+    .seal { grid-template-columns: 1fr; }
+    .bento { grid-auto-rows: 180px; }
+    .hat, .hat.collector, .hat.manufacturer, .hat.seller, .hat.grader { grid-column: span 6; grid-row: span 1; }
+    .hat.collector { grid-column: span 12; }
+    .tapband { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .hat, .hat.collector, .hat.manufacturer, .hat.seller, .hat.grader { grid-column: span 12; }
+    .fact { grid-template-columns: 1fr; gap: 6px; }
+    .copy h1 { font-size: var(--t4); }
+  }
 </style>

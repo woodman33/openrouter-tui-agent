@@ -5,6 +5,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 export type Shape = 'circle' | 'square' | 'diamond' | 'triangle' | 'hexagon' | 'ring';
 export interface PEvent {
@@ -43,8 +47,9 @@ export function mountTimeline(host: HTMLElement, events: PEvent[], onSelect: (e:
   const w = host.clientWidth || 900;
   const hgt = host.clientHeight || 520;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(w, hgt);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.domElement.style.display = 'block';
   host.appendChild(renderer.domElement);
   const labels = new CSS2DRenderer();
@@ -64,10 +69,19 @@ export function mountTimeline(host: HTMLElement, events: PEvent[], onSelect: (e:
   controls.maxPolarAngle = Math.PI * 0.58;
   controls.target.set(0, 0, 0);
 
+  scene.fog = new THREE.Fog(NAVY, 11, 26);
   scene.add(new THREE.HemisphereLight(0xe6edf7, NAVY, 0.7));
   const key = new THREE.PointLight(0xffffff, 30, 60, 2);
   key.position.set(4, 6, 6);
   scene.add(key);
+
+  // Post: the phosphor path and chain markers are the only things bright enough to bloom.
+  const target = new THREE.WebGLRenderTarget(w, hgt, { type: THREE.HalfFloatType, samples: 4 });
+  const composer = new EffectComposer(renderer, target);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(w, hgt), 0.45, 0.5, 0.82);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
 
   // Time axis: x from -6 to 6 by timestamp order (evenly spaced, with the real
   // gaps hinted by the label), a gentle S in z so the path reads in 3D.
@@ -134,6 +148,8 @@ export function mountTimeline(host: HTMLElement, events: PEvent[], onSelect: (e:
     const W = host.clientWidth || 900;
     const H = host.clientHeight || 520;
     renderer.setSize(W, H);
+    composer.setSize(W, H);
+    bloom.resolution.set(W, H);
     labels.setSize(W, H);
     camera.aspect = W / H;
     camera.updateProjectionMatrix();
@@ -150,7 +166,7 @@ export function mountTimeline(host: HTMLElement, events: PEvent[], onSelect: (e:
       if (!reduce && m !== selected) m.rotation.y += 0.004;
     });
     controls.update();
-    renderer.render(scene, camera);
+    composer.render();
     labels.render(scene, camera);
     raf = requestAnimationFrame(loop);
   };
@@ -172,6 +188,8 @@ export function mountTimeline(host: HTMLElement, events: PEvent[], onSelect: (e:
     window.removeEventListener('resize', resize);
     renderer.domElement.removeEventListener('pointerdown', pick);
     controls.dispose();
+    composer.dispose();
+    target.dispose();
     renderer.dispose();
     host.innerHTML = '';
   };
