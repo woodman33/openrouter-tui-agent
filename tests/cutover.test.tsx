@@ -75,6 +75,7 @@ describe('cutover companions on the shell directly', { timeout: 60000 }, () => {
     expect(turn).toBeTruthy();
     expect(String(turn?.subject)).toContain('chat.turn ·');
     expect(typeof turn?.cost_usd).toBe('number');
+    expect((turn?.sources as { role?: string; text?: string }[] | undefined)?.[0]?.text).toBe('hello world');
     view.unmount();
   });
 

@@ -17,7 +17,14 @@ process.stdout.write('\x1Bc');
 process.stdout.write(`\x1b[1mTIMMY\x1b[0m   chain · ${head8()}\r\n\x1b[2massembling…\x1b[0m\r\n`);
 const { spawnSync } = require('child_process');
 const fast = existsSync('dist/fast-entry.js') && process.argv.length === 2;
-const args = fast ? ['dist/fast-entry.js'] : existsSync('dist/cli.js') ? ['dist/cli.js', ...process.argv.slice(2)] : ['tsx', 'cli.tsx', ...process.argv.slice(2)];
-const cmd = fast || existsSync('dist/cli.js') ? process.execPath : 'npx';
+const isTuiBundle = (p) => {
+  try {
+    const s = readFileSync(p, 'utf8');
+    return s.includes('startShellV2') || s.includes('TIMMY_SHELL');
+  } catch { return false; }
+};
+const compiledTui = existsSync('dist/cli.js') && isTuiBundle('dist/cli.js');
+const args = fast ? ['dist/fast-entry.js'] : compiledTui ? ['dist/cli.js', ...process.argv.slice(2)] : ['tsx', 'cli.tsx', ...process.argv.slice(2)];
+const cmd = fast || compiledTui ? process.execPath : 'npx';
 const r = spawnSync(cmd, args, { stdio: 'inherit' });
 process.exit(r.status ?? 0);

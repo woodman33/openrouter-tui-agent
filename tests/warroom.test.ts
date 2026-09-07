@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
 import { ShellV2 } from '../src/tui/components/ShellV2.js';
-import { appendReceipt } from '../src/utils/receipts.js';
+import { appendReceipt, readChain } from '../src/utils/receipts.js';
 import * as warroom from '../src/harness/warroom.js';
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -51,6 +51,24 @@ describe('warroom', () => {
     expect(warroom.killWar().ok).toBe(true);
   });
 
+  it('restore replaces an already running war room profile', () => {
+    const first: warroom.WarProfile = {
+      name: 'first',
+      harnesses: [{ id: 'sh:sleep 60', model: null, weight: 1 }],
+      commander: { model: 'openrouter/auto', ws: null },
+    };
+    const second: warroom.WarProfile = {
+      name: 'second',
+      harnesses: [{ id: 'sh:sleep 61', model: null, weight: 1 }],
+      commander: { model: 'openrouter/auto', ws: null },
+    };
+    expect(warroom.startWarRoom(first).ok).toBe(true);
+    expect(warroom.startWarRoom(second).ok).toBe(true);
+    const names = warroom.panes().map(p => p.name);
+    expect(names).toContain('sh:sleep 61');
+    expect(names).not.toContain('sh:sleep 60');
+  });
+
   it('CHAT tab shows transcript from receipts; COMMAND tab shows commander + harness panes', async () => {
     appendReceipt('runs', {
       kind: 'chat', subject: 'chat.turn · openrouter/auto', policy: 'human-gated', status: 'ok',
@@ -67,6 +85,20 @@ describe('warroom', () => {
     f = await until(view, x => /COMMANDER ·/i.test(x));
     expect(f).toContain('HARNESS PANES');
     expect(f).toContain('cmdr');
+    view.unmount();
+  });
+
+  it('COMMAND handoff key seals the selected harness', async () => {
+    const view = render(React.createElement(ShellV2, { width: 120 }));
+    await until(view, x => x.includes('YOUR JOURNEY'));
+    view.stdin.write('6');
+    await until(view, x => /COMMANDER ·/i.test(x));
+    view.stdin.write('K');
+    const t0 = Date.now();
+    let handoff;
+    while (!(handoff = readChain('runs').find(r => String(r.subject).startsWith('commander.handoff'))) && Date.now() - t0 < 10000) await sleep(100);
+    expect(handoff).toBeTruthy();
+    expect(Array.isArray(handoff?.sources)).toBe(true);
     view.unmount();
   });
 });

@@ -27,7 +27,7 @@ const cmdFor = (id: string): string => id.startsWith('sh:') ? id.slice(3) : (CMD
 export function warRunning(): boolean { return tmux(['has-session', '-t', WAR_SESSION]).status === 0; }
 
 export function startWarRoom(p: WarProfile): { ok: boolean; note?: string } {
-  if (warRunning()) return { ok: true, note: 'already running' };
+  if (warRunning()) killWar();
   const first = p.harnesses[0];
   if (!first) return { ok: false, note: 'empty profile' };
   const r = tmux(['new-session', '-d', '-s', WAR_SESSION, '-n', first.id, cmdFor(first.id)]);

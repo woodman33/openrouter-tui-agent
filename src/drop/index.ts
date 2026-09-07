@@ -66,12 +66,18 @@ function toolReady(kind: 'roboflow' | 'sceneforge' | 'defold'): boolean {
 
 export interface DropResult { lane: string; file: string; sha: string; template: string | null; status: string; out?: string }
 
+const harnessForDrop = (lane: string, template: string | null): string =>
+  template === 'defold-build' ? 'defold'
+    : template === 'houdini-sceneforge' ? 'houdini-mcp'
+      : template === 'observer-roboflow' ? 'openhands'
+        : lane;
+
 export function processDrop(file: string, dir?: string): DropResult {
   const root = dir ?? dropRoot();
   const lane = basename(dirname(file));
   const sha = shaOfFile(file);
-  appendReceipt('runs', { kind: 'run', subject: `drop.intake ${lane}/${basename(file)}`, policy: 'human-gated', status: 'ok', path: file, sha, lane, spans: [], artifacts: [] } as unknown as Parameters<typeof appendReceipt>[1], dir);
-  publish('drop.intake', { lane, path: file, sha }, dir);
+  appendReceipt('runs', { kind: 'run', subject: `drop.intake ${lane}/${basename(file)}`, policy: 'human-gated', status: 'ok', path: file, sha, lane, spans: [], artifacts: [] } as unknown as Parameters<typeof appendReceipt>[1]);
+  publish('drop.intake', { lane, path: file, sha });
   const template = matchTemplate(lane, file, root);
   const outDir = join(outRoot(), lane);
   mkdirSync(outDir, { recursive: true });
@@ -85,21 +91,33 @@ export function processDrop(file: string, dir?: string): DropResult {
     objective: `hot-drop ${lane}: ${basename(file)} via ${template ?? 'unrouted'}`,
     deliverables: [basename(file)],
     acceptance_tests: ['true'],
-    harnesses: ['local'],
+    harnesses: [harnessForDrop(lane, template)],
+    model_policy: { requested: 'auto', allow_paid: false, max_spend_usd: 0 },
+    copies: 1,
+    cadence: { mode: 'sequential', depends_on: [] },
+    context_manifest: [],
+    repo_ref: process.env.GITHUB_SHA ?? process.env.CI_COMMIT_SHA ?? 'local',
     workspace: { kind: 'host-ephemeral' },
+    permissions: { filesystem: 'rw-ephemeral', network: false, tools: [], secrets: [] },
+    limits: { cost_usd: 0, wall_ms: 300000 },
+    retry_limit: 0,
+    approval: { required: true, mode: 'manual' },
+    expected_artifacts: [basename(file)],
+    telemetry: { redact: true, events: true },
   } as unknown as DispatchPlan;
-  const cp = createPlan(plan, dir);
+  const cp = createPlan(plan);
   let armed: { ok: boolean; note?: string } = { ok: false, note: 'no plan' };
   if (cp.ok && cp.id && cp.plan_hash) {
     const ap = issueApproval(cp.plan_hash);
-    armed = armPlan(cp.id, ap.token, dir);
+    armed = armPlan(cp.id, ap.token);
   }
+  if (status === 'dispatched' && !armed.ok) status = 'not_armed';
   // board shape via the slate compiler (ForgeSheet), honest about tool state
   const board = { lane, file: basename(file), sha, template, status, armed: armed.ok, tool: tool ?? 'none', nodes: [{ id: `drop-${sha.slice(0, 8)}`, type: 'drop', lane, sha }] };
   const outPath = join(outDir, `${basename(file)}.board.json`);
   writeFileSync(outPath, JSON.stringify(board, null, 2), 'utf8');
-  appendReceipt('runs', { kind: 'run', subject: `drop.result ${lane}/${basename(file)}`, policy: 'auto', status: status === 'not_configured' ? 'failed' : 'ok', error_class: status === 'not_configured' ? 'not_configured' : undefined, lane, sha, template, out: outPath, spans: [], artifacts: [outPath] } as unknown as Parameters<typeof appendReceipt>[1], dir);
-  publish('drop.result', { lane, sha, status, out: outPath }, dir);
+  appendReceipt('runs', { kind: 'run', subject: `drop.result ${lane}/${basename(file)}`, policy: 'auto', status: status === 'dispatched' ? 'ok' : 'failed', error_class: status === 'not_configured' ? 'not_configured' : status === 'not_armed' ? 'dispatch' : undefined, lane, sha, template, out: outPath, spans: [], artifacts: [outPath] } as unknown as Parameters<typeof appendReceipt>[1]);
+  publish('drop.result', { lane, sha, status, out: outPath });
   return { lane, file, sha, template, status, out: outPath };
 }
 

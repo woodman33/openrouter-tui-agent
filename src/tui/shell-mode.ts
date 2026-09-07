@@ -103,7 +103,7 @@ export function shellOnKey(s: ShellState, key: string): ShellStep {
   }
   // COMMAND center verbs (warroom-t3b1)
   if (st.tab === 'COMMAND') {
-    if (key === 'm') return { state: st, handled: true, actions: ['cmd-model'] };
+    if (key === 'm') { st.overlay = 'cmdmodel'; st.pick = 0; return { state: st, handled: true, actions: ['cmd-model'] }; }
     if (key === 'b') return { state: st, handled: true, actions: ['cmd-body'] };
     if (key === 'f') return { state: st, handled: true, actions: ['cmd-fusion'] };
     if (key === 'g') return { state: st, handled: true, actions: ['cmd-generate'] };

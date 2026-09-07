@@ -100,6 +100,7 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
   const [spend, setSpend] = useState(0);
   const [handoff, setHandoff] = useState<{ harness: string; model: string } | null>(null);
   const [escrows, setEscrows] = useState<Escrow[]>([]);
+  const commanderRef = React.useRef<CommanderClient | null>(null);
   // SPEC §04 W4: the LIVE pane ticks from bus events, never from a poll.
   const [laneLive, setLaneLive] = useState<Record<string, { ticks: number; last: string; lifecycle: string; at: string }>>({});
   // SPEC §05: the VERIFY strip glows ONLY after a real verify — either one run
@@ -160,6 +161,7 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
       const h = (e as { harness?: string }).harness;
       if (h) setProfile(pr => warroom.setActivity(pr, h, e.kind === 'thinking' ? 'thinking' : e.kind === 'responding' ? 'responding' : 'idle'));
     });
+    commanderRef.current = cc;
     cc.connect();
     const poll = setInterval(() => {
       setCommanderOnline(cc.online);
@@ -169,7 +171,12 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
         setSpend(readChain('runs').filter(r => String(r.ts).slice(0, 10) === day).reduce((n, r) => n + (r.cost_usd ?? 0), 0));
       } catch { /* chain unreadable */ }
     }, 2000);
-    return () => { h.stop(); clearInterval(poll); cc.close(); };
+    return () => {
+      h.stop();
+      clearInterval(poll);
+      cc.close();
+      if (commanderRef.current === cc) commanderRef.current = null;
+    };
   }, []);
 
   // docker is a capability, not a danger: off renders dim ○, never red
@@ -276,6 +283,68 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
         setModelsTick(t => t + 1);
         setFlash(`note saved for ${selModel.id}`);
       }
+      // COMMAND center verbs drive the live war room and commander socket.
+      if (a.startsWith('focus-pane:')) {
+        const idx = Math.max(0, Number(a.slice('focus-pane:'.length)) || 0);
+        warroom.focusPane(idx);
+        const next = { ...sRef.current, selected: idx };
+        sRef.current = next;
+        setS(next);
+        setFlash(`focus harness ${idx + 1}`);
+      }
+      if (a === 'cmd-model') setFlash('pick commander model · Enter applies');
+      if (a === 'cmd-model-set') {
+        const picked = models[Math.min(sRef.current.pick, Math.max(0, models.length - 1))];
+        if (picked) {
+          setProfile(pr => ({ ...pr, commander: { ...pr.commander, model: picked.id } }));
+          commanderRef.current?.send({ kind: 'model', model: picked.id });
+          setFlash(`commander model → ${picked.id}`);
+        }
+      }
+      if (a === 'cmd-harness-set') {
+        const idx = Math.min(sRef.current.pick, Math.max(0, profile.harnesses.length - 1));
+        const h = profile.harnesses[idx];
+        if (h) {
+          const model = profile.commander.model;
+          setProfile(pr => ({
+            ...pr,
+            harnesses: pr.harnesses.map((x, i) => (i === idx ? { ...x, model } : x)),
+          }));
+          commanderRef.current?.send({ kind: 'harness_model', harness: h.id, model });
+          setFlash(`${h.id} → ${model}`);
+        }
+      }
+      if (a === 'cmd-body' || a === 'cmd-fusion' || a === 'cmd-generate') {
+        const kind = a === 'cmd-body' ? 'body' : a === 'cmd-fusion' ? 'fusion' : 'generate';
+        commanderRef.current?.send({ kind });
+        setFlash(`commander ${kind}`);
+      }
+      if (a === 'cmd-toggle') {
+        const idx = Math.min(sRef.current.selected, Math.max(0, profile.harnesses.length - 1));
+        warroom.togglePane(idx);
+        commanderRef.current?.send({ kind: 'toggle', harness: profile.harnesses[idx]?.id ?? null });
+        setFlash(`toggle harness ${idx + 1}`);
+      }
+      if (a === 'cmd-handoff') {
+        const idx = Math.min(sRef.current.selected, Math.max(0, profile.harnesses.length - 1));
+        const h = profile.harnesses[idx];
+        if (h) {
+          const model = h.model ?? profile.commander.model;
+          setHandoff({ harness: h.id, model });
+          commanderRef.current?.send({ kind: 'handoff', harness: h.id, model, pause_openrouter: true });
+          appendReceipt('runs', {
+            kind: 'seal', subject: `commander.handoff · ${h.id} · ${model}`, policy: 'human-gated', status: 'ok',
+            sources: [{ role: 'commander', text: `handoff ${h.id} ${model}` }],
+          });
+          setFlash(`handoff sealed → ${h.id}`);
+        }
+      }
+      if (a === 'cmd-kill') {
+        const r = warroom.killWar();
+        setWarPanes([]);
+        commanderRef.current?.send({ kind: 'kill' });
+        setFlash(r.ok ? 'war room killed' : 'war room not running');
+      }
       // SPEC §08: each chat exchange seals as chat.turn citing model + cost.
       // The agent's own legacy writes reach the bus through the eventbus shim.
       if (a === 'chat-send' && chatText.trim()) {
@@ -285,7 +354,22 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
           void import('../../agent/core.js').then(m => {
             const ag = m.createAgent(config as never);
             setLazyAgent(ag);
-            void ag.send(text);
+            const model = ag.getModel();
+            const costBefore = Number((ag as unknown as { totalCost?: number })?.totalCost ?? 0);
+            void (async () => {
+              try {
+                await ag.send(text);
+              } catch {
+                // Later chat sends use the hook's swallowed-error path; keep
+                // the first lazy turn equally receipted.
+              }
+              const costAfter = Number((ag as unknown as { totalCost?: number })?.totalCost ?? 0);
+              appendReceipt('runs', {
+                kind: 'chat', subject: `chat.turn · ${model}`, policy: 'human-gated', status: 'ok',
+                cost_usd: Math.max(0, Math.round((costAfter - costBefore) * 1e6) / 1e6), model_resolved: model,
+                sources: [{ role: 'user', text }],
+              });
+            })();
           });
           setFlash('sovereign chat warming…');
           return;
@@ -299,6 +383,7 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
           appendReceipt('runs', {
             kind: 'chat', subject: `chat.turn · ${model}`, policy: 'human-gated', status: 'ok',
             cost_usd: Math.max(0, Math.round((costAfter - costBefore) * 1e6) / 1e6), model_resolved: model,
+            sources: [{ role: 'user', text: chatText.trim() }],
           });
         })();
       }
@@ -616,6 +701,28 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
               </Text>
             ))}
             <Text color={theme.textMuted}>[j/k] move  [Enter] write harness.policy  [Esc] back</Text>
+          </Box>
+        )}
+        {s.overlay === 'cmdmodel' && (
+          <Box position="absolute" top={2} left={20} backgroundColor={theme.surfaceRaised} paddingX={1} flexDirection="column">
+            <Text bold color={theme.textPrimary}>COMMANDER MODEL — pick active model</Text>
+            {models.slice(0, 10).map((m, i) => (
+              <Text key={m.id} color={i === s.pick ? theme.textPrimary : theme.textSecondary}>
+                {`${i === s.pick ? '▶' : ' '} ${m.id}`}
+              </Text>
+            ))}
+            <Text color={theme.textMuted}>[j/k] move  [Enter] set commander model  [Esc] back</Text>
+          </Box>
+        )}
+        {s.overlay === 'cmdharness' && (
+          <Box position="absolute" top={2} left={20} backgroundColor={theme.surfaceRaised} paddingX={1} flexDirection="column">
+            <Text bold color={theme.textPrimary}>HARNESS MODEL — commander model to pane</Text>
+            {profile.harnesses.map((h, i) => (
+              <Text key={h.id} color={i === s.pick ? theme.textPrimary : theme.textSecondary}>
+                {`${i === s.pick ? '▶' : ' '} ${h.id} → ${profile.commander.model}`}
+              </Text>
+            ))}
+            <Text color={theme.textMuted}>[j/k] move  [Enter] set harness model  [Esc] back</Text>
           </Box>
         )}
         {s.overlay === 'note' && (

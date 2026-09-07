@@ -33,9 +33,10 @@ describe('hot-drop (control-plane-k3e7)', () => {
     expect(r.template).toBe('observer-roboflow');
     expect(r.status).toBe('not_configured'); // honest: no ROBOFLOW key
     expect(r.out && existsSync(r.out)).toBe(true);
-    const chain = readChain('runs', drop);
+    const chain = readChain('runs');
     expect(chain.some(c => String(c.subject).startsWith('drop.intake'))).toBe(true);
     expect(chain.some(c => String(c.subject).startsWith('drop.result'))).toBe(true);
+    expect(readChain('runs', drop)).toEqual([]);
     const board = JSON.parse(readFileSync(r.out!, 'utf8'));
     expect(board.nodes[0].lane).toBe('observer');
   });
