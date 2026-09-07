@@ -116,7 +116,7 @@ export function startDropWatcher(cb: (r: DropResult) => void, dir?: string): { s
         const key = `${p}:${statSync(p).size}`;
         if (seen.has(key) || f === '.rules.cue') continue;
         seen.add(key);
-        cb(processDrop(p, root));
+        cb(processDrop(p, dir));
       }
     }
   };

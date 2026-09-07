@@ -44,7 +44,7 @@ tmux send-keys -t spk -M 'MouseDown:4,4' 2>/dev/null
 sleep 1
 tmux capture-pane -p -t spk > /tmp/spike-cap.txt 2>/dev/null
 MOUSE=$(grep -c 'selected:' /tmp/spike-cap.txt)
-tmux kill-session -t spk 2>/dev/null; tmux kill-server 2>/dev/null
+tmux kill-session -t spk 2>/dev/null
 echo "first_frame=$((FIRST - T0))ms home=$((HOMEAT - T0))ms rain_latency=${LAT1}/${LAT2}ms rss=${RSS}KB mouse_selected=$MOUSE"
 
 echo "== ink =="
@@ -63,5 +63,5 @@ LAT1=$(latency ink rain-080 "$D2")
 LAT2=$(latency ink rain-081 "$D2")
 wait
 RSS=$(ps -o rss= -p "$PID" 2>/dev/null | tr -d ' ')
-tmux kill-session -t ink 2>/dev/null; tmux kill-server 2>/dev/null
+tmux kill-session -t ink 2>/dev/null
 echo "first_frame=$((FIRST - T0))ms home=$((HOMEAT - T0))ms rain_latency=${LAT1}/${LAT2}ms rss=${RSS}KB mouse_selected=0(no mouse handlers)"

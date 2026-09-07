@@ -7,10 +7,15 @@ const head8 = () => {
   try {
     const p = '.timmy/receipts/runs.jsonl';
     if (!existsSync(p)) return '—';
-    const s = readFileSync(p, 'utf8');
-    const i = s.lastIndexOf('\n', s.length - 2);
-    const j = JSON.parse(s.slice(i + 1));
-    return String(j.hash || '').slice(7, 15) || '—';
+    const lines = readFileSync(p, 'utf8').split('\n').filter(Boolean);
+    for (let i = lines.length - 1; i >= 0; i--) {
+      try {
+        const j = JSON.parse(lines[i]);
+        const hash = typeof j.hash === 'string' ? j.hash : '';
+        if (hash) return hash.slice(7, 15) || '—';
+      } catch { /* skip malformed tail lines */ }
+    }
+    return '—';
   } catch { return '—'; }
 };
 process.stdout.write('\x1Bc');

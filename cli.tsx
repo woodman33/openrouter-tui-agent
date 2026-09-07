@@ -22,10 +22,16 @@ const bootHead8 = (): string => {
   try {
     const p = '.timmy/receipts/runs.jsonl';
     if (!existsSync(p)) return '—';
-    const str = readFileSync(p, 'utf8');
-    const i = str.lastIndexOf('\n', str.length - 2);
-    const j = JSON.parse(str.slice(i + 1));
-    return String(j.hash ?? '').slice(7, 15) || '—';
+    const lines = readFileSync(p, 'utf8').split('\n').filter(Boolean);
+    for (let i = lines.length - 1; i >= 0; i--) {
+      try {
+        const j = JSON.parse(lines[i]) as { hash?: unknown };
+        if (typeof j.hash === 'string' && j.hash) return j.hash.slice(7, 15) || '—';
+      } catch {
+        // Ignore malformed tail lines; the boot frame should show the last seal.
+      }
+    }
+    return '—';
   } catch { return '—'; }
 };
 const bootIsDefaultTui = (!process.argv[2] || process.argv[2] === 'tui')

@@ -38,6 +38,7 @@ export type ProviderService =
 export interface ProviderEnvVar {
   name: string;
   requiredWhenEnabled?: boolean;
+  requiredGroup?: string;
   secret?: boolean;
   description: string;
 }
@@ -181,8 +182,8 @@ export const PROVIDER_REGISTRY: readonly ProviderRegistryEntry[] = [
     role: 'External media artifact generator for images, video, and model-hosted creative jobs.',
     services: ['artifact-generation', 'image-generation', 'video'],
     envVars: [
-      { name: 'FAL_KEY', secret: true, description: 'fal API key (canonical).' },
-      { name: 'FALAI_API_KEY', secret: true, description: 'legacy alias accepted by resolveFalCredential.' },
+      { name: 'FAL_KEY', requiredWhenEnabled: true, requiredGroup: 'fal_api_key', secret: true, description: 'fal API key (canonical).' },
+      { name: 'FALAI_API_KEY', requiredWhenEnabled: true, requiredGroup: 'fal_api_key', secret: true, description: 'legacy alias accepted by resolveFalCredential.' },
     ],
   },
   {
@@ -304,11 +305,7 @@ export function auditProvider(
   const checkedEnvVars = provider.envVars.map((entry) => entry.name);
   const presentEnvVars = checkedEnvVars.filter((name) => isPresent(env[name]));
   const enabled = presentEnvVars.length > 0;
-  const missingRequiredEnvVars = enabled
-    ? provider.envVars
-        .filter((entry) => entry.requiredWhenEnabled && !isPresent(env[entry.name]))
-        .map((entry) => entry.name)
-    : [];
+  const missingRequiredEnvVars = enabled ? missingRequiredEnvVarsFor(provider, env) : [];
 
   return {
     id: provider.id,
@@ -321,6 +318,31 @@ export function auditProvider(
     missingRequiredEnvVars,
     checkedEnvVars,
   };
+}
+
+function missingRequiredEnvVarsFor(
+  provider: ProviderRegistryEntry,
+  env: NodeJS.ProcessEnv,
+): string[] {
+  const missing: string[] = [];
+  const requiredGroups = new Map<string, ProviderEnvVar[]>();
+
+  for (const entry of provider.envVars) {
+    if (!entry.requiredWhenEnabled) continue;
+    if (entry.requiredGroup) {
+      requiredGroups.set(entry.requiredGroup, [...(requiredGroups.get(entry.requiredGroup) ?? []), entry]);
+    } else if (!isPresent(env[entry.name])) {
+      missing.push(entry.name);
+    }
+  }
+
+  for (const entries of requiredGroups.values()) {
+    if (!entries.some((entry) => isPresent(env[entry.name]))) {
+      missing.push(...entries.map((entry) => entry.name));
+    }
+  }
+
+  return missing;
 }
 
 export function auditProviders(env: NodeJS.ProcessEnv = process.env): ProviderAuditEntry[] {

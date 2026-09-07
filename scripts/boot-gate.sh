@@ -17,7 +17,6 @@ for run in 1 2 3; do
     if [ -z "$SETTLED" ] && grep -q 'YOUR JOURNEY' /tmp/bootgate.txt; then SETTLED=$(ms); break; fi
   done
   tmux kill-session -t bootgate 2>/dev/null
-  tmux kill-server 2>/dev/null
   sleep 1
   if [ -z "$FIRST" ] || [ -z "$SETTLED" ]; then echo "FAIL run$run: no frames captured"; FAIL=1; continue; fi
   F=$((FIRST-T0)); H=$((SETTLED-T0))
@@ -25,7 +24,6 @@ for run in 1 2 3; do
   [ "$F" -le 1000 ] || { echo "FAIL first_frame ${F}ms > 1000ms"; FAIL=1; }
   [ "$H" -le 3000 ] || { echo "FAIL home ${H}ms > 3000ms"; FAIL=1; }
 done
-tmux kill-server 2>/dev/null
 if [ "$FAIL" = 1 ]; then echo "GATE tui.boot FAIL"; exit 1; fi
 echo "GATE tui.boot PASS"
 exit 0

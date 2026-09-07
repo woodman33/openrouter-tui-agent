@@ -261,7 +261,7 @@ if (command === 'chat') {
 
 if (command === 'profile') {
   // warroom-t3b1: save/restore the war room from ~/timmy/projects/<name>/profile.cue
-  const name = String(args[1] ?? 'default');
+  const name = String(args.slice(1).find(arg => !arg.startsWith('-')) ?? 'default');
   const wr = await import('./harness/warroom.js');
   if (args.includes('--restore')) {
     const p = wr.loadProfile(name);
