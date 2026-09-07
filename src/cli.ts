@@ -259,6 +259,54 @@ if (command === 'chat') {
   process.exit(r.status ?? 0);
 }
 
+if (command === 'profile') {
+  // warroom-t3b1: save/restore the war room from ~/timmy/projects/<name>/profile.cue
+  const name = String(args[1] ?? 'default');
+  const wr = await import('./harness/warroom.js');
+  if (args.includes('--restore')) {
+    const p = wr.loadProfile(name);
+    if (!p) { console.error(`no profile at ${wr.profilePath(name)}`); process.exit(2); }
+    const r = wr.startWarRoom(p);
+    console.log(r.ok ? `war room restored from ${wr.profilePath(name)} (session ${wr.WAR_SESSION})` : `restore failed: ${r.note}`);
+    process.exit(r.ok ? 0 : 1);
+  }
+  const p = wr.defaultProfile();
+  p.name = name;
+  const f = wr.saveProfile(p);
+  console.log(`profile saved → ${f}`);
+  process.exit(0);
+}
+if (command === 'starship') {
+  const { readChain } = await import('./utils/receipts.js');
+  const all = readChain('runs');
+  const head = String(all[all.length - 1]?.hash ?? '—').slice(7, 15);
+  const day = new Date().toISOString().slice(0, 10);
+  const spend = all.filter(r => String(r.ts).slice(0, 10) === day).reduce((n, r) => n + (r.cost_usd ?? 0), 0);
+  const profile = process.env.TIMMY_PROFILE ?? 'default';
+  console.log(`chain ${head} · $${spend.toFixed(2)} · ${profile}`);
+  process.exit(0);
+}
+if (command === 'zsh') {
+  if (args[1] !== 'install') { console.error('usage: timmy zsh install'); process.exit(2); }
+  const { homedir } = await import('os');
+  const { join } = await import('path');
+  const { existsSync, readFileSync, appendFileSync, mkdirSync } = await import('fs');
+  const zsh = join(homedir(), '.zshrc');
+  const block = [
+    '', '# timmy warroom (timmy zsh install)',
+    'tp() { export TIMMY_PROFILE="${1:-default}"; timmy profile "$TIMMY_PROFILE" --restore && tmux attach -t timmy-war; }',
+  ].join('\n');
+  const cur = existsSync(zsh) ? readFileSync(zsh, 'utf8') : '';
+  if (!cur.includes('tp() {')) appendFileSync(zsh, block + '\n');
+  const star = join(homedir(), '.config', 'starship.toml');
+  mkdirSync(join(homedir(), '.config'), { recursive: true });
+  const scur = existsSync(star) ? readFileSync(star, 'utf8') : '';
+  if (!scur.includes('[custom.timmy]')) {
+    appendFileSync(star, '\n[custom.timmy]\ncommand = "timmy starship"\ndescription = "chain head · spend · profile"\nwhen = true\nformat = "[$output]($style) "\nstyle = "bold green"\n');
+  }
+  console.log(`zsh installed: ${zsh} + ${star}`);
+  process.exit(0);
+}
 if (command === 'seal') {
   // Generic sealing verb (SHOWRUNNER Phase A-FIX): thin CLI wrapper over
   // the same appendReceipt path the chat uses. Subjects are data — no

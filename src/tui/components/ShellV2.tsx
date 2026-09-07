@@ -3,8 +3,9 @@ import { Box, Text, useInput } from 'ink';
 import { spawn, spawnSync } from 'child_process';
 import { readdirSync, existsSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
+import { homedir } from 'os';
 import qr from 'qrcode-terminal';
-import { shellOnKey, initialShell, type ShellState } from '../shell-mode.js';
+import { shellOnKey, initialShell, TABS, type ShellState } from '../shell-mode.js';
 import { ShellFooter, WhichKeyOverlay } from './ShellChrome.js';
 import { theme } from '../theme.js';
 import { readChain, verifyChain, appendReceipt, hashOf, type Receipt } from '../../utils/receipts.js';
@@ -15,6 +16,8 @@ import { readPolicy, setModel, ADAPTERS } from '../../harness/policy.js';
 import { dropRoot, SHIPPED_RULES } from '../../drop/index.js';
 import { listEscrows, lockEscrow, cancelEscrow, type Escrow } from '../../utils/escrow-engine.js';
 import { journeyRows, journeyDoneCount } from '../journey.js';
+import * as warroom from '../../harness/warroom.js';
+import { CommanderClient, type CommanderEvent } from '../../harness/commander.js';
 import { Card } from '../ui/Card.js';
 import { useAgent } from '../hooks/useAgent.js';
 import type { Agent } from '../../agent/core.js';
@@ -60,18 +63,42 @@ const NOOP_AGENT = {
   conversation: { getHistory: () => [] }, totalCost: 0,
 } as unknown as Agent;
 
-export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent }) {
-  const chat = useAgent(agent ?? NOOP_AGENT);
+export function ShellV2({ width = 120, agent, config }: { width?: number; agent?: Agent; config?: unknown }) {
+  const [lazyAgent, setLazyAgent] = useState<Agent | undefined>(undefined);
+  const effectiveAgent = agent ?? lazyAgent;
+  const chat = useAgent(effectiveAgent ?? NOOP_AGENT);
   const [s, setS] = useState<ShellState>(initialShell);
   const sRef = React.useRef<ShellState>(s);
-  const [chain, setChain] = useState<{ ok: boolean; count: number }>({ ok: false, count: 0 });
-  const [recs, setRecs] = useState<Receipt[]>([]);
-  const [head, setHead] = useState('');
+  // BOOT (opentui-u4e9): the chain head is read SYNCHRONOUSLY so the very
+  // first frame is the header WITH the chain head; panes assemble one tick later.
+  const [boot] = useState(() => {
+    try {
+      const all = readChain('runs');
+      const v = verifyChain('runs');
+      return { ok: v.ok, count: v.count, head: String(all[all.length - 1]?.hash ?? ''), recs: all };
+    } catch { return { ok: false, count: 0, head: '', recs: [] as Receipt[] }; }
+  });
+  const [chain, setChain] = useState<{ ok: boolean; count: number }>({ ok: boot.ok, count: boot.count });
+  const [recs, setRecs] = useState<Receipt[]>(boot.recs);
+  const [head, setHead] = useState(boot.head);
+  const [assembled, setAssembled] = useState(false);
+  useEffect(() => {
+    const t = setImmediate(() => setAssembled(true));
+    return () => clearImmediate(t);
+  }, []);
   const [busLive, setBusLive] = useState(false);
   const [activity, setActivity] = useState<BusRow[]>([]);
   const [docker, setDocker] = useState<boolean | null>(null);
   const [flash, setFlash] = useState('');
   const [qrText, setQrText] = useState('');
+  const [statusLines, setStatusLines] = useState<string[]>([]);
+  // warroom-t3b1: commander (durable Cloudflare agent) + war room state
+  const [profile, setProfile] = useState<warroom.WarProfile>(() => warroom.defaultProfile());
+  const [cmdEvents, setCmdEvents] = useState<CommanderEvent[]>([]);
+  const [commanderOnline, setCommanderOnline] = useState(false);
+  const [warPanes, setWarPanes] = useState<warroom.WarPane[]>([]);
+  const [spend, setSpend] = useState(0);
+  const [handoff, setHandoff] = useState<{ harness: string; model: string } | null>(null);
   const [escrows, setEscrows] = useState<Escrow[]>([]);
   // SPEC §04 W4: the LIVE pane ticks from bus events, never from a poll.
   const [laneLive, setLaneLive] = useState<Record<string, { ticks: number; last: string; lifecycle: string; at: string }>>({});
@@ -126,7 +153,23 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
       }
       if (e.kind === 'receipt.sealed' || e.hash) refresh();
     }, { tail: 12 });
-    return () => h.stop();
+    const cc = new CommanderClient(profile.commander.ws, e => {
+      setCmdEvents(prev => [e, ...prev].slice(0, 40));
+      if (e.model) setProfile(pr => ({ ...pr, commander: { ...pr.commander, model: e.model as string } }));
+      if (e.spend !== undefined) setSpend(Number(e.spend));
+      const h = (e as { harness?: string }).harness;
+      if (h) setProfile(pr => warroom.setActivity(pr, h, e.kind === 'thinking' ? 'thinking' : e.kind === 'responding' ? 'responding' : 'idle'));
+    });
+    cc.connect();
+    const poll = setInterval(() => {
+      setCommanderOnline(cc.online);
+      setWarPanes(warroom.panes());
+      try {
+        const day = new Date().toISOString().slice(0, 10);
+        setSpend(readChain('runs').filter(r => String(r.ts).slice(0, 10) === day).reduce((n, r) => n + (r.cost_usd ?? 0), 0));
+      } catch { /* chain unreadable */ }
+    }, 2000);
+    return () => { h.stop(); clearInterval(poll); cc.close(); };
   }, []);
 
   // docker is a capability, not a danger: off renders dim ○, never red
@@ -236,12 +279,23 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
       // SPEC §08: each chat exchange seals as chat.turn citing model + cost.
       // The agent's own legacy writes reach the bus through the eventbus shim.
       if (a === 'chat-send' && chatText.trim()) {
+        // BOOT: the agent graph lazy-loads on first chat send
+        if (!effectiveAgent && config) {
+          const text = chatText.trim();
+          void import('../../agent/core.js').then(m => {
+            const ag = m.createAgent(config as never);
+            setLazyAgent(ag);
+            void ag.send(text);
+          });
+          setFlash('sovereign chat warming…');
+          return;
+        }
         const model = chat.model || policy.default || '—';
-        const costBefore = Number((agent as unknown as { totalCost?: number })?.totalCost ?? 0);
+        const costBefore = Number((effectiveAgent as unknown as { totalCost?: number })?.totalCost ?? 0);
         setFlash(`sovereign chat → ${model}`);
         void (async () => {
           await chat.send(chatText.trim());
-          const costAfter = Number((agent as unknown as { totalCost?: number })?.totalCost ?? 0);
+          const costAfter = Number((effectiveAgent as unknown as { totalCost?: number })?.totalCost ?? 0);
           appendReceipt('runs', {
             kind: 'chat', subject: `chat.turn · ${model}`, policy: 'human-gated', status: 'ok',
             cost_usd: Math.max(0, Math.round((costAfter - costBefore) * 1e6) / 1e6), model_resolved: model,
@@ -267,7 +321,9 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
   // 80x24 also starves VERTICALLY (wrapped chrome eats rows): compact mode
   // drops the card purpose lines so the ladder never clips.
   const compact = (process.stdout.rows ?? 32) <= 26;
-  const lanes = useMemo(() => listLanes(), []);
+  // BOOT: lane probes are cold spawnSync execs — never in the first render path
+  const [lanes, setLanes] = useState<{ id: string; label: string; available: boolean; install?: string; model?: string }[]>([]);
+  useEffect(() => { setLanes(listLanes()); }, []);
   const [modelsTick, setModelsTick] = useState(0);
   const models = useMemo(() => listModelsSync(), [modelsTick]);
   // policy lives beside the store so per-test TIMMY_STORE isolates it too
@@ -410,7 +466,7 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
       <Box>
         <Text bold color={theme.textPrimary}>TIMMY</Text>
         <Text color={theme.textMuted}>  </Text>
-        {(['HOME', 'RUN', 'CHAIN', 'LIBRARY'] as const).map((t, i) => (
+        {TABS.map((t, i) => (
           <Text key={t} color={s.tab === t ? theme.seal : theme.textMuted}>{s.tab === t ? ` ${i + 1} ${t} ` : ` ${i + 1} ${t}`}</Text>
         ))}
         <Text color={theme.seal}>   chain {chain.ok ? '✓' : '—'} {chain.count}{head ? ` · ${head.slice(7, 15)}` : ''}</Text>
@@ -420,7 +476,10 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
             segment's place; STATUS still names the policy model). */}
         {allClear
           ? <Text color={theme.textMuted}>  nothing needs you</Text>
-          : <Text color={theme.textMuted}>  model {model}</Text>}
+          : <Text color={theme.textMuted}>  model {String(model).split('/').pop()}</Text>}
+        {(s.tab === 'CHAT' || s.tab === 'COMMAND') && (
+          <Text color={theme.textMuted}>{`  cmdr ${profile.commander.model} ${commanderOnline ? 'ws●' : 'ws○'} $${spend.toFixed(2)}${handoff ? ` →${handoff.harness}` : ''}`}</Text>
+        )}
       </Box>
       <Text color={theme.line}>{'─'.repeat(width)}</Text>
       {/* SPEC §08: in CHAT the screen underneath stays visible, dimmed (PAL) */}
@@ -428,7 +487,7 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
         {/* keyed by tab: panes are stateless, and a fresh mount makes ink
             repaint the whole column — its line-diff drops the first line of a
             swapped column otherwise (PTY evidence, step 6 captures) */}
-        <Box flexDirection="column" width={narrow ? width : 74} key={`L:${s.tab}`}>
+        {assembled && (<Box flexDirection="column" width={narrow ? width : 74} key={`L:${s.tab}`}>
           {s.tab === 'HOME' && (
             <HomePane
               recs={recs} chain={chain} busLive={busLive} docker={docker}
@@ -451,6 +510,10 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
             </>
           )}
           {s.tab === 'CHAIN' && <ChainPane recs={recs} filtered={filtered} selected={Math.min(s.selected, Math.max(0, filtered.length - 1))} chain={chain} verified={verified} filter={s.filter} />}
+          {s.tab === 'CHAT' && <ChatPane recs={recs} />}
+          {s.tab === 'COMMAND' && (
+            <CommandPane profile={profile} online={commanderOnline} events={cmdEvents} spend={spend} handoff={handoff} />
+          )}
           {s.tab === 'LIBRARY' && (
             <>
               <ModelsPane view={modelsView} selected={Math.min(s.selected, Math.max(0, selectableModels.length - 1))} sel={selModel} filter={s.filter} compact={compact} />
@@ -459,8 +522,18 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
               <BoardsPane boards={boards} projects={projects} />
             </>
           )}
-        </Box>
-        {!narrow && s.tab === 'HOME' && (
+        </Box>)}
+        {assembled && !narrow && s.tab === 'CHAT' && (
+          <Box flexDirection="column" width={44} marginLeft={2} flexGrow={1} key={`R:${s.tab}`}>
+            <LogRain events={activity} />
+          </Box>
+        )}
+        {assembled && !narrow && s.tab === 'COMMAND' && (
+          <Box flexDirection="column" width={44} marginLeft={2} flexGrow={1} key={`R:${s.tab}`}>
+            <HarnessPanes profile={profile} panes={warPanes} lanes={lanes} />
+          </Box>
+        )}
+        {assembled && !narrow && s.tab === 'HOME' && (
           <Box flexDirection="column" width={44} marginLeft={2} flexGrow={1} key={`R:${s.tab}`}>
             <Card title="LATEST PROOF" purpose="the only thing that glows green">
               {last ? (
@@ -484,18 +557,18 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
             </Card>
           </Box>
         )}
-        {!narrow && s.tab === 'CHAIN' && (
+        {assembled && !narrow && s.tab === 'CHAIN' && (
           <Box flexDirection="column" width={44} marginLeft={2} flexGrow={1} key={`R:${s.tab}`}>
             <DetailPane rec={selectedRec} />
           </Box>
         )}
-        {!narrow && s.tab === 'LIBRARY' && (
+        {assembled && !narrow && s.tab === 'LIBRARY' && (
           /* FIX 2: FLEET owns the full-height right rail */
           <Box flexDirection="column" width={44} marginLeft={2} flexGrow={1} key={`R:${s.tab}`}>
             <FleetPane lanes={lanes} policy={policy} />
           </Box>
         )}
-        {!narrow && s.tab === 'RUN' && (
+        {assembled && !narrow && s.tab === 'RUN' && (
           <Box flexDirection="column" width={44} marginLeft={2} flexGrow={1} key={`R:${s.tab}`}>
             <LivePane row={runRows.rows[Math.min(s.selected, Math.max(0, runRows.rows.length - 1))]} recs={recs} compact={compact} />
             {pendingEscrows[0] ? <><Box height={1} /><EscrowPane escrow={pendingEscrows[0]} requester={escrowRequester} /></> : null}
@@ -574,7 +647,7 @@ export function ShellV2({ width = 120, agent }: { width?: number; agent?: Agent 
           LIBRARY/RUN must be visible where they happen */}
       {flash ? <Text color={theme.seal} wrap="truncate">{flash}</Text> : null}
       {s.overlay === 'whichkey' && <WhichKeyOverlay mode={s.mode} tab={s.tab} />}
-      <ShellFooter mode={s.mode} tab={s.tab} chainOk={chain.ok} chainCount={chain.count} busLive={busLive} width={width} model={policy.default ?? undefined} />
+      {assembled && <ShellFooter mode={s.mode} tab={s.tab} chainOk={chain.ok} chainCount={chain.count} busLive={busLive} width={width} model={policy.default ?? undefined} />}
     </Box>
   );
 }
@@ -901,6 +974,81 @@ function BoardsPane(props: { boards: { templates: string[]; blueprints: string[]
       <Text color={PAL.textSecondary} wrap="truncate">{`blueprint  ${b.blueprints.length ? b.blueprints.join(' · ') : '—'}`}</Text>
       <Text color={PAL.textSecondary} wrap="truncate">{`template   ${b.templates.length ? b.templates.join(' · ') : '—'}`}</Text>
       <Text color={PAL.textMuted} wrap="truncate">{`PROJECTS  ${props.projects.join(' · ') || '—'}`}</Text>
+    </Card>
+  );
+}
+
+// warroom-t3b1 — CHAT tab: transcript rises from the bottom (you · thinking
+// dim · answer · turn receipt hash); LOG RAIN falls in the right rail.
+function ChatPane({ recs }: { recs: Receipt[] }) {
+  const turns = recs.filter(r => r.kind === 'chat').slice(-10);
+  return (
+    <Box flexDirection="column" justifyContent="flex-end" flexGrow={1}>
+      <Card title="CHAT · sovereign" purpose="transcript rises from the bottom" flexGrow={1}>
+        {turns.length === 0 ? <Text color={PAL.textMuted}>no turns yet — type to talk to the commander-backed chat</Text> : turns.map(r => {
+          const src = Array.isArray(r.sources) ? r.sources as { role?: string; text?: string }[] : [];
+          const you = src.find(x => x.role === 'user')?.text ?? '';
+          return (
+            <Box key={r.id} flexDirection="column">
+              <Text color={PAL.textPrimary} wrap="truncate">{`you: ${you.slice(0, 100)}`}</Text>
+              <Text color={PAL.textSecondary} wrap="truncate">{`${String(r.subject).replace('chat.turn · ', 'answer · ').slice(0, 100)}`}</Text>
+              <Text color={PAL.textMuted} wrap="truncate">{`#${r.hash.slice(7, 15)} · $${(r.cost_usd ?? 0).toFixed(4)}`}</Text>
+            </Box>
+          );
+        })}
+      </Card>
+    </Box>
+  );
+}
+
+function LogRain({ events }: { events: { line: string; refused: boolean; sealed: boolean }[] }) {
+  return (
+    <Card title="LOG RAIN" purpose="bus events enter at the top, falling, dimming" flexGrow={1}>
+      {events.length === 0 ? <Text color={PAL.textMuted}>quiet</Text> : events.slice(0, 14).map((e, i) => (
+        <Text key={i} color={e.refused ? PAL.danger : i < 3 ? PAL.textSecondary : PAL.textMuted} dimColor={i > 8} wrap="truncate">
+          {e.line.slice(0, 40)}
+        </Text>
+      ))}
+    </Card>
+  );
+}
+
+// COMMAND tab left: the commander pane — fixed, never covered.
+function CommandPane(props: {
+  profile: warroom.WarProfile; online: boolean; events: CommanderEvent[];
+  spend: number; handoff: { harness: string; model: string } | null;
+}) {
+  return (
+    <Box flexDirection="column" flexGrow={1}>
+      <Card title={`COMMANDER · ${props.profile.commander.model}`} purpose={props.online ? 'ws● connected — events below' : 'ws○ offline — set TIMMY_COMMANDER_WS'}>
+        <Text color={PAL.seal} wrap="truncate">{`spend $${props.spend.toFixed(4)}${props.handoff ? ` · handoff→${props.handoff.harness}` : ''}`}</Text>
+        <Text color={PAL.textMuted} wrap="truncate">[m] model [M] harness-model [K] handoff [X] kill</Text>
+        <Text color={PAL.textMuted} wrap="truncate">[t] toggle [b] body [f] fusion [g] gen [1-6] focus</Text>
+        {props.events.slice(0, 8).map((e, i) => (
+          <Text key={i} color={PAL.textSecondary} wrap="truncate">{`${e.kind ?? 'event'} ${(e.text ?? '').slice(0, 50)}`}</Text>
+        ))}
+      </Card>
+    </Box>
+  );
+}
+
+// COMMAND tab right: harness panes = tmux PTYs; header name·model·state,
+// color from connector, height by activity weight.
+function HarnessPanes(props: { profile: warroom.WarProfile; panes: warroom.WarPane[]; lanes: { id: string; available: boolean }[] }) {
+  return (
+    <Card title="HARNESS PANES" purpose="tmux PTYs · height = activity weight" flexGrow={1}>
+      {props.profile.harnesses.map((h, i) => {
+        const pane = props.panes.find(pn => pn.name === h.id);
+        const lane = props.lanes.find(l => l.id === h.id);
+        const state = pane ? (h.weight >= 3 ? 'responding' : h.weight === 2 ? 'thinking' : 'idle') : 'off';
+        const col = !lane || !lane.available ? PAL.textMuted : state === 'responding' ? PAL.seal : state === 'thinking' ? PAL.warn : PAL.textSecondary;
+        return (
+          <Text key={h.id} color={col} wrap="truncate">
+            {`${i + 1} ${h.id.padEnd(10)} ${(h.model ?? 'same-as-commander').slice(0, 22).padEnd(22)} ${state.padEnd(10)} h=${pane?.height ?? 0}`}
+          </Text>
+        );
+      })}
+      <Text color={PAL.textMuted} wrap="truncate">{props.panes.length ? 'war room live · tmux -t timmy-war' : 'war room not started · timmy profile <name> --restore'}</Text>
     </Card>
   );
 }
