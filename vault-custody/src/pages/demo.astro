@@ -1,0 +1,48 @@
+---
+// Demo index: the six pages plus the real tap URLs (NXP AN12196 vectors).
+import Paper from '../layouts/Paper.astro';
+import { tapUrl } from '../lib/url';
+import { series } from '../lib/registry';
+
+const base = Astro.url.origin;
+const sun1 = tapUrl(base, { mode: 'encrypted', e: 'EF963FF7828658A599F3041510671E88', c: '94EED9EE65337086', tt: 'CC' });
+const sun1broken = tapUrl(base, { mode: 'encrypted', e: 'EF963FF7828658A599F3041510671E88', c: '94EED9EE65337086', tt: 'OC' });
+const plain = tapUrl(base, { mode: 'plain', u: '041E3C8A2D6B80', n: '000006', c: '4B00064004B0B3D3' });
+const badMac = tapUrl(base, { mode: 'encrypted', e: 'EF963FF7828658A599F3041510671E88', c: '94EED9EE65337087' });
+const s = series['001'];
+---
+
+<Paper title="The six pages" right="pilot · Series 001">
+  <h1>The six pages.</h1>
+  <p class="sub">A receipt every box carries with it, and any phone can read. <a href="/">Back to the gateway</a>.</p>
+
+  <section class="panel">
+    <h2>The pages</h2>
+    <ul class="tl">
+      <li><div><a href="/r/VC0001">Receipt, sealed</a></div><div class="m">Box VC0001 · Paradise counter-seal</div></li>
+      <li class="opened"><div><a href="/r/VC0007">Receipt, opened</a></div><div class="m">Box VC0007 · seal loop broken, 24 packs, 312 cards</div></li>
+      <li><div><a href="/c/VC0007-17-03">Card</a></div><div class="m">Rookie Autograph 14/99 · custody-verified</div></li>
+      <li><div><a href="/relic/VC2210-08-01">Relic</a></div><div class="m">Jersey swatch · game-tied</div></li>
+      <li><div><a href="/m">Manufacturer view</a></div><div class="m">Where the boxes went</div></li>
+      <li><div><a href="/log">Timmy log</a></div><div class="m">The custody lane, epoch 903</div></li>
+      <li><div><a href={`/s/${s.id}`}>Series 001</a></div><div class="m">Published hashes and the chain head</div></li>
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>Real tap URLs</h2>
+    <p class="m">These are NXP's published AN12196 test vectors, mapped to pilot boxes. They are demo tags: every tap verifies and seals a receipt, and none is refused as replay. Keys are the factory-default zero keys, demo only.</p>
+    <ul class="tl">
+      <li><div><a class="chain" href={sun1}>/t · encrypted mirror · VC0007 · loop intact</a></div><div class="m">e=EF96…1E88 · c=94EE…7086 · counter 61</div></li>
+      <li class="opened"><div><a class="chain" href={sun1broken}>/t · encrypted mirror · VC0007 · loop broken (tt=OC)</a></div><div class="m">same tag, TagTamper reports a stored break</div></li>
+      <li><div><a class="chain" href={plain}>/t · plaintext mirror · VC0003</a></div><div class="m">u=041E…6B80 · n=000006</div></li>
+      <li class="pack"><div><a class="chain" href={badMac}>/t · corrupted signature</a></div><div class="m">lands on the refusal page</div></li>
+    </ul>
+  </section>
+
+  <p slot="foot">Trust the receipt, not the model.</p>
+</Paper>
+
+<style>
+  .m a, a.chain { word-break: break-all; }
+</style>

@@ -1,0 +1,46 @@
+---
+// The Series page: published contents hashes and the chain head. "Contents
+// committed before sale — nobody can re-seed the box after listing."
+import Paper from '../../layouts/Paper.astro';
+import { series, units } from '../../lib/registry';
+
+export function getStaticPaths() {
+  return Object.keys(series).map((id) => ({ params: { id } }));
+}
+const { id } = Astro.params;
+const s = series[id as keyof typeof series];
+if (!s) return new Response(null, { status: 404 });
+---
+
+<Paper title={s.title} right={`series · ${s.id}`}>
+  <span class="badge sealed">PUBLISHED</span>
+  <h1>{s.title}</h1>
+  <p class="sub">{s.product} · {s.sealedAt}</p>
+
+  <section class="panel">
+    <h2>Contents hashes, committed before sale</h2>
+    <table>
+      <thead><tr><th>Box</th><th>Contents hash</th><th>Published</th></tr></thead>
+      <tbody>
+        {s.publishedHashes.map((h) => (
+          <tr>
+            <td>{units[h.serial] ? <a href={`/r/${h.serial}`}>{h.serial}</a> : h.serial}</td>
+            <td class="chain">{h.contentsHash}</td>
+            <td class="num">{h.publishedAt.slice(0, 10)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <dl class="kv">
+      <dt>Chain head</dt><dd><span class="chain">{s.head.hash}</span> · epoch {s.head.epoch}</dd>
+      <dt>Anchored</dt><dd>{s.head.anchored}</dd>
+      <dt>Published</dt><dd class="chain">{s.head.published}</dd>
+      <dt>Fairness</dt><dd>{s.fairness}</dd>
+    </dl>
+  </section>
+
+  <p slot="foot">Anyone can recompute this chain from the public log. The head is timestamped outside our control.</p>
+</Paper>

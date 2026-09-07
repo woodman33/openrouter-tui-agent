@@ -1,0 +1,29 @@
+{
+  "_note": "Illustrative figures for the pilot design — every number here is one the pilot would measure.",
+  "release": "2026 hobby · release week 3 · live",
+  "headline": "Where the boxes went, and what happened to them",
+  "tiles": [
+    { "value": "18,240", "label": "boxes sealed at retail (of 24,000 shipped)" },
+    { "value": "61%", "label": "opened · median 2.3 days after sale" },
+    { "value": "14", "label": "tamper events before sale · all traced to 2 shipments" },
+    { "value": "2,911", "label": "event 1/1 boxes (Vegas, Chicago, Anaheim) · +38% resale" }
+  ],
+  "retailers": [
+    { "name": "Paradise Card Breaks · Las Vegas", "sealed": "1,204", "opened": "71%", "tamper": "0", "days": "1.8", "hits": "96 / 1,204 · on odds", "flag": false },
+    { "name": "Fanatics Live · verified breaks", "sealed": "3,880", "opened": "100%", "tamper": "0", "days": "0.2", "hits": "on odds", "flag": false },
+    { "name": "Distributor B · region 4", "sealed": "2,150", "opened": "44%", "tamper": "11", "days": "6.1", "hits": "below odds", "flag": true },
+    { "name": "Hobby shops · other", "sealed": "11,006", "opened": "58%", "tamper": "3", "days": "3.4", "hits": "on odds", "flag": false }
+  ],
+  "retailerNote": "Distributor B: 11 seals broken before sale and hit rate below printed odds → the resealing is in one lane, and now you know which one.",
+  "odds": [
+    { "label": "Autos · printed 1:12 · observed 1:11.6", "pct": 96, "flag": false },
+    { "label": "Numbered · printed 1:24 · observed 1:23.1", "pct": 97, "flag": false },
+    { "label": "Distributor B · autos · observed 1:31", "pct": 39, "flag": true }
+  ],
+  "oddsNote": "Reported hits come from cards attached at unboxing — receipts, not surveys.",
+  "secondary": [
+    { "metric": "Sealed-box resale premium", "verified": "+17%", "unverified": "—" },
+    { "metric": "Return / dispute rate", "verified": "0.4%", "unverified": "3.1%" },
+    { "metric": "Time to sell (singles)", "verified": "4 days", "unverified": "11 days" }
+  ]
+}

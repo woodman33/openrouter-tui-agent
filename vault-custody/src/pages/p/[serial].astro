@@ -1,0 +1,155 @@
+---
+// Product provenance: every chain event, two views of one list — the 3D
+// timeline and the travel map. Live taps from /api/chain join the list on load.
+import Product from '../../layouts/Product.astro';
+import PitchNav from '../../components/PitchNav.astro';
+import { cities, eventsFor, HAT_SHAPE, hats, isChainKind, provenanceSerials, type HatId } from '../../lib/hats';
+import { units } from '../../lib/registry';
+
+export function getStaticPaths() {
+  return provenanceSerials().map((serial) => ({ params: { serial } }));
+}
+const { serial } = Astro.params;
+const unit = units[serial!];
+const events = eventsFor(serial!).map((e) => ({ ...e, shape: HAT_SHAPE[e.hat as HatId], chain: isChainKind(e.kind) }));
+const payload = { serial, events, cities, hats: Object.fromEntries(Object.entries(hats).map(([k, v]) => [k, { label: v.label, shape: HAT_SHAPE[k as HatId] }])) };
+---
+
+<Product title={`Provenance · ${serial}`} brand="VAULT CUSTODY × TIMMY" right={`provenance · ${serial}`}>
+  <PitchNav current={`/p/${serial}`} />
+  <section class="head">
+    <div>
+      <h1>{serial} <span class="muted">·</span> <span class="human">{unit?.product ?? 'unit'}</span></h1>
+      <p class="sub">{events.length} chain events, every one stamped with its hat. One list, two views.</p>
+    </div>
+    <div class="badgebox" id="badge-slot"><canvas id="badge" width="240" height="72" hidden aria-label={`custody state ${unit?.state ?? 'unknown'}`}></canvas><span id="badge-fallback" class:list={['badge', unit?.state]}>{unit?.state ?? 'unknown'}</span></div>
+  </section>
+
+  <div class="toggle" role="tablist">
+    <button class="tab on" data-view="timeline" role="tab" aria-selected="true">Timeline · 3D</button>
+    <button class="tab" data-view="map" role="tab" aria-selected="false">Travel map</button>
+    <span class="legend">{Object.entries(payload.hats).map(([id, h]) => <span class="lg"><i class:list={['mark', h.shape]}></i>{h.label}</span>)}<span class="lg"><i class="mark circle chain-mark"></i>chain</span></span>
+  </div>
+
+  <div class="views">
+    <div id="timeline" class="view on"></div>
+    <svg id="map" class="view" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Travel map: city-level points, arcs between transfers"></svg>
+    <aside id="detail" class="detail"><p class="muted">Click an event.</p></aside>
+  </div>
+
+  <ol class="list" id="list">
+    {events.map((e) => (
+      <li data-seq={e.seq} class:list={[{ chain: e.chain, tamper: e.tamper }]}>
+        <i class:list={['mark', e.shape]}></i>
+        <span class="seq">{e.seq}</span>
+        <span class="kind">{e.kind}</span>
+        <span class="t">{e.title}</span>
+        <span class="who">{e.hat}</span>
+        <span class="city">{e.city}</span>
+        <span class="hash">{e.prev} → {e.this}</span>
+      </li>
+    ))}
+  </ol>
+
+  <script type="application/json" id="payload" set:html={JSON.stringify(payload)}></script>
+  <script>
+    import { mountTimeline, renderMap, type PEvent } from '../../scripts/provenance';
+    const payload = JSON.parse(document.getElementById('payload')!.textContent!) as { serial: string; events: PEvent[]; cities: Record<string, { lat: number; lon: number }> };
+    const detail = document.getElementById('detail')!;
+    const timelineHost = document.getElementById('timeline')!;
+    const mapSvg = document.getElementById('map') as unknown as SVGSVGElement;
+    const show = (e: PEvent | null) => {
+      if (!e) { detail.innerHTML = '<p class="muted">Click an event.</p>'; return; }
+      detail.innerHTML = `<div class="seq">${e.seq}</div><h3>${e.title}</h3><p>${e.detail || ''}</p><dl class="kv"><dt>hat</dt><dd class="who">${e.hat}</dd><dt>city</dt><dd>${e.city}</dd><dt>when</dt><dd>${e.ts}</dd><dt>prev → this</dt><dd class="chain">${e.prev} → ${e.this}</dd></dl>`;
+      document.querySelectorAll('#list li').forEach((li) => li.classList.toggle('sel', (li as HTMLElement).dataset.seq === e.seq));
+    };
+
+    // Live taps: the sealed custody.tap receipts join the list as collector events.
+    const events = [...payload.events];
+    try {
+      const r = await fetch(`/api/chain/${payload.serial}`);
+      if (r.ok) {
+        const j = (await r.json()) as { taps?: { id: string; ts: string; kind: string; hash: string; prev_hash: string; data: Record<string, unknown> }[] };
+        (j.taps ?? []).forEach((t, i) => events.push({ seq: `tap.${String(i + 1).padStart(3, '0')}`, kind: t.kind, ts: t.ts, hat: 'collector', shape: 'circle', city: 'phone · city not recorded', title: `Tap verified · counter ${t.data.counter} · ${t.data.loop}`, detail: `uid ${t.data.uid} · ${t.data.replay ?? ''} · ${t.data.tt ?? ''}`, prev: String(t.prev_hash).slice(0, 8), this: t.hash.slice(0, 8), chain: true }));
+      }
+    } catch { /* offline: fixtures only */ }
+
+    const focus = mountTimeline(timelineHost, events, show);
+    renderMap(mapSvg, events, payload.cities, show);
+    document.querySelectorAll<HTMLButtonElement>('.tab').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((x) => { x.classList.remove('on'); x.setAttribute('aria-selected', 'false'); });
+      b.classList.add('on'); b.setAttribute('aria-selected', 'true');
+      document.querySelectorAll('.view').forEach((v) => v.classList.remove('on'));
+      document.getElementById(b.dataset.view!)!.classList.add('on');
+    }));
+    document.querySelectorAll<HTMLElement>('#list li').forEach((li) => li.addEventListener('click', () => {
+      const e = events.find((x) => x.seq === li.dataset.seq) ?? null;
+      show(e);
+      (timelineHost as HTMLElement & { focusEvent?: (s: string) => void }).focusEvent?.(li.dataset.seq!);
+    }));
+    void focus;
+
+    // Rive badge (state transitions) when /rive/badges.riv is present; CSS badge otherwise.
+    try {
+      const head = await fetch('/rive/badges.riv', { method: 'HEAD' });
+      if (head.ok) {
+        const { Rive, Layout, Fit } = await import('@rive-app/canvas');
+        const canvas = document.getElementById('badge') as HTMLCanvasElement;
+        canvas.hidden = false;
+        document.getElementById('badge-fallback')!.hidden = true;
+        // Artboard "Badge" · state machine "State" · BadgeVM.state: 0 sealed, 1 opened, 2 verified.
+        const stateIndex = (document.getElementById('badge-fallback')!.textContent ?? '').trim() === 'opened' ? 1 : 0;
+        // Share export a9d01cc3… (rive.export): artboard Badge 240×72, BadgeVM.state drives T_Sealed / T_Opened / T_Verified.
+        const rive = new Rive({ src: '/rive/badges.riv', canvas, artboard: 'Badge', autoplay: true, autoBind: true, stateMachine: 'State', layout: new Layout({ fit: Fit.Contain }), onLoad: () => { rive.resizeDrawingSurfaceToCanvas(); try { const n = rive.viewModelInstance?.number('state'); if (n) n.value = stateIndex; } catch { /* runtime without data binding */ } } });
+      }
+    } catch { /* fallback stays */ }
+  </script>
+</Product>
+
+<style is:global>
+  .tl-label { font-family: var(--font-chain); font-size: 11px; color: var(--text-2); text-align: center; pointer-events: none; white-space: nowrap; }
+  .tl-label b { display: block; color: var(--orange); font-weight: 500; }
+  .tl-label.chain b { color: var(--phosphor); }
+</style>
+<style>
+  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; font-family: var(--font-human); }
+  .head h1 { font-size: 30px; margin: 0.2em 0 0.2em; }
+  .badgebox { display: grid; place-items: center; min-width: 240px; }
+  .badgebox canvas { width: 240px; height: 72px; }
+  /* the class rule below would beat the user-agent [hidden] rule; keep hidden meaning hidden */
+  .badgebox [hidden] { display: none !important; }
+  .badge { display: inline-block; border: 1px solid var(--orange); color: var(--orange); border-radius: 999px; padding: 6px 14px; font-family: var(--font-chain); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .badge.sealed { border-color: var(--phosphor); color: var(--phosphor); }
+  .toggle { display: flex; align-items: center; gap: 8px; margin: 8px 0 12px; flex-wrap: wrap; }
+  .tab { background: transparent; border: 1px solid var(--navy-line); color: var(--text-2); font: inherit; font-family: var(--font-human); padding: 8px 14px; border-radius: 4px; cursor: pointer; }
+  .tab.on { border-color: var(--orange); color: var(--orange); }
+  .legend { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; font-family: var(--font-human); font-size: 12px; color: var(--text-2); }
+  .lg { display: inline-flex; align-items: center; gap: 6px; }
+  .mark { width: 11px; height: 11px; display: inline-block; background: var(--orange); }
+  .mark.circle { border-radius: 50%; }
+  .mark.square { border-radius: 1px; }
+  .mark.diamond { transform: rotate(45deg) scale(0.85); }
+  .mark.triangle { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .mark.hexagon { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
+  .mark.ring { border-radius: 50%; background: transparent; border: 3px solid var(--orange); box-sizing: border-box; }
+  .mark.chain-mark { background: var(--phosphor); }
+  .views { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: stretch; }
+  .view { display: none; position: relative; min-height: 520px; background: radial-gradient(ellipse at 50% 40%, #101f38 0%, var(--navy) 75%); border: 1px solid var(--navy-line); border-radius: 8px; overflow: hidden; }
+  .view.on { display: block; }
+  svg.view.on { display: block; width: 100%; height: 520px; }
+  .detail { background: var(--navy-2); border: 1px solid var(--navy-line); border-radius: 8px; padding: 16px; font-family: var(--font-human); font-size: 14px; }
+  .detail h3 { margin: 4px 0 8px; font-size: 16px; }
+  .detail .seq { font-family: var(--font-chain); color: var(--orange); font-size: 12px; }
+  .detail .kv { font-size: 12px; }
+  .list { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 2px; font-family: var(--font-chain); font-size: 12.5px; }
+  .list li { display: grid; grid-template-columns: 16px 76px 150px 1fr 100px 130px 190px; gap: 10px; align-items: center; padding: 7px 10px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; }
+  .list li:hover { background: var(--navy-2); }
+  .list li.sel { border-color: var(--orange); }
+  .list .seq { color: var(--text-muted); }
+  .list .kind { color: var(--phosphor); }
+  .list li.tamper .kind { color: var(--orange); }
+  .list .t { color: var(--text); font-family: var(--font-human); }
+  .list .city { color: var(--text-2); }
+  .list .hash { color: var(--phosphor-dim); }
+  @media (max-width: 1000px) { .views { grid-template-columns: 1fr; } .list li { grid-template-columns: 16px 70px 1fr; } .list .kind, .list .city, .list .hash { display: none; } }
+</style>

@@ -1,0 +1,325 @@
+{
+ "computed_at": "2026-09-07T07:06:40.486Z",
+ "receipts": 966,
+ "head": {
+  "date": "2026-09-06",
+  "combined_sha256": "11a3badebe07db8efaa234d765254d3baa211de69b91e4cf7fefdb6e69ba6bfd",
+  "subjects": 2
+ },
+ "frames": [
+  {
+   "id": "f1",
+   "title": "1 · Vault Custody tap-to-verify",
+   "status": "done",
+   "sealed": 0,
+   "total": 5,
+   "attested": "rc_mtpo7mfh_4a0e",
+   "why": "attested by rc_mtpo7mfh_4a0e"
+  },
+  {
+   "id": "f2",
+   "title": "2 · Code Mode on the worker",
+   "status": "done",
+   "sealed": 0,
+   "total": 1,
+   "attested": "rc_mtpo7mfh_4a0e",
+   "why": "attested by rc_mtpo7mfh_4a0e"
+  },
+  {
+   "id": "f3",
+   "title": "3 · Receipted Defold lane + Custody Companion",
+   "status": "done",
+   "sealed": 2,
+   "total": 2,
+   "why": "every order sealed"
+  },
+  {
+   "id": "f4",
+   "title": "4 · Observer evidence (Roboflow)",
+   "status": "done",
+   "sealed": 2,
+   "total": 2,
+   "why": "every order sealed"
+  },
+  {
+   "id": "f5",
+   "title": "5 · Slate 3D",
+   "status": "done",
+   "sealed": 2,
+   "total": 2,
+   "why": "every order sealed"
+  },
+  {
+   "id": "f6",
+   "title": "6 · Sparks judge mesh (fleet rank)",
+   "status": "next",
+   "sealed": 0,
+   "total": 0,
+   "why": "declared"
+  }
+ ],
+ "capsules": [
+  {
+   "id": "p1.capsule",
+   "frame": "f1",
+   "status": "done",
+   "held": 4,
+   "total": 4,
+   "unreceipted": 0,
+   "checks": [
+    {
+     "line": "vitest: AN12196 sun1/sun2/sun3/plain vectors pass, corrupted CMAC rejected",
+     "rule": {
+      "root": "fork.attest",
+      "why": "the vitest run and the six routes were sealed in the fork store; the fork is attested in root"
+     },
+     "held": true,
+     "why": "the vitest run and the six routes were sealed in the fork store; the fork is attested in root"
+    },
+    {
+     "line": "GET /t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086 → 302 to /r/<serial>",
+     "rule": {
+      "edge": "VC0007",
+      "min": 1,
+      "why": "a real /t tap sealed custody.tap on the unit chain (daily head)"
+     },
+     "held": true,
+     "why": "a real /t tap sealed custody.tap on the unit chain (daily head)"
+    },
+    {
+     "line": "six routes render: /r sealed, /r opened, /c, /relic, /m, /log",
+     "rule": {
+      "root": "fork.attest",
+      "why": "ORD-005 (six routes) sealed in the fork store; attested"
+     },
+     "held": true,
+     "why": "ORD-005 (six routes) sealed in the fork store; attested"
+    },
+    {
+     "line": "receipt chain verify ok after the build",
+     "rule": {
+      "root": "chain.anchor",
+      "min": 1,
+      "why": "the edge head anchored into the root chain; root verify runs before every anchor"
+     },
+     "held": true,
+     "why": "the edge head anchored into the root chain; root verify runs before every anchor"
+    }
+   ],
+   "blocked_by": []
+  },
+  {
+   "id": "p2.capsule",
+   "frame": "f2",
+   "status": "done",
+   "held": 2,
+   "total": 2,
+   "unreceipted": 2,
+   "checks": [
+    {
+     "line": "health reports code_mode:true",
+     "rule": null,
+     "held": null,
+     "why": null
+    },
+    {
+     "line": "a task that lists tools, verifies a tap, and reads a chain runs as one script",
+     "rule": {
+      "edge_prefix": "code:",
+      "min": 1,
+      "why": "a code.run chain (one per run id) listed in the daily head"
+     },
+     "held": true,
+     "why": "a code.run chain (one per run id) listed in the daily head"
+    },
+    {
+     "line": "receipt carries script_sha256 + output_sha256 + tool call list",
+     "rule": {
+      "edge_prefix": "code:",
+      "min": 1,
+      "why": "the same code.run receipt carries script_sha256, output_sha256 and the tool calls"
+     },
+     "held": true,
+     "why": "the same code.run receipt carries script_sha256, output_sha256 and the tool calls"
+    },
+    {
+     "line": "unauthorized POST /code → 401",
+     "rule": null,
+     "held": null,
+     "why": null
+    }
+   ],
+   "blocked_by": []
+  },
+  {
+   "id": "p3.capsule",
+   "frame": "f3",
+   "status": "done",
+   "held": 4,
+   "total": 4,
+   "unreceipted": 0,
+   "checks": [
+    {
+     "line": "bob.jar + engine hashes in env_lock",
+     "rule": {
+      "root": "defold.build",
+      "min": 1,
+      "why": "bob, JDK, engine and input hashes in the build receipt"
+     },
+     "held": true,
+     "why": "bob, JDK, engine and input hashes in the build receipt"
+    },
+    {
+     "line": ".riv sha256 bound in the build receipt",
+     "rule": {
+      "root": "defold.build",
+      "has": {
+       "riv": "badges.riv"
+      },
+      "why": "the build receipt binds assets/badges.riv and its sha256"
+     },
+     "held": true,
+     "why": "the build receipt binds assets/badges.riv and its sha256"
+    },
+    {
+     "line": "HTML5 bundle opens from /t redirect on a phone",
+     "rule": {
+      "root": "order.execute",
+      "sources": {
+       "id": "ORD-20260906-017"
+      },
+      "why": "/t?...&app=1 → /companion/ redirect, checked live and sealed"
+     },
+     "held": true,
+     "why": "/t?...&app=1 → /companion/ redirect, checked live and sealed"
+    },
+    {
+     "line": "companion renders the chain for VC0007",
+     "rule": {
+      "root": "order.execute",
+      "sources": {
+       "id": "ORD-20260906-017"
+      },
+      "why": "HUD renders the chain for VC0007, checked live and sealed"
+     },
+     "held": true,
+     "why": "HUD renders the chain for VC0007, checked live and sealed"
+    }
+   ],
+   "blocked_by": []
+  },
+  {
+   "id": "p4.capsule",
+   "frame": "f4",
+   "status": "done",
+   "held": 2,
+   "total": 2,
+   "unreceipted": 0,
+   "checks": [
+    {
+     "line": "one Defold lane screenshot → detect → annotations on the board",
+     "rule": {
+      "root": "observer.evidence",
+      "min": 1,
+      "why": "one screenshot observed (OCR + CLIP) and sealed"
+     },
+     "held": true,
+     "why": "one screenshot observed (OCR + CLIP) and sealed"
+    },
+    {
+     "line": "receipt evidence lists the detection result hash",
+     "rule": {
+      "root": "observer.evidence",
+      "has": {
+       "ocr_sha256": ""
+      },
+      "why": "the evidence receipt carries the OCR result hash"
+     },
+     "held": true,
+     "why": "the evidence receipt carries the OCR result hash"
+    }
+   ],
+   "blocked_by": [
+    "observer.blocked"
+   ]
+  },
+  {
+   "id": "p5.capsule",
+   "frame": "f5",
+   "status": "done",
+   "held": 3,
+   "total": 3,
+   "unreceipted": 0,
+   "checks": [
+    {
+     "line": "two browsers share one board through the Durable Object",
+     "rule": {
+      "root": "slate.room",
+      "sources": {
+       "both_saw_live_event": "true"
+      },
+      "why": "two isolated browsers on one room both received a live event"
+     },
+     "held": true,
+     "why": "two isolated browsers on one room both received a live event"
+    },
+    {
+     "line": "3D view shows frames as rooms and capsules as pods",
+     "rule": {
+      "root": "slate.render",
+      "min": 1,
+      "why": "the ledger rendered as slabs and pods, sealed with the image hash"
+     },
+     "held": true,
+     "why": "the ledger rendered as slabs and pods, sealed with the image hash"
+    },
+    {
+     "line": "pod state follows receipt lifecycle",
+     "rule": {
+      "root": "order.execute",
+      "sources": {
+       "id": "ORD-20260906-024"
+      },
+      "why": "capsule and frame state derived from receipts, sealed"
+     },
+     "held": true,
+     "why": "capsule and frame state derived from receipts, sealed"
+    }
+   ],
+   "blocked_by": []
+  },
+  {
+   "id": "p6.capsule",
+   "frame": "f6",
+   "status": "next",
+   "held": 0,
+   "total": 1,
+   "unreceipted": 2,
+   "checks": [
+    {
+     "line": "fleet entry 'local-judges' with detect probes",
+     "rule": null,
+     "held": null,
+     "why": null
+    },
+    {
+     "line": "fusion receipt carries judge_tier",
+     "rule": {
+      "root": "fleet.rank",
+      "min": 1,
+      "why": "a fusion receipt records judge_tier from the fleet rank"
+     },
+     "held": false,
+     "why": "a fusion receipt records judge_tier from the fleet rank"
+    },
+    {
+     "line": "no behavior change when no local judge is reachable",
+     "rule": null,
+     "held": null,
+     "why": null
+    }
+   ],
+   "blocked_by": []
+  }
+ ]
+}

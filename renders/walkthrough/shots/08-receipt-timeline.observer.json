@@ -1,0 +1,57 @@
+{
+ "image": "renders/walkthrough/shots/08-receipt-timeline.png",
+ "lane": "shots",
+ "image_sha256": "e5491f93d3b1f3eb14f060dd6c86ab24a56dd738f3490211a52f41dba94b7c16",
+ "observed_at": "2026-09-07T03:55:53.887Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 533,
+  "sha256": "3fa26bb3aa28e3e787cf71568aebd6a98166b97ff7d7473bf787e7cf630cf2c9",
+  "text": "Custody timeline\nSealed at Paradise Card Breaks\nSep 12 12:41 Las Vegas\nSold - POS receipt #48812\nSep 12 * 13:04 counter 2\nClaimed by owner\nSep 12 13:05 * phone tap\nOpened * seal loop broken\nSep 14 19:22 Henderson, NV\nPack 1 opened - 12 cards attached\nSep 14 19:24\nPack 17 opened - Rookie Auto 14/99 attached\nSep 14 20:12\nPack 24 opened\nSep 14 * 20:41\nCard VC0007-17-03 transferred - sold on eBay\nOct 2 08:15 to owner in Phoenix, AZ\nLocations are city-level and owner-shared. Identities are hashed; only the owner sees their own\nname."
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.25761929154396057,
+   0.22132375836372375,
+   0.19644375145435333,
+   0.2106655389070511
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.25761929154396057
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 718.544921875,
+    "y": 401.03680419921875,
+    "w": 697.6337280273438,
+    "h": 725.6363525390625,
+    "label": "banner",
+    "confidence": 0.18948894739151
+   }
+  ]
+ },
+ "detection_sha256": "2f38af81b81f7c08ef06b0e3da49be83e746bc8f889c181473b7a0105637fdf5"
+}

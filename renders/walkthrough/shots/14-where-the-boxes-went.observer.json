@@ -1,0 +1,65 @@
+{
+ "image": "renders/walkthrough/shots/14-where-the-boxes-went.png",
+ "lane": "shots",
+ "image_sha256": "2b0bbb5f1ef294ba1ef85a7c6fdd7b9471e5fcc174213056bfe3db21ffb57738",
+ "observed_at": "2026-09-07T03:56:40.071Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 1197,
+  "sha256": "3f0a1ae7a96337c40072143ce457786643438cc8f8b0eb728c0dbd0e41feb011",
+  "text": "VAULT CUSTODY - MANUFACTURER VIEW\n2026 hobby release week 3 live\nWhere the boxes went, and what happened to them\n18,240\n61%\n14\n2,911\nboxes sealed at retail (of 24,000\nopened median 2.3 days after sale\ntamper events before sale all traced\nevent 1/1 boxes (Vegas, Chicago,\nshipped)\nto 2 shipments\nAnaheim) +38% resale\nBy retailer\nHit distribution vs. printed odds\nAutos printed 1:12 observed 1:11.6\nAvg days to\nRetailer\nSealed Opened Tamper\nHits reported\nopen\nNumbered printed 1:24 observed 1:23.1\nParadise Card Breaks Las\n96 / 1,204 on\n1,204 71% 0\n1.8\nVegas\nodds\nDistributor B  autos observed 1:31\nFanatics Live verified breaks 3,880 100% U\n0.2\non odds\nReported hits come from cards attached at unboxing receipts, not\nDistributor B region 4\n2,150 44% 11\n6.1\nbelow odds\nsurveys.\nHobby shops other\n11,006 58% 3\n3.4\non odds\nSecondary market\nDistributor B: 11 seals broken before sale and hit rate below printed odds the resealing is in one lane, and\nMetric\nCustody-verified Unverified\nnow you know which one.\nSealed-box resale premium +17%\nReturn / dispute rate\n0.4%\n3.1%\nTime to sell (singles)\n4 days\n11 days\nIllustrative figures for the pilot design every number here is one the pilot\nwould measure."
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.2197195142507553,
+   0.16464863717556,
+   0.16844455897808075,
+   0.19104015827178955
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.2197195142507553
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 439.733154296875,
+    "y": 533.0731201171875,
+    "w": 783.68994140625,
+    "h": 430.52587890625,
+    "label": "banner",
+    "confidence": 0.1008465364575386
+   },
+   {
+    "x": 1124.9495849609375,
+    "y": 608.40478515625,
+    "w": 531.850830078125,
+    "h": 583.1904296875,
+    "label": "banner",
+    "confidence": 0.08977698534727097
+   }
+  ]
+ },
+ "detection_sha256": "134d7249ff9f51009f08041172ae8085b5c93ef5e11491254ee07a40f675c7c5"
+}

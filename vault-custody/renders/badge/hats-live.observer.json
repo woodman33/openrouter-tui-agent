@@ -1,0 +1,89 @@
+{
+ "image": "vault-custody/renders/badge/hats-live.png",
+ "lane": "badge",
+ "image_sha256": "3dd31bc1a1d968e7f3d2975e844e5ee32622fde4a385d8dbd8e2cbfa709b1e8a",
+ "observed_at": "2026-09-07T03:56:58.153Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 1025,
+  "sha256": "ad349b61ce685940ef1727ce7c57ff58575c00b6151e178afe0f68a3ea742ac2",
+  "text": "Six hats.\nHats, not accounts. One account may hold several, and every\nchain event stamps its hat.\nManufacturer\nMovedit.\nnd\nSees the product after thel loading dock for the first time:\nwhich store sold which box,when it opened, where the\nDistributor\nRetailer\nhits landed.\nlatest - 903.0405 - Shipped - region 4 -\nlatest SE90310413 SoldR\n-\nBOSxreceipt\nlatest 903.1191 Chain heade published - anchored OpenTimestamps\npallet 22\n#48812\nEnter: as Manufacturer\nEnter as. Distributor\nEnter: as Retailer\n- Resoldi itwith the chain attached\nSeller\nRookie auto\nNCO0o7\nlatest - 903.1188 - Card V00007-17-03.transferred sold on eBay\n\nSeudled\nBok Vauit tap\nEnter as Seller\nveriedi\n\nClaimeda andope dit.\nBOX\nCollector\nVeriffeditatintake.\nOne tap claims the box. Everypack and every card\nattaches to the chain as itcomes out.\nGrader\nlatest tap.019 - a4233317 : 9/6/2026 signed\nlatest  903.1190 Verified at grader intake same card, no trim\nEnter as Collector\nEnter as Grader\nedge head 11a3bade 2026-09-06 20 receipts across 2 chains read live"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.24987401068210602,
+   0.1808239221572876,
+   0.21231383085250854,
+   0.18342697620391846
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.24987401068210602
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 469.9765625,
+    "y": 669.37646484375,
+    "w": 273.5417785644531,
+    "h": 214.73687744140625,
+    "label": "rectangle",
+    "confidence": 0.05269916355609894
+   },
+   {
+    "x": 248.22372436523438,
+    "y": 615.2041625976562,
+    "w": 312.81097412109375,
+    "h": 329.598876953125,
+    "label": "sign",
+    "confidence": 0.042838890105485916
+   },
+   {
+    "x": 248.670654296875,
+    "y": 614.7562255859375,
+    "w": 314.25732421875,
+    "h": 329.61907958984375,
+    "label": "banner",
+    "confidence": 0.041556183248758316
+   },
+   {
+    "x": 1214.17822265625,
+    "y": 333.1474609375,
+    "w": 313.970947265625,
+    "h": 207.98410034179688,
+    "label": "banner",
+    "confidence": 0.02536158636212349
+   },
+   {
+    "x": 392.4410400390625,
+    "y": 330.70013427734375,
+    "w": 648.9686279296875,
+    "h": 209.0920867919922,
+    "label": "banner",
+    "confidence": 0.021447867155075073
+   }
+  ]
+ },
+ "detection_sha256": "99550b95ae5ad08be79675361abca1ebe0d33d1e78d995aad5c422a452b605a9"
+}

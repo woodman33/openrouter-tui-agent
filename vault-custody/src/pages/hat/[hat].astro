@@ -1,0 +1,47 @@
+---
+// Sign-in stub per hat. No real auth yet: entering sets a seeded session.
+import Product from '../../layouts/Product.astro';
+import PitchNav from '../../components/PitchNav.astro';
+import { HAT_ORDER, HAT_SHAPE, hats, type HatId } from '../../lib/hats';
+
+export function getStaticPaths() {
+  return HAT_ORDER.map((hat) => ({ params: { hat } }));
+}
+const id = Astro.params.hat as HatId;
+const h = hats[id];
+---
+
+<Product title={`Enter as ${h.label}`} brand="VAULT CUSTODY × TIMMY" right="sign-in · seeded session">
+  <PitchNav />
+  <section class="wrap">
+    <span class:list={['mark', HAT_SHAPE[id]]} aria-hidden="true"></span>
+    <h1>{h.label}</h1>
+    <p class="sub">{h.verb}. {h.blurb}</p>
+    <div class="card">
+      <dl class="kv">
+        <dt>identity</dt><dd><span class="chain">{h.identity.hash}</span> · {h.identity.city}</dd>
+        <dt>name</dt><dd>{h.identity.name} <span class="muted">(only the owner sees their own name)</span></dd>
+        <dt>session</dt><dd class="chain-dim">{h.session} <span class="muted">· seeded stub, no password</span></dd>
+        <dt>lands on</dt><dd class="chain-dim">{h.home}</dd>
+      </dl>
+      <a class="btn" href={`/signin?hat=${id}`} data-testid="enter">Enter as {h.label}</a>
+      <p class="muted small">Hats, not accounts. One account may hold several; every chain event stamps its hat. Real sign-in comes with claims.</p>
+    </div>
+    <p class="others">Other hats: {HAT_ORDER.filter((x) => x !== id).map((x) => <a href={`/hat/${x}`}>{hats[x].label}</a>)}</p>
+  </section>
+</Product>
+
+<style>
+  .wrap { max-width: 720px; font-family: var(--font-human); }
+  .mark { width: 22px; height: 22px; display: inline-block; background: var(--orange); margin-bottom: 8px; }
+  .mark.circle { border-radius: 50%; }
+  .mark.square { border-radius: 2px; }
+  .mark.diamond { transform: rotate(45deg) scale(0.85); }
+  .mark.triangle { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .mark.hexagon { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
+  .mark.ring { border-radius: 50%; background: transparent; border: 5px solid var(--orange); box-sizing: border-box; }
+  .card { margin-top: 8px; }
+  .btn { display: inline-block; margin-top: 18px; background: var(--orange); color: var(--navy); font-weight: 700; padding: 12px 20px; border-radius: 4px; text-decoration: none; }
+  .small { font-size: 13px; margin-bottom: 0; }
+  .others { margin-top: 24px; color: var(--text-2); display: flex; gap: 14px; flex-wrap: wrap; }
+</style>

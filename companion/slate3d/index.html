@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slate 3D · ledger board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0A1628; --navy-raised: #12233d; --line: #1c3358;
+    --phosphor: #33FF66; --orange: #FF8C1A; --red: #FF3B3B;
+    --text: #E6EDF3; --muted: #6b7a90;
+    --human: 'Space Grotesk', system-ui, sans-serif;
+    --chain: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    --u: 8px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--navy); color: var(--text); font-family: var(--human); overflow: hidden; }
+  #scene { position: fixed; inset: 0; }
+  #labels { position: fixed; inset: 0; pointer-events: none; }
+  .lbl { font: 500 12px/1.2 var(--chain); color: var(--text); white-space: nowrap; letter-spacing: 0.02em; text-shadow: 0 1px 2px rgba(0,0,0,.8); }
+  .lbl.frame { font: 700 15px/1.2 var(--human); color: var(--text); letter-spacing: 0.01em; }
+  .lbl.frame small { display: block; font: 400 11px/1.3 var(--chain); color: var(--muted); }
+  .lbl.node { color: var(--muted); font-size: 11px; }
+  .lbl.node b { color: var(--text); font-weight: 600; }
+  .lbl.lane { color: var(--muted); }
+  .lbl.lane.lit { color: var(--phosphor); }
+  .lbl.lane.human { color: var(--orange); }
+  .lbl.lane.refusal { color: var(--red); }
+  .lbl.lane .age { display: block; font-size: 10px; color: var(--muted); }
+  .lbl.sheet { white-space: normal; width: 200px; padding: 8px 10px; background: rgba(10, 22, 40, 0.88); border: 1px solid var(--line); border-radius: 8px; font-size: 10.5px; line-height: 1.4; color: var(--text); }
+  .lbl.sheet h4 { margin: 0 0 6px; font: 700 13px/1.2 var(--human); color: var(--text); }
+  .lbl.sheet h4 small { display: block; font: 400 10px/1.4 var(--chain); color: var(--muted); }
+  .lbl.sheet dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+  .lbl.sheet dt { color: var(--phosphor); }
+  .lbl.sheet dd { margin: 0; color: var(--text); }
+  .lbl.sheet dd span { color: var(--muted); }
+  .lbl.sheet dd i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--line); }
+  .lbl.frame .orders { color: var(--phosphor); }
+  .lbl.frame .orders.blocked { color: var(--muted); }
+  .lbl.frame .orders.active { color: var(--orange); }
+  .hud { position: fixed; z-index: 2; padding: calc(var(--u) * 2) calc(var(--u) * 3); pointer-events: none; }
+  .hud.tl { left: 0; top: 0; }
+  .hud.tr { right: 0; top: 0; text-align: right; }
+  .hud.bl { left: 0; bottom: 0; }
+  .hud.br { right: 0; bottom: 0; }
+  h1 { margin: 0; font: 700 21px/1.1 var(--human); letter-spacing: -0.01em; }
+  h1 span { color: var(--phosphor); }
+  .sub { margin-top: calc(var(--u) / 2); font: 400 12px/1.4 var(--chain); color: var(--muted); }
+  .bus { font: 500 12px/1.4 var(--chain); color: var(--muted); }
+  .bus .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: var(--u); vertical-align: middle; }
+  .bus.live { color: var(--phosphor); }
+  .bus.live .dot { background: var(--phosphor); box-shadow: 0 0 10px var(--phosphor); }
+  .legend { display: flex; gap: calc(var(--u) * 2); font: 400 11px/1.4 var(--chain); color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .ticker { list-style: none; margin: 0; padding: 0; font: 400 11px/1.5 var(--chain); color: var(--muted); min-width: 360px; }
+  .ticker li { display: grid; grid-template-columns: 64px 1fr; gap: var(--u); }
+  .ticker li.chain { color: var(--phosphor); }
+  .ticker li.human { color: var(--orange); }
+  .ticker li.refusal { color: var(--red); }
+  .ticker li.slate { color: var(--text); }
+  .ticker li time { color: var(--muted); }
+  .note { margin-top: var(--u); font: 400 11px/1.4 var(--chain); color: var(--muted); }
+  .panel { position: fixed; z-index: 3; right: calc(var(--u) * 3); top: calc(var(--u) * 9); width: 380px; max-height: calc(100vh - var(--u) * 24); overflow: auto; padding: calc(var(--u) * 2); background: rgba(10, 22, 40, 0.94); border: 1px solid var(--line); border-radius: 8px; font: 400 12px/1.45 var(--chain); color: var(--text); }
+  .panel header { display: flex; align-items: center; gap: var(--u); margin-bottom: var(--u); }
+  .panel header b { font: 700 15px/1.2 var(--human); }
+  .panel .state { margin-left: auto; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+  .panel .state.done { color: var(--phosphor); border-color: var(--phosphor); }
+  .panel .state.active { color: var(--orange); border-color: var(--orange); }
+  .panel .state.blocked { color: var(--muted); }
+  .panel header button { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 4px; width: 24px; height: 24px; cursor: pointer; }
+  .panel .objective { margin: 0 0 var(--u); color: var(--text); font-family: var(--human); font-size: 13px; }
+  .panel .lines { margin: 0 0 calc(var(--u) * 2); padding-left: 0; list-style: none; }
+  .panel .lines li { display: grid; grid-template-columns: 16px 1fr; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }
+  .panel .lines li i { font-style: normal; color: var(--muted); }
+  .panel .lines li.held i { color: var(--phosphor); }
+  .panel .lines li.missed i { color: var(--orange); }
+  .panel .lines li small { display: block; color: var(--muted); }
+  .panel .actions { display: flex; gap: var(--u); flex-wrap: wrap; }
+  .panel .actions button { font: 500 12px/1 var(--human); padding: 8px 12px; border-radius: 4px; border: 1px solid var(--orange); background: transparent; color: var(--orange); cursor: pointer; }
+  .panel .actions button:active { transform: translateY(1px); }
+  .panel .fine { margin: var(--u) 0 0; color: var(--muted); font-size: 11px; }
+  .panel .out { margin: var(--u) 0 0; padding: var(--u); background: rgba(0,0,0,0.35); border-radius: 4px; max-height: 220px; overflow: auto; white-space: pre-wrap; font-size: 11px; color: var(--text); }
+  @media (prefers-reduced-motion: reduce) { .bus.live .dot { box-shadow: none; } }
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="labels"></div>
+  <div class="hud tl">
+    <h1>SLATE <span>3D</span></h1>
+    <div class="sub" id="board-name">loading the board</div>
+  </div>
+  <div class="hud tr">
+    <div class="bus" id="bus"><span class="dot"></span><span id="bus-text">bus connecting</span></div>
+    <div class="note" id="bus-source"></div>
+  </div>
+  <div class="hud bl">
+    <div class="legend">
+      <span><i style="background:var(--phosphor)"></i>chain event</span>
+      <span><i style="background:var(--orange)"></i>human act</span>
+      <span><i style="background:var(--red)"></i>refusal</span>
+      <span><i style="background:var(--line)"></i>unlit · failed or quiet</span>
+    </div>
+    <div class="note">the viewer spawns nothing · every transition goes through the controller</div>
+  </div>
+  <div class="hud br">
+    <ul class="ticker" id="ticker"></ul>
+  </div>
+  <aside class="panel" id="capsule-panel" hidden>
+    <header><b id="cp-id"></b><span id="cp-state" class="state"></span><button type="button" id="cp-close" aria-label="close">×</button></header>
+    <p id="cp-objective" class="objective"></p>
+    <ol id="cp-lines" class="lines"></ol>
+    <div class="actions">
+      <button type="button" id="cp-compile">compile to a DispatchPlan</button>
+      <button type="button" id="cp-store">send to the controller</button>
+    </div>
+    <p class="fine">Emits only. Compile is a dry run; store returns a plan id and hash. Arming and launch still need the operator token in the controller.</p>
+    <pre id="cp-out" class="out" hidden></pre>
+  </aside>
+  <script type="module" src="./slate3d.js"></script>
+</body>
+</html>

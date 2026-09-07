@@ -1,0 +1,21 @@
+{
+  // Vault Custody on Cloudflare Pages (Astro + @astrojs/cloudflare).
+  // CUSTODY_KV holds per-UID last counters, per-serial receipt chains, and the
+  // daily heads written by the timmy-ai-proxy cron. SESSION is the adapter's
+  // session store (unused by our routes, bound so the runtime never complains).
+  // Deploy: `npm run build && npx wrangler pages deploy dist --branch preview`.
+  "name": "vault-custody",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": "./dist",
+  "kv_namespaces": [
+    { "binding": "CUSTODY_KV", "id": "8d783470266e44d9ab49143de5b88436" },
+    { "binding": "SESSION", "id": "59bbc4e347164eb8b3abf4b447feb62c" }
+  ],
+  "vars": {
+    // Per-batch tag keys go in as a Pages secret, never here:
+    //   wrangler pages secret put CUSTODY_KEYS --project-name vault-custody
+    // Mirror every tap into the Timmy run store (optional):
+    //   TIMMY_EDGE_URL + secret TIMMY_EDGE_TOKEN
+  }
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+# HTML5 Custody Companion bundle: produced by lanes/defold/build.mjs (receipted), not committed
+public/companion/
+.astro/
+.wrangler/
+*.local
+.env
+.env.*
+.video/
+*.mp4

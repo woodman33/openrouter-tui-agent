@@ -53,3 +53,6 @@ marketing-plan/
 launch/
 README copy.md
 tools/
+
+# orders.log is the executed-orders ledger (ORD-IDs); tracked on purpose despite *.log
+!/orders.log

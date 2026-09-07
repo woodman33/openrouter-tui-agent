@@ -1,0 +1,55 @@
+---
+import Paper from '../../layouts/Paper.astro';
+import { cards } from '../../lib/registry';
+
+export function getStaticPaths() {
+  return Object.keys(cards).map((id) => ({ params: { id } }));
+}
+const { id } = Astro.params;
+const c = cards[id as keyof typeof cards];
+if (!c) return new Response(null, { status: 404 });
+---
+
+<Paper title={c.title} right={`card · ${c.id}`}>
+  <span class="badge">{c.badge}</span>
+  <h1>{c.title}</h1>
+  <p class="sub">{c.subtitle}</p>
+
+  <section class="panel">
+    <dl class="kv">
+      <dt>Attached</dt><dd>{c.attached.at} · {c.attached.where}</dd>
+      <dt>Fingerprint</dt><dd>{c.fingerprint.dpi}-dpi scan · match {(c.fingerprint.lastMatch * 100).toFixed(1)}% on last check</dd>
+      <dt>Box</dt><dd><a href={`/r/${c.box}`}>{c.boxLine}</a></dd>
+      <dt>Graded</dt><dd>{c.graded}</dd>
+      <dt>Location</dt><dd>{c.location}</dd>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2>Owners</h2>
+    <ul class="tl">
+      {c.owners.map((o) => (
+        <li>
+          <div>{o.initials} · {o.city}</div>
+          <div class="m">{o.span}</div>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>Checks passed</h2>
+    <ul class="tl">
+      {c.checks.map((k) => (
+        <li>
+          <div>{k.title}</div>
+          <div class="m">{k.meta}</div>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <button class="btn" type="button" disabled>Transfer ownership · ships with claims</button>
+
+  <p slot="foot">The fingerprint proves this is the same physical card that was scanned at unboxing. It does not grade the card; grading does.</p>
+</Paper>

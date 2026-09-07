@@ -1,0 +1,3596 @@
+{
+ "tldrawFileFormatVersion": 1,
+ "schema": {
+  "schemaVersion": 2,
+  "sequences": {
+   "com.tldraw.store": 4,
+   "com.tldraw.asset": 1,
+   "com.tldraw.camera": 1,
+   "com.tldraw.document": 2,
+   "com.tldraw.instance": 25,
+   "com.tldraw.instance_page_state": 5,
+   "com.tldraw.page": 1,
+   "com.tldraw.instance_presence": 6,
+   "com.tldraw.pointer": 1,
+   "com.tldraw.shape": 4,
+   "com.tldraw.asset.bookmark": 2,
+   "com.tldraw.asset.image": 5,
+   "com.tldraw.asset.video": 5,
+   "com.tldraw.shape.arrow": 6,
+   "com.tldraw.shape.bookmark": 2,
+   "com.tldraw.shape.draw": 2,
+   "com.tldraw.shape.embed": 4,
+   "com.tldraw.shape.frame": 1,
+   "com.tldraw.shape.geo": 10,
+   "com.tldraw.shape.group": 0,
+   "com.tldraw.shape.highlight": 1,
+   "com.tldraw.shape.image": 5,
+   "com.tldraw.shape.line": 5,
+   "com.tldraw.shape.note": 9,
+   "com.tldraw.shape.text": 3,
+   "com.tldraw.shape.video": 4,
+   "com.tldraw.binding.arrow": 1
+  }
+ },
+ "records": [
+  {
+   "id": "shape:node-p6-gate",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 232,
+   "y": 316,
+   "rotation": 0,
+   "index": "aT55h",
+   "parentId": "shape:frame-f6",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "yellow",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "GATE"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "manual"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p6.gate",
+     "frame": "f6",
+     "kind": "gate",
+     "approval": "manual"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p5-gate",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 232,
+   "y": 316,
+   "rotation": 0,
+   "index": "aP4ex",
+   "parentId": "shape:frame-f5",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "yellow",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "GATE"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "manual"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p5.gate",
+     "frame": "f5",
+     "kind": "gate",
+     "approval": "manual"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p4-gate-p4-artifact-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p4-gate-p4-artifact",
+   "toId": "shape:node-p4-artifact",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:node-p4-gate",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 232,
+   "y": 316,
+   "rotation": 0,
+   "index": "aL46M",
+   "parentId": "shape:frame-f4",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "yellow",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "GATE"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "manual"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p4.gate",
+     "frame": "f4",
+     "kind": "gate",
+     "approval": "manual"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p3-gate",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 232,
+   "y": 316,
+   "rotation": 0,
+   "index": "aHBIL",
+   "parentId": "shape:frame-f3",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "yellow",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "GATE"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "manual"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p3.gate",
+     "frame": "f3",
+     "kind": "gate",
+     "approval": "manual"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-gate-p3-artifact-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-gate-p3-artifact",
+   "toId": "shape:node-p3-artifact",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:node-p2-gate",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 232,
+   "y": 316,
+   "rotation": 0,
+   "index": "aD8ML",
+   "parentId": "shape:frame-f2",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "yellow",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "GATE"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "manual"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p2.gate",
+     "frame": "f2",
+     "kind": "gate",
+     "approval": "manual"
+    }
+   }
+  },
+  {
+   "id": "shape:frame-f1",
+   "typeName": "shape",
+   "type": "frame",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "a1",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "w": 640,
+    "h": 520,
+    "name": "1 · Vault Custody tap-to-verify",
+    "color": "black"
+   },
+   "meta": {
+    "boardKind": "mission",
+    "frameId": "f1",
+    "owner": "claude",
+    "paths": [
+     "vault-custody/**"
+    ],
+    "order": 1
+   }
+  },
+  {
+   "id": "binding:shape-edge-p6-gate-p6-artifact-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p6-gate-p6-artifact",
+   "toId": "shape:node-p6-gate",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:edge-p5-harness-p5-gate",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "aiAJ1",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "gate",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p5.harness",
+     "to": "p5.gate",
+     "kind": "gate"
+    }
+   }
+  },
+  {
+   "id": "shape:frame-f2",
+   "typeName": "shape",
+   "type": "frame",
+   "x": 720,
+   "y": 0,
+   "rotation": 0,
+   "index": "a235i",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "w": 640,
+    "h": 520,
+    "name": "2 · Code Mode on the worker",
+    "color": "black"
+   },
+   "meta": {
+    "boardKind": "mission",
+    "frameId": "f2",
+    "owner": "claude",
+    "paths": [
+     "workers/**"
+    ],
+    "order": 2
+   }
+  },
+  {
+   "id": "shape:edge-p2-harness-p2-gate",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "aZ3ie",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "gate",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p2.harness",
+     "to": "p2.gate",
+     "kind": "gate"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p4-harness-p4-gate",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "af0Xx",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "gate",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p4.harness",
+     "to": "p4.gate",
+     "kind": "gate"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p1-harness-p1-gate",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "aWBeS",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "gate",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p1.harness",
+     "to": "p1.gate",
+     "kind": "gate"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p2-gate-p2-artifact-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p2-gate-p2-artifact",
+   "toId": "shape:node-p2-artifact",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:edge-p6-harness-p6-gate",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "al5JY",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "gate",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p6.harness",
+     "to": "p6.gate",
+     "kind": "gate"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p3-harness-p3-gate",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ac3fg",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "gate",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p3.harness",
+     "to": "p3.gate",
+     "kind": "gate"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p1-gate",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 232,
+   "y": 316,
+   "rotation": 0,
+   "index": "a91gO",
+   "parentId": "shape:frame-f1",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "yellow",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "GATE"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "manual"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p1.gate",
+     "frame": "f1",
+     "kind": "gate",
+     "approval": "manual"
+    }
+   }
+  },
+  {
+   "id": "shape:frame-f3",
+   "typeName": "shape",
+   "type": "frame",
+   "x": 1440,
+   "y": 0,
+   "rotation": 0,
+   "index": "a32EY",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "w": 640,
+    "h": 520,
+    "name": "3 · Receipted Defold lane + Custody Companion",
+    "color": "black"
+   },
+   "meta": {
+    "boardKind": "mission",
+    "frameId": "f3",
+    "owner": "claude",
+    "paths": [
+     "lanes/**",
+     "companion/**"
+    ],
+    "order": 3
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-gate-p5-artifact-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-gate-p5-artifact",
+   "toId": "shape:node-p5-gate",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:frame-f4",
+   "typeName": "shape",
+   "type": "frame",
+   "x": 0,
+   "y": 600,
+   "rotation": 0,
+   "index": "a4Bk4",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "w": 640,
+    "h": 520,
+    "name": "4 · Observer evidence (Roboflow)",
+    "color": "black"
+   },
+   "meta": {
+    "boardKind": "mission",
+    "frameId": "f4",
+    "owner": "claude",
+    "paths": [
+     "lanes/**"
+    ],
+    "order": 4
+   }
+  },
+  {
+   "id": "shape:node-p6-artifact",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 440,
+   "y": 316,
+   "rotation": 0,
+   "index": "aU2Iu",
+   "parentId": "shape:frame-f6",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "ARTIFACT"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "fleet/"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p6.artifact",
+     "frame": "f6",
+     "kind": "artifact",
+     "path": "fleet/"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p1-gate-p1-artifact-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p1-gate-p1-artifact",
+   "toId": "shape:node-p1-artifact",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:edge-p6-gate-p6-artifact",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "am9vN",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "artifact",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p6.gate",
+     "to": "p6.artifact",
+     "kind": "artifact"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p5-artifact",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 440,
+   "y": 316,
+   "rotation": 0,
+   "index": "aQAyR",
+   "parentId": "shape:frame-f5",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "ARTIFACT"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "companion/slate3d/"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p5.artifact",
+     "frame": "f5",
+     "kind": "artifact",
+     "path": "companion/slate3d/"
+    }
+   }
+  },
+  {
+   "id": "shape:frame-f5",
+   "typeName": "shape",
+   "type": "frame",
+   "x": 720,
+   "y": 600,
+   "rotation": 0,
+   "index": "a53dU",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "w": 640,
+    "h": 520,
+    "name": "5 · Slate 3D",
+    "color": "black"
+   },
+   "meta": {
+    "boardKind": "mission",
+    "frameId": "f5",
+    "owner": "claude",
+    "paths": [
+     "companion/**",
+     "workers/**"
+    ],
+    "order": 5
+   }
+  },
+  {
+   "id": "binding:shape-edge-p4-gate-p4-artifact-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p4-gate-p4-artifact",
+   "toId": "shape:node-p4-gate",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-capsule-p1-capsule-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-capsule-p1-capsule",
+   "toId": "shape:node-p1-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:frame-f6",
+   "typeName": "shape",
+   "type": "frame",
+   "x": 1440,
+   "y": 600,
+   "rotation": 0,
+   "index": "a68Ba",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "w": 640,
+    "h": 520,
+    "name": "6 · Sparks judge mesh (fleet rank)",
+    "color": "black"
+   },
+   "meta": {
+    "boardKind": "mission",
+    "frameId": "f6",
+    "owner": "claude",
+    "paths": [
+     "fleet/**"
+    ],
+    "order": 6
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-capsule-p2-capsule-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-capsule-p2-capsule",
+   "toId": "shape:node-p2-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:node-p4-artifact",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 440,
+   "y": 316,
+   "rotation": 0,
+   "index": "aM40h",
+   "parentId": "shape:frame-f4",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "ARTIFACT"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "lanes/observer/"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p4.artifact",
+     "frame": "f4",
+     "kind": "artifact",
+     "path": "lanes/observer/"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p5-gate-p5-artifact",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ajAvX",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "artifact",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p5.gate",
+     "to": "p5.artifact",
+     "kind": "artifact"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-gate-p3-artifact-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-gate-p3-artifact",
+   "toId": "shape:node-p3-gate",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-capsule-p3-capsule-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-capsule-p3-capsule",
+   "toId": "shape:node-p3-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-capsule-p1-capsule-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-capsule-p1-capsule",
+   "toId": "shape:node-p1-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:node-p3-artifact",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 440,
+   "y": 316,
+   "rotation": 0,
+   "index": "aI12h",
+   "parentId": "shape:frame-f3",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "ARTIFACT"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "lanes/defold/"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p3.artifact",
+     "frame": "f3",
+     "kind": "artifact",
+     "path": "lanes/defold/"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-capsule-p2-capsule-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-capsule-p2-capsule",
+   "toId": "shape:node-p2-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-harness-p5-gate-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-harness-p5-gate",
+   "toId": "shape:node-p5-gate",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p2-harness-p2-gate-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p2-harness-p2-gate",
+   "toId": "shape:node-p2-gate",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:edge-p4-gate-p4-artifact",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ag156",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "artifact",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p4.gate",
+     "to": "p4.artifact",
+     "kind": "artifact"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p2-artifact",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 440,
+   "y": 316,
+   "rotation": 0,
+   "index": "aE9cX",
+   "parentId": "shape:frame-f2",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "ARTIFACT"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "workers/ai-proxy/"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p2.artifact",
+     "frame": "f2",
+     "kind": "artifact",
+     "path": "workers/ai-proxy/"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p4-capsule-p3-capsule-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p4-capsule-p3-capsule",
+   "toId": "shape:node-p3-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p4-harness-p4-gate-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p4-harness-p4-gate",
+   "toId": "shape:node-p4-gate",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p1-harness-p1-gate-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p1-harness-p1-gate",
+   "toId": "shape:node-p1-gate",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p6-harness-p6-gate-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p6-harness-p6-gate",
+   "toId": "shape:node-p6-gate",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-harness-p3-gate-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-harness-p3-gate",
+   "toId": "shape:node-p3-gate",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p2-gate-p2-artifact-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p2-gate-p2-artifact",
+   "toId": "shape:node-p2-gate",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:node-p1-artifact",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 440,
+   "y": 316,
+   "rotation": 0,
+   "index": "aA4Yh",
+   "parentId": "shape:frame-f1",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "ARTIFACT"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "vault-custody/"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p1.artifact",
+     "frame": "f1",
+     "kind": "artifact",
+     "path": "vault-custody/"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p3-gate-p3-artifact",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ad0cj",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "artifact",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p3.gate",
+     "to": "p3.artifact",
+     "kind": "artifact"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p1-gate-p1-artifact-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p1-gate-p1-artifact",
+   "toId": "shape:node-p1-gate",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p1-capsule-p1-harness-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p1-capsule-p1-harness",
+   "toId": "shape:node-p1-harness",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p4-capsule-p4-harness-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p4-capsule-p4-harness",
+   "toId": "shape:node-p4-harness",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:edge-p2-gate-p2-artifact",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "aa4qq",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "artifact",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p2.gate",
+     "to": "p2.artifact",
+     "kind": "artifact"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p2-capsule-p2-harness-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p2-capsule-p2-harness",
+   "toId": "shape:node-p2-harness",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-capsule-p5-harness-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-capsule-p5-harness",
+   "toId": "shape:node-p5-harness",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-capsule-p3-harness-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-capsule-p3-harness",
+   "toId": "shape:node-p3-harness",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p6-capsule-p6-harness-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p6-capsule-p6-harness",
+   "toId": "shape:node-p6-harness",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-capsule-p1-capsule-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-capsule-p1-capsule",
+   "toId": "shape:node-p5-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-capsule-p2-capsule-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-capsule-p2-capsule",
+   "toId": "shape:node-p5-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-capsule-p3-capsule-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-capsule-p3-capsule",
+   "toId": "shape:node-p5-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-capsule-p1-capsule-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-capsule-p1-capsule",
+   "toId": "shape:node-p3-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:edge-p1-gate-p1-artifact",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "aX2Gx",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "artifact",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p1.gate",
+     "to": "p1.artifact",
+     "kind": "artifact"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p4-capsule-p3-capsule-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p4-capsule-p3-capsule",
+   "toId": "shape:node-p4-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p4-harness-p4-gate-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p4-harness-p4-gate",
+   "toId": "shape:node-p4-harness",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p1-harness-p1-gate-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p1-harness-p1-gate",
+   "toId": "shape:node-p1-harness",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:edge-p5-capsule-p1-capsule",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "aq3Cn",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 0.7,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "red",
+    "fill": "none",
+    "dash": "dashed",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "depends",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p5.capsule",
+     "to": "p1.capsule",
+     "kind": "depends"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p6-harness-p6-gate-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p6-harness-p6-gate",
+   "toId": "shape:node-p6-harness",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-harness-p3-gate-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-harness-p3-gate",
+   "toId": "shape:node-p3-harness",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-capsule-p2-capsule-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-capsule-p2-capsule",
+   "toId": "shape:node-p3-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-harness-p5-gate-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-harness-p5-gate",
+   "toId": "shape:node-p5-harness",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p2-harness-p2-gate-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p2-harness-p2-gate",
+   "toId": "shape:node-p2-harness",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:node-p1-capsule",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 24,
+   "rotation": 0,
+   "index": "a72jz",
+   "parentId": "shape:frame-f1",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 592,
+    "h": 260,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "orange",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "start",
+    "verticalAlign": "start",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "CAPSULE · first deliverable"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "SUN verifier passes the NXP AN12196 vectors; a real tag URL hits /t, verifies, and redirects to the receipt page; six pages live on Astro/Pages; every tap and every order sealed as a receipt."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p1.capsule",
+     "frame": "f1",
+     "kind": "capsule",
+     "objective": "SUN verifier passes the NXP AN12196 vectors; a real tag URL hits /t, verifies, and redirects to the receipt page; six pages live on Astro/Pages; every tap and every order sealed as a receipt.",
+     "workspace": "host-ephemeral",
+     "copies": 1,
+     "wall_ms": 14400000,
+     "max_spend": 0,
+     "acceptance": [
+      "vitest: AN12196 sun1/sun2/sun3/plain vectors pass, corrupted CMAC rejected",
+      "GET /t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086 → 302 to /r/<serial>",
+      "six routes render: /r sealed, /r opened, /c, /relic, /m, /log",
+      "receipt chain verify ok after the build"
+     ]
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p5-capsule-p2-capsule",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ar5hQ",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 0.7,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "red",
+    "fill": "none",
+    "dash": "dashed",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "depends",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p5.capsule",
+     "to": "p2.capsule",
+     "kind": "depends"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p5-capsule-p3-capsule",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "as5OQ",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 0.7,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "red",
+    "fill": "none",
+    "dash": "dashed",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "depends",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p5.capsule",
+     "to": "p3.capsule",
+     "kind": "depends"
+    }
+   }
+  },
+  {
+   "meta": {
+    "kind": "mission"
+   },
+   "id": "page:ledger",
+   "name": "Build ledger",
+   "index": "a1",
+   "typeName": "page"
+  },
+  {
+   "id": "shape:edge-p3-capsule-p1-capsule",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "an20d",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 0.7,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "red",
+    "fill": "none",
+    "dash": "dashed",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "depends",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p3.capsule",
+     "to": "p1.capsule",
+     "kind": "depends"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p2-capsule",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 24,
+   "rotation": 0,
+   "index": "aB3Hs",
+   "parentId": "shape:frame-f2",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 592,
+    "h": 260,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "orange",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "start",
+    "verticalAlign": "start",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "CAPSULE · first deliverable"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "POST /code on timmy-ai-proxy runs one generated script per agent task against every edge tool through a Worker Loader sandbox; the script and its output seal as one receipt; operator token still gates paid or destructive calls."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p2.capsule",
+     "frame": "f2",
+     "kind": "capsule",
+     "objective": "POST /code on timmy-ai-proxy runs one generated script per agent task against every edge tool through a Worker Loader sandbox; the script and its output seal as one receipt; operator token still gates paid or destructive calls.",
+     "workspace": "host-ephemeral",
+     "copies": 1,
+     "wall_ms": 14400000,
+     "max_spend": 0,
+     "acceptance": [
+      "health reports code_mode:true",
+      "a task that lists tools, verifies a tap, and reads a chain runs as one script",
+      "receipt carries script_sha256 + output_sha256 + tool call list",
+      "unauthorized POST /code → 401"
+     ]
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p3-capsule-p2-capsule",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "aoCFo",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 0.7,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "red",
+    "fill": "none",
+    "dash": "dashed",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "depends",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p3.capsule",
+     "to": "p2.capsule",
+     "kind": "depends"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p4-capsule-p3-capsule",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ap99a",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 0.7,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "red",
+    "fill": "none",
+    "dash": "dashed",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "depends",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p4.capsule",
+     "to": "p3.capsule",
+     "kind": "depends"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p3-capsule",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 24,
+   "rotation": 0,
+   "index": "aF8Ne",
+   "parentId": "shape:frame-f3",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 592,
+    "h": 260,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "orange",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "start",
+    "verticalAlign": "start",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "CAPSULE · first deliverable"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "The Custody Companion (HTML5 Defold + Rive) is built by a receipted Defold lane, launched from the /t tap redirect, and reads the box's chain from the custody API. This is the Fanatics demo."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p3.capsule",
+     "frame": "f3",
+     "kind": "capsule",
+     "objective": "The Custody Companion (HTML5 Defold + Rive) is built by a receipted Defold lane, launched from the /t tap redirect, and reads the box's chain from the custody API. This is the Fanatics demo.",
+     "workspace": "host-ephemeral",
+     "copies": 1,
+     "wall_ms": 28800000,
+     "max_spend": 0,
+     "acceptance": [
+      "bob.jar + engine hashes in env_lock",
+      ".riv sha256 bound in the build receipt",
+      "HTML5 bundle opens from /t redirect on a phone",
+      "companion renders the chain for VC0007"
+     ]
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p2-capsule-p2-harness-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p2-capsule-p2-harness",
+   "toId": "shape:node-p2-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-capsule-p5-harness-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-capsule-p5-harness",
+   "toId": "shape:node-p5-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p3-capsule-p3-harness-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p3-capsule-p3-harness",
+   "toId": "shape:node-p3-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p6-capsule-p6-harness-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p6-capsule-p6-harness",
+   "toId": "shape:node-p6-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:node-p4-capsule",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 24,
+   "rotation": 0,
+   "index": "aJ4Vi",
+   "parentId": "shape:frame-f4",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 592,
+    "h": 260,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "orange",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "start",
+    "verticalAlign": "start",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "CAPSULE · first deliverable"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Roboflow detect runs on every lane screenshot starting with the Defold lane; boxes are stored as board shapes carrying the receipt hash. Honest not_configured until ROBOFLOW_API_KEY lands."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p4.capsule",
+     "frame": "f4",
+     "kind": "capsule",
+     "objective": "Roboflow detect runs on every lane screenshot starting with the Defold lane; boxes are stored as board shapes carrying the receipt hash. Honest not_configured until ROBOFLOW_API_KEY lands.",
+     "workspace": "host-ephemeral",
+     "copies": 1,
+     "wall_ms": 7200000,
+     "max_spend": 0,
+     "acceptance": [
+      "one Defold lane screenshot → detect → annotations on the board",
+      "receipt evidence lists the detection result hash"
+     ]
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p1-capsule-p1-harness-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p1-capsule-p1-harness",
+   "toId": "shape:node-p1-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p4-capsule-p4-harness-start",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p4-capsule-p4-harness",
+   "toId": "shape:node-p4-capsule",
+   "meta": {},
+   "props": {
+    "terminal": "start",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "shape:node-p1-harness",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 316,
+   "rotation": 0,
+   "index": "a80Lu",
+   "parentId": "shape:frame-f1",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "blue",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "HARNESS"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "opencode"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p1.harness",
+     "frame": "f1",
+     "kind": "harness",
+     "harness": "opencode",
+     "workspace": "host-ephemeral"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p5-capsule",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 24,
+   "rotation": 0,
+   "index": "aN0aa",
+   "parentId": "shape:frame-f5",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 592,
+    "h": 260,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "orange",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "start",
+    "verticalAlign": "start",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "CAPSULE · first deliverable"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "The current mission board renders in 3D inside the companion with live lane pods. Decisions accepted in advance: mission + blueprint boards first, existing Durable Object as the sync room, Three.js inside the companion page, this ledger as the first board."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p5.capsule",
+     "frame": "f5",
+     "kind": "capsule",
+     "objective": "The current mission board renders in 3D inside the companion with live lane pods. Decisions accepted in advance: mission + blueprint boards first, existing Durable Object as the sync room, Three.js inside the companion page, this ledger as the first board.",
+     "workspace": "host-ephemeral",
+     "copies": 1,
+     "wall_ms": 28800000,
+     "max_spend": 0,
+     "acceptance": [
+      "two browsers share one board through the Durable Object",
+      "3D view shows frames as rooms and capsules as pods",
+      "pod state follows receipt lifecycle"
+     ]
+    }
+   }
+  },
+  {
+   "id": "shape:node-p2-harness",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 316,
+   "rotation": 0,
+   "index": "aC4bj",
+   "parentId": "shape:frame-f2",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "blue",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "HARNESS"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "opencode"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p2.harness",
+     "frame": "f2",
+     "kind": "harness",
+     "harness": "opencode",
+     "workspace": "host-ephemeral"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p3-harness",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 316,
+   "rotation": 0,
+   "index": "aG6o5",
+   "parentId": "shape:frame-f3",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "blue",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "HARNESS"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "defold"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p3.harness",
+     "frame": "f3",
+     "kind": "harness",
+     "harness": "defold",
+     "workspace": "host-ephemeral"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p6-capsule",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 24,
+   "rotation": 0,
+   "index": "aR4Wg",
+   "parentId": "shape:frame-f6",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 592,
+    "h": 260,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "orange",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "start",
+    "verticalAlign": "start",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "CAPSULE · first deliverable"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Judges resolve by fleet rank: local judges if present, else the OpenRouter cheap tier; every judge receipt records which tier judged. Will-only benefit, not a product feature."
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p6.capsule",
+     "frame": "f6",
+     "kind": "capsule",
+     "objective": "Judges resolve by fleet rank: local judges if present, else the OpenRouter cheap tier; every judge receipt records which tier judged. Will-only benefit, not a product feature.",
+     "workspace": "host-ephemeral",
+     "copies": 1,
+     "wall_ms": 7200000,
+     "max_spend": 0,
+     "acceptance": [
+      "fleet entry 'local-judges' with detect probes",
+      "fusion receipt carries judge_tier",
+      "no behavior change when no local judge is reachable"
+     ]
+    }
+   }
+  },
+  {
+   "id": "shape:node-p4-harness",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 316,
+   "rotation": 0,
+   "index": "aK3NX",
+   "parentId": "shape:frame-f4",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "blue",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "HARNESS"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "opencode"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p4.harness",
+     "frame": "f4",
+     "kind": "harness",
+     "harness": "opencode",
+     "workspace": "host-ephemeral"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p2-capsule-p2-harness",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "aY3UO",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "harness",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p2.capsule",
+     "to": "p2.harness",
+     "kind": "harness"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p5-capsule-p5-harness",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ah47X",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "harness",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p5.capsule",
+     "to": "p5.harness",
+     "kind": "harness"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p3-capsule-p3-harness",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ab0Ta",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "harness",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p3.capsule",
+     "to": "p3.harness",
+     "kind": "harness"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p6-capsule-p6-harness",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ak79b",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "harness",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p6.capsule",
+     "to": "p6.harness",
+     "kind": "harness"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p1-capsule-p1-harness",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "aV7dz",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "harness",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p1.capsule",
+     "to": "p1.harness",
+     "kind": "harness"
+    }
+   }
+  },
+  {
+   "id": "shape:edge-p4-capsule-p4-harness",
+   "typeName": "shape",
+   "type": "arrow",
+   "x": 0,
+   "y": 0,
+   "rotation": 0,
+   "index": "ae7y8",
+   "parentId": "page:ledger",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "kind": "arc",
+    "labelColor": "black",
+    "color": "grey",
+    "fill": "none",
+    "dash": "draw",
+    "size": "s",
+    "arrowheadStart": "none",
+    "arrowheadEnd": "arrow",
+    "font": "draw",
+    "start": {
+     "x": 0,
+     "y": 0
+    },
+    "end": {
+     "x": 100,
+     "y": 100
+    },
+    "bend": 0,
+    "text": "harness",
+    "labelPosition": 0.5,
+    "scale": 1,
+    "elbowMidPoint": 0.5
+   },
+   "meta": {
+    "edge": {
+     "from": "p4.capsule",
+     "to": "p4.harness",
+     "kind": "harness"
+    }
+   }
+  },
+  {
+   "gridSize": 10,
+   "name": "Vault Custody × Timmy · build ledger",
+   "meta": {
+    "kind": "mission",
+    "date": "2026-09-05",
+    "mission_sha256": "e5d99168d5133064757dcd44ac5b534044b14890b6303e9c53e5e713b6406575",
+    "note": "One frame per project in the ORDER OF BUILD. Each project's first deliverable is its capsule node. Compiles through slate-compiler (MissionMapDoc) → DispatchPlans; the board never launches, the controller does."
+   },
+   "id": "document:document",
+   "typeName": "document"
+  },
+  {
+   "id": "shape:node-p5-harness",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 316,
+   "rotation": 0,
+   "index": "aOAWw",
+   "parentId": "shape:frame-f5",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "blue",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "HARNESS"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "opencode"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p5.harness",
+     "frame": "f5",
+     "kind": "harness",
+     "harness": "opencode",
+     "workspace": "host-ephemeral"
+    }
+   }
+  },
+  {
+   "id": "shape:node-p6-harness",
+   "typeName": "shape",
+   "type": "geo",
+   "x": 24,
+   "y": 316,
+   "rotation": 0,
+   "index": "aSA66",
+   "parentId": "shape:frame-f6",
+   "isLocked": false,
+   "opacity": 1,
+   "props": {
+    "geo": "rectangle",
+    "dash": "draw",
+    "url": "",
+    "w": 176,
+    "h": 96,
+    "growY": 0,
+    "scale": 1,
+    "labelColor": "black",
+    "color": "blue",
+    "fill": "semi",
+    "size": "s",
+    "font": "sans",
+    "align": "middle",
+    "verticalAlign": "middle",
+    "richText": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "HARNESS"
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "opencode"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "meta": {
+    "node": {
+     "id": "p6.harness",
+     "frame": "f6",
+     "kind": "harness",
+     "harness": "opencode",
+     "workspace": "host-ephemeral"
+    }
+   }
+  },
+  {
+   "id": "binding:shape-edge-p6-gate-p6-artifact-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p6-gate-p6-artifact",
+   "toId": "shape:node-p6-artifact",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  },
+  {
+   "id": "binding:shape-edge-p5-gate-p5-artifact-end",
+   "typeName": "binding",
+   "type": "arrow",
+   "fromId": "shape:edge-p5-gate-p5-artifact",
+   "toId": "shape:node-p5-artifact",
+   "meta": {},
+   "props": {
+    "terminal": "end",
+    "normalizedAnchor": {
+     "x": 0.5,
+     "y": 0.5
+    },
+    "isExact": false,
+    "isPrecise": false,
+    "snap": "none"
+   }
+  }
+ ]
+}

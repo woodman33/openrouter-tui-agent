@@ -1,0 +1,29 @@
+{
+  "_note": "Provenance events per unit. One list drives two views: the 3D timeline and the travel map. Every event stamps its hat. Coordinates are city-level (privacy: city-level and owner-shared). Hashes are the display prefixes from the custody lane; illustrative pilot data.",
+  "cities": {
+    "Duryea, PA": { "lat": 41.341, "lon": -75.741 },
+    "Reno, NV": { "lat": 39.53, "lon": -119.814 },
+    "Las Vegas, NV": { "lat": 36.172, "lon": -115.14 },
+    "Henderson, NV": { "lat": 36.04, "lon": -114.982 },
+    "Phoenix, AZ": { "lat": 33.448, "lon": -112.074 },
+    "Santa Ana, CA": { "lat": 33.746, "lon": -117.868 }
+  },
+  "units": {
+    "VC0007": [
+      { "seq": "903.0401", "kind": "custody.manufacture", "ts": "2026-08-28T08:00:00-04:00", "hat": "manufacturer", "city": "Duryea, PA", "title": "Manufactured · Series 001 · lot 14", "detail": "2026 hobby box · 24 packs · contents collated", "prev": "genesis", "this": "c0a1f9e4" },
+      { "seq": "903.0405", "kind": "custody.ship", "ts": "2026-09-02T14:30:00-07:00", "hat": "distributor", "city": "Reno, NV", "title": "Shipped · region 4 · pallet 22", "detail": "to Paradise Card Breaks, Las Vegas", "prev": "c0a1f9e4", "this": "e07b4d92" },
+      { "seq": "903.0410", "kind": "custody.commit", "ts": "2026-09-12T09:02:11-07:00", "hat": "retailer", "city": "Las Vegas, NV", "title": "Contents hash committed · published to Series 001", "detail": "contents_hash 9f3a7c1e2b8d4406 · before sale", "prev": "e07b4d92", "this": "51c0e8a9", "via": "timmy-mcp:paradise-pos" },
+      { "seq": "903.0411", "kind": "custody.photo", "ts": "2026-09-12T12:38:40-07:00", "hat": "retailer", "city": "Las Vegas, NV", "title": "Factory shrink photographed · 3 photos hashed", "detail": "kind=factory_seal n=3", "prev": "51c0e8a9", "this": "7c19e3f0" },
+      { "seq": "903.0412", "kind": "custody.seal", "ts": "2026-09-12T12:41:03-07:00", "hat": "retailer", "city": "Las Vegas, NV", "title": "Sealed at Paradise Card Breaks", "detail": "NTAG 424 DNA TT · chipboard band · counter 1 · sig valid", "prev": "7c19e3f0", "this": "2ad8f61c", "by": "paradise/counter-2" },
+      { "seq": "903.0413", "kind": "custody.sell", "ts": "2026-09-12T13:04:52-07:00", "hat": "retailer", "city": "Las Vegas, NV", "title": "Sold · POS receipt #48812", "detail": "buyer hash(…) · price undisclosed", "prev": "2ad8f61c", "this": "b9d4a1e7", "via": "timmy-mcp:paradise-pos", "counterparty": "collector" },
+      { "seq": "903.0414", "kind": "custody.claim", "ts": "2026-09-12T13:05:19-07:00", "hat": "collector", "city": "Las Vegas, NV", "title": "Claimed by owner · phone tap", "detail": "tap 2 · counter 2 · sig valid", "prev": "b9d4a1e7", "this": "0f6c2d81" },
+      { "seq": "903.0502", "kind": "custody.open", "ts": "2026-09-14T19:22:07-07:00", "hat": "collector", "city": "Henderson, NV", "title": "Opened · seal loop broken", "detail": "tamper BROKEN · stored on chip · tap 4 · reveal tag signed counter 1", "prev": "0f6c2d81", "this": "c41a9b30", "tamper": true },
+      { "seq": "903.0503", "kind": "custody.pack", "ts": "2026-09-14T19:24:10-07:00", "hat": "collector", "city": "Henderson, NV", "title": "Pack 1 opened · 12 cards attached", "detail": "", "prev": "c41a9b30", "this": "88e2f5a0" },
+      { "seq": "903.0519", "kind": "custody.attach", "ts": "2026-09-14T20:12:44-07:00", "hat": "collector", "city": "Henderson, NV", "title": "Card VC0007-17-03 attached · Rookie Auto 14/99", "detail": "pack 17 · 1200-dpi fingerprint", "prev": "…", "this": "5d0b7c92" },
+      { "seq": "903.0526", "kind": "custody.pack", "ts": "2026-09-14T20:41:58-07:00", "hat": "collector", "city": "Henderson, NV", "title": "Pack 24 opened · 13 cards attached", "detail": "24 of 24 · 312 cards · 4 hits", "prev": "…", "this": "a72e1f4d" },
+      { "seq": "903.1188", "kind": "custody.transfer", "ts": "2026-10-02T08:15:31-07:00", "hat": "seller", "city": "Phoenix, AZ", "title": "Card VC0007-17-03 transferred · sold on eBay", "detail": "from hash(W.M.) to hash(J.R.) · ref 38-1142 · $412.00", "prev": "…", "this": "e3c8d012", "via": "timmy-mcp:ebay", "counterparty": "collector", "from": "Henderson, NV" },
+      { "seq": "903.1190", "kind": "custody.verify", "ts": "2026-10-20T14:03:09-07:00", "hat": "grader", "city": "Santa Ana, CA", "title": "Verified at grader intake · same card, no trim", "detail": "fp_match 0.996 · dims_delta 0.04mm", "prev": "e3c8d012", "this": "91b0f7aa", "via": "timmy-mcp:grader-intake", "from": "Phoenix, AZ" },
+      { "seq": "903.1191", "kind": "chain.head", "ts": "2026-10-20T23:59:00-07:00", "hat": "manufacturer", "city": "Duryea, PA", "title": "Chain head published · anchored OpenTimestamps", "detail": "series 001 · head 91b0f7aa · github:vault-custody/heads@2026-10-20", "prev": "91b0f7aa", "this": "head" }
+    ]
+  }
+}

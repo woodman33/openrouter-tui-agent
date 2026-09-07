@@ -1,0 +1,42 @@
+{
+ "kind": "blueprint",
+ "name": "Doctrine",
+ "source": "docs/auth.md · AGENTS.md (parallel-agent rules) · docs/MISSION-MAP-INTERFACE.md · orders.log ORD-016",
+ "date": "2026-09-06",
+ "note": "The rules every capsule on the ledger is governed by. Each row cites the document it comes from; nothing here is paraphrased beyond the source.",
+ "sheets": [
+  {
+   "id": "authority",
+   "title": "Authority flow",
+   "rows": [
+    { "label": "human", "value": "logs in", "note": "operator identity; future SSO (auth.md)" },
+    { "label": "agent", "value": "shows a passport", "note": "claims identity inside a team" },
+    { "label": "tool", "value": "requires a visa", "note": "to execute an action" },
+    { "label": "tool call", "value": "receives a stamp", "note": "AgentPass scope enforced locally" },
+    { "label": "run", "value": "creates a sealed receipt", "note": "receipts prove the trip" }
+   ]
+  },
+  {
+   "id": "receipts",
+   "title": "Receipts and approvals",
+   "rows": [
+    { "label": "append-only", "value": ".timmy/ is shared state", "note": "append through appendReceipt; never hand-edit or rewrite a stream (AGENTS.md)" },
+    { "label": "approvals", "value": "operator-minted tokens", "note": "timmy approve <planHash>; an agent never self-approves (AGENTS.md)" },
+    { "label": "staging", "value": "explicit paths only", "note": "never git add -A; leave other agents' work alone (AGENTS.md)" },
+    { "label": "fork", "value": "freeze, attest, re-seal", "note": "a store fork is disclosed: FROZEN marker, fork.attest in root, evidence re-sealed citing the copies (ORD-016)" },
+    { "label": "seal", "value": "from the pinned root only", "note": "store-pin preflight; never from a subdirectory" }
+   ]
+  },
+  {
+   "id": "map",
+   "title": "Mission map invariants",
+   "rows": [
+    { "label": "no second scheduler", "value": "map compiles, never spawns", "note": "every transition goes through the allowlisted controller (MISSION-MAP-INTERFACE)" },
+    { "label": "plan hash", "value": "shown before launch", "note": "a capsule whose hash differs from the approved hash reads needs_approval" },
+    { "label": "isolation", "value": "controller-enforced", "note": "the map requests docker or host-ephemeral, never overrides" },
+    { "label": "blocked", "value": "not_configured | blocked", "note": "the unified enum for anything that cannot run" },
+    { "label": "colour", "value": "red is refusal only", "note": "tamper is a human-world event and stays orange (tokens)" }
+   ]
+  }
+ ]
+}

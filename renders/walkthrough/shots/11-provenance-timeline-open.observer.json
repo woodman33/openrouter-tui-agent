@@ -1,0 +1,65 @@
+{
+ "image": "renders/walkthrough/shots/11-provenance-timeline-open.png",
+ "lane": "shots",
+ "image_sha256": "cbb4b616d0f6a12cf3858863006459667bcb331bf477d40179704d153619be76",
+ "observed_at": "2026-09-07T03:56:22.581Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 1519,
+  "sha256": "d17c7f258859f47b5509ed7382f1b8c5a150a276a36c47bd1ec18b206da7e106",
+  "text": "5hipped,03.0411\nFactory shrink photaghaphail\n- \nSold\n903.0519 903.1188\n903. C5n2 VC0007-10a83 uct00net7-03 transferred\nOpened\n903.0401 custody.manufacture Manufactured Series 001. lot 14\nmanufacturer Duryea, PA\ngenesis + c0alf9e4\n903.0405 custody.ship\nShipped region 4. pallet 22\ndistributor Reno, NV\nc0alf9e4 + e07b4d92\n903.0410 custody.commit Contents hash committed published to Series 001\nretailer Las Vegas, NV e07b4d92 + 51c0e8a9\n903.0411 custody.photo\nFactory shrink photographed 3 photos hashed\nretailer Las Vegas, NV 51c0e8a9 - 7c19e3f0\n903.0412 custody.seal\nSealed at Paradise Card Breaks\nretailer Las Vegas, NV 7c19e3f0 + 2ad8f61c\n903.0413 custody.sell\nSold POS receipt: #48812\nretailer Las Vegas, NV 2ad8f61c + b9d4ale7\n903.0414 custody.claim\nClaimed by owner phone tap\ncollector Las Vegas, NV b9d4ale7 + 0f6c2d81\n903.0502 custody.open\nOpened seall loop broken\ncollector Henderson, NV 0f6c2d81 + c41a9b30\n903.0503 custody.pack\nPack <1opened 12 cards attached\ncollector Henderson, NV c41a9b30 88e2f5a0\n903.0519 custody.attach\nCard VC0007-17-03 attached Rookie Auto 14/99\ncollector Henderson, NV\n- 5d0b7c92\n903.0526 custody.pack\nPack 24 opened 13 cards attached\ncollector Henderson, NV\n+ a72e1f4d\n903.1188 custody.transfer Card' VC0007-17-03 transferred sold on eBay\nseller\nPhoenix, AZ\ne3c8d012\n903.1190 custody.verify Verified at grader intake. same card,r no trim\ngrader\nSanta Ana, CA e3c8d012 + 91b0f7aa\n903.1191 chain.head\nChain head published anchored OpenTimestamps\nmanufacturer Duryea, PA\n91b0f7aa head"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.28392836451530457,
+   0.1786835640668869,
+   0.19727550446987152,
+   0.20836368203163147
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.28392836451530457
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 712.4331665039062,
+    "y": 415.19091796875,
+    "w": 1353.7393798828125,
+    "h": 294.7884216308594,
+    "label": "banner",
+    "confidence": 0.028050558641552925
+   },
+   {
+    "x": 720.9400024414062,
+    "y": 443.51861572265625,
+    "w": 1397.5745849609375,
+    "h": 887.0372314453125,
+    "label": "sign",
+    "confidence": 0.026700617745518684
+   }
+  ]
+ },
+ "detection_sha256": "8d644ccb9c7291255626389ebf09c5e6be81ee75509ddb6e87a24870f0e96b48"
+}

@@ -1,0 +1,57 @@
+{
+ "image": "renders/walkthrough/shots/05-collector-singles.png",
+ "lane": "shots",
+ "image_sha256": "0c774b85d8172202a19ef4eb56ef26656f11015be30be52aed94f33e1ce01c65",
+ "observed_at": "2026-09-07T03:55:38.246Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 1146,
+  "sha256": "d54fddc5745f8ce089ec45b2a5e2489493b2276eaf345513190af73d238ce003",
+  "text": "VAULT CUSTODY x TIMMY\nCollector - Henderson, NV\nGateway Profile Boxes Singles Locations Provenance Where thel boxes went\nCollector sign out\nSingles\n7 rows this hat can see. Counterparty = hash + city + hat,\nnever a name. Price only where disclosed.\nSERIAL\nTHUMBNAIL PRODUCT\nMANUFACTURED\nRECEIVED\nSOLD\nCOUNTERPARTY\nVC0007-01-04\nBase pack 1. card 4\n2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson\nVC0007-05-11\nNumbered, /50. pack 5. card 11\n2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson\nVC0007-09-02\nInsert pack 9. card2\n2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson\nVC0007-17-03\nRookie Autograph 14/99 pack 17. card 3 2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson 2026-10-02 eBay #38-1142 e3c8d012. Phoenix, AZ. seller\nVC0007-21-07\nNumbered, /25. pack 21. card 7\n2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson\nVC0007-24-01\nBase pack 24. card1\n2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson\nVC2210-08-01\nRelic jersey swatch. 08-01 of: 99\n2026-08-28 Duryea, PA 2026-09-12 event 1/1. Las Vegas\nIllustrative pilot data seeded from VC0007 and Series 001. Every row's chain head is the last receipt hash the hat can read."
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.24544478952884674,
+   0.18098290264606476,
+   0.20099329948425293,
+   0.18910366296768188
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.24544478952884674
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 719.4132690429688,
+    "y": 547.4566650390625,
+    "w": 1313.3035888671875,
+    "h": 592.2987060546875,
+    "label": "banner",
+    "confidence": 0.05209420993924141
+   }
+  ]
+ },
+ "detection_sha256": "6c9d3e2492a435491bd4cc1fb6b9293d44f7a963d54f7c56bbe43fa75cedf657"
+}

@@ -1,0 +1,49 @@
+---
+import Paper from '../../layouts/Paper.astro';
+import { relics } from '../../lib/registry';
+
+export function getStaticPaths() {
+  return Object.keys(relics).map((id) => ({ params: { id } }));
+}
+const { id } = Astro.params;
+const r = relics[id as keyof typeof relics];
+if (!r) return new Response(null, { status: 404 });
+---
+
+<Paper title={r.title} right={`relic · ${r.id}`}>
+  <span class="badge">{r.badge}</span>
+  <h1>{r.title}</h1>
+  <p class="sub">{r.subtitle}</p>
+
+  <section class="panel">
+    <dl class="kv">
+      <dt>Garment</dt><dd>{r.garment}</dd>
+      <dt>Game</dt><dd>{r.game}</dd>
+      <dt>Highlights</dt><dd>{r.highlights}</dd>
+      <dt>Swatch</dt><dd>{r.swatch}</dd>
+      <dt>Box</dt><dd>{r.box}</dd>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <div class="photos">
+      {r.photos.map((p) => <figure class="photo"><figcaption>{p}</figcaption></figure>)}
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Why this is a 1/1</h2>
+    <p class="why">{r.why}</p>
+  </section>
+
+  <button class="btn" type="button" disabled>Watch the plays · needs the highlights license</button>
+
+  <p slot="foot">Status: {r.status}.</p>
+</Paper>
+
+<style>
+  .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8em; }
+  .photo { margin: 0; aspect-ratio: 1; border-radius: 10px; background: linear-gradient(160deg, var(--photo), color-mix(in srgb, var(--photo) 70%, var(--ink) 30%)); position: relative; }
+  .photo figcaption { position: absolute; left: 0.7em; bottom: 0.6em; color: #fff; font-size: 0.75em; }
+  .why { margin: 0; color: var(--muted); line-height: 1.4; }
+</style>
