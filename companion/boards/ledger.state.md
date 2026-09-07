@@ -18,4 +18,4 @@
 | 5 · Slate 3D | done | 2/2 |
 | 6 · Sparks judge mesh (fleet rank) | next | 0/0 |
 
-computed 2026-09-07T06:54:40.529Z from 963 root receipts · edge head 2026-09-06 11a3badebe07
+computed 2026-09-07T07:06:40.486Z from 966 root receipts · edge head 2026-09-06 11a3badebe07
