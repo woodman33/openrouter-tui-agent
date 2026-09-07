@@ -1,0 +1,16 @@
+{
+  "name": "@timmy/slate3d",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Slate 3D: a tldraw mission board rendered as a Three.js scene with lane pods lit from the Timmy event bus",
+  "scripts": {
+    "build": "node ../../lanes/slate/build.mjs"
+  },
+  "dependencies": {
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

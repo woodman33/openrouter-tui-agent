@@ -1,0 +1,18 @@
+name: "main"
+scale_along_z: 0
+embedded_instances {
+  id: "companion"
+  data: "components {\n"
+  "  id: \"custody\"\n"
+  "  component: \"/main/custody.script\"\n"
+  "}\n"
+  "components {\n"
+  "  id: \"hud\"\n"
+  "  component: \"/main/hud.gui\"\n"
+  "}\n"
+  "components {\n"
+  "  id: \"rive\"\n"
+  "  component: \"/assets/companion.rivemodel\"\n"
+  "}\n"
+  ""
+}

@@ -1,0 +1,65 @@
+{
+ "image": "renders/walkthrough/shots/13-manufacturer-boxes.png",
+ "lane": "shots",
+ "image_sha256": "b7a26c3c5aea7f529177dfe34891bce4493ce0ee341e542d0051ebea432861bd",
+ "observed_at": "2026-09-07T03:56:37.839Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 892,
+  "sha256": "1c4feac842a1ea8c16c5251f5e1a5370b8fd4fdc56fe4b915a67e13fa241d681",
+  "text": "VAULT CUSTODY x TIMMY\nManufacturer - Duryea, PA\nGateway Profile Boxes Singles Locations Provenance Where thel boxes went\nManufacturer sign out\nBoxes\n4 rows this hat can see. Counterparty = hash + city + hat,\nnever a name. Price only where disclosed.\nSERIAL THUMBNAIL PRODUCT\nMANUFACTURED\nRECEIVED\nSOLD\nCOUNTERPARTY\nVC0001\n2026 hobby box Series 001\n2026-08-28 Duryea, PA 2026-09-02 Paradise Las Vegas\nVC0002\n2026 hobby box Series 001\n2026-08-28 Duryea, PA 2026-09-01- Distributor B. Reno\n5d3e9b20- Reno,NV. -distributor\nVC0003\n2026 hobby box event 1/1. Las' Vegas convention 2026-08-28 Duryea, PA 2026-09-12 booth' 1. Las Vegas\nVC0007\n2026 hobby box Series 001\n2026-08-28 Duryea, PA 2026-09-02 Paradise Las Vegas 2026-09-12. POS #48812 0f6c2d81 Las Vegas, NV. .collec\nIllustrative pilot data seeded from VC0007 and Series 001.1 Every row's chain head is the last receipt hash the hat can read."
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.25752419233322144,
+   0.17279894649982452,
+   0.19382230937480927,
+   0.18687750399112701
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.25752419233322144
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 713.85546875,
+    "y": 429.6905517578125,
+    "w": 1322.9970703125,
+    "h": 353.26953125,
+    "label": "sign",
+    "confidence": 0.16274848580360413
+   },
+   {
+    "x": 718.2437744140625,
+    "y": 311.4012145996094,
+    "w": 1364.783935546875,
+    "h": 622.8024291992188,
+    "label": "banner",
+    "confidence": 0.03161124885082245
+   }
+  ]
+ },
+ "detection_sha256": "ba1b6636d278dba3d38b8e393d208ca09ecbef965fcaec49bf381aa105c09622"
+}

@@ -1,0 +1,57 @@
+{
+ "image": "vault-custody/renders/badge/p-vc0007.png",
+ "lane": "badge",
+ "image_sha256": "f19eab6f8236b1d9fea6b722f982f3c7010aae4f9d95f1ff012d8ead476e13e4",
+ "observed_at": "2026-09-07T03:57:06.947Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 1066,
+  "sha256": "2e1834b08f19a46e1f7492b3f28b38db08db1958e13ddb459623a12cf358a9a5",
+  "text": "VAULT CUSTODY x TIMMY\nprovenance VC0007\nGateway Profile Boxes Singles Locations Provenance Where the boxes went\nsign out\n-\nVC0007 2026 hobby box\nOPENED\n14 chain events, every one stamped with its hat. One list, two\nviews.\nTimeline 3D Travel map\nManufacturer I Distributor - Retailer Collector A Seller Grader chain\nClick an event.\ntap.005 tap.007 tap.009 tap.011 tap.013 tap.015\ntap.001 tap.003 verifilap verifilap verifiëdp verifiedap verifiedtap verified\nverificlep\ntted\nTap verified'ap\n- - - - -\n-\ntap.006 tap.008 tap.010 tap.012 tap.014\ntap.004. verifiep verifilap verifieap verifietap verified tap.016\ntap.002 Tap verificap\nTap verif\n903.0412 903.0414 903.0503 903.0526 903.11903.1191 Tap verified\n24\nGeeka,head.nealdshed\npradiwe-Eahad\"EPManpes 1 openedPack Opehcipd\n-\n-\n- -\n3.0411\n903.1188\nink photograshed 903.0502 903. .0519\ntransferred\nSold Opérend vC0er:59539RCA203\n903.0401 custody.manufacture Manufactured Series 001. lot 14\nmanufacturer Duryea, PA\ngenesis c0alf9e4\n903.0405 custodv.ship\nShipped reaion 4. pallet 22\ndistributor Reno. NV\nc0alf9e4 e07b4d92"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.2394329011440277,
+   0.17419037222862244,
+   0.1807258427143097,
+   0.202376127243042
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.2394329011440277
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 2880,
+   "height": 1800
+  },
+  "boxes": [
+   {
+    "x": 1439.25634765625,
+    "y": 858.6665649414062,
+    "w": 2874.6162109375,
+    "h": 1717.3331298828125,
+    "label": "banner",
+    "confidence": 0.020874759182333946
+   }
+  ]
+ },
+ "detection_sha256": "3cad23442f28850722ca86122e27c4b4361c96fbddace0d07fdf0de951cabe66"
+}

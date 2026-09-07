@@ -1,0 +1,43 @@
+---
+// Product-mode nav for the pitch site. One line at desktop, hamburger-free
+// because the label set is short. The hat chip reads the seeded session cookie
+// on the client (the stub cookies are not httpOnly on purpose).
+interface Props { current?: string }
+const { current = '' } = Astro.props;
+const links = [
+  ['/', 'Gateway'],
+  ['/me', 'Profile'],
+  ['/me/boxes', 'Boxes'],
+  ['/me/singles', 'Singles'],
+  ['/me/locations', 'Locations'],
+  ['/p/VC0007', 'Provenance'],
+  ['/m', 'Where the boxes went']
+];
+---
+
+<nav class="pnav" aria-label="Pitch site">
+  <ul>
+    {links.map(([href, label]) => (
+      <li><a href={href} class:list={[{ on: current === href }]} aria-current={current === href ? 'page' : undefined}>{label}</a></li>
+    ))}
+  </ul>
+  <span id="hatchip" class="hatchip" hidden><span class="who" id="hatchip-name"></span><a href="/signout">sign out</a></span>
+  <script>
+    const m = document.cookie.match(/(?:^|; )vc_hat=([a-z]+)/);
+    if (m) {
+      const chip = document.getElementById('hatchip')!;
+      document.getElementById('hatchip-name')!.textContent = m[1][0].toUpperCase() + m[1].slice(1);
+      chip.hidden = false;
+    }
+  </script>
+</nav>
+
+<style>
+  .pnav { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 8px 0 24px; font-family: var(--font-human); font-size: var(--t-1); }
+  .pnav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+  .pnav a { color: var(--text-2); text-decoration: none; padding: 6px 0; border-bottom: 1px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .pnav a:hover, .pnav a.on { color: var(--orange); border-bottom-color: var(--orange); }
+  .hatchip { color: var(--text-2); font-family: var(--font-chain); font-size: var(--t-1); white-space: nowrap; display: inline-flex; gap: 12px; }
+  .hatchip a { color: var(--text-muted); text-decoration: none; }
+  .hatchip a:hover { color: var(--orange); }
+</style>

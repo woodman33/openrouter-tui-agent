@@ -73,11 +73,122 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
     logger.error('WebSocket server error:', err);
   });
   const clients = new Set<import('ws').WebSocket>();
+
+  // Event-bus tail → every client as {type:'bus', event}. The bus lives in the
+  // pinned repo root (TIMMY_REPO when set), never in a worktree copy. Two files
+  // are tailed: the one bus (event envelopes appended beside the receipts in
+  // .timmy/receipts/runs.jsonl, src/bus) and the legacy .timmy/runs/timmy-events.jsonl
+  // that older writers still use. Receipt records are skipped; only event
+  // envelopes pass. Whole lines only; a partial append waits for its newline.
+  const busRoot = process.env.TIMMY_REPO ?? process.cwd();
+  const busFiles = [
+    path.join(busRoot, '.timmy', 'receipts', 'runs.jsonl'),
+    path.join(busRoot, '.timmy', 'runs', 'timmy-events.jsonl'),
+  ];
+  const isBusEvent = (o: any): boolean =>
+    Boolean(o && typeof o.kind === 'string' && o.payload && typeof o.payload === 'object' && o.ts && !o.hash && !o.sig);
+  const parseBusLines = (text: string): any[] =>
+    text.split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(isBusEvent);
+  // The tail a new client gets: everything from the last six hours across both
+  // files (so a burst on one file cannot hide a seal on the other), and never
+  // fewer than n events. The viewer fades pods by age, so history reads as glow.
+  const BUS_WINDOW_MS = 6 * 60 * 60 * 1000;
+  const busTail = (n: number): any[] => {
+    const all: any[] = [];
+    for (const f of busFiles) { try { all.push(...parseBusLines(fs.readFileSync(f, 'utf8')).slice(-2000)); } catch { /* no file yet */ } }
+    all.sort((a, b) => String(a.ts).localeCompare(String(b.ts)));
+    const since = Date.now() - BUS_WINDOW_MS;
+    const recent = all.filter((e) => Date.parse(e.ts) >= since);
+    return recent.length >= n ? recent : all.slice(-n);
+  };
+  const busOffsets = busFiles.map((f) => { try { return fs.statSync(f).size; } catch { return 0; } });
+  const busTimer = setInterval(() => {
+    busFiles.forEach((f, i) => {
+      let size = 0;
+      try { size = fs.statSync(f).size; } catch { return; }
+      if (size < busOffsets[i]) busOffsets[i] = 0;
+      if (size === busOffsets[i]) return;
+      let chunk = '';
+      try {
+        const fd = fs.openSync(f, 'r');
+        const buf = Buffer.alloc(size - busOffsets[i]);
+        fs.readSync(fd, buf, 0, buf.length, busOffsets[i]);
+        fs.closeSync(fd);
+        chunk = buf.toString('utf8');
+      } catch { return; }
+      const cut = chunk.lastIndexOf('\n');
+      if (cut < 0) return;
+      const whole = chunk.slice(0, cut + 1);
+      busOffsets[i] += Buffer.byteLength(whole, 'utf8');
+      for (const event of parseBusLines(whole)) {
+        const msg = JSON.stringify({ type: 'bus', event });
+        for (const c of clients) if (c.readyState === 1) c.send(msg);
+      }
+    });
+  }, 500);
+  busTimer.unref();
   let currentState = 'idle';
 
   // Serve static client files
   const clientDir = path.join(__dirname, 'client');
   app.use(express.static(clientDir));
+
+  // Slate 3D (companion/slate3d/dist) and the boards it renders, served beside
+  // the client. The bus tail below is what lights its lane pods.
+  const slateDist = path.resolve(__dirname, '..', '..', 'companion', 'slate3d', 'dist');
+  const boardsDir = path.resolve(__dirname, '..', '..', 'companion', 'boards');
+  app.use('/slate3d/boards', express.static(boardsDir));
+  app.use('/slate3d', express.static(slateDist));
+
+  // Receipts for Slate 3D capsule state: receipt records (never the event
+  // envelopes) from the pinned root store, filtered by subject, newest first,
+  // with their sources (the seal metadata, e.g. an order id). Read-only.
+  app.get('/slate3d/receipts', (req, res) => {
+    const subject = String(req.query.subject ?? '');
+    const limit = Math.min(2000, Math.max(1, Number(req.query.limit ?? 400)));
+    const store = path.join(busRoot, '.timmy', 'receipts', 'runs.jsonl');
+    const receipts: any[] = [];
+    try {
+      const lines = fs.readFileSync(store, 'utf8').split('\n').filter(Boolean);
+      for (let i = lines.length - 1; i >= 0 && receipts.length < limit; i--) {
+        let o: any;
+        try { o = JSON.parse(lines[i]); } catch { continue; }
+        if (!o || !o.id || !o.hash) continue;
+        if (subject && o.subject !== subject) continue;
+        receipts.push({ id: o.id, ts: o.ts, subject: o.subject, kind: o.kind, epoch: o.epoch ?? null, sources: o.sources ?? null });
+      }
+    } catch { /* no store yet */ }
+    res.json({ ok: true, subject, count: receipts.length, receipts });
+  });
+
+  // Slate 3D emits controller calls; it never spawns. The scene may ask the
+  // controller (the `timmy logs` gateway on localhost) to compile a mission
+  // doc into DispatchPlans or to store one plan; arming and launching still
+  // require the operator token there. Every emit is published on the bus as
+  // slate.emit so the act itself is on record, whatever the controller says.
+  app.post('/slate3d/emit', express.json({ limit: '256kb' }), async (req, res) => {
+    const action = String(req.body?.action ?? '');
+    const capsule = String(req.body?.capsule ?? '');
+    if (!['compile', 'store'].includes(action)) { res.status(400).json({ ok: false, error: 'action must be compile or store' }); return; }
+    const gateway = `http://127.0.0.1:${process.env.TIMMY_LOGS_PORT ?? 4310}/mission/${action}`;
+    // artifact paths resolve against the checkout that serves this page (the
+    // branch the board describes), while receipts stay in the pinned root
+    const checkout = path.resolve(__dirname, '..', '..');
+    const payload = action === 'compile' ? { doc: req.body?.doc ?? { nodes: [], edges: [] }, repo_root: checkout } : { plan: req.body?.plan ?? {} };
+    let out: any;
+    try {
+      const r = await fetch(gateway, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(8000) });
+      out = await r.json();
+    } catch {
+      out = { ok: false, state: 'not_configured', note: `controller not reachable at ${gateway}; run \`timmy logs\` from the repo root` };
+    }
+    try {
+      const oneBus = path.join(busRoot, '.timmy', 'receipts', 'runs.jsonl');
+      const p = fs.existsSync(oneBus) && fs.existsSync(path.join(busRoot, 'src', 'bus', 'index.ts')) ? oneBus : busFiles[1];
+      fs.appendFileSync(p, JSON.stringify({ v: 1, ts: new Date().toISOString(), kind: `slate.emit.${action}`, payload: { capsule, ok: !!out?.ok, state: out?.state ?? null, plan_hash: out?.plan_hash ?? null, plans: Array.isArray(out?.plans) ? out.plans.length : undefined } }) + '\n');
+    } catch { /* the bus never breaks the emit */ }
+    res.json({ ok: !!out?.ok, action, capsule, gateway, ...out });
+  });
 
   // Serve Clerk publishable key dynamically
   app.get('/api/clerk-config', (_req, res) => {
@@ -345,6 +456,7 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
 
         if (msg.type === 'hello') {
           ws.send(JSON.stringify({ type: 'welcome', state: currentState }));
+          ws.send(JSON.stringify({ type: 'bus.tail', events: busTail(200) }));
           
           // Send integration status
           const daytonaKey = process.env.DAYTONA_API_KEY;
@@ -415,6 +527,7 @@ export async function startCompanionServer(port = 3001): Promise<CompanionServer
   return {
     app, httpServer, wss, clients, port, currentState,
     shutdown: async () => {
+      clearInterval(busTimer);
       for (const c of clients) c.close();
       clients.clear();
       await new Promise<void>((resolve) => {

@@ -1,0 +1,26 @@
+{
+  "cards": {
+    "VC0007-17-03": {
+      "id": "VC0007-17-03",
+      "title": "Rookie Autograph 14/99",
+      "subtitle": "2026 hobby · pulled from box VC0007, pack 17",
+      "badge": "CUSTODY-VERIFIED",
+      "box": "VC0007",
+      "pack": 17,
+      "attached": { "at": "Sep 14, 2026 · 20:12", "where": "at unboxing" },
+      "fingerprint": { "dpi": 1200, "lastMatch": 0.996 },
+      "boxLine": "VC0007 · sealed Paradise · opened Henderson",
+      "graded": "PSA 10 · cert linked Oct 20",
+      "location": "Phoenix, AZ · owner-shared",
+      "owners": [
+        { "initials": "W. M.", "city": "Henderson, NV", "span": "Sep 14 → Oct 2 · from the box" },
+        { "initials": "J. R.", "city": "Phoenix, AZ", "span": "Oct 2 → now · eBay #38-1142 · $412" }
+      ],
+      "checks": [
+        { "title": "Same physical card as scanned at unboxing", "meta": "surface fingerprint" },
+        { "title": "Dimensions unchanged · no trim", "meta": "±0.1 mm vs. unboxing scan" },
+        { "title": "Box chain intact from retailer seal", "meta": "3 signed taps, 1 tamper event (the owner's)" }
+      ]
+    }
+  }
+}

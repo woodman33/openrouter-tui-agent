@@ -1,0 +1,43 @@
+{
+  // timmy-ai-proxy — hardened edge proxy + Code Mode + daily chain head.
+  // JSONC on purpose: wrangler resolves wrangler.json(c) before wrangler.toml
+  // when walking up from cwd, so a .toml here would lose to the repo-root
+  // wrangler.jsonc (the companion worker) and deploy the wrong worker.
+  //
+  // Secrets live HERE as Worker secrets, never on the laptop:
+  //   wrangler secret put OPENROUTER_API_KEY   (upstream key)
+  //   wrangler secret put TIMMY_EDGE_TOKEN     (caller auth; all routes but /health and /head)
+  // Hardened 2026-08-15: caller auth + model allowlist (ALLOWED_MODELS) +
+  // RATE_LIMIT_PER_MIN + upstream status passthrough. The 2026-08-15 live
+  // deployment predates this hardening — redeploy (owner's word) or delete.
+  //
+  // 2026-09-05 CODE MODE: /code runs one agent-authored (or model-generated)
+  // script per task in a separate Dynamic Worker isolate (LOADER binding);
+  // /health reports code_mode:true only when it is bound. Every run seals a
+  // code.run receipt into CUSTODY_KV (chain:code).
+  //
+  // 2026-09-06 DAILY HEAD: the cron walks every chain in CUSTODY_KV and writes
+  // head:<date> + head:latest (public at GET /head and at /api/head on the
+  // custody site). The local anchor job (lanes/anchor) pulls it into the root chain.
+  // Preview deployments: `npm run deploy:preview` (→ timmy-ai-proxy-preview).
+  //
+  // 2026-09-06 SLATE ROOM (Slate 3D decision 2): SlateRoom is a SQLite Durable
+  // Object speaking the runs/events contract of the repo's companion Durable
+  // Object (POST /runs/:id/event, GET /runs/:id/events) plus GET /runs/:id/ws.
+  // Reads are public like /head; writes need the caller token. It relays
+  // envelopes and never spawns work.
+  "name": "timmy-ai-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "worker_loaders": [{ "binding": "LOADER" }],
+  "kv_namespaces": [{ "binding": "CUSTODY_KV", "id": "8d783470266e44d9ab49143de5b88436" }],
+  "durable_objects": { "bindings": [{ "name": "SLATE_ROOM", "class_name": "SlateRoom" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SlateRoom"] }],
+  "triggers": { "crons": ["5 9 * * *"] },
+  "vars": {
+    "CUSTODY_BASE_URL": "https://preview.vault-custody.pages.dev"
+    // "ALLOWED_MODELS": "google/gemini-3.7-flash,x-ai/grok-4.6",
+    // "RATE_LIMIT_PER_MIN": "20"
+  }
+}

@@ -1,0 +1,201 @@
+---
+// GATEWAY. The sealed box, how the seal holds, six hats, tap this.
+import Product from '../layouts/Product.astro';
+import PitchNav from '../components/PitchNav.astro';
+import { HAT_ORDER, HAT_SHAPE, hats, type HatId } from '../lib/hats';
+import eventsData from '../data/events.json';
+// Each hat's latest chain event (seeded provenance of VC0007); the live head
+// and the live tap count arrive on load from /api/head and /api/chain.
+type UnitEvent = { seq: string; hat: string; title: string; ts: string; this: string };
+const unitEvents = ((eventsData as { units: Record<string, UnitEvent[]> }).units['VC0007'] ?? []);
+const latestByHat = Object.fromEntries(HAT_ORDER.map((id) => [id, [...unitEvents].reverse().find((e) => e.hat === id) ?? null])) as Record<string, UnitEvent | null>;
+
+const tapUrl = 'https://preview.vault-custody.pages.dev/t?e=EF963FF7828658A599F3041510671E88&c=94EED9EE65337086&tt=CC';
+const ART: Record<HatId, string | null> = {
+  collector: '/img/tap.png',
+  manufacturer: '/img/vault.png',
+  retailer: '/img/theirbox.png',
+  distributor: null,
+  seller: '/img/slab.png',
+  grader: '/img/chest.png'
+};
+const facts = [
+  { title: 'Signed taps', body: 'The NTAG 424 DNA seal signs every tap with a per-tag key and a counter. A copy or a photo fails on the first tap.' },
+  { title: 'Tamper memory', body: 'The band runs through the seal. Break it and the chip stores the break forever and reports it at the next tap.' },
+  { title: 'A public chain', body: 'Every event is a receipt with prev and this. The head is published daily and anyone can recompute it from the log.' }
+];
+---
+
+<Product title="Gateway" right="Series 001 pilot">
+  <PitchNav current="/" />
+
+  <section class="hero">
+    <div class="stage rise" style="--d:0ms">
+      <canvas id="box" class="box" aria-label="A sealed hobby box with a glowing custody band"></canvas>
+    </div>
+    <div class="copy">
+      <h1 class="rise" style="--d:180ms">Every box a 1/1.</h1>
+      <p class="sub rise" style="--d:300ms">A receipt every box carries with it, and any phone can read. The seal signs the tap. The band remembers the break.</p>
+      <div class="ctas rise" style="--d:420ms">
+        <a class="btn" href="#hats">Pick a hat</a>
+        <a class="btn ghost" href="/p/VC0007">See the provenance</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section seal rv" id="seal">
+    <figure class="paper">
+      <img src="/img/two_seal_box_diagram.svg" width="1200" height="620" alt="Diagram of the two-seal box: the custody band over the lid, the seal chip through the band window, and the reveal tag under the lid" loading="lazy" />
+    </figure>
+    <div class="facts">
+      <h2>It goes on the box you already make.</h2>
+      {facts.map((f) => (
+        <div class="fact">
+          <h3>{f.title}</h3>
+          <p>{f.body}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section rv" id="hats">
+    <h2>Six hats.</h2>
+    <p class="sub">Hats, not accounts. One account may hold several, and every chain event stamps its hat.</p>
+    <ul class="bento">
+      {HAT_ORDER.map((id) => {
+        const h = hats[id];
+        const art = ART[id];
+        return (
+          <li class:list={['hat', id, { plain: !art }]} style={art ? `--art:url(${art})` : undefined}>
+            <a href={`/hat/${id}`} class="hat-link">
+              <span class="hat-top"><i class:list={['mark', HAT_SHAPE[id]]} aria-hidden="true"></i><span class="who">{h.verb}.</span></span>
+              <span class="hat-name">{h.label}</span>
+              <span class="hat-blurb">{h.blurb}</span>
+              <span class="hat-latest" data-hat={id}>{latestByHat[id] ? `latest · ${latestByHat[id]!.seq} · ${latestByHat[id]!.title}` : 'no chain event yet'}</span>
+              <span class="hat-enter">Enter as {h.label}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+    <p class="headline" id="head-line">edge head · reading /api/head</p>
+  </section>
+
+  <section class="section rv" id="tap">
+    <div class="tapband">
+      <img class="qr" src="/qr/an12196-tap.png" width="288" height="288" alt="QR code that opens the AN12196 test-vector tap address on the live edge" loading="lazy" />
+      <div class="tapcopy">
+        <h2>Tap this.</h2>
+        <p class="sub">NXP's published AN12196 vector, mapped to box VC0007. It opens the real tap address on the live edge: the signature verifies, a receipt seals, the phone lands on the receipt page.</p>
+        <p class="url mono">{tapUrl}</p>
+        <a class="btn" href={tapUrl}>Open the tap address</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot rv">
+    <nav aria-label="More"><a href="/demo">The six pages</a><a href="/s/001">Series 001</a><a href="/log">Custody lane</a><a href="/api/head">Daily head</a></nav>
+    <p class="chain">Trust the receipt, not the model.</p>
+  </footer>
+
+  <script>
+    import { mountGatewayBox } from '../scripts/gateway-box';
+    const c = document.getElementById('box') as HTMLCanvasElement | null;
+    if (c) mountGatewayBox(c);
+
+    // Scroll reveals: pre-state only when motion is allowed, so the page is
+    // complete at rest for thumbnails, no-JS, and reduced motion.
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && 'IntersectionObserver' in window) {
+      const els = document.querySelectorAll<HTMLElement>('.rv');
+      els.forEach((el) => el.classList.add('rv-pre'));
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) if (e.isIntersecting) { e.target.classList.add('rv-in'); io.unobserve(e.target); }
+      }, { threshold: 0.12 });
+      els.forEach((el) => io.observe(el));
+    }
+  </script>
+<script>
+  // The live moment: the daily edge head and the unit chain, read on load.
+  // Every hat card's latest event is stamped with the head it is anchored under.
+  const headLine = document.getElementById('head-line');
+  fetch('/api/head').then((r) => r.json()).then((h) => {
+    if (!h || !h.combined_sha256) { headLine!.textContent = 'edge head · not published yet'; return; }
+    headLine!.textContent = `edge head ${String(h.combined_sha256).slice(0, 8)} · ${h.date} · ${h.receipts} receipts across ${h.subjects} chain${h.subjects === 1 ? '' : 's'} · read live`;
+    headLine!.classList.add('live');
+    document.querySelectorAll('.hat-latest').forEach((el) => el.classList.add('live'));
+  }).catch(() => { headLine!.textContent = 'edge head · unreachable'; });
+  fetch('/api/chain/VC0007').then((r) => r.json()).then((c) => {
+    const taps = (c && c.taps) || [];
+    const last = taps[taps.length - 1];
+    const el = document.querySelector('.hat-latest[data-hat="collector"]');
+    if (el && last) el.textContent = `latest · tap.${String(taps.length).padStart(3, '0')} · ${String(last.hash).slice(0, 8)} · ${new Date(last.ts).toLocaleDateString()} · signed`;
+  }).catch(() => { /* seeded line stays */ });
+</script>
+</Product>
+
+<style>
+  /* Hero: asymmetric split, the object first. */
+  .hero { display: grid; grid-template-columns: 1.25fr 1fr; gap: 40px; align-items: center; margin-top: 16px; min-height: 560px; }
+  .stage { position: relative; }
+  .box { width: 100%; height: 560px; display: block; border-radius: 8px; background: radial-gradient(ellipse at 50% 62%, #12213c 0%, var(--navy) 68%); }
+  .copy h1 { font-size: var(--t5); }
+  .ctas { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+
+  /* Seal anatomy: the diagram is the physical object, so it sits on paper. */
+  .seal { display: grid; grid-template-columns: 5fr 7fr; gap: 48px; align-items: center; }
+  .paper { margin: 0; background: #F4F2EC; border-radius: 8px; padding: 24px; }
+  .paper img { display: block; width: 100%; height: auto; }
+  .facts h2 { margin-bottom: 8px; }
+  .fact { border-top: 1px solid var(--navy-line); padding: 24px 0 8px; margin-top: 24px; display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: baseline; }
+  .fact p { color: var(--text-2); max-width: 52ch; line-height: 1.5; }
+
+  .hat-latest { display: block; margin-top: 8px; font-family: var(--font-chain); font-size: 11px; line-height: 1.4; color: var(--text-2); }
+  .hat-latest.live { color: var(--phosphor); }
+  .headline { margin: 16px 0 0; font-family: var(--font-chain); font-size: 12px; line-height: 1.5; color: var(--text-2); }
+  .headline.live { color: var(--phosphor); }
+  /* Hats: bento, six cells, five on the deck renders, one tinted. */
+  .bento { list-style: none; margin: 40px 0 0; padding: 0; display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 200px; gap: 16px; }
+  .hat { grid-column: span 3; position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--navy-line); background: var(--navy-2); }
+  .hat.collector { grid-column: span 6; grid-row: span 2; }
+  .hat.manufacturer { grid-column: span 6; }
+  .hat.seller, .hat.grader { grid-column: span 6; }
+  .hat::before { content: ''; position: absolute; inset: 0; background: var(--art) center / cover no-repeat; opacity: 0.78; transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; }
+  .hat.plain::before { background: linear-gradient(140deg, var(--navy-3), var(--navy-2)); opacity: 1; }
+  .hat::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 22, 40, 0.05) 0%, rgba(10, 22, 40, 0.55) 45%, rgba(10, 22, 40, 0.94) 100%); }
+  .hat:hover::before { transform: scale(1.04); opacity: 0.9; }
+  .hat-link { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; height: 100%; padding: 20px; color: var(--text); text-decoration: none; }
+  .hat-top { display: inline-flex; align-items: center; gap: 10px; font-size: var(--t-1); }
+  .hat-name { font-family: var(--font-human); font-weight: 700; font-size: var(--t2); line-height: 1; letter-spacing: -0.01em; }
+  .hat.collector .hat-name { font-size: var(--t4); }
+  .hat-blurb { color: var(--text-2); font-size: var(--t-1); line-height: 1.45; max-width: 44ch; }
+  .hat:not(.collector):not(.manufacturer) .hat-blurb { display: none; }
+  .hat-enter { color: var(--orange); font-size: var(--t-1); margin-top: 4px; }
+  .hat-link:hover .hat-enter { text-decoration: underline; }
+
+  /* Tap this: one band, the QR at print size. */
+  .tapband { display: grid; grid-template-columns: 288px 1fr; gap: 40px; align-items: center; background: var(--navy-2); border: 1px solid var(--navy-line); border-radius: 8px; padding: 32px; }
+  .qr { display: block; width: 288px; height: 288px; border-radius: 4px; }
+  .url { color: var(--phosphor); font-size: var(--t-1); word-break: break-all; margin: 16px 0 20px; }
+
+  .foot { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--navy-line); }
+  .foot nav { display: flex; gap: 24px; flex-wrap: wrap; }
+  .foot nav a { color: var(--text-2); text-decoration: none; }
+  .foot nav a:hover { color: var(--orange); }
+  .foot .chain { font-size: var(--t-1); }
+
+  @media (max-width: 1000px) {
+    .hero { grid-template-columns: 1fr; min-height: 0; }
+    .box { height: 380px; }
+    .seal { grid-template-columns: 1fr; }
+    .bento { grid-auto-rows: 180px; }
+    .hat, .hat.collector, .hat.manufacturer, .hat.seller, .hat.grader { grid-column: span 6; grid-row: span 1; }
+    .hat.collector { grid-column: span 12; }
+    .tapband { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .hat, .hat.collector, .hat.manufacturer, .hat.seller, .hat.grader { grid-column: span 12; }
+    .fact { grid-template-columns: 1fr; gap: 6px; }
+    .copy h1 { font-size: var(--t4); }
+  }
+</style>

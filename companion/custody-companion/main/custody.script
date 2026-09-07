@@ -1,0 +1,87 @@
+-- Custody Companion: launched from the /t tap redirect (…/companion/?serial=VC0007&tap=…),
+-- reads the unit's chain from the custody API (same origin), and drives the HUD
+-- and the Rive model. Rive owns the visual; Defold owns the fetch, the state,
+-- and the HTML5 shell. Every value shown comes from /api/chain/<serial>.
+
+local function js(expr)
+	if html5 then
+		local ok, out = pcall(html5.run, expr)
+		if ok and out then return out end
+	end
+	return ""
+end
+
+local function query(name)
+	if not html5 then return "" end
+	return js("(new URLSearchParams(location.search)).get('" .. name .. "') || ''")
+end
+
+local function origin()
+	if html5 then
+		local o = js("location.origin")
+		if o ~= "" then return o end
+	end
+	return sys.get_config_string("custody.base_url", "https://preview.vault-custody.pages.dev")
+end
+
+-- Map the unit state onto the Badge view model when the exported artboard has one
+-- (BadgeVM.state: 0 sealed, 1 opened, 2 verified). Silently no-op on the placeholder riv.
+local function drive_rive(self, chain)
+	if not rive then return end
+	local ok, vm = pcall(rive.get_view_model_instance, "#rive")
+	if not ok or not vm then return end
+	local state = 0
+	if chain.state == "opened" then state = 1 end
+	if chain.verify and chain.verify.ok and chain.taps and #chain.taps > 0 then state = 2 end
+	pcall(rive.cmd.setViewModelInstanceNumber, vm, "state", state)
+end
+
+local function on_chain(self, response)
+	if response.status ~= 200 then
+		msg.post("#hud", "chain_error", { status = response.status, serial = self.serial })
+		return
+	end
+	local ok, chain = pcall(json.decode, response.response)
+	if not ok or not chain or not chain.ok then
+		msg.post("#hud", "chain_error", { status = response.status, serial = self.serial })
+		return
+	end
+	local taps = chain.taps or {}
+	local last = taps[#taps]
+	local head = last and last.hash or (chain.contentsHash or "")
+	msg.post("#hud", "chain", {
+		serial = chain.serial or self.serial,
+		product = chain.product or "",
+		state = chain.state or "",
+		series = chain.series or "",
+		taps = #taps,
+		head = string.sub(head, 1, 8),
+		verify = (chain.verify and chain.verify.ok) and "chain ok" or "unverified",
+		persistent = chain.persistent and "receipts persisted" or "stateless preview",
+		tap = self.tap,
+		sealed_where = chain.sealed and chain.sealed.where or "",
+		opened_city = chain.opened and chain.opened.city or "",
+		timeline = chain.timeline or {},
+	})
+	drive_rive(self, chain)
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.serial = query("serial")
+	if self.serial == "" then self.serial = sys.get_config_string("custody.default_serial", "VC0007") end
+	self.tap = query("tap")
+	msg.post("#hud", "loading", { serial = self.serial })
+	local url = origin() .. "/api/chain/" .. self.serial
+	http.request(url, "GET", function(_, _, response) on_chain(self, response) end, { ["Accept"] = "application/json" })
+	-- Badge artboard (share export a9d01cc3…): state machine "State", BadgeVM auto-bound.
+	if rive then pcall(rive.play_state_machine, "#rive", "State") end
+end
+
+function on_input(self, action_id, action)
+	if rive and (not action_id or action_id == hash("touch")) then
+		if action.pressed then rive.pointer_down("#rive", action.x, action.y)
+		elseif action.released then rive.pointer_up("#rive", action.x, action.y)
+		else rive.pointer_move("#rive", action.x, action.y) end
+	end
+end

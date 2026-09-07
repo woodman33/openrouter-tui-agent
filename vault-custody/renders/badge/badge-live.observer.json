@@ -1,0 +1,57 @@
+{
+ "image": "vault-custody/renders/badge/badge-live.png",
+ "lane": "badge",
+ "image_sha256": "adaf20bf95e760e17af5b8efdc229da0caa3678ca688575dfd508012d10c7f98",
+ "observed_at": "2026-09-07T03:56:41.570Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 6,
+  "sha256": "14697cfc5d35ff38b152d491fd9e532fbab2cdd0bf45640aaa9ced0adf963513",
+  "text": "OPENED"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.2327861338853836,
+   0.21653269231319427,
+   0.266478568315506,
+   0.20653493702411652
+  ],
+  "best": "a blank screen",
+  "best_score": 0.266478568315506
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 576,
+   "height": 240
+  },
+  "boxes": [
+   {
+    "x": 287.9822692871094,
+    "y": 119.6509017944336,
+    "w": 481.5466003417969,
+    "h": 146.6160430908203,
+    "label": "sign",
+    "confidence": 0.599413275718689
+   }
+  ]
+ },
+ "detection_sha256": "964eaba2f963927037f895e22c1f83433cbf69cbcf2f26f374a5dc6c5610c58e"
+}

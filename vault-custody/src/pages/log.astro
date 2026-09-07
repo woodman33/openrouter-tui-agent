@@ -1,0 +1,31 @@
+---
+// The custody lane as timmy-tui renders it. Product mode: chain in phosphor,
+// the human in orange, refusal in red (none here — every line sealed).
+import Product from '../layouts/Product.astro';
+import { log } from '../lib/registry';
+---
+
+<Product title="Custody lane" brand={`timmy-tui · custody lane · epoch ${log.epoch}`} right="">
+  <p class="line muted"><span class="pill">local-first · receipts sealed with manifest hashes</span></p>
+  <div class="entries">
+    {log.entries.map((e) => (
+      <p class:list={['line', { tamper: 'tamper' in e && e.tamper }]}>
+        <span class="seq">{e.seq}</span><span class="kind">{e.kind}</span>
+        <span>{e.fields}</span>
+        {e.prev ? <span> prev=<span class="hash">{e.prev}</span> → this=<span class="hash">{e.this}</span></span> : null}
+        {e.ts ? <span class="ts">  ts={e.ts}</span> : null}
+        {'by' in e && e.by ? <span>  by=<span class="via">{e.by}</span></span> : null}
+        {'via' in e && e.via ? <span>  via=<span class="via">{e.via}</span></span> : null}
+        {'note' in e && e.note ? <span class="muted">  — {e.note}</span> : null}
+      </p>
+    ))}
+  </div>
+  <hr class="rule" />
+  <p class="line muted">&gt; timmy-mcp tools exposed to partners: <span class="human">{log.tools.join(' · ')}</span></p>
+  <p class="line muted">&gt; every tool call returns a receipt; every receipt carries prev → this; the head is timestamped daily. <span class="chain">Trust the receipt, not the model.</span></p>
+</Product>
+
+<style>
+  .entries { margin: 1.5em 0 0; }
+  .line .human { color: var(--text); font-family: var(--font-chain); }
+</style>

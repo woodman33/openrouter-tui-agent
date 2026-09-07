@@ -1,0 +1,59 @@
+---
+// The verify surface: where a tap lands when it cannot go to a receipt page.
+// Product mode. Refusal is the only place red appears.
+import Product from '../layouts/Product.astro';
+---
+
+<Product title="Verify" brand="VAULT CUSTODY · verify" right="tap-to-verify">
+  <div id="ok" hidden>
+    <h1 class="chain">Verified</h1>
+    <p class="sub">Signed tap. The address proved the tag is real and the tap is new.</p>
+    <div class="card"><dl class="kv" id="ok-kv"></dl></div>
+  </div>
+  <div id="refused" hidden>
+    <h1 class="refuse">Refused</h1>
+    <p class="sub" id="refused-why"></p>
+    <div class="card">
+      <dl class="kv">
+        <dt>reason</dt><dd id="reason" class="refuse"></dd>
+        <dt>detail</dt><dd id="detail" class="muted"></dd>
+        <dt>what this means</dt><dd id="means"></dd>
+      </dl>
+    </div>
+  </div>
+  <div id="none" hidden>
+    <h1>Nothing to verify</h1>
+    <p class="sub">Tap a Vault Custody seal with your phone. The tag writes the address; this page reads it.</p>
+  </div>
+
+  <script>
+    const q = new URLSearchParams(location.search);
+    const MEANS: Record<string, string> = {
+      bad_cmac: 'The signature did not verify. A copied or photographed tag lands here; so does a tag from another batch.',
+      replay: 'This exact address was already used. The tag increments its counter on every tap, so an old link is not a new tap.',
+      unregistered: 'The tag signed correctly but is not in any store batch. It may be from a roll that was never assigned.',
+      bad_hex: 'The address was malformed.',
+      bad_length: 'The address was malformed.',
+      bad_tag: 'The tag mirrored an unsupported layout.',
+      missing_param: 'The address was incomplete.'
+    };
+    const refused = q.get('refused');
+    if (refused) {
+      document.getElementById('refused')!.hidden = false;
+      document.getElementById('reason')!.textContent = refused;
+      document.getElementById('detail')!.textContent = q.get('detail') ?? '—';
+      document.getElementById('means')!.textContent = MEANS[refused] ?? 'The tap could not be verified.';
+      document.getElementById('refused-why')!.textContent = 'This tap earns no receipt.';
+    } else if (q.get('tap')) {
+      document.getElementById('ok')!.hidden = false;
+      const kv = document.getElementById('ok-kv')!;
+      for (const [k, v] of q.entries()) {
+        const dt = document.createElement('dt'); dt.textContent = k;
+        const dd = document.createElement('dd'); dd.textContent = v; dd.className = k === 'tap' ? 'chain' : '';
+        kv.append(dt, dd);
+      }
+    } else {
+      document.getElementById('none')!.hidden = false;
+    }
+  </script>
+</Product>

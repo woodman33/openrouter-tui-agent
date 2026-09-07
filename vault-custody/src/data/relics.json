@@ -1,0 +1,18 @@
+{
+  "relics": {
+    "VC2210-08-01": {
+      "id": "VC2210-08-01",
+      "title": "Relic · jersey swatch",
+      "subtitle": "Swatch cut from a game-worn jersey · source garment receipt linked",
+      "badge": "GAME-TIED",
+      "garment": "authenticated hologram #MLB-… · logged at the locker room",
+      "game": "Jul 4, 2025 · home · final 6–3",
+      "highlights": "3 plays · linked from the league's film archive",
+      "swatch": "cut lot 14 of 120 · card 08-01 of 99",
+      "box": "event 1/1 · Las Vegas convention · Sep 12, 2026",
+      "photos": ["garment · hologram", "cut lot", "play 2 · 7th inning"],
+      "why": "Same print run as every other 08-01. But this one's receipt chain runs from a specific jersey, through a specific game, into a box sealed at a specific convention on a specific day, opened by a specific owner. No other copy has that chain.",
+      "status": "needs the cut-lot record and a highlights license — a records question, not a technology one"
+    }
+  }
+}

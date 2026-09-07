@@ -1,0 +1,57 @@
+{
+ "image": "vault-custody/renders/slate3d/ledger-3d.png",
+ "lane": "slate3d",
+ "image_sha256": "2a5455b61ca6826d46bd21bf0ad1116de02bdca9f339cc6505d29fef8f16cf21",
+ "observed_at": "2026-09-07T04:14:22.844Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 2274,
+  "sha256": "9a7391ea620e4dbb4c49dd511d7b5177612bda8abfea1067de64a9404944f217",
+  "text": "SLATE SD\nroom slate:ledger live - websocket\nVault Custody Timmy build Ledger kind mission 6 frames 24 nodes 4 blueprints state from 949 receipts\nsource room slate:Ledger @ timmy- ai proxy- preview. wmel dman33. workers.dev\nProduct colour\nblueprint Design tokens\ndesign/tokens. json\nlate: 3 room eck-\nnavy #0A1628 urfaces\nground, every ueprint Archite Chains and the bus oom ack-1.png\n5h.\ndark or verify\nats n3d/\nd.png\np1.capsule - evidence opencode\nage\nsur facetl ty tiow Receipts and appro Mission map invariants\nemit-check.p\nSUN verif fipt: ilta p2fcapsutes E eittfder vopengode. la agoglend ver\nnavy- 2 #101F38\nne\necture serve .mjs Observer evi\nEaiumnugantese\nnAcHIfertp adetold\nLeet entry\nrai isede Type scale x1.333 o\nDESIGN. md\nbserver/observ\n1-Vault Custody tap-to-verity fapsitapsule\nts\nblueprint Design tol Grid 8px\nENTS.md ADME.md.\nW serverless\nnavy line #1B2E4D\nblueprint Design tokens jules)\n0/5 orders sealed 2-Code Mode on the workera y patapsuleit hodeldécdhilpsnsode\nhair design/tokens. json\nq-yckb he board file\nEENANACHAGNCRENN\nnodeRgseGBe\ndesign/tokens.json\ne0\n0/1 orders sea 3-Receipted Defold lane  Custod@ocomrpltion WAgehEcwpsancode\nphosphor a #33FF66 human Space Grot unit 8_px every ders.Log\nrc_mtqpme2u_d\n2/2 orders sealed don 4-Observér evidence Chabotiajpansenudedd ipenso\nnuman tex\ngap and inset\nLd/build.mjs\ne49915785f9e\n2/2 orders 5*Slâte 3De Lanes/ resolve by a6480a\nsealed, chain JetBrains\niso as multiple map /refresh-\n+6 more\nverified,\nchain t panels 8 corner\ncompiles,\n2/2 orders sealed done 6*sparks judge mesh (fleet rank) pt ts\nids, hashe\nradius\nnever\nnex Fleet/\nutton.\ne eceipts controlse 4 - corner\nspawns\nor ange - #FF8C1 1 - 1 12 16\nadius\nshown\nhuman: ac\noX chips pill - full before\nowners, t 5 28.4 37\nradius\nlaunch\nbut tons\n50.5 px\n+3 more\nred - #FF3B3B\n67.3 px paper mode second mode\nrefusal\ndisplay o\nthe physical\nTamper\nobject;\norange.\nnavy/phosphor\nstays the chain\ntext #E6EDF7\nhuman text\nnavy\n15:52:26 slate. .render. .start\n15:52:43 slate.renden.capture\n15:53:20 slate.render.done\n15:58:43 slate.enit.compile\n15:58:50\nchain event human act Orefusal C unlit failed or quiet\n15:58:59 slate.enit.compile slate.emit.store\nthe viewer spawns nothing every transition goes through the controller\n15:58:59 dispatch.created opencode"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a 3D isometric board with glowing pods and labels on a dark navy ground",
+   "a phone app screen with status text",
+   "a web page with a photo of a sealed box",
+   "a blank dark screen"
+  ],
+  "similarity": [
+   0.22452382743358612,
+   0.20801065862178802,
+   0.15982802212238312,
+   0.2070484757423401
+  ],
+  "best": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+  "best_score": 0.22452382743358612
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1600,
+   "height": 1000
+  },
+  "boxes": [
+   {
+    "x": 1201.2283935546875,
+    "y": 492.33099365234375,
+    "w": 796.082275390625,
+    "h": 460.7108459472656,
+    "label": "banner",
+    "confidence": 0.2638758718967438
+   }
+  ]
+ },
+ "detection_sha256": "dad0054708e11fc1a6231d329aef1c1562b86cf2f1c2b622d4367ab5846de3aa"
+}

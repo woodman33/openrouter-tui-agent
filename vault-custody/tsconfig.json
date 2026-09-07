@@ -1,0 +1,14 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["@cloudflare/workers-types"],
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": { "@lib/*": ["src/lib/*"], "@data/*": ["src/data/*"] }
+  },
+  "include": ["src/**/*", "test/**/*", "astro.config.mjs"]
+}

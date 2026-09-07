@@ -1,0 +1,57 @@
+{
+ "image": "renders/qr-an12196-tap.png",
+ "lane": "renders",
+ "image_sha256": "a264a54b62015eb5d2d1a057f89055ef24cebd1183a326b750d4653b475717d5",
+ "observed_at": "2026-09-07T03:54:49.155Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 81,
+  "sha256": "fcb46e32bf0eab50ecd1f6130dff620fe20ec6b1061ec729f35a79b205d11658",
+  "text": "-\n- -\n- -\n-\n-\n-\n- -\n-\n-\n-\n-\nID\nE\n- -\n-\n- - -\n-\n-\n- -\n-\n-\n- I\n-\n-\nJH\n-\n- - -\n-\n-\n-"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.22858312726020813,
+   0.21737439930438995,
+   0.20896999537944794,
+   0.21699027717113495
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.22858312726020813
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1023,
+   "height": 1023
+  },
+  "boxes": [
+   {
+    "x": 512.2545776367188,
+    "y": 510.7923583984375,
+    "w": 854.0379638671875,
+    "h": 855.7996826171875,
+    "label": "banner",
+    "confidence": 0.06370364874601364
+   }
+  ]
+ },
+ "detection_sha256": "8bfc19e91363d25f52f004dbbcea2309b537d847e542fdac14a4d368b12c0324"
+}

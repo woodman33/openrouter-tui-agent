@@ -1,0 +1,61 @@
+{
+  "_note": "Pilot fixtures. Every figure is illustrative pilot design data, per the deck footers; the pilot measures the real ones. Epoch 903 = the custody lane's release epoch in the mocks.",
+  "epoch": 903,
+  "units": {
+    "VC0007": {
+      "serial": "VC0007",
+      "series": "001",
+      "product": "2026 hobby box",
+      "state": "opened",
+      "sealTag": "04de5f1eacc040",
+      "revealTag": "04a2f1c0e8b3f1",
+      "contentsHash": "9f3a7c1e2b8d4406",
+      "sealed": { "at": "2026-09-12T12:41:03-07:00", "where": "Paradise Card Breaks · Las Vegas", "by": "paradise/counter-2", "band": "chipboard", "photos": 3 },
+      "sold": { "at": "2026-09-12T13:04:52-07:00", "posReceipt": "48812", "counter": 2 },
+      "claimed": { "at": "2026-09-12T13:05:19-07:00", "ownerInitials": "W. M.", "city": "Las Vegas", "tap": 2 },
+      "opened": { "at": "2026-09-14T19:22:07-07:00", "city": "Henderson, NV", "byClaimedOwner": true, "sealLoop": "broken · stored on chip · reported at tap #4", "revealTag": "signed · Sep 14 · 19:22:07 · counter 1" },
+      "packs": { "opened": 24, "total": 24, "first": "19:24", "last": "20:41" },
+      "cards": { "attached": 312, "hits": 4, "numbered": 2 },
+      "timeline": [
+        { "kind": "sealed", "title": "Sealed at Paradise Card Breaks", "meta": "Sep 12 · 12:41 · Las Vegas" },
+        { "kind": "sealed", "title": "Sold · POS receipt #48812", "meta": "Sep 12 · 13:04 · counter 2" },
+        { "kind": "sealed", "title": "Claimed by owner", "meta": "Sep 12 · 13:05 · phone tap" },
+        { "kind": "opened", "title": "Opened · seal loop broken", "meta": "Sep 14 · 19:22 · Henderson, NV" },
+        { "kind": "pack", "title": "Pack 1 opened · 12 cards attached", "meta": "Sep 14 · 19:24" },
+        { "kind": "pack", "title": "Pack 17 opened · Rookie Auto 14/99 attached", "meta": "Sep 14 · 20:12" },
+        { "kind": "pack", "title": "Pack 24 opened", "meta": "Sep 14 · 20:41" },
+        { "kind": "sealed", "title": "Card VC0007-17-03 transferred · sold on eBay", "meta": "Oct 2 · 08:15 · to owner in Phoenix, AZ" }
+      ]
+    },
+    "VC0001": {
+      "serial": "VC0001",
+      "series": "001",
+      "product": "2026 hobby box",
+      "state": "sealed",
+      "sealTag": "04958caa5c5e80",
+      "contentsHash": "e07b4d92a1c35f80",
+      "sealed": { "at": "2026-09-12T12:38:40-07:00", "where": "Paradise Card Breaks · Las Vegas", "by": "paradise/counter-2", "band": "chipboard", "photos": 3 },
+      "seal": { "signature": "valid", "taps": 1, "loop": "intact" },
+      "timeline": [
+        { "kind": "sealed", "title": "Contents hash committed · published to Series 001", "meta": "Sep 12 · 09:02 · before sale" },
+        { "kind": "sealed", "title": "Factory shrink photographed · 3 photos hashed", "meta": "Sep 12 · 12:38" },
+        { "kind": "sealed", "title": "Sealed at Paradise Card Breaks", "meta": "Sep 12 · 12:38 · Las Vegas" }
+      ]
+    },
+    "VC0003": {
+      "serial": "VC0003",
+      "series": "001",
+      "product": "2026 hobby box · event 1/1",
+      "state": "sealed",
+      "sealTag": "041e3c8a2d6b80",
+      "contentsHash": "51c0e8a97c19e3f0",
+      "sealed": { "at": "2026-09-12T15:10:00-07:00", "where": "Las Vegas convention · Vault Custody × Timmy booth", "by": "vegas/booth-1", "band": "chipboard", "photos": 3 },
+      "seal": { "signature": "valid", "taps": 1, "loop": "intact" },
+      "event": "Las Vegas · September 12, 2026",
+      "timeline": [
+        { "kind": "sealed", "title": "Contents hash committed · published to Series 001", "meta": "Sep 12 · 09:02" },
+        { "kind": "sealed", "title": "Sealed at the Las Vegas convention", "meta": "Sep 12 · 15:10 · event 1/1" }
+      ]
+    }
+  }
+}

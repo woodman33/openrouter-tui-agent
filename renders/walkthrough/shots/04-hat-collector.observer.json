@@ -1,0 +1,57 @@
+{
+ "image": "renders/walkthrough/shots/04-hat-collector.png",
+ "lane": "shots",
+ "image_sha256": "892d76f264127878931dcf66426af2407a3d5baadb09d2fc7befaaf7a6328b4d",
+ "observed_at": "2026-09-07T03:55:32.801Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 589,
+  "sha256": "b79c47bab2ebdb0a9c478900da5530842ac11d60393fbe889e428b84847175fe",
+  "text": "VAULT CUSTODY x TIMMY\nsign-in seeded session\nGateway Profile Boxes Singles Locations Provenance Where thel boxes went\nsign out\nCollector\nClaimed and opened it. One tap claims the box. Every pack\nand every card attaches to the chain as it comes out.\nidentity 0f6c2d81. Henderson,NV\nname W.M.(only the owner sees their ownname)\nsession sess_col_wm - seeded stub, no password\nlands on /me/singles\nEnter as Collector\nHats, not accounts. One account may hold several; every chain event: stamps its hat. Real sign-in comes\nwith claims.\nOther hats: Manufacturer Distributor Retailer Seller Grader"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.2566187083721161,
+   0.18917150795459747,
+   0.24263809621334076,
+   0.20699554681777954
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.2566187083721161
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 426.2290954589844,
+    "y": 426.37567138671875,
+    "w": 724.1895141601562,
+    "h": 255.82858276367188,
+    "label": "sign",
+    "confidence": 0.19475257396697998
+   }
+  ]
+ },
+ "detection_sha256": "49799641c7703cb8acdb29f0995281cb8e053493b200c9cd4b6b145ed037b405"
+}
