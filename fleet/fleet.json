@@ -37,6 +37,14 @@
     "note": "isolated Docker ComfyUI (lab/comfy) — never system python"
   },
   {
+    "id": "tripo",
+    "rank": 7,
+    "forms": ["api", "sdk", "mcp"],
+    "detect": { "url": "https://api.tripo3d.ai/v2/openapi/task" },
+    "lane": "none yet — detect only (mindship-v5c2 step 6). Usable when TRIPO_API_KEY is set; the Houdini bridge already carries tripo_text_to_model / tripo_image_to_model / tripo_texture / tripo_poll as MCP tools. A ship.v0 asset lane would seal tripo.generate with the task id + output sha.",
+    "note": "Tripo 3D (text/image → mesh, texture, rig) · api.tripo3d.ai · reachable = network only, not a key"
+  },
+  {
     "id": "local-judges",
     "rank": 6,
     "forms": ["api"],
