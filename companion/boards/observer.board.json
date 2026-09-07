@@ -869,8 +869,8 @@
    "rows": [
     {
      "label": "receipt",
-     "value": "rc_mtqpm02u_dt55",
-     "note": "sha256_f721b5fa82a"
+     "value": "rc_mtqq7zio_mq1n",
+     "note": "sha256_4ad1282ea16"
     },
     {
      "label": "image",
@@ -915,23 +915,23 @@
    "rows": [
     {
      "label": "receipt",
-     "value": "rc_mtqpm1xq_yckb",
-     "note": "sha256_7ed6f138dad"
+     "value": "rc_mtqq81ka_yzeg",
+     "note": "sha256_0ddb06f98c8"
     },
     {
      "label": "image",
-     "value": "5330b8ab9ae0",
+     "value": "2a5455b61ca6",
      "note": "sha256"
     },
     {
      "label": "clip",
      "value": "a 3D isometric board with glowing pods and labels on a dark navy ground",
-     "note": "0.229"
+     "note": "0.225"
     },
     {
      "label": "boxes",
-     "value": "2",
-     "note": "yolo_world · banner, sign"
+     "value": "1",
+     "note": "yolo_world · banner"
     },
     {
      "label": "ocr 1",
@@ -961,8 +961,8 @@
    "rows": [
     {
      "label": "receipt",
-     "value": "rc_mtqpm3q6_2idq",
-     "note": "sha256_0c96608d017"
+     "value": "rc_mtqq8bsf_2rsh",
+     "note": "sha256_21ba7f60dc5"
     },
     {
      "label": "image",
@@ -1007,8 +1007,8 @@
    "rows": [
     {
      "label": "receipt",
-     "value": "rc_mtqpm60h_q0xh",
-     "note": "sha256_a6d0da4ae0c"
+     "value": "rc_mtqq8e34_ztad",
+     "note": "sha256_e96cbec0211"
     },
     {
      "label": "image",
@@ -2279,9 +2279,9 @@
   {
    "image": "vault-custody/renders/slate3d/emit-check.png",
    "image_sha256": "e49915785f9e307832ca55f5187756e06c586728ba1eb068c603a565bd3d84a3",
-   "receipt_id": "rc_mtqpm02u_dt55",
-   "receipt_hash": "sha256_f721b5fa82a4b3227102136da03268490cf84f5d76432debb7bcd61e237ea188",
-   "observed_at": "2026-09-07T03:57:14.413Z",
+   "receipt_id": "rc_mtqq7zio_mq1n",
+   "receipt_hash": "sha256_4ad1282ea16163ce0711ff7c2b45d256d992d71a1244e7be879bb44a3a92d445",
+   "observed_at": "2026-09-07T04:14:19.754Z",
    "image_size": {
     "width": 1600,
     "height": 1000
@@ -2434,153 +2434,136 @@
   },
   {
    "image": "vault-custody/renders/slate3d/ledger-3d.png",
-   "image_sha256": "5330b8ab9ae01bef2342fd613f53848b890854506f1973ce658b698671425750",
-   "receipt_id": "rc_mtqpm1xq_yckb",
-   "receipt_hash": "sha256_7ed6f138dad938794fa73d26277018b1ee45cbec754f37be2382f64dc3d2f05c",
-   "observed_at": "2026-09-07T03:57:16.793Z",
+   "image_sha256": "2a5455b61ca6826d46bd21bf0ad1116de02bdca9f339cc6505d29fef8f16cf21",
+   "receipt_id": "rc_mtqq81ka_yzeg",
+   "receipt_hash": "sha256_0ddb06f98c86b17a8cab34506c43ec5931ca466158909de461dd1a12d7ab5f49",
+   "observed_at": "2026-09-07T04:14:22.844Z",
    "image_size": {
     "width": 1600,
     "height": 1000
    },
    "boxes": [
     {
-     "x": 1262.232177734375,
-     "y": 510.6183776855469,
-     "w": 650.8123779296875,
-     "h": 454.84576416015625,
+     "x": 1201.2283935546875,
+     "y": 492.33099365234375,
+     "w": 796.082275390625,
+     "h": 460.7108459472656,
      "label": "banner",
-     "confidence": 0.17691470682621002
-    },
-    {
-     "x": 1042.59375,
-     "y": 511.1303405761719,
-     "w": 205.1944580078125,
-     "h": 453.04693603515625,
-     "label": "sign",
-     "confidence": 0.06161019206047058
+     "confidence": 0.2638758718967438
     }
    ],
    "ocr_lines": [
     "SLATE SD",
     "room slate:ledger live - websocket",
-    "Vault Custody Timmy build Ledger kind mission 6 frames 24 nodes 3 blueprints state from 914 receipts",
+    "Vault Custody Timmy build Ledger kind mission 6 frames 24 nodes 4 blueprints state from 949 receipts",
     "source room slate:Ledger @ timmy- ai proxy- preview. wmel dman33. workers.dev",
     "Product colour",
     "blueprint Design tokens",
     "design/tokens. json",
-    "opencode",
-    "Surfaces",
-    "4n",
-    "avy #0A1628",
-    "Luepr Architecture S and the bus",
-    "ground, every compani ion/ slate3d/DESIGN. mo",
-    "p1.capsule - evidence 4opencode",
-    "fold",
+    "late: 3 room eck-",
+    "navy #0A1628 urfaces",
+    "ground, every ueprint Archite Chains and the bus oom ack-1.png",
+    "5h.",
     "dark or verify",
-    "Eotmlsenensiondgrmanin",
-    "10h agococde",
-    "N",
-    "SUN fiert titacp2. capsute euse0180skE950keghopepcode Lane",
-    "di and L eet entry",
-    "surface",
-    "Ln Receipts and approvals ision map invariants ectu",
-    "8Ptita p3.capsule IaBenCES a te",
-    "hyPWeteaneS;",
-    "navy-2 #101F38",
-    "ep",
-    "DESI",
-    "tap-to-verify",
-    "Eeraetcantartaum",
-    "1-Vault Custody",
-    "inng t",
-    "raised surface Type  scale *1.333 on 16",
-    "ENTS. md ADME",
-    "0/5 orders sealed 2Code Mode' on the worker",
-    "apst",
-    "gpengedek",
-    "ndUtaus sceneferee navy- line #1B2E4D",
-    "1 Jes sign token 1S rid 8 px",
-    "ules)",
-    "0/1 orders sealed",
-    "egy pencode",
-    "hairl n design/ tokens. json",
-    "veprin Design tokens",
-    "3. Receipted\" Defold Tane * Custody Contbarnesyte",
-    "human",
-    "sign/tokens. json",
-    "3D",
-    "phosphor D #33FF66",
-    "Space Grotesk",
-    "ders.log",
-    "2/2 orders sealed do 4. Observer evidence (Roboflow)y itea 6 capsulen St ede e 0 ppengode",
-    "chain: hashes.",
-    "human text jit 8 px every",
-    "Ld/b",
-    "1/1 orders sealed",
-    "d tanelyages ve by",
-    "a",
-    "sealed, chain, JetBrains Mono",
-    "gap and inset map, /ref",
-    "5Slate 3D",
-    "veri fied,",
-    "chain text:",
-    "is a multiple compiles,",
-    "2/2 orders sealed done com",
-    "receipts. e",
-    "ids,p hashes, inelso 8 corr ne",
+    "ats n3d/",
+    "d.png",
+    "p1.capsule - evidence opencode",
+    "age",
+    "sur facetl ty tiow Receipts and appro Mission map invariants",
+    "emit-check.p",
+    "SUN verif fipt: ilta p2fcapsutes E eittfder vopengode. la agoglend ver",
+    "navy- 2 #101F38",
+    "ne",
+    "ecture serve .mjs Observer evi",
+    "Eaiumnugantese",
+    "nAcHIfertp adetold",
+    "Leet entry",
+    "rai isede Type scale x1.333 o",
+    "DESIGN. md",
+    "bserver/observ",
+    "1-Vault Custody tap-to-verity fapsitapsule",
+    "ts",
+    "blueprint Design tol Grid 8px",
+    "ENTS.md ADME.md.",
+    "W serverless",
+    "navy line #1B2E4D",
+    "blueprint Design tokens jules)",
+    "0/5 orders sealed 2-Code Mode on the workera y patapsuleit hodeldécdhilpsnsode",
+    "hair design/tokens. json",
+    "q-yckb he board file",
+    "EENANACHAGNCRENN",
+    "nodeRgseGBe",
+    "design/tokens.json",
+    "e0",
+    "0/1 orders sea 3-Receipted Defold lane  Custod@ocomrpltion WAgehEcwpsancode",
+    "phosphor a #33FF66 human Space Grot unit 8_px every ders.Log",
+    "rc_mtqpme2u_d",
+    "2/2 orders sealed don 4-Observér evidence Chabotiajpansenudedd ipenso",
+    "numan tex",
+    "gap and inset",
+    "Ld/build.mjs",
+    "e49915785f9e",
+    "2/2 orders 5*Slâte 3De Lanes/ resolve by a6480a",
+    "sealed, chain JetBrains",
+    "iso as multiple map /refresh-",
+    "+6 more",
+    "verified,",
+    "chain t panels 8 corner",
+    "compiles,",
+    "2/2 orders sealed done 6*sparks judge mesh (fleet rank) pt ts",
+    "ids, hashe",
+    "radius",
     "never",
-    "6-Sparks judge mesh (fleet rank) a button",
-    "receipts",
-    "nradius",
+    "nex Fleet/",
+    "utton.",
+    "e eceipts controlse 4 - corner",
     "spawns",
-    "ne Fleet",
-    "orange : #FF8C1A",
-    "12. 16 21.3 ontrols 4 corner",
+    "or ange - #FF8C1 1 - 1 12 16",
+    "adius",
     "shown",
-    "ons",
+    "human: ac",
+    "oX chips pill - full before",
+    "owners, t 5 28.4 37",
     "radius",
-    "before",
-    "owners, taps,",
-    "28.4 37.9 jips pill full launch",
-    "buttons",
-    "50.5 X",
-    "radius",
+    "launch",
+    "but tons",
+    "50.5 px",
     "+3 more",
-    "red a #FF3B3B",
-    "67.3 px, per mode second mode",
-    "refusal only.",
-    "display only",
+    "red - #FF3B3B",
+    "67.3 px paper mode second mode",
+    "refusal",
+    "display o",
     "the physical",
-    "Tamper is",
+    "Tamper",
     "object;",
     "orange.",
     "navy/phosphor",
-    "text #E6EDF7",
     "stays the chain",
-    "human text on",
+    "text #E6EDF7",
+    "human text",
     "navy",
-    "15:21:43 slate.enit.compile",
-    "15:49:11 slate.enit.compile",
-    "15:49:20 slate.enit.compile",
-    "15:49:27 slate.emit.store",
-    "chain event human act C refusal C unlit failed or quiet",
-    "15:49:27 dispatch.created opencode",
-    "15:52:26 slate.render.s start",
+    "15:52:26 slate. .render. .start",
+    "15:52:43 slate.renden.capture",
+    "15:53:20 slate.render.done",
+    "15:58:43 slate.enit.compile",
+    "15:58:50",
+    "chain event human act Orefusal C unlit failed or quiet",
+    "15:58:59 slate.enit.compile slate.emit.store",
     "the viewer spawns nothing every transition goes through the controller",
-    "15:52:43 slate .render.capture"
+    "15:58:59 dispatch.created opencode"
    ],
    "clip": {
     "best": "a 3D isometric board with glowing pods and labels on a dark navy ground",
-    "score": 0.2291499376296997
+    "score": 0.22452382743358612
    },
-   "detection_sha256": "d00f9264facb76de4e4563fc9f33db9907a6b8f3268dea6cbc6fb2a6fb0d771c"
+   "detection_sha256": "dad0054708e11fc1a6231d329aef1c1562b86cf2f1c2b622d4367ab5846de3aa"
   },
   {
    "image": "vault-custody/renders/slate3d/room-check-1.png",
    "image_sha256": "e0eb148f6eac47c420b8c1cdae2432db57897df0cd164ed55b77ea8d5387c273",
-   "receipt_id": "rc_mtqpm3q6_2idq",
-   "receipt_hash": "sha256_0c96608d0170b4ac6b08940cca83904d7d7b02225c0f6112da80fef78fdbef61",
-   "observed_at": "2026-09-07T03:57:19.127Z",
+   "receipt_id": "rc_mtqq8bsf_2rsh",
+   "receipt_hash": "sha256_21ba7f60dc553be98d95ec60148b077991a976903089ada1dca2ee5b43a02c4d",
+   "observed_at": "2026-09-07T04:14:35.500Z",
    "image_size": {
     "width": 1280,
     "height": 800
@@ -2708,9 +2691,9 @@
   {
    "image": "vault-custody/renders/slate3d/room-check-2.png",
    "image_sha256": "e0eb148f6eac47c420b8c1cdae2432db57897df0cd164ed55b77ea8d5387c273",
-   "receipt_id": "rc_mtqpm60h_q0xh",
-   "receipt_hash": "sha256_a6d0da4ae0c9c6197e6971267ae046ed205d7019c07f65cbc4ce28c439a67fac",
-   "observed_at": "2026-09-07T03:57:22.025Z",
+   "receipt_id": "rc_mtqq8e34_ztad",
+   "receipt_hash": "sha256_e96cbec02118a924745c315cc166bd2c7579d88e1ba8b095b284fa8a957bcfaf",
+   "observed_at": "2026-09-07T04:14:38.965Z",
    "image_size": {
     "width": 1280,
     "height": 800
@@ -2836,5 +2819,5 @@
    "detection_sha256": "27ab7892a4139337af80650023901cbd8704681817c861dc876479276f3e9319"
   }
  ],
- "updated": "2026-09-07T03:57:23.210Z"
+ "updated": "2026-09-07T04:14:40.070Z"
 }
