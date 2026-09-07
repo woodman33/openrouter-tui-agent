@@ -114,7 +114,7 @@ export const KEYMAP_SHELL: Record<`${ShellMode}:${ShellTab}`, ShellKey[]> = {
   'INSERT:CHAIN': [mod('Esc', 'leave insert'), nav('Tab', 'next pane')],
   'INSERT:LIBRARY': [mod('Esc', 'leave insert'), nav('Tab', 'next pane')],
   'CHAT:HOME': [mod('Enter', 'send'), mod('Esc', 'leave chat'), nav('Tab', 'next pane')],
-  'NORMAL:CHAT': [mod('Esc', 'back'), nav('Tab', 'next pane'), act('s', 'seal')],
+  'NORMAL:CHAT': [mod('Enter', 'send'), mod('Esc', 'back'), nav('Tab', 'next pane'), act('s', 'seal')],
   'NORMAL:COMMAND': [nav('1-6', 'focus harness'), act('m', 'model'), act('M', 'harness model'), act('K', 'handoff'), act('X', 'kill'), act('t', 'toggle'), act('b', 'body'), act('f', 'fusion'), act('g', 'generate')],
   'INSERT:CHAT': [mod('Esc', 'leave insert'), nav('Tab', 'next pane')],
   'INSERT:COMMAND': [mod('Esc', 'leave insert'), nav('Tab', 'next pane')],
@@ -136,12 +136,15 @@ const FOOTER_ACTS: Record<ShellTab, string> = {
   RUN: '[a] approve  [r] refuse  [s] seal',
   CHAIN: '[v] verify  [o] open  [y] copy  [s] seal',
   LIBRARY: '[h] harness  [p] pin  [n] note  [f] files  [s] seal',
-  CHAT: '[Enter] send  [Esc] leave',
+  CHAT: '[Esc] leave  [s] seal',
   COMMAND: '[m] model  [M] harness-model  [K] handoff  [X] kill  [t] toggle  [b] body  [f] fusion  [g] gen',
 };
 export const footerHintsShellShort = (mode: ShellMode, tab: ShellTab): string =>
   mode === 'NORMAL'
-    ? `[1-6] tab  [Enter] open  ${FOOTER_ACTS[tab]}  [c] chat  [?] keys`
+    ? tab === 'CHAT'
+      // FIX 3: on CHAT, Enter means send — one hint, from the keymap
+      ? `[1-6] tab  [Enter] send  ${FOOTER_ACTS[tab]}  [?] keys`
+      : `[1-6] tab  [Enter] open  ${FOOTER_ACTS[tab]}  [c] chat  [?] keys`
     : footerHintsShell(mode, tab);
 export const whichKeyGroupsShell = (mode: ShellMode, tab: ShellTab): { group: KeyGroup; entries: ShellKey[] }[] => {
   const order: KeyGroup[] = ['NAVIGATE', 'ACT', 'MODES', 'SEAL'];

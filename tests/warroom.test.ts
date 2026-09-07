@@ -64,9 +64,34 @@ describe('warroom', () => {
     expect(f).toContain('LOG RAIN');
     view.stdin.write('\x1b'); // back to NORMAL
     view.stdin.write('6');
-    f = await until(view, x => /COMMANDER ·/i.test(x));
+    // wait for the rail ROWS, not just the card title: the first COMMAND frame
+    // is a reflow transient (left card still at the previous tab's width)
+    f = await until(view, x => /COMMANDER ·/i.test(x) && /\s(off|idle|think|resp|REFUSED)\s+h=\s*\d+/.test(x));
     expect(f).toContain('HARNESS PANES');
     expect(f).toContain('cmdr');
+    // FIX 2 (warroom fixes): the rail speaks one fixed vocabulary at fixed
+    // width — off · idle · think · resp · REFUSED — and no cell ellipsizes.
+    // The rail is the RIGHT column; read only that segment of each line so a
+    // reflow transient in the left card can't poison the assertion.
+    const rightCol = (l: string): string => {
+      // right column = text between its opening border (second-to-last │)
+      // and its closing border; lines without a right column pass through
+      const close = l.lastIndexOf('│');
+      if (close === -1) return l;
+      const open = l.lastIndexOf('│', close - 1);
+      return open === -1 ? l : l.slice(open + 1);
+    };
+    const lines = f.split('\n');
+    const railStart = lines.findIndex(l => l.includes('HARNESS PANES'));
+    const block = lines.slice(railStart).map(rightCol);
+    const railEnd = block.findIndex((l, i) => i > 0 && l.includes('╰'));
+    const rail = block.slice(0, railEnd === -1 ? block.length : railEnd + 1);
+    expect(rail.join('\n')).not.toContain('…');
+    const railRows = rail.filter(l => /\s(off|idle|think|resp|REFUSED)\s+h=\s*\d+/.test(l));
+    expect(railRows.length).toBeGreaterThan(0);
+    for (const l of railRows) {
+      expect(l).toMatch(/^\s*\d \S+\s+\S+\s+(off|idle|think|resp|REFUSED)\s+h=\s*\d+\s*│?\s*$/);
+    }
     view.unmount();
   });
 });

@@ -234,6 +234,13 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
         setFlash(r.ok ? `escrow refused · ${reason}` : `refuse failed: ${r.note ?? '?'}`);
       }
       if (a === 'refuse-needs-reason') setFlash('refusal needs a reason — [r] again');
+      // FIX 3 (warroom fixes): on the CHAT tab Enter means send — enter CHAT
+      // mode (the keymap owns the hint; the footer never says otherwise)
+      if (a === 'open' && sRef.current.tab === 'CHAT') {
+        const nxt = { ...sRef.current, mode: 'CHAT' as const };
+        sRef.current = nxt;
+        setS(nxt);
+      }
       // SPEC §04: Enter on a sealed run jumps to its receipts in CHAIN
       if (a === 'open' && sRef.current.tab === 'RUN') {
         const row = runRows.rows[Math.min(sRef.current.selected, Math.max(0, runRows.rows.length - 1))];
@@ -464,22 +471,40 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
     // the header + first card title on TTYs — PTY evidence, step 6)
     <Box flexDirection="column" width={width} key={`root:${s.tab}`}>
       <Box>
-        <Text bold color={theme.textPrimary}>TIMMY</Text>
-        <Text color={theme.textMuted}>  </Text>
-        {TABS.map((t, i) => (
-          <Text key={t} color={s.tab === t ? theme.seal : theme.textMuted}>{s.tab === t ? ` ${i + 1} ${t} ` : ` ${i + 1} ${t}`}</Text>
-        ))}
-        <Text color={theme.seal}>   chain {chain.ok ? '✓' : '—'} {chain.count}{head ? ` · ${head.slice(7, 15)}` : ''}</Text>
-        <Text color={theme.textMuted}>  bus {busLive ? '●' : '○'}  drops {drops}</Text>
-        {/* FIX C (director): 7/7 + no pending escrow + chain ✓ + bus ● ⇒ the
-            orange slot stays empty and says so, in dim mono (takes the model
-            segment's place; STATUS still names the policy model). */}
-        {allClear
-          ? <Text color={theme.textMuted}>  nothing needs you</Text>
-          : <Text color={theme.textMuted}>  model {String(model).split('/').pop()}</Text>}
-        {(s.tab === 'CHAT' || s.tab === 'COMMAND') && (
-          <Text color={theme.textMuted}>{`  cmdr ${profile.commander.model} ${commanderOnline ? 'ws●' : 'ws○'} $${spend.toFixed(2)}${handoff ? ` →${handoff.harness}` : ''}`}</Text>
-        )}
+        {(() => {
+          // FIX 1 (warroom fixes): header width budget — the brand never
+          // wraps, tabs collapse to digits + active label when width demands,
+          // segments drop right-to-left. cmdr+spend live on COMMAND line 2.
+          const headModel = String(model).split('/').pop() ?? '';
+          const chainSeg = `  chain ${chain.ok ? '✓' : '—'} ${chain.count}${head ? ` · ${head.slice(7, 15)}` : ''}`;
+          const busSeg = `  bus ${busLive ? '●' : '○'}`;
+          const dropsSeg = `  drops ${drops}`;
+          // FIX C (director): 7/7 + no pending escrow + chain ✓ + bus ● ⇒ the
+          // orange slot stays empty and says so, in dim mono.
+          const modelSeg = allClear ? '  nothing needs you' : `  model ${headModel}`;
+          const tabFull = TABS.map((t, i) => (s.tab === t ? ` ${i + 1} ${t} ` : ` ${i + 1} ${t}`));
+          const tabColl = TABS.map((t, i) => (s.tab === t ? ` ${i + 1} ${t} ` : ` ${i + 1}`));
+          const fixed = 7;
+          let tabs = tabFull;
+          let segs = [chainSeg, busSeg, dropsSeg, modelSeg];
+          const tot = (): number => fixed + tabs.join('').length + segs.join('').length;
+          if (tot() > width) tabs = tabColl;
+          if (tot() > width) segs = [chainSeg, busSeg, modelSeg];
+          if (tot() > width) segs = [chainSeg, busSeg];
+          if (tot() > width) segs = [chainSeg];
+          return (
+            <>
+              <Text bold color={theme.textPrimary}>TIMMY</Text>
+              <Text color={theme.textMuted}>  </Text>
+              {tabs.map((t, i) => (
+                <Text key={TABS[i]} color={s.tab === TABS[i] ? theme.seal : theme.textMuted}>{t}</Text>
+              ))}
+              {segs.map((sg, i) => (
+                <Text key={i} color={i === 0 ? theme.seal : theme.textMuted}>{sg}</Text>
+              ))}
+            </>
+          );
+        })()}
       </Box>
       <Text color={theme.line}>{'─'.repeat(width)}</Text>
       {/* SPEC §08: in CHAT the screen underneath stays visible, dimmed (PAL) */}
@@ -530,7 +555,7 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
         )}
         {assembled && !narrow && s.tab === 'COMMAND' && (
           <Box flexDirection="column" width={44} marginLeft={2} flexGrow={1} key={`R:${s.tab}`}>
-            <HarnessPanes profile={profile} panes={warPanes} lanes={lanes} />
+            <HarnessPanes profile={profile} panes={warPanes} lanes={lanes} recs={recs} />
           </Box>
         )}
         {assembled && !narrow && s.tab === 'HOME' && (
@@ -1021,6 +1046,8 @@ function CommandPane(props: {
   return (
     <Box flexDirection="column" flexGrow={1}>
       <Card title={`COMMANDER · ${props.profile.commander.model}`} purpose={props.online ? 'ws● connected — events below' : 'ws○ offline — set TIMMY_COMMANDER_WS'}>
+        {/* FIX 1 (warroom fixes): cmdr + spend moved out of the header here */}
+        <Text color={PAL.textMuted} wrap="truncate">{`cmdr ${props.profile.commander.model} ${props.online ? 'ws●' : 'ws○'}`}</Text>
         <Text color={PAL.seal} wrap="truncate">{`spend $${props.spend.toFixed(4)}${props.handoff ? ` · handoff→${props.handoff.harness}` : ''}`}</Text>
         <Text color={PAL.textMuted} wrap="truncate">[m] model [M] harness-model [K] handoff [X] kill</Text>
         <Text color={PAL.textMuted} wrap="truncate">[t] toggle [b] body [f] fusion [g] gen [1-6] focus</Text>
@@ -1034,21 +1061,24 @@ function CommandPane(props: {
 
 // COMMAND tab right: harness panes = tmux PTYs; header name·model·state,
 // color from connector, height by activity weight.
-function HarnessPanes(props: { profile: warroom.WarProfile; panes: warroom.WarPane[]; lanes: { id: string; available: boolean }[] }) {
+function HarnessPanes(props: { profile: warroom.WarProfile; panes: warroom.WarPane[]; lanes: { id: string; available: boolean }[]; recs: Receipt[] }) {
   return (
     <Card title="HARNESS PANES" purpose="tmux PTYs · height = activity weight" flexGrow={1}>
       {props.profile.harnesses.map((h, i) => {
         const pane = props.panes.find(pn => pn.name === h.id);
         const lane = props.lanes.find(l => l.id === h.id);
-        const state = pane ? (h.weight >= 3 ? 'responding' : h.weight === 2 ? 'thinking' : 'idle') : 'off';
-        const col = !lane || !lane.available ? PAL.textMuted : state === 'responding' ? PAL.seal : state === 'thinking' ? PAL.warn : PAL.textSecondary;
+        const refused = props.recs.some(r => (r.status === 'denied' || r.status === 'failed') && String(r.subject).includes(h.id));
+        // FIX 2 (warroom fixes): one fixed vocabulary at fixed width —
+        // off · idle · think · resp · REFUSED; cells slice, never ellipsize
+        const state = refused ? 'REFUSED' : !pane ? 'off' : h.weight >= 3 ? 'resp' : h.weight === 2 ? 'think' : 'idle';
+        const col = refused ? PAL.danger : !lane || !lane.available ? PAL.textMuted : state === 'resp' ? PAL.seal : state === 'think' ? PAL.warn : PAL.textSecondary;
         return (
-          <Text key={h.id} color={col} wrap="truncate">
-            {`${i + 1} ${h.id.padEnd(10)} ${(h.model ?? 'same-as-commander').slice(0, 22).padEnd(22)} ${state.padEnd(10)} h=${pane?.height ?? 0}`}
+          <Text key={h.id} color={col}>
+            {`${i + 1} ${h.id.slice(0, 10).padEnd(10)} ${String((h.model ?? 'cmdr').split('/').pop()).slice(0, 12).padEnd(12)} ${state.padEnd(8)} h=${String(pane?.height ?? 0).padStart(2)}`}
           </Text>
         );
       })}
-      <Text color={PAL.textMuted} wrap="truncate">{props.panes.length ? 'war room live · tmux -t timmy-war' : 'war room not started · timmy profile <name> --restore'}</Text>
+      <Text color={PAL.textMuted}>{props.panes.length ? 'war room live · tmux -t timmy-war' : 'not started · timmy profile --restore'}</Text>
     </Card>
   );
 }
