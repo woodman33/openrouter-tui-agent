@@ -15,7 +15,14 @@
     "LICENSE",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
-    "SECURITY.md"
+    "SECURITY.md",
+    "scripts/vision-bridge.py",
+    "scripts/vision-doctor.py",
+    "scripts/vision-stream.py",
+    "studio/tldraw-mission-map",
+    "templates/vision",
+    "deploy/vision",
+    "docs/ROBOFLOW-VISION.md"
   ],
   "scripts": {
     "start": "tsx cli.tsx",
@@ -54,7 +61,9 @@
     "cmcp": "tsx src/mcp/cmcp-bridge.ts",
     "oapi": "deno run --allow-all --node-modules-dir=auto jsr:@mcpc/oapi-invoker-mcp/bin",
     "roboflow-mcp": "tsx scripts/roboflow-mcp-server.ts",
-    "mission-map": "python3 -m http.server 4321 -d studio/tldraw-mission-map"
+    "mission-map": "tsx src/cli.ts vision serve --port 4321",
+    "vision:studio": "tsx src/cli.ts vision serve",
+    "vision:doctor": "tsx src/cli.ts vision doctor"
   },
   "repository": {
     "type": "git",
