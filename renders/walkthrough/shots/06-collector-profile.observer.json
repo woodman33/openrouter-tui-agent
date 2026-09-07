@@ -1,0 +1,65 @@
+{
+ "image": "renders/walkthrough/shots/06-collector-profile.png",
+ "lane": "shots",
+ "image_sha256": "ddfae16870c2d9ccf4aa30fd71cdb80e39fe50da95820971d657d54af620f6da",
+ "observed_at": "2026-09-07T03:55:46.826Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 466,
+  "sha256": "7071f80b4ae64e8f786e3a13c1bde235386303e129f492a2405836f98de4776c",
+  "text": "VAULT CUSTODY x TIMMY\nCollector - Henderson, NV\nGateway Profile Boxes Singles Locations Provenance Where thel boxes went\nCollector sign out\nW. M.\nWearing the Collector hat. Claimed and opened it.\non chain as 0f6c2d81. Henderson, NV. Collector\nInventory\nsession sess_col_wm\nLocations 2 Rows\nstamps\nevery event this hat writes carries hat=collector\nBoxes 11 Rows\nSingles 7 Rows\nOne account may hold several hats. Switch: Manufacturer Distributor Retailer Seller Grader"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.25972962379455566,
+   0.18227876722812653,
+   0.22931306064128876,
+   0.1883866786956787
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.25972962379455566
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 896.4908447265625,
+    "y": 350.229248046875,
+    "w": 547.536376953125,
+    "h": 177.60580444335938,
+    "label": "sign",
+    "confidence": 0.04959540814161301
+   },
+   {
+    "x": 618.2548828125,
+    "y": 350.6767578125,
+    "w": 1109.9541015625,
+    "h": 179.91567993164062,
+    "label": "banner",
+    "confidence": 0.02169354259967804
+   }
+  ]
+ },
+ "detection_sha256": "099ca19ba11916f8a72c969ed2a3c6f497f2d61e638fe21489c59815810a3b76"
+}

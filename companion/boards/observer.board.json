@@ -1,0 +1,2840 @@
+{
+ "kind": "observer",
+ "name": "Observer evidence",
+ "source": "lanes/observer/observe.mjs · roboflow serverless",
+ "note": "An independent observer (Roboflow OCR, CLIP, zero-shot detection) read each lane screenshot; every entry carries the observer.evidence receipt that sealed it.",
+ "sheets": [
+  {
+   "id": "renders/qr-an12196-tap.png",
+   "title": "renders · qr-an12196-tap.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpiwb1_ivb7",
+     "note": "sha256_39514f9d76d"
+    },
+    {
+     "label": "image",
+     "value": "a264a54b6201",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.229"
+    },
+    {
+     "label": "boxes",
+     "value": "1",
+     "note": "yolo_world · banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "-",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "- -",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "- -",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "-",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/01-gateway-box.png",
+   "title": "shots · 01-gateway-box.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpj1gs_evxj",
+     "note": "sha256_7f131a1d966"
+    },
+    {
+     "label": "image",
+     "value": "477f166fb58c",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a blank screen",
+     "note": "0.221"
+    },
+    {
+     "label": "boxes",
+     "value": "2",
+     "note": "yolo_world · banner, text"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY x TIMMY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "Series 001 pilot",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Gateway Profile Boxes Singles Locations ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "sign out",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/02-gateway-hats.png",
+   "title": "shots · 02-gateway-hats.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpje67_w1r8",
+     "note": "sha256_42c75c171c1"
+    },
+    {
+     "label": "image",
+     "value": "a53879a5f3c8",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.229"
+    },
+    {
+     "label": "boxes",
+     "value": "3",
+     "note": "yolo_world · banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "It goes on the box you already make.",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "Thet two-seal box nothing printed on any",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Signed taps",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "The NTAG 424 DNA seal signs every tap wi",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/03-gateway-tap-this.png",
+   "title": "shots · 03-gateway-tap-this.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpjj4s_9mtt",
+     "note": "sha256_c49cacb0c03"
+    },
+    {
+     "label": "image",
+     "value": "e14c761f4973",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.238"
+    },
+    {
+     "label": "boxes",
+     "value": "3",
+     "note": "yolo_world · rectangle, banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "Sees the product after thel loading dock",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "Movedit.",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Sealed andsoldi It.",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "which store sold which box,when it opene",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/04-hat-collector.png",
+   "title": "shots · 04-hat-collector.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpjtyy_8yjm",
+     "note": "sha256_57914727d0b"
+    },
+    {
+     "label": "image",
+     "value": "892d76f26412",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.257"
+    },
+    {
+     "label": "boxes",
+     "value": "1",
+     "note": "yolo_world · sign"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY x TIMMY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "sign-in seeded session",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Gateway Profile Boxes Singles Locations ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "sign out",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/05-collector-singles.png",
+   "title": "shots · 05-collector-singles.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpjxtf_883f",
+     "note": "sha256_43087087292"
+    },
+    {
+     "label": "image",
+     "value": "0c774b85d817",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.245"
+    },
+    {
+     "label": "boxes",
+     "value": "1",
+     "note": "yolo_world · banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY x TIMMY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "Collector - Henderson, NV",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Gateway Profile Boxes Singles Locations ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "Collector sign out",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/06-collector-profile.png",
+   "title": "shots · 06-collector-profile.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpk4hi_1wll",
+     "note": "sha256_048c294ab77"
+    },
+    {
+     "label": "image",
+     "value": "ddfae16870c2",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.260"
+    },
+    {
+     "label": "boxes",
+     "value": "2",
+     "note": "yolo_world · sign, banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY x TIMMY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "Collector - Henderson, NV",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Gateway Profile Boxes Singles Locations ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "Collector sign out",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/07-tap-receipt.png",
+   "title": "shots · 07-tap-receipt.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpk5qv_y8tr",
+     "note": "sha256_271da897e9d"
+    },
+    {
+     "label": "image",
+     "value": "fc19359b8a5b",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.263"
+    },
+    {
+     "label": "boxes",
+     "value": "3",
+     "note": "yolo_world · banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "receipt - epoch 903",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Tap verified . signature valid",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "counter 61 receipt b35fb2bc tamper CC * ",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/08-receipt-timeline.png",
+   "title": "shots · 08-receipt-timeline.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpk9wk_h0d6",
+     "note": "sha256_7df04da1390"
+    },
+    {
+     "label": "image",
+     "value": "e5491f93d3b1",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.258"
+    },
+    {
+     "label": "boxes",
+     "value": "1",
+     "note": "yolo_world · banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "Custody timeline",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "Sealed at Paradise Card Breaks",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Sep 12 12:41 Las Vegas",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "Sold - POS receipt #48812",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/09-card.png",
+   "title": "shots · 09-card.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpkpks_t3uw",
+     "note": "sha256_c6453b4dbc9"
+    },
+    {
+     "label": "image",
+     "value": "149fd7698f1f",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.241"
+    },
+    {
+     "label": "boxes",
+     "value": "3",
+     "note": "yolo_world · banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "card - VC0007-17-03",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "CUSTODY-VERIFIED",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "Rookie Autograph 14/99",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/10-provenance-timeline.png",
+   "title": "shots · 10-provenance-timeline.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpkrv2_mqec",
+     "note": "sha256_840db19919d"
+    },
+    {
+     "label": "image",
+     "value": "639cc3636193",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.242"
+    },
+    {
+     "label": "boxes",
+     "value": "0",
+     "note": "yolo_world · none above threshold"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY x TIMMY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "provenance VC0007",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Gateway Profile Boxes Singles Locations ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "Collector sign out",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/11-provenance-timeline-open.png",
+   "title": "shots · 11-provenance-timeline-open.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpkw78_ccx1",
+     "note": "sha256_aaf16737e47"
+    },
+    {
+     "label": "image",
+     "value": "cbb4b616d0f6",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.284"
+    },
+    {
+     "label": "boxes",
+     "value": "2",
+     "note": "yolo_world · banner, sign"
+    },
+    {
+     "label": "ocr 1",
+     "value": "5hipped,03.0411",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "Factory shrink photaghaphail",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "- ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "Sold",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/12-provenance-map.png",
+   "title": "shots · 12-provenance-map.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpkyba_xifc",
+     "note": "sha256_cfbd873035d"
+    },
+    {
+     "label": "image",
+     "value": "6e75fccfba17",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.228"
+    },
+    {
+     "label": "boxes",
+     "value": "1",
+     "note": "yolo_world · banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY x TIMMY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "provenance VC0007",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Gateway Profile Boxes Singles Locations ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "Collector sign out",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/13-manufacturer-boxes.png",
+   "title": "shots · 13-manufacturer-boxes.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpl83w_bh5w",
+     "note": "sha256_0ec34f0a59c"
+    },
+    {
+     "label": "image",
+     "value": "b7a26c3c5aea",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.258"
+    },
+    {
+     "label": "boxes",
+     "value": "2",
+     "note": "yolo_world · sign, banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY x TIMMY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "Manufacturer - Duryea, PA",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Gateway Profile Boxes Singles Locations ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "Manufacturer sign out",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "renders/walkthrough/shots/14-where-the-boxes-went.png",
+   "title": "shots · 14-where-the-boxes-went.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpl9j6_5vih",
+     "note": "sha256_acfdecb2066"
+    },
+    {
+     "label": "image",
+     "value": "2b0bbb5f1ef2",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.220"
+    },
+    {
+     "label": "boxes",
+     "value": "2",
+     "note": "yolo_world · banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY - MANUFACTURER VIEW",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "2026 hobby release week 3 live",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Where the boxes went, and what happened ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "18,240",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "vault-custody/renders/badge/badge-live.png",
+   "title": "badge · badge-live.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqplapt_erli",
+     "note": "sha256_276e703a031"
+    },
+    {
+     "label": "image",
+     "value": "adaf20bf95e7",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a blank screen",
+     "note": "0.266"
+    },
+    {
+     "label": "boxes",
+     "value": "1",
+     "note": "yolo_world · sign"
+    },
+    {
+     "label": "ocr 1",
+     "value": "OPENED",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "vault-custody/renders/badge/hats-live.png",
+   "title": "badge · hats-live.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqplnxr_jelx",
+     "note": "sha256_fdc522df857"
+    },
+    {
+     "label": "image",
+     "value": "3dd31bc1a1d9",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.250"
+    },
+    {
+     "label": "boxes",
+     "value": "5",
+     "note": "yolo_world · rectangle, sign, banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "Six hats.",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "Hats, not accounts. One account may hold",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "chain event stamps its hat.",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "Manufacturer",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "vault-custody/renders/badge/p-vc0007.png",
+   "title": "badge · p-vc0007.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpluoa_gcu4",
+     "note": "sha256_e9cdc733a77"
+    },
+    {
+     "label": "image",
+     "value": "f19eab6f8236",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a screenshot of a software user interface",
+     "note": "0.239"
+    },
+    {
+     "label": "boxes",
+     "value": "1",
+     "note": "yolo_world · banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY x TIMMY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "provenance VC0007",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Gateway Profile Boxes Singles Locations ",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "sign out",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "vault-custody/renders/companion/companion-vc0007.png",
+   "title": "companion · companion-vc0007.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqply4m_ljvq",
+     "note": "sha256_7ed7d410203"
+    },
+    {
+     "label": "image",
+     "value": "60bc3fa9182a",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a phone app screen showing a custody receipt with a serial number and status text",
+     "note": "0.267"
+    },
+    {
+     "label": "boxes",
+     "value": "2",
+     "note": "yolo_world · banner, sign"
+    },
+    {
+     "label": "ocr 1",
+     "value": "VAULT CUSTODY TIMMY",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "VC0007",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "OPENED",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "2026 hobby box series 001",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "vault-custody/renders/slate3d/emit-check.png",
+   "title": "slate3d · emit-check.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpm02u_dt55",
+     "note": "sha256_f721b5fa82a"
+    },
+    {
+     "label": "image",
+     "value": "e49915785f9e",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+     "note": "0.224"
+    },
+    {
+     "label": "boxes",
+     "value": "5",
+     "note": "yolo_world · sign, banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "SLATE SD",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "bus live",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Vault Custody Timmy build Ledger kind mi",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "source companion websocket",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "vault-custody/renders/slate3d/ledger-3d.png",
+   "title": "slate3d · ledger-3d.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpm1xq_yckb",
+     "note": "sha256_7ed6f138dad"
+    },
+    {
+     "label": "image",
+     "value": "5330b8ab9ae0",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+     "note": "0.229"
+    },
+    {
+     "label": "boxes",
+     "value": "2",
+     "note": "yolo_world · banner, sign"
+    },
+    {
+     "label": "ocr 1",
+     "value": "SLATE SD",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "room slate:ledger live - websocket",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Vault Custody Timmy build Ledger kind mi",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "source room slate:Ledger @ timmy- ai pro",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "vault-custody/renders/slate3d/room-check-1.png",
+   "title": "slate3d · room-check-1.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpm3q6_2idq",
+     "note": "sha256_0c96608d017"
+    },
+    {
+     "label": "image",
+     "value": "e0eb148f6eac",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+     "note": "0.229"
+    },
+    {
+     "label": "boxes",
+     "value": "3",
+     "note": "yolo_world · sign, banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "SLATE 3D",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "room slate:Ledger live - websocket",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Vault Custody Timmy build Ledger -: kind",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "source room slate:Ledger",
+     "note": ""
+    }
+   ]
+  },
+  {
+   "id": "vault-custody/renders/slate3d/room-check-2.png",
+   "title": "slate3d · room-check-2.png",
+   "rows": [
+    {
+     "label": "receipt",
+     "value": "rc_mtqpm60h_q0xh",
+     "note": "sha256_a6d0da4ae0c"
+    },
+    {
+     "label": "image",
+     "value": "e0eb148f6eac",
+     "note": "sha256"
+    },
+    {
+     "label": "clip",
+     "value": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+     "note": "0.229"
+    },
+    {
+     "label": "boxes",
+     "value": "3",
+     "note": "yolo_world · sign, banner"
+    },
+    {
+     "label": "ocr 1",
+     "value": "SLATE 3D",
+     "note": ""
+    },
+    {
+     "label": "ocr 2",
+     "value": "room slate:Ledger live - websocket",
+     "note": ""
+    },
+    {
+     "label": "ocr 3",
+     "value": "Vault Custody Timmy build Ledger -: kind",
+     "note": ""
+    },
+    {
+     "label": "ocr 4",
+     "value": "source room slate:Ledger",
+     "note": ""
+    }
+   ]
+  }
+ ],
+ "shapes": [
+  {
+   "image": "renders/qr-an12196-tap.png",
+   "image_sha256": "a264a54b62015eb5d2d1a057f89055ef24cebd1183a326b750d4653b475717d5",
+   "receipt_id": "rc_mtqpiwb1_ivb7",
+   "receipt_hash": "sha256_39514f9d76d1d3d91ba8265bef4b7d8fd972b16cea2c8d0ba6e1ca90285d5c08",
+   "observed_at": "2026-09-07T03:54:49.155Z",
+   "image_size": {
+    "width": 1023,
+    "height": 1023
+   },
+   "boxes": [
+    {
+     "x": 512.2545776367188,
+     "y": 510.7923583984375,
+     "w": 854.0379638671875,
+     "h": 855.7996826171875,
+     "label": "banner",
+     "confidence": 0.06370364874601364
+    }
+   ],
+   "ocr_lines": [
+    "-",
+    "- -",
+    "- -",
+    "-",
+    "-",
+    "-",
+    "- -",
+    "-",
+    "-",
+    "-",
+    "-",
+    "ID",
+    "E",
+    "- -",
+    "-",
+    "- - -",
+    "-",
+    "-",
+    "- -",
+    "-",
+    "-",
+    "- I",
+    "-",
+    "-",
+    "JH",
+    "-",
+    "- - -",
+    "-",
+    "-",
+    "-"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.22858312726020813
+   },
+   "detection_sha256": "8bfc19e91363d25f52f004dbbcea2309b537d847e542fdac14a4d368b12c0324"
+  },
+  {
+   "image": "renders/walkthrough/shots/01-gateway-box.png",
+   "image_sha256": "477f166fb58c67f50721383c7581e10dd8927b86a67d2b11442d9ea06cc7081b",
+   "receipt_id": "rc_mtqpj1gs_evxj",
+   "receipt_hash": "sha256_7f131a1d9665e458e811060955309007393131874ef4227697c7d085588cc350",
+   "observed_at": "2026-09-07T03:54:55.822Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 723.0991821289062,
+     "y": 447.76800537109375,
+     "w": 1432.1580810546875,
+     "h": 895.5360107421875,
+     "label": "banner",
+     "confidence": 0.03220811486244202
+    },
+    {
+     "x": 424.483154296875,
+     "y": 422.8115234375,
+     "w": 491.8367919921875,
+     "h": 343.2642822265625,
+     "label": "text",
+     "confidence": 0.028237193822860718
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY x TIMMY",
+    "Series 001 pilot",
+    "Gateway Profile Boxes Singles Locations Provenance Where thel boxes went",
+    "sign out",
+    "A An",
+    "E",
+    "VUAIY cne soo",
+    "nor",
+    "Evert CUSTO",
+    "<",
+    "box a",
+    "VAULT xhe",
+    "Every",
+    "1/1.",
+    "eruse",
+    "A receipt every box carries with it, and any phone can",
+    "o",
+    "read. The seal signs the tap. The band remembers the",
+    "BERIES",
+    "break.",
+    "FIEVES",
+    "SEAL",
+    "2026 -",
+    "Pick a",
+    "VC0007",
+    "hat",
+    "See the provenance",
+    "It goes on the box you already make.",
+    "The two-seal box nothing printed on any card",
+    "Sianadta",
+    "no"
+   ],
+   "clip": {
+    "best": "a blank screen",
+    "score": 0.22087815403938293
+   },
+   "detection_sha256": "a74ff7eb3547e25825b46909c8ad0a2f42ff8a97236118e5d657363fb31f44f7"
+  },
+  {
+   "image": "renders/walkthrough/shots/02-gateway-hats.png",
+   "image_sha256": "a53879a5f3c87037b24767501f10203fefe4b0c85fe83c90cc8fe9a88b3369f5",
+   "receipt_id": "rc_mtqpje67_w1r8",
+   "receipt_hash": "sha256_42c75c171c1f32adc40b684f6898c17642cc99b346f501df08ff94a7057f08bb",
+   "observed_at": "2026-09-07T03:55:12.218Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 329.7555847167969,
+     "y": 216.5905303955078,
+     "w": 525.7966918945312,
+     "h": 295.3729553222656,
+     "label": "banner",
+     "confidence": 0.10342009365558624
+    },
+    {
+     "x": 242.09625244140625,
+     "y": 882.6245727539062,
+     "w": 99.32475280761719,
+     "h": 33.1649169921875,
+     "label": "banner",
+     "confidence": 0.03613001108169556
+    },
+    {
+     "x": 1027.539794921875,
+     "y": 880.4066162109375,
+     "w": 135.9871826171875,
+     "h": 39.18670654296875,
+     "label": "banner",
+     "confidence": 0.026401251554489136
+    }
+   ],
+   "ocr_lines": [
+    "It goes on the box you already make.",
+    "Thet two-seal box nothing printed on any card",
+    "Signed taps",
+    "The NTAG 424 DNA seal signs every tap with a per-tag key and a",
+    "counter. A copy or a photo fails on the first tap.",
+    "Tamper memory",
+    "The band runs through the seal. Break it and the chip stores the",
+    "isoira ect acroealduan uns heaugh lp Ahar",
+    "Tasthemal-\" insldet \"opanedattp aigned Spse.",
+    "break forever and reports it at the next tap.",
+    "Whate aach piece proves",
+    "Ouart hylmperns- has th mnt tem opanedainos NaLE sesed? jateis, ena hechip: batary nociock",
+    "ime dger 440 ChArees hat a sesed washisphysicalbos ywhan, when wiha open aaip inucmecnal photoa anda hunds comert athar rta ash monent on m lligred, tors copyabley a Thec Commein thamach hat tpi",
+    "A public chain",
+    "Every event is a receipt with prev and this. The head is published",
+    "daily and anyone can recompute it from the log.",
+    "Six hats.",
+    "Hats, not accounts. One account may hold several, and every",
+    "chain event stamps its hat.",
+    "Maden",
+    "Manufacturer",
+    "Sees the product after thel loading dock for the first time:",
+    "Movedi it.",
+    "Sealed and soldi it.",
+    "which store sold which box,when it opened, where the",
+    "hits landed.",
+    "S",
+    "OX",
+    "Distributor",
+    "Retailer",
+    "RBOX",
+    "Enter as Manufacturer",
+    "Enter as Distributor",
+    "Enter: as Retailer"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.22931623458862305
+   },
+   "detection_sha256": "5b464e7625755cb543291f7274da4959b4985cd0605728a8adf0d00399cb879d"
+  },
+  {
+   "image": "renders/walkthrough/shots/03-gateway-tap-this.png",
+   "image_sha256": "e14c761f497371adea259bb2af6ba1dc984c096729adf62267b7b744c87db852",
+   "receipt_id": "rc_mtqpjj4s_9mtt",
+   "receipt_hash": "sha256_c49cacb0c03fcd7425b9b5dda0a29922c1987ad29e7f663bc5c7ccc6a5386f88",
+   "observed_at": "2026-09-07T03:55:18.718Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 469.9818420410156,
+     "y": 345.103271484375,
+     "w": 274.18695068359375,
+     "h": 216.52987670898438,
+     "label": "rectangle",
+     "confidence": 0.044142138212919235
+    },
+    {
+     "x": 249.2661895751953,
+     "y": 292.83612060546875,
+     "w": 311.8477478027344,
+     "h": 335.77593994140625,
+     "label": "banner",
+     "confidence": 0.03436344861984253
+    },
+    {
+     "x": 1268.707275390625,
+     "y": 39.03438949584961,
+     "w": 76.6104736328125,
+     "h": 78.06877899169922,
+     "label": "banner",
+     "confidence": 0.020441066473722458
+    }
+   ],
+   "ocr_lines": [
+    "Sees the product after thel loading dock for the first time:",
+    "Movedit.",
+    "Sealed andsoldi It.",
+    "which store sold which box,when it opened, where the",
+    "hits landed.",
+    "X",
+    "Distributor",
+    "Retailer",
+    "BOX",
+    "Enter: as Manufacturer",
+    "Enter as Distributor",
+    "Enter as Retailer",
+    "Resoldi it with the chain attached. Rookie auto",
+    "Seller",
+    "NCOo7",
+    "#1",
+    "Seudled",
+    "Vault tap",
+    "Enter as Seller",
+    "Box",
+    "verdedi",
+    "A",
+    "ep ",
+    "le",
+    "25",
+    "Claimed and openedit it.",
+    "BOX",
+    "Collector",
+    "Verifiedi it ati intake.",
+    "One tap claims thel box. Everyi pack and every card",
+    "attachest to the chain as it comes out.",
+    "Grader",
+    "Enter: as Collector",
+    "Enter as Grader",
+    "Tap this.",
+    "NXP's published AN12196 vector, mapped to box VC0007.It",
+    "opens the real tap address on the live edge: the signature",
+    "verifies, a receipt seals, the phone lands on the receipt page.",
+    "https://preview.vault-custody.pages.dev/t7e-EF963FF7828658A599F3041510671E886c=94EED9EE653370866tt-CC"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.2378503978252411
+   },
+   "detection_sha256": "788acb61de9921fd20117c1b8a8df2ef8e8d9c86a623a48b3f8405002f087013"
+  },
+  {
+   "image": "renders/walkthrough/shots/04-hat-collector.png",
+   "image_sha256": "892d76f264127878931dcf66426af2407a3d5baadb09d2fc7befaaf7a6328b4d",
+   "receipt_id": "rc_mtqpjtyy_8yjm",
+   "receipt_hash": "sha256_57914727d0b62cea0b57c15946c225a104643349010dadce28950e8368c8a9fd",
+   "observed_at": "2026-09-07T03:55:32.801Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 426.2290954589844,
+     "y": 426.37567138671875,
+     "w": 724.1895141601562,
+     "h": 255.82858276367188,
+     "label": "sign",
+     "confidence": 0.19475257396697998
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY x TIMMY",
+    "sign-in seeded session",
+    "Gateway Profile Boxes Singles Locations Provenance Where thel boxes went",
+    "sign out",
+    "Collector",
+    "Claimed and opened it. One tap claims the box. Every pack",
+    "and every card attaches to the chain as it comes out.",
+    "identity 0f6c2d81. Henderson,NV",
+    "name W.M.(only the owner sees their ownname)",
+    "session sess_col_wm - seeded stub, no password",
+    "lands on /me/singles",
+    "Enter as Collector",
+    "Hats, not accounts. One account may hold several; every chain event: stamps its hat. Real sign-in comes",
+    "with claims.",
+    "Other hats: Manufacturer Distributor Retailer Seller Grader"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.2566187083721161
+   },
+   "detection_sha256": "49799641c7703cb8acdb29f0995281cb8e053493b200c9cd4b6b145ed037b405"
+  },
+  {
+   "image": "renders/walkthrough/shots/05-collector-singles.png",
+   "image_sha256": "0c774b85d8172202a19ef4eb56ef26656f11015be30be52aed94f33e1ce01c65",
+   "receipt_id": "rc_mtqpjxtf_883f",
+   "receipt_hash": "sha256_43087087292c1c4e516facd8e41cbfff253ba44dfa601e4ce0e108cea70bf12d",
+   "observed_at": "2026-09-07T03:55:38.246Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 719.4132690429688,
+     "y": 547.4566650390625,
+     "w": 1313.3035888671875,
+     "h": 592.2987060546875,
+     "label": "banner",
+     "confidence": 0.05209420993924141
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY x TIMMY",
+    "Collector - Henderson, NV",
+    "Gateway Profile Boxes Singles Locations Provenance Where thel boxes went",
+    "Collector sign out",
+    "Singles",
+    "7 rows this hat can see. Counterparty = hash + city + hat,",
+    "never a name. Price only where disclosed.",
+    "SERIAL",
+    "THUMBNAIL PRODUCT",
+    "MANUFACTURED",
+    "RECEIVED",
+    "SOLD",
+    "COUNTERPARTY",
+    "VC0007-01-04",
+    "Base pack 1. card 4",
+    "2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson",
+    "VC0007-05-11",
+    "Numbered, /50. pack 5. card 11",
+    "2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson",
+    "VC0007-09-02",
+    "Insert pack 9. card2",
+    "2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson",
+    "VC0007-17-03",
+    "Rookie Autograph 14/99 pack 17. card 3 2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson 2026-10-02 eBay #38-1142 e3c8d012. Phoenix, AZ. seller",
+    "VC0007-21-07",
+    "Numbered, /25. pack 21. card 7",
+    "2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson",
+    "VC0007-24-01",
+    "Base pack 24. card1",
+    "2026-08-28 Duryea, PA 2026-09-14 unboxing Henderson",
+    "VC2210-08-01",
+    "Relic jersey swatch. 08-01 of: 99",
+    "2026-08-28 Duryea, PA 2026-09-12 event 1/1. Las Vegas",
+    "Illustrative pilot data seeded from VC0007 and Series 001. Every row's chain head is the last receipt hash the hat can read."
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.24544478952884674
+   },
+   "detection_sha256": "6c9d3e2492a435491bd4cc1fb6b9293d44f7a963d54f7c56bbe43fa75cedf657"
+  },
+  {
+   "image": "renders/walkthrough/shots/06-collector-profile.png",
+   "image_sha256": "ddfae16870c2d9ccf4aa30fd71cdb80e39fe50da95820971d657d54af620f6da",
+   "receipt_id": "rc_mtqpk4hi_1wll",
+   "receipt_hash": "sha256_048c294ab77459bb5a9d3402133c686fb1a6b349edec5591501efa26042953b9",
+   "observed_at": "2026-09-07T03:55:46.826Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 896.4908447265625,
+     "y": 350.229248046875,
+     "w": 547.536376953125,
+     "h": 177.60580444335938,
+     "label": "sign",
+     "confidence": 0.04959540814161301
+    },
+    {
+     "x": 618.2548828125,
+     "y": 350.6767578125,
+     "w": 1109.9541015625,
+     "h": 179.91567993164062,
+     "label": "banner",
+     "confidence": 0.02169354259967804
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY x TIMMY",
+    "Collector - Henderson, NV",
+    "Gateway Profile Boxes Singles Locations Provenance Where thel boxes went",
+    "Collector sign out",
+    "W. M.",
+    "Wearing the Collector hat. Claimed and opened it.",
+    "on chain as 0f6c2d81. Henderson, NV. Collector",
+    "Inventory",
+    "session sess_col_wm",
+    "Locations 2 Rows",
+    "stamps",
+    "every event this hat writes carries hat=collector",
+    "Boxes 11 Rows",
+    "Singles 7 Rows",
+    "One account may hold several hats. Switch: Manufacturer Distributor Retailer Seller Grader"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.25972962379455566
+   },
+   "detection_sha256": "099ca19ba11916f8a72c969ed2a3c6f497f2d61e638fe21489c59815810a3b76"
+  },
+  {
+   "image": "renders/walkthrough/shots/07-tap-receipt.png",
+   "image_sha256": "fc19359b8a5b3b80e044d9e1ffd118565872433cfabd0fda75aedb9bc81fbb53",
+   "receipt_id": "rc_mtqpk5qv_y8tr",
+   "receipt_hash": "sha256_271da897e9d3a11313ed62c0224af41f521787fc664f6a05ad9c40e89ad59ead",
+   "observed_at": "2026-09-07T03:55:48.582Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 720.4004516601562,
+     "y": 576.7447509765625,
+     "w": 699.5028076171875,
+     "h": 280.314208984375,
+     "label": "banner",
+     "confidence": 0.08728700131177902
+    },
+    {
+     "x": 717.8330688476562,
+     "y": 133.39434814453125,
+     "w": 699.0628662109375,
+     "h": 93.9099349975586,
+     "label": "banner",
+     "confidence": 0.02215752564370632
+    },
+    {
+     "x": 674.3170776367188,
+     "y": 450.1748962402344,
+     "w": 1348.6341552734375,
+     "h": 899.6502075195312,
+     "label": "banner",
+     "confidence": 0.02138744294643402
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY",
+    "receipt - epoch 903",
+    "Tap verified . signature valid",
+    "counter 61 receipt b35fb2bc tamper CC * 1:33:59 AM",
+    "OPENED",
+    "Box VC0007",
+    "Opened Sep 14, 2026, 19:22 PT - Henderson, NV - by the",
+    "claimed owner",
+    "Seal",
+    "broken * stored on chip - reported at tap #4",
+    "Reveal tag",
+    "signed - Sep 14 - 19:22:07  counter 1",
+    "Owner",
+    "claimed Sep 12, 13:05 - W. M.",
+    "Packs",
+    "24 of 24 opened : 19:24 - 20:41",
+    "Cards attached 312 scanned - 4 hits - 2 numbered",
+    "Custody timeline",
+    "Sealed at Paradise Card Breaks",
+    "Sep 12 12:41 Las Vegas"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.2631961405277252
+   },
+   "detection_sha256": "b08e27eb9f9147cd787b924e7cf68dc12caffcfca338472b2a1602e5944e3a51"
+  },
+  {
+   "image": "renders/walkthrough/shots/08-receipt-timeline.png",
+   "image_sha256": "e5491f93d3b1f3eb14f060dd6c86ab24a56dd738f3490211a52f41dba94b7c16",
+   "receipt_id": "rc_mtqpk9wk_h0d6",
+   "receipt_hash": "sha256_7df04da1390081223b036d7b2924fbb717a590774ea6bed9d71e7f01e501b68e",
+   "observed_at": "2026-09-07T03:55:53.887Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 718.544921875,
+     "y": 401.03680419921875,
+     "w": 697.6337280273438,
+     "h": 725.6363525390625,
+     "label": "banner",
+     "confidence": 0.18948894739151
+    }
+   ],
+   "ocr_lines": [
+    "Custody timeline",
+    "Sealed at Paradise Card Breaks",
+    "Sep 12 12:41 Las Vegas",
+    "Sold - POS receipt #48812",
+    "Sep 12 * 13:04 counter 2",
+    "Claimed by owner",
+    "Sep 12 13:05 * phone tap",
+    "Opened * seal loop broken",
+    "Sep 14 19:22 Henderson, NV",
+    "Pack 1 opened - 12 cards attached",
+    "Sep 14 19:24",
+    "Pack 17 opened - Rookie Auto 14/99 attached",
+    "Sep 14 20:12",
+    "Pack 24 opened",
+    "Sep 14 * 20:41",
+    "Card VC0007-17-03 transferred - sold on eBay",
+    "Oct 2 08:15 to owner in Phoenix, AZ",
+    "Locations are city-level and owner-shared. Identities are hashed; only the owner sees their own",
+    "name."
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.25761929154396057
+   },
+   "detection_sha256": "2f38af81b81f7c08ef06b0e3da49be83e746bc8f889c181473b7a0105637fdf5"
+  },
+  {
+   "image": "renders/walkthrough/shots/09-card.png",
+   "image_sha256": "149fd7698f1f6150ad96d7a93c17f0d74db83dab04092db883f4cc0ecc28ab19",
+   "receipt_id": "rc_mtqpkpks_t3uw",
+   "receipt_hash": "sha256_c6453b4dbc9abf9e3d47a2daef0a444a973381caf0a3190cb16063b2072a5dca",
+   "observed_at": "2026-09-07T03:56:13.695Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 719.675537109375,
+     "y": 429.3740539550781,
+     "w": 701.0751342773438,
+     "h": 283.54583740234375,
+     "label": "banner",
+     "confidence": 0.15204736590385437
+    },
+    {
+     "x": 718.4923095703125,
+     "y": 723.090576171875,
+     "w": 697.0435180664062,
+     "h": 271.62969970703125,
+     "label": "banner",
+     "confidence": 0.023771772161126137
+    },
+    {
+     "x": 693.593017578125,
+     "y": 448.68359375,
+     "w": 1387.18603515625,
+     "h": 892.3193359375,
+     "label": "banner",
+     "confidence": 0.02170526422560215
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY",
+    "card - VC0007-17-03",
+    "CUSTODY-VERIFIED",
+    "Rookie Autograph 14/99",
+    "2026 hobby  pulled from box VC0007, pack 17",
+    "Attached",
+    "Sep 14, 2026 - 20:12 - at unboxing",
+    "Fingerprint",
+    "1200-dpi scan * match 99.6% on last check",
+    "Box",
+    "VC0007 - sealed Paradise - opened Henderson",
+    "Graded",
+    "PSA 10 - cert linked Oct 20",
+    "Location",
+    "Phoenix, AZ - owner-shared",
+    "Owners",
+    "W. M. : Henderson, NV",
+    "Sep 14 * Oct 2 from the box",
+    "J. R. - Phoenix, AZ",
+    "Oct 2 1 now eBay #38-1142 - $412"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.2414247840642929
+   },
+   "detection_sha256": "8c983531279d03092ba32a72012d0c862aacebdc6c5aecfc086d82eb1f392aff"
+  },
+  {
+   "image": "renders/walkthrough/shots/10-provenance-timeline.png",
+   "image_sha256": "639cc36361930a0ad7183d65212a4b7ee9bf96baaac37b32dd6466d704ff9280",
+   "receipt_id": "rc_mtqpkrv2_mqec",
+   "receipt_hash": "sha256_840db19919db1e8c9b52cdbfa9249c1f9d233dadf62b44f0237a1e44285236df",
+   "observed_at": "2026-09-07T03:56:17.093Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [],
+   "ocr_lines": [
+    "VAULT CUSTODY x TIMMY",
+    "provenance VC0007",
+    "Gateway Profile Boxes Singles Locations Provenance Where thel boxes went",
+    "Collector sign out",
+    "VC0007 - 2026 hobby box",
+    "14 chain events, every one stamped with its hat. One list, two",
+    "views.",
+    "OPENED",
+    "Timeline 3D Travel map",
+    "Manufacturer - Distributor - Retailer Collector A Seller Grader chain",
+    "Click an event.",
+    "tap.003 tap.005 tap.007 tap.009 tap.011",
+    "tap.001",
+    "verifiedap verifiedTap verified Tap verified",
+    "Tap verifiegTap verifiedap",
+    "Ta",
+    "itted",
+    "tap.004 tap.006 tap.008 tap.010 tap.012",
+    "tap. .002 Tap verifielap verifiedap verifiedTap verified Tap verified",
+    "903.110925-1191 Tap verified",
+    "903.0412 903. 0414 903.0503 903.059érified GPMiP/ARA.RElNdsned",
+    "L Paradise Cend.Brepls owner Pack 1 opened Pack 24 opened",
+    "203.0411",
+    "903.1188",
+    "rink photogr81-0613 903.0502 903.8518 VC0007-17-03 transferred",
+    "'Sold",
+    "Openegard VC0007-17-03 attached",
+    "903 A401",
+    "M",
+    "à Series 001 lot 14",
+    "11 irvea PA"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.24184562265872955
+   },
+   "detection_sha256": "1905f2607b98cad9f3daf6531a7308d3de3506140d36166cb40cbeeab5f22ac0"
+  },
+  {
+   "image": "renders/walkthrough/shots/11-provenance-timeline-open.png",
+   "image_sha256": "cbb4b616d0f6a12cf3858863006459667bcb331bf477d40179704d153619be76",
+   "receipt_id": "rc_mtqpkw78_ccx1",
+   "receipt_hash": "sha256_aaf16737e477765be1162d2a90d2808cdebbce3e164bd71a381ef3481234d333",
+   "observed_at": "2026-09-07T03:56:22.581Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 712.4331665039062,
+     "y": 415.19091796875,
+     "w": 1353.7393798828125,
+     "h": 294.7884216308594,
+     "label": "banner",
+     "confidence": 0.028050558641552925
+    },
+    {
+     "x": 720.9400024414062,
+     "y": 443.51861572265625,
+     "w": 1397.5745849609375,
+     "h": 887.0372314453125,
+     "label": "sign",
+     "confidence": 0.026700617745518684
+    }
+   ],
+   "ocr_lines": [
+    "5hipped,03.0411",
+    "Factory shrink photaghaphail",
+    "- ",
+    "Sold",
+    "903.0519 903.1188",
+    "903. C5n2 VC0007-10a83 uct00net7-03 transferred",
+    "Opened",
+    "903.0401 custody.manufacture Manufactured Series 001. lot 14",
+    "manufacturer Duryea, PA",
+    "genesis + c0alf9e4",
+    "903.0405 custody.ship",
+    "Shipped region 4. pallet 22",
+    "distributor Reno, NV",
+    "c0alf9e4 + e07b4d92",
+    "903.0410 custody.commit Contents hash committed published to Series 001",
+    "retailer Las Vegas, NV e07b4d92 + 51c0e8a9",
+    "903.0411 custody.photo",
+    "Factory shrink photographed 3 photos hashed",
+    "retailer Las Vegas, NV 51c0e8a9 - 7c19e3f0",
+    "903.0412 custody.seal",
+    "Sealed at Paradise Card Breaks",
+    "retailer Las Vegas, NV 7c19e3f0 + 2ad8f61c",
+    "903.0413 custody.sell",
+    "Sold POS receipt: #48812",
+    "retailer Las Vegas, NV 2ad8f61c + b9d4ale7",
+    "903.0414 custody.claim",
+    "Claimed by owner phone tap",
+    "collector Las Vegas, NV b9d4ale7 + 0f6c2d81",
+    "903.0502 custody.open",
+    "Opened seall loop broken",
+    "collector Henderson, NV 0f6c2d81 + c41a9b30",
+    "903.0503 custody.pack",
+    "Pack <1opened 12 cards attached",
+    "collector Henderson, NV c41a9b30 88e2f5a0",
+    "903.0519 custody.attach",
+    "Card VC0007-17-03 attached Rookie Auto 14/99",
+    "collector Henderson, NV",
+    "- 5d0b7c92",
+    "903.0526 custody.pack",
+    "Pack 24 opened 13 cards attached",
+    "collector Henderson, NV",
+    "+ a72e1f4d",
+    "903.1188 custody.transfer Card' VC0007-17-03 transferred sold on eBay",
+    "seller",
+    "Phoenix, AZ",
+    "e3c8d012",
+    "903.1190 custody.verify Verified at grader intake. same card,r no trim",
+    "grader",
+    "Santa Ana, CA e3c8d012 + 91b0f7aa",
+    "903.1191 chain.head",
+    "Chain head published anchored OpenTimestamps",
+    "manufacturer Duryea, PA",
+    "91b0f7aa head"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.28392836451530457
+   },
+   "detection_sha256": "8d644ccb9c7291255626389ebf09c5e6be81ee75509ddb6e87a24870f0e96b48"
+  },
+  {
+   "image": "renders/walkthrough/shots/12-provenance-map.png",
+   "image_sha256": "6e75fccfba172734099b542146ca5d6bf51301c5dc19376c1fbb2776061155e1",
+   "receipt_id": "rc_mtqpkyba_xifc",
+   "receipt_hash": "sha256_cfbd873035dfb584b0690cb65295af7fe45e1012d7751540feb8cff093eb3be2",
+   "observed_at": "2026-09-07T03:56:25.452Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 1220.9688720703125,
+     "y": 601.1055908203125,
+     "w": 305.5361328125,
+     "h": 526.318115234375,
+     "label": "banner",
+     "confidence": 0.06846471130847931
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY x TIMMY",
+    "provenance VC0007",
+    "Gateway Profile Boxes Singles Locations Provenance Where thel boxes went",
+    "Collector sign out",
+    "VC0007 - 2026 hobby box",
+    "14 chain events, every one stamped with its hat. One list, two",
+    "views.",
+    "OPENED",
+    "Timeline : 3D Travel map",
+    "Manufacturer - Distributor - Retailer Collector A Seller Grader chain",
+    "903.0502",
+    "Opened - seal loop broken",
+    "tamper BROKEN stored on chip tap 4. -",
+    "reveal tag signed counter' 1",
+    "hat",
+    "collector",
+    "903.0405 ship",
+    "city",
+    "Henderson,NV",
+    "when",
+    "2026-09-14T19:22:07-07:00",
+    "-",
+    "prev + this 0f6c2d81 + c41a9b30",
+    "Duryea,PA",
+    "Q",
+    "events",
+    "Reno,NV",
+    "190300010 commit",
+    "0",
+    "903 602-open",
+    "Las Vegas,Wy",
+    "903.1191 chainchead",
+    "G10901.1190 De",
+    "Santa Ana, CA Henderkor.wysten",
+    "1 event 4 events",
+    "A",
+    "Phoenix,AZ",
+    "event",
+    "903 A401",
+    "M",
+    "à Series 01 lot 14",
+    "in ovea PA"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.22791481018066406
+   },
+   "detection_sha256": "3dc0561580a4592d30334bd4df7d7346cc4999e9665382f2726d5789c11efafb"
+  },
+  {
+   "image": "renders/walkthrough/shots/13-manufacturer-boxes.png",
+   "image_sha256": "b7a26c3c5aea7f529177dfe34891bce4493ce0ee341e542d0051ebea432861bd",
+   "receipt_id": "rc_mtqpl83w_bh5w",
+   "receipt_hash": "sha256_0ec34f0a59cf180e61cd83b01d7e0e077ed0324d58d519af50601e26d585c466",
+   "observed_at": "2026-09-07T03:56:37.839Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 713.85546875,
+     "y": 429.6905517578125,
+     "w": 1322.9970703125,
+     "h": 353.26953125,
+     "label": "sign",
+     "confidence": 0.16274848580360413
+    },
+    {
+     "x": 718.2437744140625,
+     "y": 311.4012145996094,
+     "w": 1364.783935546875,
+     "h": 622.8024291992188,
+     "label": "banner",
+     "confidence": 0.03161124885082245
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY x TIMMY",
+    "Manufacturer - Duryea, PA",
+    "Gateway Profile Boxes Singles Locations Provenance Where thel boxes went",
+    "Manufacturer sign out",
+    "Boxes",
+    "4 rows this hat can see. Counterparty = hash + city + hat,",
+    "never a name. Price only where disclosed.",
+    "SERIAL THUMBNAIL PRODUCT",
+    "MANUFACTURED",
+    "RECEIVED",
+    "SOLD",
+    "COUNTERPARTY",
+    "VC0001",
+    "2026 hobby box Series 001",
+    "2026-08-28 Duryea, PA 2026-09-02 Paradise Las Vegas",
+    "VC0002",
+    "2026 hobby box Series 001",
+    "2026-08-28 Duryea, PA 2026-09-01- Distributor B. Reno",
+    "5d3e9b20- Reno,NV. -distributor",
+    "VC0003",
+    "2026 hobby box event 1/1. Las' Vegas convention 2026-08-28 Duryea, PA 2026-09-12 booth' 1. Las Vegas",
+    "VC0007",
+    "2026 hobby box Series 001",
+    "2026-08-28 Duryea, PA 2026-09-02 Paradise Las Vegas 2026-09-12. POS #48812 0f6c2d81 Las Vegas, NV. .collec",
+    "Illustrative pilot data seeded from VC0007 and Series 001.1 Every row's chain head is the last receipt hash the hat can read."
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.25752419233322144
+   },
+   "detection_sha256": "ba1b6636d278dba3d38b8e393d208ca09ecbef965fcaec49bf381aa105c09622"
+  },
+  {
+   "image": "renders/walkthrough/shots/14-where-the-boxes-went.png",
+   "image_sha256": "2b0bbb5f1ef294ba1ef85a7c6fdd7b9471e5fcc174213056bfe3db21ffb57738",
+   "receipt_id": "rc_mtqpl9j6_5vih",
+   "receipt_hash": "sha256_acfdecb20663c008c1d1a4fb5f40fad5f43291c5d179daeea4815b3772975b92",
+   "observed_at": "2026-09-07T03:56:40.071Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 439.733154296875,
+     "y": 533.0731201171875,
+     "w": 783.68994140625,
+     "h": 430.52587890625,
+     "label": "banner",
+     "confidence": 0.1008465364575386
+    },
+    {
+     "x": 1124.9495849609375,
+     "y": 608.40478515625,
+     "w": 531.850830078125,
+     "h": 583.1904296875,
+     "label": "banner",
+     "confidence": 0.08977698534727097
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY - MANUFACTURER VIEW",
+    "2026 hobby release week 3 live",
+    "Where the boxes went, and what happened to them",
+    "18,240",
+    "61%",
+    "14",
+    "2,911",
+    "boxes sealed at retail (of 24,000",
+    "opened median 2.3 days after sale",
+    "tamper events before sale all traced",
+    "event 1/1 boxes (Vegas, Chicago,",
+    "shipped)",
+    "to 2 shipments",
+    "Anaheim) +38% resale",
+    "By retailer",
+    "Hit distribution vs. printed odds",
+    "Autos printed 1:12 observed 1:11.6",
+    "Avg days to",
+    "Retailer",
+    "Sealed Opened Tamper",
+    "Hits reported",
+    "open",
+    "Numbered printed 1:24 observed 1:23.1",
+    "Paradise Card Breaks Las",
+    "96 / 1,204 on",
+    "1,204 71% 0",
+    "1.8",
+    "Vegas",
+    "odds",
+    "Distributor B  autos observed 1:31",
+    "Fanatics Live verified breaks 3,880 100% U",
+    "0.2",
+    "on odds",
+    "Reported hits come from cards attached at unboxing receipts, not",
+    "Distributor B region 4",
+    "2,150 44% 11",
+    "6.1",
+    "below odds",
+    "surveys.",
+    "Hobby shops other",
+    "11,006 58% 3",
+    "3.4",
+    "on odds",
+    "Secondary market",
+    "Distributor B: 11 seals broken before sale and hit rate below printed odds the resealing is in one lane, and",
+    "Metric",
+    "Custody-verified Unverified",
+    "now you know which one.",
+    "Sealed-box resale premium +17%",
+    "Return / dispute rate",
+    "0.4%",
+    "3.1%",
+    "Time to sell (singles)",
+    "4 days",
+    "11 days",
+    "Illustrative figures for the pilot design every number here is one the pilot",
+    "would measure."
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.2197195142507553
+   },
+   "detection_sha256": "134d7249ff9f51009f08041172ae8085b5c93ef5e11491254ee07a40f675c7c5"
+  },
+  {
+   "image": "vault-custody/renders/badge/badge-live.png",
+   "image_sha256": "adaf20bf95e760e17af5b8efdc229da0caa3678ca688575dfd508012d10c7f98",
+   "receipt_id": "rc_mtqplapt_erli",
+   "receipt_hash": "sha256_276e703a031dc39f005a4fb8d47f76d577b95212ac85cd34c06fc75313b43743",
+   "observed_at": "2026-09-07T03:56:41.570Z",
+   "image_size": {
+    "width": 576,
+    "height": 240
+   },
+   "boxes": [
+    {
+     "x": 287.9822692871094,
+     "y": 119.6509017944336,
+     "w": 481.5466003417969,
+     "h": 146.6160430908203,
+     "label": "sign",
+     "confidence": 0.599413275718689
+    }
+   ],
+   "ocr_lines": [
+    "OPENED"
+   ],
+   "clip": {
+    "best": "a blank screen",
+    "score": 0.266478568315506
+   },
+   "detection_sha256": "964eaba2f963927037f895e22c1f83433cbf69cbcf2f26f374a5dc6c5610c58e"
+  },
+  {
+   "image": "vault-custody/renders/badge/hats-live.png",
+   "image_sha256": "3dd31bc1a1d968e7f3d2975e844e5ee32622fde4a385d8dbd8e2cbfa709b1e8a",
+   "receipt_id": "rc_mtqplnxr_jelx",
+   "receipt_hash": "sha256_fdc522df8576a53aa1609db8eb530ccea79419c140d408e420f9b994b88a1c01",
+   "observed_at": "2026-09-07T03:56:58.153Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 469.9765625,
+     "y": 669.37646484375,
+     "w": 273.5417785644531,
+     "h": 214.73687744140625,
+     "label": "rectangle",
+     "confidence": 0.05269916355609894
+    },
+    {
+     "x": 248.22372436523438,
+     "y": 615.2041625976562,
+     "w": 312.81097412109375,
+     "h": 329.598876953125,
+     "label": "sign",
+     "confidence": 0.042838890105485916
+    },
+    {
+     "x": 248.670654296875,
+     "y": 614.7562255859375,
+     "w": 314.25732421875,
+     "h": 329.61907958984375,
+     "label": "banner",
+     "confidence": 0.041556183248758316
+    },
+    {
+     "x": 1214.17822265625,
+     "y": 333.1474609375,
+     "w": 313.970947265625,
+     "h": 207.98410034179688,
+     "label": "banner",
+     "confidence": 0.02536158636212349
+    },
+    {
+     "x": 392.4410400390625,
+     "y": 330.70013427734375,
+     "w": 648.9686279296875,
+     "h": 209.0920867919922,
+     "label": "banner",
+     "confidence": 0.021447867155075073
+    }
+   ],
+   "ocr_lines": [
+    "Six hats.",
+    "Hats, not accounts. One account may hold several, and every",
+    "chain event stamps its hat.",
+    "Manufacturer",
+    "Movedit.",
+    "nd",
+    "Sees the product after thel loading dock for the first time:",
+    "which store sold which box,when it opened, where the",
+    "Distributor",
+    "Retailer",
+    "hits landed.",
+    "latest - 903.0405 - Shipped - region 4 -",
+    "latest SE90310413 SoldR",
+    "-",
+    "BOSxreceipt",
+    "latest 903.1191 Chain heade published - anchored OpenTimestamps",
+    "pallet 22",
+    "#48812",
+    "Enter: as Manufacturer",
+    "Enter as. Distributor",
+    "Enter: as Retailer",
+    "- Resoldi itwith the chain attached",
+    "Seller",
+    "Rookie auto",
+    "NCO0o7",
+    "latest - 903.1188 - Card V00007-17-03.transferred sold on eBay",
+    "Seudled",
+    "Bok Vauit tap",
+    "Enter as Seller",
+    "veriedi",
+    "Claimeda andope dit.",
+    "BOX",
+    "Collector",
+    "Veriffeditatintake.",
+    "One tap claims the box. Everypack and every card",
+    "attaches to the chain as itcomes out.",
+    "Grader",
+    "latest tap.019 - a4233317 : 9/6/2026 signed",
+    "latest  903.1190 Verified at grader intake same card, no trim",
+    "Enter as Collector",
+    "Enter as Grader",
+    "edge head 11a3bade 2026-09-06 20 receipts across 2 chains read live"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.24987401068210602
+   },
+   "detection_sha256": "99550b95ae5ad08be79675361abca1ebe0d33d1e78d995aad5c422a452b605a9"
+  },
+  {
+   "image": "vault-custody/renders/badge/p-vc0007.png",
+   "image_sha256": "f19eab6f8236b1d9fea6b722f982f3c7010aae4f9d95f1ff012d8ead476e13e4",
+   "receipt_id": "rc_mtqpluoa_gcu4",
+   "receipt_hash": "sha256_e9cdc733a7797f140b1179a04ca96db8ade2ee8c9d5d5d1bee7676be4665f26f",
+   "observed_at": "2026-09-07T03:57:06.947Z",
+   "image_size": {
+    "width": 2880,
+    "height": 1800
+   },
+   "boxes": [
+    {
+     "x": 1439.25634765625,
+     "y": 858.6665649414062,
+     "w": 2874.6162109375,
+     "h": 1717.3331298828125,
+     "label": "banner",
+     "confidence": 0.020874759182333946
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY x TIMMY",
+    "provenance VC0007",
+    "Gateway Profile Boxes Singles Locations Provenance Where the boxes went",
+    "sign out",
+    "-",
+    "VC0007 2026 hobby box",
+    "OPENED",
+    "14 chain events, every one stamped with its hat. One list, two",
+    "views.",
+    "Timeline 3D Travel map",
+    "Manufacturer I Distributor - Retailer Collector A Seller Grader chain",
+    "Click an event.",
+    "tap.005 tap.007 tap.009 tap.011 tap.013 tap.015",
+    "tap.001 tap.003 verifilap verifilap verifiëdp verifiedap verifiedtap verified",
+    "verificlep",
+    "tted",
+    "Tap verified'ap",
+    "- - - - -",
+    "-",
+    "tap.006 tap.008 tap.010 tap.012 tap.014",
+    "tap.004. verifiep verifilap verifieap verifietap verified tap.016",
+    "tap.002 Tap verificap",
+    "Tap verif",
+    "903.0412 903.0414 903.0503 903.0526 903.11903.1191 Tap verified",
+    "24",
+    "Geeka,head.nealdshed",
+    "pradiwe-Eahad\"EPManpes 1 openedPack Opehcipd",
+    "-",
+    "-",
+    "- -",
+    "3.0411",
+    "903.1188",
+    "ink photograshed 903.0502 903. .0519",
+    "transferred",
+    "Sold Opérend vC0er:59539RCA203",
+    "903.0401 custody.manufacture Manufactured Series 001. lot 14",
+    "manufacturer Duryea, PA",
+    "genesis c0alf9e4",
+    "903.0405 custodv.ship",
+    "Shipped reaion 4. pallet 22",
+    "distributor Reno. NV",
+    "c0alf9e4 e07b4d92"
+   ],
+   "clip": {
+    "best": "a screenshot of a software user interface",
+    "score": 0.2394329011440277
+   },
+   "detection_sha256": "3cad23442f28850722ca86122e27c4b4361c96fbddace0d07fdf0de951cabe66"
+  },
+  {
+   "image": "vault-custody/renders/companion/companion-vc0007.png",
+   "image_sha256": "60bc3fa9182aa81d9314466e341c4e0d25993eebfb97b16eba48a6108f422fbd",
+   "receipt_id": "rc_mtqply4m_ljvq",
+   "receipt_hash": "sha256_7ed7d410203fd0b101b9dac15963c4a61cc6da92190826da5537f3939e13e057",
+   "observed_at": "2026-09-07T03:57:11.907Z",
+   "image_size": {
+    "width": 1440,
+    "height": 900
+   },
+   "boxes": [
+    {
+     "x": 719.8997192382812,
+     "y": 449.5877990722656,
+     "w": 504.1488952636719,
+     "h": 152.05364990234375,
+     "label": "banner",
+     "confidence": 0.04037698358297348
+    },
+    {
+     "x": 719.6343994140625,
+     "y": 449.6701354980469,
+     "w": 503.9060974121094,
+     "h": 151.58355712890625,
+     "label": "sign",
+     "confidence": 0.03681010752916336
+    }
+   ],
+   "ocr_lines": [
+    "VAULT CUSTODY TIMMY",
+    "VC0007",
+    "OPENED",
+    "2026 hobby box series 001",
+    "VERIFIED",
+    "sealed Paradise Card Breaks Las Vegas",
+    "opened Henderson, NV",
+    "18 signed taps chain ok",
+    "head 50193f1c this tap 7cfdef98",
+    "trust the receipt, not the model"
+   ],
+   "clip": {
+    "best": "a phone app screen showing a custody receipt with a serial number and status text",
+    "score": 0.26690447330474854
+   },
+   "detection_sha256": "b4a0d7ecee4409e6cb492c432d07387ba350f4e05554630e5b0ca104590d9311"
+  },
+  {
+   "image": "vault-custody/renders/slate3d/emit-check.png",
+   "image_sha256": "e49915785f9e307832ca55f5187756e06c586728ba1eb068c603a565bd3d84a3",
+   "receipt_id": "rc_mtqpm02u_dt55",
+   "receipt_hash": "sha256_f721b5fa82a4b3227102136da03268490cf84f5d76432debb7bcd61e237ea188",
+   "observed_at": "2026-09-07T03:57:14.413Z",
+   "image_size": {
+    "width": 1600,
+    "height": 1000
+   },
+   "boxes": [
+    {
+     "x": 1385.62255859375,
+     "y": 389.9847717285156,
+     "w": 387.7216796875,
+     "h": 642.8630981445312,
+     "label": "sign",
+     "confidence": 0.45718690752983093
+    },
+    {
+     "x": 1587.03125,
+     "y": 462.1656494140625,
+     "w": 25.9375,
+     "h": 178.81069946289062,
+     "label": "banner",
+     "confidence": 0.19863706827163696
+    },
+    {
+     "x": 1043.4576416015625,
+     "y": 511.84161376953125,
+     "w": 206.19696044921875,
+     "h": 452.9023132324219,
+     "label": "sign",
+     "confidence": 0.1136382669210434
+    },
+    {
+     "x": 1155.089111328125,
+     "y": 496.5162658691406,
+     "w": 82.935546875,
+     "h": 339.82586669921875,
+     "label": "banner",
+     "confidence": 0.06970755010843277
+    },
+    {
+     "x": 1263.609375,
+     "y": 415.91021728515625,
+     "w": 645.6695556640625,
+     "h": 644.1705322265625,
+     "label": "banner",
+     "confidence": 0.02014997974038124
+    }
+   ],
+   "ocr_lines": [
+    "SLATE SD",
+    "bus live",
+    "Vault Custody Timmy build Ledger kind mission 6 frames 24 nodes 3 blueprints state from 916 receipts",
+    "source companion websocket",
+    "next evidence 0/1 - 2not",
+    "p6.capsule receipted",
+    "Judges resolve by fleet rank: local judges if present,",
+    "else the OpenRouter cheap tier; everyj judgereceipt",
+    "records which tier judged. Will-only benefit,nota",
+    "product feature.",
+    "fleet entry 'local-judges' with detect probes",
+    "nor receipt maps to this Line yet",
+    "fusion receipt carries judge_tier",
+    "a fusion receipt records judge_tier from the fleet",
+    "Product colour",
+    "rank",
+    "design/tokens. blueprint Design json tokens",
+    "no behavior change when no Local judge is",
+    "opencode",
+    "Surface reachable",
+    "30s",
+    "avy #0A1628",
+    "bluepr no receipt maps to this line yet",
+    "ground, every companio",
+    "p1.capsule - evidence 4opencode",
+    "fold",
+    "dark or verify",
+    "Ermlsenerstsontgrtanin",
+    "10h agococde",
+    "N",
+    "SUN fiert tsep2 capsute 322100skE950pepcode Lane",
+    "di po FL eet n itry",
+    "surface",
+    "compile to a DispatchPlan sendi to the controller",
+    "8Ptita p3.capsule yabences a 10",
+    "HyPWebeants",
+    "navy-2 #101F38",
+    "ESI",
+    "tap-to-verify",
+    "Eeraetcantartaum",
+    "1-Vault Custody",
+    "inng -",
+    "raised surface Type scale Emits only. Compile is a dry run; store returns a",
+    "0/5 orders sealed 2Code Mode' on the worker",
+    "apst",
+    "gpepgeder",
+    "hoUAcus scenefrrge navy- line #1B2E4D",
+    "orint plan id and hash. Arming and Launch still need the",
+    "0/1 orders sealed 3. Receipted\" Defold Tane * Custody Conpafneyt",
+    "à eg ppencode",
+    "hair n design/ token operator token in the controller.",
+    "SD.",
+    "phosphor - #33FF66 human",
+    "2/2 orders sealed do 4. Observer evidence (Roboflow) titga capsulen setid ice DEO ppencode",
+    "chain: ashes",
+    "Ld/b",
+    "1/1 orders sealed",
+    "d tanesyage DU LV ve/by",
+    "sealed",
+    "chain,",
+    "€ \"ok\":",
+    "/ref",
+    "5Slate 3D",
+    "veri fied,",
+    "true,",
+    "2/2 orders sealed done cor",
+    "receipts.",
+    "\"action\": \"store\",",
+    "6-Sparks judge mesh (fleet rank) a button",
+    "\"capsule\": \"p6.capsule\",",
+    "Fleet/",
+    "orange : #FF8C1A",
+    "\"gateway\":",
+    "\"http://127.0. 0.0.1 4310/mission/store\",",
+    "owners, taps,",
+    "\"id\": \"dp_mtqeyf9k_ 87of\",",
+    "buttons",
+    "\"plan_hash\": \"fbe56d1bca2260b310d1de4620ac66d3\",",
+    "red - #FF3B3B",
+    "\"validation\":",
+    "refusal only.",
+    "\"ok\": true",
+    "Tamper is",
+    "orange.",
+    "text #E6EDF7",
+    "human text on",
+    "navy",
+    "15:52:26 slate.render. .start",
+    "15:52:43 slate.renden.capture",
+    "15:53:20 slate.render.done",
+    "15:58:43 slate.enit.compile",
+    "chain event human act C refusal C unlit failed or quiet",
+    "15:58:50 slate.enit.compile",
+    "15:58:59 slate.emit.store",
+    "the viewer spawns nothing every transition goes through the controller",
+    "15:58:59 dispatch.created opencode"
+   ],
+   "clip": {
+    "best": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+    "score": 0.2239699810743332
+   },
+   "detection_sha256": "ecdbe8dae071915e088ef77f4d743050a32565db4ba7da6aad1eea52d864d792"
+  },
+  {
+   "image": "vault-custody/renders/slate3d/ledger-3d.png",
+   "image_sha256": "5330b8ab9ae01bef2342fd613f53848b890854506f1973ce658b698671425750",
+   "receipt_id": "rc_mtqpm1xq_yckb",
+   "receipt_hash": "sha256_7ed6f138dad938794fa73d26277018b1ee45cbec754f37be2382f64dc3d2f05c",
+   "observed_at": "2026-09-07T03:57:16.793Z",
+   "image_size": {
+    "width": 1600,
+    "height": 1000
+   },
+   "boxes": [
+    {
+     "x": 1262.232177734375,
+     "y": 510.6183776855469,
+     "w": 650.8123779296875,
+     "h": 454.84576416015625,
+     "label": "banner",
+     "confidence": 0.17691470682621002
+    },
+    {
+     "x": 1042.59375,
+     "y": 511.1303405761719,
+     "w": 205.1944580078125,
+     "h": 453.04693603515625,
+     "label": "sign",
+     "confidence": 0.06161019206047058
+    }
+   ],
+   "ocr_lines": [
+    "SLATE SD",
+    "room slate:ledger live - websocket",
+    "Vault Custody Timmy build Ledger kind mission 6 frames 24 nodes 3 blueprints state from 914 receipts",
+    "source room slate:Ledger @ timmy- ai proxy- preview. wmel dman33. workers.dev",
+    "Product colour",
+    "blueprint Design tokens",
+    "design/tokens. json",
+    "opencode",
+    "Surfaces",
+    "4n",
+    "avy #0A1628",
+    "Luepr Architecture S and the bus",
+    "ground, every compani ion/ slate3d/DESIGN. mo",
+    "p1.capsule - evidence 4opencode",
+    "fold",
+    "dark or verify",
+    "Eotmlsenensiondgrmanin",
+    "10h agococde",
+    "N",
+    "SUN fiert titacp2. capsute euse0180skE950keghopepcode Lane",
+    "di and L eet entry",
+    "surface",
+    "Ln Receipts and approvals ision map invariants ectu",
+    "8Ptita p3.capsule IaBenCES a te",
+    "hyPWeteaneS;",
+    "navy-2 #101F38",
+    "ep",
+    "DESI",
+    "tap-to-verify",
+    "Eeraetcantartaum",
+    "1-Vault Custody",
+    "inng t",
+    "raised surface Type  scale *1.333 on 16",
+    "ENTS. md ADME",
+    "0/5 orders sealed 2Code Mode' on the worker",
+    "apst",
+    "gpengedek",
+    "ndUtaus sceneferee navy- line #1B2E4D",
+    "1 Jes sign token 1S rid 8 px",
+    "ules)",
+    "0/1 orders sealed",
+    "egy pencode",
+    "hairl n design/ tokens. json",
+    "veprin Design tokens",
+    "3. Receipted\" Defold Tane * Custody Contbarnesyte",
+    "human",
+    "sign/tokens. json",
+    "3D",
+    "phosphor D #33FF66",
+    "Space Grotesk",
+    "ders.log",
+    "2/2 orders sealed do 4. Observer evidence (Roboflow)y itea 6 capsulen St ede e 0 ppengode",
+    "chain: hashes.",
+    "human text jit 8 px every",
+    "Ld/b",
+    "1/1 orders sealed",
+    "d tanelyages ve by",
+    "a",
+    "sealed, chain, JetBrains Mono",
+    "gap and inset map, /ref",
+    "5Slate 3D",
+    "veri fied,",
+    "chain text:",
+    "is a multiple compiles,",
+    "2/2 orders sealed done com",
+    "receipts. e",
+    "ids,p hashes, inelso 8 corr ne",
+    "never",
+    "6-Sparks judge mesh (fleet rank) a button",
+    "receipts",
+    "nradius",
+    "spawns",
+    "ne Fleet",
+    "orange : #FF8C1A",
+    "12. 16 21.3 ontrols 4 corner",
+    "shown",
+    "ons",
+    "radius",
+    "before",
+    "owners, taps,",
+    "28.4 37.9 jips pill full launch",
+    "buttons",
+    "50.5 X",
+    "radius",
+    "+3 more",
+    "red a #FF3B3B",
+    "67.3 px, per mode second mode",
+    "refusal only.",
+    "display only",
+    "the physical",
+    "Tamper is",
+    "object;",
+    "orange.",
+    "navy/phosphor",
+    "text #E6EDF7",
+    "stays the chain",
+    "human text on",
+    "navy",
+    "15:21:43 slate.enit.compile",
+    "15:49:11 slate.enit.compile",
+    "15:49:20 slate.enit.compile",
+    "15:49:27 slate.emit.store",
+    "chain event human act C refusal C unlit failed or quiet",
+    "15:49:27 dispatch.created opencode",
+    "15:52:26 slate.render.s start",
+    "the viewer spawns nothing every transition goes through the controller",
+    "15:52:43 slate .render.capture"
+   ],
+   "clip": {
+    "best": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+    "score": 0.2291499376296997
+   },
+   "detection_sha256": "d00f9264facb76de4e4563fc9f33db9907a6b8f3268dea6cbc6fb2a6fb0d771c"
+  },
+  {
+   "image": "vault-custody/renders/slate3d/room-check-1.png",
+   "image_sha256": "e0eb148f6eac47c420b8c1cdae2432db57897df0cd164ed55b77ea8d5387c273",
+   "receipt_id": "rc_mtqpm3q6_2idq",
+   "receipt_hash": "sha256_0c96608d0170b4ac6b08940cca83904d7d7b02225c0f6112da80fef78fdbef61",
+   "observed_at": "2026-09-07T03:57:19.127Z",
+   "image_size": {
+    "width": 1280,
+    "height": 800
+   },
+   "boxes": [
+    {
+     "x": 885.1724853515625,
+     "y": 416.76763916015625,
+     "w": 207.110107421875,
+     "h": 453.0391845703125,
+     "label": "sign",
+     "confidence": 0.18962466716766357
+    },
+    {
+     "x": 1181.4879150390625,
+     "y": 464.14312744140625,
+     "w": 197.024169921875,
+     "h": 285.5185546875,
+     "label": "banner",
+     "confidence": 0.04683544114232063
+    },
+    {
+     "x": 1029.8017578125,
+     "y": 414.69049072265625,
+     "w": 500.39642333984375,
+     "h": 445.9569091796875,
+     "label": "banner",
+     "confidence": 0.0314750075340271
+    }
+   ],
+   "ocr_lines": [
+    "SLATE 3D",
+    "room slate:Ledger live - websocket",
+    "Vault Custody Timmy build Ledger -: kind mission - 6 frames - 24 nodes - 1 blueprint - state from 906 receipts",
+    "source room slate:Ledger",
+    "Product colour",
+    "blueprint Design tokens",
+    "design/tokens.json",
+    "navy",
+    "#0A1628",
+    "ground, every",
+    "dark or verify",
+    "p1.capsule - 4 acceptaspencode",
+    "9n ago coclefold",
+    "surface",
+    "wensenbotbuntinonugprprl",
+    "SUN verifier Pyzeapisntdlsicodllkakehoptiftnde lane 9hradoplenda Unaaang and fleet entry",
+    "navy-2 D #101F38",
+    "L p3.capsuteonktlitt-etan Houe",
+    "raised sur Type scale x1.333 on 16 a",
+    "ault Custody tap-to-verify",
+    "lebcames",
+    "blueprint Design tokens 8 px",
+    "orders sealed 2-Code Mode on thet workery y Papa capsolen anfebduptdlencode",
+    "an",
+    "navy-line J #1B2E4D design/tokens.json",
+    "rint Design tokens",
+    "Hodth#SSF6B6FR",
+    "hairline",
+    "n/tokens.json",
+    "0/1 orders seat 31 Receipted Défold lane 4 Custodguempation adff opencode",
+    "phosphor a #33FF66 human Space Grotesk",
+    "2/2 orders sealed 400 Observer évidence (Roboflow) p6! capsuteapa egesmgencod",
+    "chain: has",
+    "human text",
+    "8px every",
+    "and inset",
+    "1/1 orders sealed",
+    "L Locked",
+    "CE solve/ . gatearenticat",
+    "sealed, chain JetBrains Mono",
+    "gap",
+    "5-Slate 3D'",
+    "verified,",
+    "chain text:",
+    "is a multiple",
+    "2/2 orders sealed . done : 6osparks judge mesh (fleet rank) eceipts.",
+    "ids, hashes, S 8 - corner",
+    "button.",
+    "receipts",
+    "radius",
+    "next fleet/*",
+    "ols",
+    "orange : #FF8C1A 0 1 12 . 16 : 21.3",
+    "4. corner",
+    "human: act",
+    "px",
+    "radius",
+    "owners, ta 2 - - 4 28.4 * 37.9 -",
+    "pill - full",
+    "buttons",
+    "50.5 px",
+    "radius",
+    "red",
+    "a #FF3B3B 5",
+    "67.3 - px, ape mode second mode *",
+    "refusal on",
+    "display only",
+    "the physical",
+    "Tamper is",
+    "object;",
+    "orange.",
+    "navy/phosphor",
+    "text",
+    "#E6EDF7",
+    "stays the chain",
+    "human text on",
+    "navy",
+    "05:33:38 dispatch.container_done openhands",
+    "05:35:52 slate.render.done",
+    "05:39:45 receipt.sealed rive.export - rive",
+    "05:44:42 slate.room.check",
+    "05:46:55 slate.room.debug",
+    "chain event human act - refusal C unlit - failed or quiet",
+    "05:47:59 slate.room.check",
+    "the viewer spawns nothing every transition goes through the controller",
+    "14:17:22 slate.room.check"
+   ],
+   "clip": {
+    "best": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+    "score": 0.2291484773159027
+   },
+   "detection_sha256": "27ab7892a4139337af80650023901cbd8704681817c861dc876479276f3e9319"
+  },
+  {
+   "image": "vault-custody/renders/slate3d/room-check-2.png",
+   "image_sha256": "e0eb148f6eac47c420b8c1cdae2432db57897df0cd164ed55b77ea8d5387c273",
+   "receipt_id": "rc_mtqpm60h_q0xh",
+   "receipt_hash": "sha256_a6d0da4ae0c9c6197e6971267ae046ed205d7019c07f65cbc4ce28c439a67fac",
+   "observed_at": "2026-09-07T03:57:22.025Z",
+   "image_size": {
+    "width": 1280,
+    "height": 800
+   },
+   "boxes": [
+    {
+     "x": 885.1724853515625,
+     "y": 416.76763916015625,
+     "w": 207.110107421875,
+     "h": 453.0391845703125,
+     "label": "sign",
+     "confidence": 0.18962466716766357
+    },
+    {
+     "x": 1181.4879150390625,
+     "y": 464.14312744140625,
+     "w": 197.024169921875,
+     "h": 285.5185546875,
+     "label": "banner",
+     "confidence": 0.04683544114232063
+    },
+    {
+     "x": 1029.8017578125,
+     "y": 414.69049072265625,
+     "w": 500.39642333984375,
+     "h": 445.9569091796875,
+     "label": "banner",
+     "confidence": 0.0314750075340271
+    }
+   ],
+   "ocr_lines": [
+    "SLATE 3D",
+    "room slate:Ledger live - websocket",
+    "Vault Custody Timmy build Ledger -: kind mission - 6 frames - 24 nodes - 1 blueprint - state from 906 receipts",
+    "source room slate:Ledger",
+    "Product colour",
+    "blueprint Design tokens",
+    "design/tokens.json",
+    "navy",
+    "#0A1628",
+    "ground, every",
+    "dark or verify",
+    "p1.capsule - 4 acceptaspencode",
+    "9n ago coclefold",
+    "surface",
+    "wensenbotbuntinonugprprl",
+    "SUN verifier Pyzeapisntdlsicodllkakehoptiftnde lane 9hradoplenda Unaaang and fleet entry",
+    "navy-2 D #101F38",
+    "L p3.capsuteonktlitt-etan Houe",
+    "raised sur Type scale x1.333 on 16 a",
+    "ault Custody tap-to-verify",
+    "lebcames",
+    "blueprint Design tokens 8 px",
+    "orders sealed 2-Code Mode on thet workery y Papa capsolen anfebduptdlencode",
+    "an",
+    "navy-line J #1B2E4D design/tokens.json",
+    "rint Design tokens",
+    "Hodth#SSF6B6FR",
+    "hairline",
+    "n/tokens.json",
+    "0/1 orders seat 31 Receipted Défold lane 4 Custodguempation adff opencode",
+    "phosphor a #33FF66 human Space Grotesk",
+    "2/2 orders sealed 400 Observer évidence (Roboflow) p6! capsuteapa egesmgencod",
+    "chain: has",
+    "human text",
+    "8px every",
+    "and inset",
+    "1/1 orders sealed",
+    "L Locked",
+    "CE solve/ . gatearenticat",
+    "sealed, chain JetBrains Mono",
+    "gap",
+    "5-Slate 3D'",
+    "verified,",
+    "chain text:",
+    "is a multiple",
+    "2/2 orders sealed . done : 6osparks judge mesh (fleet rank) eceipts.",
+    "ids, hashes, S 8 - corner",
+    "button.",
+    "receipts",
+    "radius",
+    "next fleet/*",
+    "ols",
+    "orange : #FF8C1A 0 1 12 . 16 : 21.3",
+    "4. corner",
+    "human: act",
+    "px",
+    "radius",
+    "owners, ta 2 - - 4 28.4 * 37.9 -",
+    "pill - full",
+    "buttons",
+    "50.5 px",
+    "radius",
+    "red",
+    "a #FF3B3B 5",
+    "67.3 - px, ape mode second mode *",
+    "refusal on",
+    "display only",
+    "the physical",
+    "Tamper is",
+    "object;",
+    "orange.",
+    "navy/phosphor",
+    "text",
+    "#E6EDF7",
+    "stays the chain",
+    "human text on",
+    "navy",
+    "05:33:38 dispatch.container_done openhands",
+    "05:35:52 slate.render.done",
+    "05:39:45 receipt.sealed rive.export - rive",
+    "05:44:42 slate.room.check",
+    "05:46:55 slate.room.debug",
+    "chain event human act - refusal C unlit - failed or quiet",
+    "05:47:59 slate.room.check",
+    "the viewer spawns nothing every transition goes through the controller",
+    "14:17:22 slate.room.check"
+   ],
+   "clip": {
+    "best": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+    "score": 0.2291484773159027
+   },
+   "detection_sha256": "27ab7892a4139337af80650023901cbd8704681817c861dc876479276f3e9319"
+  }
+ ],
+ "updated": "2026-09-07T03:57:23.210Z"
+}

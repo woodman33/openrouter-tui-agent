@@ -173,7 +173,15 @@ async function build() {
     fetch('./receipts?limit=2000').then((r) => r.json()).catch(() => ({ receipts: [] })),
   ]);
   // blueprint boards the mission cites render as sheets beside the slabs
-  const blueprints = (await Promise.all((board.blueprints ?? []).map((n) => fetch(`./boards/${n}.blueprint.json`).then((r) => r.json()).catch(() => null)))).filter(Boolean);
+  // a cited board is <name>.blueprint.json or, for evidence boards written by
+  // lanes, <name>.board.json
+  const loadBoard = async (n) => {
+    for (const f of [`${n}.blueprint.json`, `${n}.board.json`]) {
+      try { const r = await fetch(`./boards/${f}`); if (r.ok) return await r.json(); } catch { /* next */ }
+    }
+    return null;
+  };
+  const blueprints = (await Promise.all((board.blueprints ?? []).map(loadBoard))).filter(Boolean);
 
   // State from receipts, computed by the shared rules in state.js: the same
   // module the state-table lane runs for the dossier, so the scene and the
@@ -324,7 +332,7 @@ async function build() {
     // their screen labels do not bury the row in front
     const compact = s.row > 0;
     const rows = (s.rows ?? []).slice(0, compact ? 2 : 8).map((r) => `<dt>${r.label}</dt><dd>${/^#[0-9a-f]{6}$/i.test(String(r.value)) ? `<i style="background:${r.value}"></i>` : ''}${r.value}${!compact && r.note ? ` <span>· ${r.note}</span>` : ''}</dd>`).join('') + (compact && (s.rows ?? []).length > 2 ? `<dt></dt><dd><span>+${(s.rows ?? []).length - 2} more</span></dd>` : '');
-    const l = label(`<h4>${s.title}<small>blueprint · ${s.board}${s.source ? ` · ${s.source}` : ''}</small></h4><dl>${rows}</dl>`, 'sheet');
+    const l = label(`<h4>${s.title}<small>${s.kind ?? 'blueprint'} · ${s.board}${s.source ? ` · ${s.source}` : ''}${s.more ? ` · +${s.more} more in the board file` : ''}</small></h4><dl>${rows}</dl>`, 'sheet');
     l.position.set(s.x, s.y + 0.4, s.z + 0.3);
     scene.add(l);
   }

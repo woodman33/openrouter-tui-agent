@@ -1,0 +1,73 @@
+{
+ "image": "renders/walkthrough/shots/03-gateway-tap-this.png",
+ "lane": "shots",
+ "image_sha256": "e14c761f497371adea259bb2af6ba1dc984c096729adf62267b7b744c87db852",
+ "observed_at": "2026-09-07T03:55:18.718Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 857,
+  "sha256": "99886255ac6e6038e1c79c9da598bd7bf241f0a83c4e4fddb30db1ff9500f0c6",
+  "text": "Sees the product after thel loading dock for the first time:\nMovedit.\nSealed andsoldi It.\nwhich store sold which box,when it opened, where the\nhits landed.\nX\nDistributor\nRetailer\nBOX\nEnter: as Manufacturer\nEnter as Distributor\nEnter as Retailer\nResoldi it with the chain attached. Rookie auto\nSeller\nNCOo7\n#1\nSeudled\nVault tap\nEnter as Seller\nBox\nverdedi\nA\nep \nle\n25\n\nClaimed and openedit it.\nBOX\nCollector\nVerifiedi it ati intake.\nOne tap claims thel box. Everyi pack and every card\nattachest to the chain as it comes out.\nGrader\nEnter: as Collector\nEnter as Grader\nTap this.\nNXP's published AN12196 vector, mapped to box VC0007.It\nopens the real tap address on the live edge: the signature\nverifies, a receipt seals, the phone lands on the receipt page.\nhttps://preview.vault-custody.pages.dev/t7e-EF963FF7828658A599F3041510671E886c=94EED9EE653370866tt-CC"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.2378503978252411,
+   0.20026753842830658,
+   0.20661966502666473,
+   0.18785934150218964
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.2378503978252411
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 469.9818420410156,
+    "y": 345.103271484375,
+    "w": 274.18695068359375,
+    "h": 216.52987670898438,
+    "label": "rectangle",
+    "confidence": 0.044142138212919235
+   },
+   {
+    "x": 249.2661895751953,
+    "y": 292.83612060546875,
+    "w": 311.8477478027344,
+    "h": 335.77593994140625,
+    "label": "banner",
+    "confidence": 0.03436344861984253
+   },
+   {
+    "x": 1268.707275390625,
+    "y": 39.03438949584961,
+    "w": 76.6104736328125,
+    "h": 78.06877899169922,
+    "label": "banner",
+    "confidence": 0.020441066473722458
+   }
+  ]
+ },
+ "detection_sha256": "788acb61de9921fd20117c1b8a8df2ef8e8d9c86a623a48b3f8405002f087013"
+}

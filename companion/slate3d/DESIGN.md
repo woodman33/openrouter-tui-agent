@@ -146,7 +146,14 @@ Acceptance for the first render
 4. blueprint boards as sheets; capsule state from the receipt lifecycle (done: `tokens.blueprint.json` renders as three sheets beside the slabs; frame state is derived from `order.execute` receipts through `GET /slate3d/receipts`, with the fork attestation standing for orders sealed in the frozen fork store)
 5. the WebSocket room source in the viewer (done: the room's socket first, cursor poll as fallback; both browsers report "live · websocket" in `slate.room` v3), capsule-level evidence (done: each capsule lists rules over root receipts by subject, optionally matching a sources field, and over edge chains from the worker's public daily head; done / active / blocked / next per capsule, shown as "evidence n/m"), doctrine and architecture blueprints (done: `doctrine.blueprint.json` cites auth.md, AGENTS.md, MISSION-MAP-INTERFACE.md and ORD-016; `architecture.blueprint.json` maps surfaces, chains, lanes)
 6. authoring from the scene (done: a capsule panel emits compile and store through the companion server to the controller gateway; every emit is a `slate.emit.*` envelope on the bus; `lanes/slate/emit-check.mjs` proves a stored plan yields `dispatch.created` and nothing armed or launched, sealed as `slate.emit`), capsule receipts linked to acceptance lines one to one (done: `acceptance_evidence` aligned with `acceptance`, rules in `src/state.js` shared with `lanes/slate/state-table.mjs`, the table sealed as `slate.state`), the room as the default source (done: the board names its room and worker; `?source=ws` keeps the companion socket)
-7. hold: remaining ledger items wait on Will (p4 Roboflow credits, p6 Sparks on the tailnet)
+7. observer evidence on the lane screenshots (done, after Will moved Roboflow to
+   the paid plan: `lanes/observer/observe.mjs` runs OCR, CLIP and a `yolo_world`
+   detector over all 23 lane renders, writes one `<image>.observer.json` beside
+   each, seals one `observer.evidence` receipt per image carrying the OCR, box
+   and image hashes, and writes `companion/boards/observer.board.json` — one
+   sheet and one shape per screenshot, each shape carrying its receipt id and
+   hash. The ledger cites the board, and p4 reads done)
+8. hold: the last ledger item waits on Will (p6, Sparks on the tailnet)
 
 ## Board contract with the compiler
 
@@ -164,3 +171,10 @@ The ledger was rewritten to this contract in step 6.
   records.
 - Polling a room must use the `since` cursor; re-fetching the tail each poll
   made a cycle take seconds and hid a live event from the first check.
+- Two state rules were wrong until item 4 exercised them. A `has` rule matched
+  receipts whose field was present but empty, so a blocked seal could satisfy
+  the line it was meant to fail; it now requires a present, non-empty field. And
+  a frame stayed blocked forever once any order in it had been sealed blocked;
+  only the LATEST sealed order decides, so the order that resolves a block lifts
+  it. Both rules live in `src/state.js`, so the fix moved the picture and the
+  table together.

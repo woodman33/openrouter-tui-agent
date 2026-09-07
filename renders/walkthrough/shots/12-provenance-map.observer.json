@@ -1,0 +1,57 @@
+{
+ "image": "renders/walkthrough/shots/12-provenance-map.png",
+ "lane": "shots",
+ "image_sha256": "6e75fccfba172734099b542146ca5d6bf51301c5dc19376c1fbb2776061155e1",
+ "observed_at": "2026-09-07T03:56:25.452Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 755,
+  "sha256": "a5ed2da34276071cb733aa5e8736a2cb057a90031bb3a5a6807b62fb6b31e8bd",
+  "text": "VAULT CUSTODY x TIMMY\nprovenance VC0007\nGateway Profile Boxes Singles Locations Provenance Where thel boxes went\nCollector sign out\nVC0007 - 2026 hobby box\n14 chain events, every one stamped with its hat. One list, two\nviews.\nOPENED\nTimeline : 3D Travel map\nManufacturer - Distributor - Retailer Collector A Seller Grader chain\n903.0502\nOpened - seal loop broken\ntamper BROKEN stored on chip tap 4. -\nreveal tag signed counter' 1\nhat\ncollector\n903.0405 ship\ncity\nHenderson,NV\nwhen\n2026-09-14T19:22:07-07:00\n-\nprev + this 0f6c2d81 + c41a9b30\nDuryea,PA\nQ\nevents\nReno,NV\n190300010 commit\n0\n903 602-open\nLas Vegas,Wy\n903.1191 chainchead\nG10901.1190 De\nSanta Ana, CA Henderkor.wysten\n1 event 4 events\nA\nPhoenix,AZ\nevent\n903 A401\nM\nà Series 01 lot 14\nin ovea PA"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.22791481018066406,
+   0.18122944235801697,
+   0.1770198792219162,
+   0.21372295916080475
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.22791481018066406
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 1220.9688720703125,
+    "y": 601.1055908203125,
+    "w": 305.5361328125,
+    "h": 526.318115234375,
+    "label": "banner",
+    "confidence": 0.06846471130847931
+   }
+  ]
+ },
+ "detection_sha256": "3dc0561580a4592d30334bd4df7d7346cc4999e9665382f2726d5789c11efafb"
+}

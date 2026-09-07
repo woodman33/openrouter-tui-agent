@@ -1,0 +1,65 @@
+{
+ "image": "vault-custody/renders/companion/companion-vc0007.png",
+ "lane": "companion",
+ "image_sha256": "60bc3fa9182aa81d9314466e341c4e0d25993eebfb97b16eba48a6108f422fbd",
+ "observed_at": "2026-09-07T03:57:11.907Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 216,
+  "sha256": "bb74714e15c8126fd30d77dadef8bf945d2df94540abf234fbb530373d2fd02f",
+  "text": "VAULT CUSTODY TIMMY\nVC0007\nOPENED\n2026 hobby box series 001\nVERIFIED\nsealed Paradise Card Breaks Las Vegas\nopened Henderson, NV\n18 signed taps chain ok\nhead 50193f1c this tap 7cfdef98\ntrust the receipt, not the model"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a phone app screen showing a custody receipt with a serial number and status text",
+   "a 3D isometric board with glowing pods",
+   "a web page with a photo of a sealed box",
+   "a blank dark screen"
+  ],
+  "similarity": [
+   0.26690447330474854,
+   0.18711869418621063,
+   0.20865026116371155,
+   0.220239520072937
+  ],
+  "best": "a phone app screen showing a custody receipt with a serial number and status text",
+  "best_score": 0.26690447330474854
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 719.8997192382812,
+    "y": 449.5877990722656,
+    "w": 504.1488952636719,
+    "h": 152.05364990234375,
+    "label": "banner",
+    "confidence": 0.04037698358297348
+   },
+   {
+    "x": 719.6343994140625,
+    "y": 449.6701354980469,
+    "w": 503.9060974121094,
+    "h": 151.58355712890625,
+    "label": "sign",
+    "confidence": 0.03681010752916336
+   }
+  ]
+ },
+ "detection_sha256": "b4a0d7ecee4409e6cb492c432d07387ba350f4e05554630e5b0ca104590d9311"
+}

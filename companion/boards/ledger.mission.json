@@ -57,7 +57,8 @@
    ],
    "status": "active",
    "orders": [
-    "ORD-20260906-019"
+    "ORD-20260906-019",
+    "ORD-20260907-029"
    ]
   },
   {
@@ -563,7 +564,8 @@
  "blueprints": [
   "tokens",
   "doctrine",
-  "architecture"
+  "architecture",
+  "observer"
  ],
  "room": "slate:ledger",
  "worker": "https://timmy-ai-proxy-preview.wmeldman33.workers.dev"

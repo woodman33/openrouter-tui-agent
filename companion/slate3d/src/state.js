@@ -26,7 +26,10 @@ export function frameStatus(f, receipts) {
   const found = f.orders.map((id) => orderReceipt(receipts, id));
   const sealed = found.filter(Boolean).length;
   const total = f.orders.length;
-  if (found.some((r) => r && r.sources.some((s) => s && s.state === 'blocked'))) return { status: 'blocked', sealed, total, why: 'an order was sealed as blocked' };
+  // blocked only while the LATEST sealed order says so; a later order that
+  // resolves the block lifts it
+  const latest = found.filter(Boolean).sort((a, b) => String(a.ts).localeCompare(String(b.ts))).pop();
+  if (latest && latest.sources.some((s) => s && s.state === 'blocked')) return { status: 'blocked', sealed, total, why: 'the latest order was sealed as blocked' };
   if (sealed === total) return { status: 'done', sealed, total, why: 'every order sealed' };
   if (f.attested && byId.has(f.attested)) return { status: 'done', sealed, total, attested: f.attested, why: `attested by ${f.attested}` };
   if (sealed > 0) return { status: 'active', sealed, total, why: 'some orders sealed' };
@@ -40,7 +43,7 @@ export function rootCount(receipts, subject, sources, has) {
     if (!Array.isArray(r.sources)) return false;
     return r.sources.some((s) => s && typeof s === 'object'
       && (!sources || Object.entries(sources).every(([k, v]) => String(s[k]) === String(v)))
-      && (!has || Object.entries(has).every(([k, v]) => String(s[k] ?? '').includes(String(v)))));
+      && (!has || Object.entries(has).every(([k, v]) => s[k] != null && String(s[k]) !== '' && String(s[k]).includes(String(v)))));
   }).length;
 }
 

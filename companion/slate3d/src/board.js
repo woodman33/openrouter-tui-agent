@@ -14,6 +14,7 @@ const SLOT = {
 
 // blueprint sheets stand to the right of the last slab
 export const SHEET = { w: 6.4, h: 4.6, gap: 5.6, z: -1.0 };
+export const SHEETS_PER_ROW = 4;
 
 // one row per blueprint board, rows stepping back in z, so several boards
 // stay readable and the camera span grows only with the widest row
@@ -23,12 +24,17 @@ export function layoutSheets(blueprints, totalW) {
   // instead of stacking on top of each other
   const x0 = totalW + SLAB.gap + SHEET.w / 2;
   let row = 0;
+  // at most SHEETS_PER_ROW sheets per board on the floor (the latest first for
+  // evidence boards); the rest stay in the board file and are counted
   for (const bp of blueprints) {
     let x = x0 + row * ((SHEET.w + SHEET.gap) / 2);
-    for (const s of bp.sheets ?? []) {
-      sheets.push({ ...s, board: bp.name, source: bp.source, row, x, y: SHEET.h / 2, z: SHEET.z - row * (SHEET.h + 6.5) });
+    const all = bp.sheets ?? [];
+    const shown = bp.kind === 'observer' ? all.slice(-SHEETS_PER_ROW).reverse() : all.slice(0, SHEETS_PER_ROW);
+    shown.forEach((s, i) => {
+      const more = i === shown.length - 1 && all.length > shown.length ? all.length - shown.length : 0;
+      sheets.push({ ...s, board: bp.name, kind: bp.kind, source: bp.source, row, x, y: SHEET.h / 2, z: SHEET.z - row * (SHEET.h + 6.5), more });
       x += SHEET.w + SHEET.gap;
-    }
+    });
     row++;
   }
   return sheets;

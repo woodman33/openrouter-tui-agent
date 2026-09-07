@@ -1,0 +1,73 @@
+{
+ "image": "renders/walkthrough/shots/09-card.png",
+ "lane": "shots",
+ "image_sha256": "149fd7698f1f6150ad96d7a93c17f0d74db83dab04092db883f4cc0ecc28ab19",
+ "observed_at": "2026-09-07T03:56:13.695Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 444,
+  "sha256": "2f517a8029eaa01a2dc476d0ac6c46f9e4f938a73b1dec59a79c8c81bfa5f96e",
+  "text": "VAULT CUSTODY\ncard - VC0007-17-03\nCUSTODY-VERIFIED\nRookie Autograph 14/99\n2026 hobby  pulled from box VC0007, pack 17\nAttached\nSep 14, 2026 - 20:12 - at unboxing\nFingerprint\n1200-dpi scan * match 99.6% on last check\nBox\nVC0007 - sealed Paradise - opened Henderson\nGraded\nPSA 10 - cert linked Oct 20\nLocation\nPhoenix, AZ - owner-shared\nOwners\nW. M. : Henderson, NV\nSep 14 * Oct 2 from the box\nJ. R. - Phoenix, AZ\nOct 2 1 now eBay #38-1142 - $412"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.2414247840642929,
+   0.20926694571971893,
+   0.1978641301393509,
+   0.19273336231708527
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.2414247840642929
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 719.675537109375,
+    "y": 429.3740539550781,
+    "w": 701.0751342773438,
+    "h": 283.54583740234375,
+    "label": "banner",
+    "confidence": 0.15204736590385437
+   },
+   {
+    "x": 718.4923095703125,
+    "y": 723.090576171875,
+    "w": 697.0435180664062,
+    "h": 271.62969970703125,
+    "label": "banner",
+    "confidence": 0.023771772161126137
+   },
+   {
+    "x": 693.593017578125,
+    "y": 448.68359375,
+    "w": 1387.18603515625,
+    "h": 892.3193359375,
+    "label": "banner",
+    "confidence": 0.02170526422560215
+   }
+  ]
+ },
+ "detection_sha256": "8c983531279d03092ba32a72012d0c862aacebdc6c5aecfc086d82eb1f392aff"
+}

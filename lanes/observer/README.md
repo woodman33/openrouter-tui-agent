@@ -1,0 +1,53 @@
+# Observer lane
+
+A second pair of eyes on what the other lanes rendered. It reads the PNGs the
+Defold, badge and Slate lanes leave behind, asks Roboflow's serverless models
+what is in them, and seals the answer as a receipt. The images stay out of git
+(`*.png` is ignored); the evidence does not.
+
+## Run
+
+```
+node lanes/observer/observe.mjs                       # every image under renders/ and vault-custody/renders/
+node lanes/observer/observe.mjs --dir renders/walkthrough/shots
+node lanes/observer/observe.mjs --detect yolo_world --boxes banner,sign,text,rectangle,badge
+```
+
+Flags: `--detect <model>` (`yolo_world` by default; `grounding_dino` answers 500
+on interface prompts), `--boxes <a,b,c>` text prompts for the detector,
+`--box-threshold <n>` (0.02), `--dir <a,b>` to narrow the sweep, `--limit <n>`,
+`--no-seal` to look without sealing, `--host <url>`.
+
+## The key
+
+`ROBOFLOW_API_KEY` comes from the environment, else from the worktree's `.env`,
+which is gitignored and never printed. The publishable key, the OAuth client id
+and secret and the workspace id live in the same file. Only the private API key
+is used here; the serverless endpoints take it as a query parameter.
+
+## What it calls
+
+| Endpoint | Answers |
+|---|---|
+| `POST /doctr/ocr` | the text in the frame, line by line |
+| `POST /clip/compare` | which of the candidate labels the frame looks like |
+| `POST /yolo_world/infer` | boxes for the prompted objects, with confidence |
+
+All three are `https://serverless.roboflow.com`. On a free plan the detector
+answers `402 credit_cap_exceeded`; the lane then seals a single
+`observer.blocked` receipt carrying the API's own message and stops, so the
+ledger can show p4 blocked rather than silently empty. 401 and 403 behave the
+same way.
+
+## What it writes
+
+- `<image>.observer.json` beside each PNG: the OCR lines, the CLIP verdict, the
+  boxes, the image `detection_sha256`, and the receipt the run sealed.
+- one `observer.evidence` receipt per image in the root store, with
+  `ocr_sha256`, `boxes`, `box_labels` and `detection_sha256` in its sources.
+- `companion/boards/observer.board.json`: one sheet per screenshot and one shape
+  per detection, each shape carrying the receipt id and hash. Slate 3D renders
+  it beside the ledger's slabs (four sheets stand, the rest stay in the file).
+
+Seals go through `node lanes/anchor/seal-root.mjs <subject> --meta k=v` with the
+repo root as cwd, so the chain stays pinned to the root store.

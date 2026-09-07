@@ -1,0 +1,89 @@
+{
+ "image": "vault-custody/renders/slate3d/emit-check.png",
+ "lane": "slate3d",
+ "image_sha256": "e49915785f9e307832ca55f5187756e06c586728ba1eb068c603a565bd3d84a3",
+ "observed_at": "2026-09-07T03:57:14.413Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 2406,
+  "sha256": "7c5ab12b7a09f48a56421d5127b064809a70660e47c54a414d5e613335ff62ba",
+  "text": "SLATE SD\nbus live\nVault Custody Timmy build Ledger kind mission 6 frames 24 nodes 3 blueprints state from 916 receipts\nsource companion websocket\nnext evidence 0/1 - 2not\np6.capsule receipted\nJudges resolve by fleet rank: local judges if present,\nelse the OpenRouter cheap tier; everyj judgereceipt\nrecords which tier judged. Will-only benefit,nota\nproduct feature.\nfleet entry 'local-judges' with detect probes\nnor receipt maps to this Line yet\nfusion receipt carries judge_tier\na fusion receipt records judge_tier from the fleet\nProduct colour\nrank\ndesign/tokens. blueprint Design json tokens\nno behavior change when no Local judge is\nopencode\nSurface reachable\n30s\navy #0A1628\nbluepr no receipt maps to this line yet\nground, every companio\np1.capsule - evidence 4opencode\nfold\ndark or verify\nErmlsenerstsontgrtanin\n10h agococde\nN\nSUN fiert tsep2 capsute 322100skE950pepcode Lane\ndi po FL eet n itry\nsurface\ncompile to a DispatchPlan sendi to the controller\n8Ptita p3.capsule yabences a 10\nHyPWebeants\nnavy-2 #101F38\nESI\ntap-to-verify\nEeraetcantartaum\n1-Vault Custody\ninng -\nraised surface Type scale Emits only. Compile is a dry run; store returns a\n0/5 orders sealed 2Code Mode' on the worker\napst\ngpepgeder\nhoUAcus scenefrrge navy- line #1B2E4D\norint plan id and hash. Arming and Launch still need the\n0/1 orders sealed 3. Receipted\" Defold Tane * Custody Conpafneyt\nà eg ppencode\nhair n design/ token operator token in the controller.\nSD.\nphosphor - #33FF66 human\n2/2 orders sealed do 4. Observer evidence (Roboflow) titga capsulen setid ice DEO ppencode\nchain: ashes\nLd/b\n1/1 orders sealed\nd tanesyage DU LV ve/by\nsealed\nchain,\n€ \"ok\":\n/ref\n5Slate 3D\nveri fied,\ntrue,\n2/2 orders sealed done cor\nreceipts.\n\"action\": \"store\",\n6-Sparks judge mesh (fleet rank) a button\n\"capsule\": \"p6.capsule\",\nFleet/\norange : #FF8C1A\n\"gateway\":\n\"http://127.0. 0.0.1 4310/mission/store\",\nowners, taps,\n\"id\": \"dp_mtqeyf9k_ 87of\",\nbuttons\n\"plan_hash\": \"fbe56d1bca2260b310d1de4620ac66d3\",\nred - #FF3B3B\n\"validation\":\nrefusal only.\n\"ok\": true\nTamper is\norange.\ntext #E6EDF7\nhuman text on\nnavy\n15:52:26 slate.render. .start\n15:52:43 slate.renden.capture\n15:53:20 slate.render.done\n15:58:43 slate.enit.compile\nchain event human act C refusal C unlit failed or quiet\n15:58:50 slate.enit.compile\n15:58:59 slate.emit.store\nthe viewer spawns nothing every transition goes through the controller\n15:58:59 dispatch.created opencode"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a 3D isometric board with glowing pods and labels on a dark navy ground",
+   "a phone app screen with status text",
+   "a web page with a photo of a sealed box",
+   "a blank dark screen"
+  ],
+  "similarity": [
+   0.2239699810743332,
+   0.21119382977485657,
+   0.16335676610469818,
+   0.20345938205718994
+  ],
+  "best": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+  "best_score": 0.2239699810743332
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1600,
+   "height": 1000
+  },
+  "boxes": [
+   {
+    "x": 1385.62255859375,
+    "y": 389.9847717285156,
+    "w": 387.7216796875,
+    "h": 642.8630981445312,
+    "label": "sign",
+    "confidence": 0.45718690752983093
+   },
+   {
+    "x": 1587.03125,
+    "y": 462.1656494140625,
+    "w": 25.9375,
+    "h": 178.81069946289062,
+    "label": "banner",
+    "confidence": 0.19863706827163696
+   },
+   {
+    "x": 1043.4576416015625,
+    "y": 511.84161376953125,
+    "w": 206.19696044921875,
+    "h": 452.9023132324219,
+    "label": "sign",
+    "confidence": 0.1136382669210434
+   },
+   {
+    "x": 1155.089111328125,
+    "y": 496.5162658691406,
+    "w": 82.935546875,
+    "h": 339.82586669921875,
+    "label": "banner",
+    "confidence": 0.06970755010843277
+   },
+   {
+    "x": 1263.609375,
+    "y": 415.91021728515625,
+    "w": 645.6695556640625,
+    "h": 644.1705322265625,
+    "label": "banner",
+    "confidence": 0.02014997974038124
+   }
+  ]
+ },
+ "detection_sha256": "ecdbe8dae071915e088ef77f4d743050a32565db4ba7da6aad1eea52d864d792"
+}

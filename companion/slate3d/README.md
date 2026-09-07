@@ -71,7 +71,11 @@ head of the edge chains at `/head`. The viewer derives:
   the capsule blocked while its evidence is incomplete
 
 Blueprint boards (`kind: blueprint`) cited by a mission render as reference
-sheets beside the slabs: tokens, doctrine, architecture.
+sheets beside the slabs: tokens, doctrine, architecture. Evidence boards
+written by lanes render the same way: `observer.board.json` (kind observer)
+carries one sheet and one shape per lane screenshot with the boxes, the OCR
+lines, the CLIP label and the `observer.evidence` receipt id and hash. At most
+four sheets per board stand on the floor; the rest stay in the file.
 
 ## Emitting to the controller
 

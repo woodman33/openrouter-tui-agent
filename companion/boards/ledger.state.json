@@ -1,6 +1,6 @@
 {
- "computed_at": "2026-09-06T22:53:51.441Z",
- "receipts": 915,
+ "computed_at": "2026-09-07T03:58:49.552Z",
+ "receipts": 947,
  "head": {
   "date": "2026-09-06",
   "combined_sha256": "11a3badebe07db8efaa234d765254d3baa211de69b91e4cf7fefdb6e69ba6bfd",
@@ -36,10 +36,10 @@
   {
    "id": "f4",
    "title": "4 · Observer evidence (Roboflow)",
-   "status": "blocked",
-   "sealed": 1,
-   "total": 1,
-   "why": "an order was sealed as blocked"
+   "status": "done",
+   "sealed": 2,
+   "total": 2,
+   "why": "every order sealed"
   },
   {
    "id": "f5",
@@ -211,8 +211,8 @@
   {
    "id": "p4.capsule",
    "frame": "f4",
-   "status": "blocked",
-   "held": 0,
+   "status": "done",
+   "held": 2,
    "total": 2,
    "unreceipted": 0,
    "checks": [
@@ -223,7 +223,7 @@
       "min": 1,
       "why": "one screenshot observed (OCR + CLIP) and sealed"
      },
-     "held": false,
+     "held": true,
      "why": "one screenshot observed (OCR + CLIP) and sealed"
     },
     {
@@ -235,7 +235,7 @@
       },
       "why": "the evidence receipt carries the OCR result hash"
      },
-     "held": false,
+     "held": true,
      "why": "the evidence receipt carries the OCR result hash"
     }
    ],

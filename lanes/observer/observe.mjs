@@ -36,6 +36,20 @@ function loadKey() {
 }
 const KEY = loadKey();
 const sha = (b) => createHash('sha256').update(b).digest('hex');
+// detection: a zero-shot detector on the same host; boxes become board shapes
+// yolo_world finds the badge pill as a "banner" on the companion frames at low
+// confidence; grounding_dino answered 500 on UI prompts when probed
+const DETECT = opt('--detect', 'yolo_world');
+const BOX_PROMPTS = opt('--boxes', 'banner,sign,text,rectangle,badge').split(',').map((s) => s.trim()).filter(Boolean);
+const BOX_THRESHOLD = Number(opt('--box-threshold', 0.02));
+const REPO = process.env.TIMMY_REPO ?? '/Users/williammeldman/Desktop/Code-Projects/timmy-tui';
+const BOARD = join(ROOT, 'companion', 'boards', 'observer.board.json');
+// the receipt just sealed by seal-root (last record with an id and a hash in the root store)
+function lastReceipt() {
+  const lines = readFileSync(join(REPO, '.timmy', 'receipts', 'runs.jsonl'), 'utf8').split('\n').filter(Boolean);
+  for (let i = lines.length - 1; i >= 0; i--) { try { const o = JSON.parse(lines[i]); if (o && o.id && o.hash) return { id: o.id, hash: o.hash, ts: o.ts, subject: o.subject }; } catch { /* skip */ } }
+  return null;
+}
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name.startsWith('.') ? [] : e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
 const seal = (subject, meta) => {
   if (NO_SEAL) return;
@@ -85,17 +99,49 @@ for (const img of batch) {
   }
   const prompts = PROMPTS[lane] ?? PROMPTS.default;
   const clip = await call('/clip/compare', { subject: { type: 'base64', value: b64 }, subject_type: 'image', prompt: prompts, prompt_type: 'text' });
+  const det = await call(`/${DETECT}/infer`, { image: { type: 'base64', value: b64 }, text: BOX_PROMPTS, box_threshold: BOX_THRESHOLD, text_threshold: BOX_THRESHOLD, confidence: BOX_THRESHOLD });
+  const boxes = (Array.isArray(det.json?.predictions) ? det.json.predictions : []).map((p) => ({ x: p.x, y: p.y, w: p.width, h: p.height, label: p.class ?? p.class_name ?? '', confidence: p.confidence ?? null }));
   const text = String(ocr.json?.result ?? '').trim();
   const sims = Array.isArray(clip.json?.similarity) ? clip.json.similarity : [];
   const best = sims.length ? sims.reduce((m, v, i) => (v > sims[m] ? i : m), 0) : -1;
+  const detection = { model: DETECT, status: det.status, prompts: BOX_PROMPTS, threshold: BOX_THRESHOLD, image_size: det.json?.image ?? null, boxes };
+  const detection_sha256 = sha(JSON.stringify({ ocr: text, clip: sims, boxes }));
   const out = { image: rel, lane, image_sha256, observed_at: new Date().toISOString(), host: HOST,
     ocr: { status: ocr.status, chars: text.length, sha256: sha(text), text },
-    clip: { status: clip.status, prompts, similarity: sims, best: best >= 0 ? prompts[best] : null, best_score: best >= 0 ? sims[best] : null } };
+    clip: { status: clip.status, prompts, similarity: sims, best: best >= 0 ? prompts[best] : null, best_score: best >= 0 ? sims[best] : null },
+    detection, detection_sha256 };
   writeFileSync(img.replace(/\.png$/i, '.observer.json'), JSON.stringify(out, null, 1));
-  results.push(out);
   seal('observer.evidence', { image: rel, lane, image_sha256, observer: 'roboflow', host: HOST, ocr_status: ocr.status, ocr_chars: text.length, ocr_sha256: out.ocr.sha256,
-    ocr_head: text.slice(0, 120) || '(none)', clip_status: clip.status, clip_best: out.clip.best ?? '(none)', clip_score: out.clip.best_score ?? '', evidence_json: rel.replace(/\.png$/i, '.observer.json') });
-  console.log(`${rel}: ocr ${text.length} chars · clip ${out.clip.best ?? 'n/a'} ${out.clip.best_score ?? ''}`);
+    ocr_head: text.slice(0, 120) || '(none)', clip_status: clip.status, clip_best: out.clip.best ?? '(none)', clip_score: out.clip.best_score ?? '',
+    detector: DETECT, detect_status: det.status, boxes: boxes.length, box_labels: [...new Set(boxes.map((b) => b.label))].join(',') || '(none)', detection_sha256,
+    evidence_json: rel.replace(/\.png$/i, '.observer.json') });
+  const receipt = NO_SEAL ? null : lastReceipt();
+  out.receipt = receipt;
+  results.push(out);
+  console.log(`${rel}: ocr ${text.length} chars · clip ${out.clip.best ?? 'n/a'} ${out.clip.best_score ?? ''} · ${DETECT} ${boxes.length} box(es)${receipt ? ` · receipt ${receipt.id}` : ''}`);
+}
+
+// Board shapes: every observation becomes a sheet (what the observer read) and
+// a shape entry (the raw boxes and OCR lines) carrying the receipt id and hash.
+if (results.length) {
+  let board = { kind: 'observer', name: 'Observer evidence', source: 'lanes/observer/observe.mjs · roboflow serverless', note: 'An independent observer (Roboflow OCR, CLIP, zero-shot detection) read each lane screenshot; every entry carries the observer.evidence receipt that sealed it.', sheets: [], shapes: [] };
+  if (existsSync(BOARD)) { try { board = JSON.parse(readFileSync(BOARD, 'utf8')); } catch { /* start fresh */ } }
+  for (const o of results) {
+    board.sheets = (board.sheets ?? []).filter((s) => s.id !== o.image);
+    board.shapes = (board.shapes ?? []).filter((s) => s.image !== o.image);
+    const lines = o.ocr.text.split('\n').filter(Boolean);
+    board.sheets.push({ id: o.image, title: `${o.lane} · ${basename(o.image)}`, rows: [
+      { label: 'receipt', value: o.receipt?.id ?? '(unsealed)', note: o.receipt ? o.receipt.hash.slice(0, 18) : '--no-seal' },
+      { label: 'image', value: o.image_sha256.slice(0, 12), note: 'sha256' },
+      { label: 'clip', value: o.clip.best ?? 'n/a', note: o.clip.best_score != null ? o.clip.best_score.toFixed(3) : '' },
+      { label: 'boxes', value: String(o.detection.boxes.length), note: `${o.detection.model} · ${[...new Set(o.detection.boxes.map((b) => b.label))].join(', ') || 'none above threshold'}` },
+      ...lines.slice(0, 4).map((l, i) => ({ label: `ocr ${i + 1}`, value: l.slice(0, 40), note: '' })),
+    ] });
+    board.shapes.push({ image: o.image, image_sha256: o.image_sha256, receipt_id: o.receipt?.id ?? null, receipt_hash: o.receipt?.hash ?? null, observed_at: o.observed_at, image_size: o.detection.image_size, boxes: o.detection.boxes, ocr_lines: lines, clip: { best: o.clip.best, score: o.clip.best_score }, detection_sha256: o.detection_sha256 });
+  }
+  board.updated = new Date().toISOString();
+  writeFileSync(BOARD, JSON.stringify(board, null, 1) + '\n');
+  console.log(`board: ${relative(ROOT, BOARD)} · ${board.shapes.length} shape(s)`);
 }
 
 if (blocked) {

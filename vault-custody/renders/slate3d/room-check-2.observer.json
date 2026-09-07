@@ -1,0 +1,73 @@
+{
+ "image": "vault-custody/renders/slate3d/room-check-2.png",
+ "lane": "slate3d",
+ "image_sha256": "e0eb148f6eac47c420b8c1cdae2432db57897df0cd164ed55b77ea8d5387c273",
+ "observed_at": "2026-09-07T03:57:22.025Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 1933,
+  "sha256": "6a3091cdeeb3e7cce9ce2b7a8a484fc150e9559b6ac1749baf3a02eac069c211",
+  "text": "SLATE 3D\nroom slate:Ledger live - websocket\nVault Custody Timmy build Ledger -: kind mission - 6 frames - 24 nodes - 1 blueprint - state from 906 receipts\nsource room slate:Ledger\nProduct colour\nblueprint Design tokens\ndesign/tokens.json\nnavy\n#0A1628\nground, every\ndark or verify\np1.capsule - 4 acceptaspencode\n9n ago coclefold\nsurface\nwensenbotbuntinonugprprl\nSUN verifier Pyzeapisntdlsicodllkakehoptiftnde lane 9hradoplenda Unaaang and fleet entry\nnavy-2 D #101F38\nL p3.capsuteonktlitt-etan Houe\nraised sur Type scale x1.333 on 16 a\nault Custody tap-to-verify\nlebcames\nblueprint Design tokens 8 px\norders sealed 2-Code Mode on thet workery y Papa capsolen anfebduptdlencode\nan\nnavy-line J #1B2E4D design/tokens.json\nrint Design tokens\nHodth#SSF6B6FR\nhairline\nn/tokens.json\n0/1 orders seat 31 Receipted Défold lane 4 Custodguempation adff opencode\nphosphor a #33FF66 human Space Grotesk\n2/2 orders sealed 400 Observer évidence (Roboflow) p6! capsuteapa egesmgencod\nchain: has\nhuman text\n8px every\nand inset\n1/1 orders sealed\nL Locked\nCE solve/ . gatearenticat\nsealed, chain JetBrains Mono\ngap\n5-Slate 3D'\nverified,\nchain text:\nis a multiple\n2/2 orders sealed . done : 6osparks judge mesh (fleet rank) eceipts.\nids, hashes, S 8 - corner\nbutton.\nreceipts\nradius\nnext fleet/*\nols\norange : #FF8C1A 0 1 12 . 16 : 21.3\n4. corner\nhuman: act\npx\nradius\nowners, ta 2 - - 4 28.4 * 37.9 -\npill - full\nbuttons\n50.5 px\nradius\nred\na #FF3B3B 5\n67.3 - px, ape mode second mode *\nrefusal on\ndisplay only\nthe physical\nTamper is\nobject;\norange.\nnavy/phosphor\ntext\n#E6EDF7\nstays the chain\nhuman text on\nnavy\n05:33:38 dispatch.container_done openhands\n05:35:52 slate.render.done\n05:39:45 receipt.sealed rive.export - rive\n05:44:42 slate.room.check\n05:46:55 slate.room.debug\nchain event human act - refusal C unlit - failed or quiet\n05:47:59 slate.room.check\nthe viewer spawns nothing every transition goes through the controller\n14:17:22 slate.room.check"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a 3D isometric board with glowing pods and labels on a dark navy ground",
+   "a phone app screen with status text",
+   "a web page with a photo of a sealed box",
+   "a blank dark screen"
+  ],
+  "similarity": [
+   0.2291484773159027,
+   0.22803018987178802,
+   0.1715705543756485,
+   0.22267894446849823
+  ],
+  "best": "a 3D isometric board with glowing pods and labels on a dark navy ground",
+  "best_score": 0.2291484773159027
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1280,
+   "height": 800
+  },
+  "boxes": [
+   {
+    "x": 885.1724853515625,
+    "y": 416.76763916015625,
+    "w": 207.110107421875,
+    "h": 453.0391845703125,
+    "label": "sign",
+    "confidence": 0.18962466716766357
+   },
+   {
+    "x": 1181.4879150390625,
+    "y": 464.14312744140625,
+    "w": 197.024169921875,
+    "h": 285.5185546875,
+    "label": "banner",
+    "confidence": 0.04683544114232063
+   },
+   {
+    "x": 1029.8017578125,
+    "y": 414.69049072265625,
+    "w": 500.39642333984375,
+    "h": 445.9569091796875,
+    "label": "banner",
+    "confidence": 0.0314750075340271
+   }
+  ]
+ },
+ "detection_sha256": "27ab7892a4139337af80650023901cbd8704681817c861dc876479276f3e9319"
+}

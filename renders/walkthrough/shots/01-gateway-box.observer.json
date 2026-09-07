@@ -1,0 +1,65 @@
+{
+ "image": "renders/walkthrough/shots/01-gateway-box.png",
+ "lane": "shots",
+ "image_sha256": "477f166fb58c67f50721383c7581e10dd8927b86a67d2b11442d9ea06cc7081b",
+ "observed_at": "2026-09-07T03:54:55.822Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 466,
+  "sha256": "e29e6083f7dbe2b53e3d358777c57e0f69c9e8f66160da8ea59674d4e5a64384",
+  "text": "VAULT CUSTODY x TIMMY\nSeries 001 pilot\nGateway Profile Boxes Singles Locations Provenance Where thel boxes went\nsign out\nA An\nE\nVUAIY cne soo\nnor\nEvert CUSTO\n<\nbox a\nVAULT xhe\nEvery\n1/1.\neruse\nA receipt every box carries with it, and any phone can\no\nread. The seal signs the tap. The band remembers the\nBERIES\nbreak.\nFIEVES\nSEAL\n2026 -\nPick a\nVC0007\nhat\nSee the provenance\nIt goes on the box you already make.\nThe two-seal box nothing printed on any card\nSianadta\nno"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.2162165641784668,
+   0.194065123796463,
+   0.22087815403938293,
+   0.19482292234897614
+  ],
+  "best": "a blank screen",
+  "best_score": 0.22087815403938293
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 723.0991821289062,
+    "y": 447.76800537109375,
+    "w": 1432.1580810546875,
+    "h": 895.5360107421875,
+    "label": "banner",
+    "confidence": 0.03220811486244202
+   },
+   {
+    "x": 424.483154296875,
+    "y": 422.8115234375,
+    "w": 491.8367919921875,
+    "h": 343.2642822265625,
+    "label": "text",
+    "confidence": 0.028237193822860718
+   }
+  ]
+ },
+ "detection_sha256": "a74ff7eb3547e25825b46909c8ad0a2f42ff8a97236118e5d657363fb31f44f7"
+}

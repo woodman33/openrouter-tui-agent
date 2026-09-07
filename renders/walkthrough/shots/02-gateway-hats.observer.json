@@ -1,0 +1,73 @@
+{
+ "image": "renders/walkthrough/shots/02-gateway-hats.png",
+ "lane": "shots",
+ "image_sha256": "a53879a5f3c87037b24767501f10203fefe4b0c85fe83c90cc8fe9a88b3369f5",
+ "observed_at": "2026-09-07T03:55:12.218Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 1229,
+  "sha256": "b490817aa5d77d4bc8e80f0093e452d96b7a89673c46d01a69c62834d25f5ed8",
+  "text": "It goes on the box you already make.\nThet two-seal box nothing printed on any card\nSigned taps\nThe NTAG 424 DNA seal signs every tap with a per-tag key and a\ncounter. A copy or a photo fails on the first tap.\nTamper memory\nThe band runs through the seal. Break it and the chip stores the\nisoira ect acroealduan uns heaugh lp Ahar\nTasthemal-\" insldet \"opanedattp aigned Spse.\nbreak forever and reports it at the next tap.\nWhate aach piece proves\nOuart hylmperns- has th mnt tem opanedainos NaLE sesed? jateis, ena hechip: batary nociock\nime dger 440 ChArees hat a sesed washisphysicalbos ywhan, when wiha open aaip inucmecnal photoa anda hunds comert athar rta ash monent on m lligred, tors copyabley a Thec Commein thamach hat tpi\nA public chain\nEvery event is a receipt with prev and this. The head is published\ndaily and anyone can recompute it from the log.\nSix hats.\nHats, not accounts. One account may hold several, and every\nchain event stamps its hat.\nMaden\nManufacturer\nSees the product after thel loading dock for the first time:\nMovedi it.\nSealed and soldi it.\nwhich store sold which box,when it opened, where the\nhits landed.\nS\nOX\nDistributor\nRetailer\nRBOX\nEnter as Manufacturer\nEnter as Distributor\nEnter: as Retailer"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.22931623458862305,
+   0.1957930028438568,
+   0.20817433297634125,
+   0.1870683878660202
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.22931623458862305
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 329.7555847167969,
+    "y": 216.5905303955078,
+    "w": 525.7966918945312,
+    "h": 295.3729553222656,
+    "label": "banner",
+    "confidence": 0.10342009365558624
+   },
+   {
+    "x": 242.09625244140625,
+    "y": 882.6245727539062,
+    "w": 99.32475280761719,
+    "h": 33.1649169921875,
+    "label": "banner",
+    "confidence": 0.03613001108169556
+   },
+   {
+    "x": 1027.539794921875,
+    "y": 880.4066162109375,
+    "w": 135.9871826171875,
+    "h": 39.18670654296875,
+    "label": "banner",
+    "confidence": 0.026401251554489136
+   }
+  ]
+ },
+ "detection_sha256": "5b464e7625755cb543291f7274da4959b4985cd0605728a8adf0d00399cb879d"
+}

@@ -1,0 +1,73 @@
+{
+ "image": "renders/walkthrough/shots/07-tap-receipt.png",
+ "lane": "shots",
+ "image_sha256": "fc19359b8a5b3b80e044d9e1ffd118565872433cfabd0fda75aedb9bc81fbb53",
+ "observed_at": "2026-09-07T03:55:48.582Z",
+ "host": "https://serverless.roboflow.com",
+ "ocr": {
+  "status": 200,
+  "chars": 495,
+  "sha256": "e7b94bfef53bccba559c548fd3ae781123c46ddce772c7ce094b8f9088ed3fc0",
+  "text": "VAULT CUSTODY\nreceipt - epoch 903\nTap verified . signature valid\ncounter 61 receipt b35fb2bc tamper CC * 1:33:59 AM\nOPENED\nBox VC0007\nOpened Sep 14, 2026, 19:22 PT - Henderson, NV - by the\nclaimed owner\nSeal\nbroken * stored on chip - reported at tap #4\nReveal tag\nsigned - Sep 14 - 19:22:07  counter 1\nOwner\nclaimed Sep 12, 13:05 - W. M.\nPacks\n24 of 24 opened : 19:24 - 20:41\nCards attached 312 scanned - 4 hits - 2 numbered\nCustody timeline\nSealed at Paradise Card Breaks\nSep 12 12:41 Las Vegas"
+ },
+ "clip": {
+  "status": 200,
+  "prompts": [
+   "a screenshot of a software user interface",
+   "a photograph of a physical object",
+   "a blank screen",
+   "a diagram"
+  ],
+  "similarity": [
+   0.2631961405277252,
+   0.21121244132518768,
+   0.204030379652977,
+   0.19419263303279877
+  ],
+  "best": "a screenshot of a software user interface",
+  "best_score": 0.2631961405277252
+ },
+ "detection": {
+  "model": "yolo_world",
+  "status": 200,
+  "prompts": [
+   "banner",
+   "sign",
+   "text",
+   "rectangle",
+   "badge"
+  ],
+  "threshold": 0.02,
+  "image_size": {
+   "width": 1440,
+   "height": 900
+  },
+  "boxes": [
+   {
+    "x": 720.4004516601562,
+    "y": 576.7447509765625,
+    "w": 699.5028076171875,
+    "h": 280.314208984375,
+    "label": "banner",
+    "confidence": 0.08728700131177902
+   },
+   {
+    "x": 717.8330688476562,
+    "y": 133.39434814453125,
+    "w": 699.0628662109375,
+    "h": 93.9099349975586,
+    "label": "banner",
+    "confidence": 0.02215752564370632
+   },
+   {
+    "x": 674.3170776367188,
+    "y": 450.1748962402344,
+    "w": 1348.6341552734375,
+    "h": 899.6502075195312,
+    "label": "banner",
+    "confidence": 0.02138744294643402
+   }
+  ]
+ },
+ "detection_sha256": "b08e27eb9f9147cd787b924e7cf68dc12caffcfca338472b2a1602e5944e3a51"
+}
