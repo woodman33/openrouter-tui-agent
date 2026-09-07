@@ -222,6 +222,17 @@ if (command === 'seal') {
   process.exit(0);
 }
 
+if (command === 'nfc' || command === 'custody') {
+  // Vault Custody lanes: `timmy nfc program|template|selftest` programs NTAG 424
+  // DNA stickers over an ACR122U; `timmy custody commit` seals a box's contents
+  // before the sticker goes on. Both live under lanes/ and run under tsx so they
+  // can import the edge verifier's TypeScript (vault-custody/src/lib) directly —
+  // the programmer and the verifier must share one key derivation.
+  const lane = fileURLToPath(new URL(command === 'nfc' ? '../lanes/nfc/program.mjs' : '../lanes/custody/commit.mjs', import.meta.url));
+  const r = spawnSync('npx', ['tsx', lane, ...args.slice(1)], { stdio: 'inherit', cwd: fileURLToPath(new URL('..', import.meta.url)) });
+  process.exit(r.status ?? 1);
+}
+
 if (command === 'verify') {
   // Read-only chain verify (SHOWRUNNER Phase A-FIX). Exit 1 on broken link.
   const { verifyChain } = await import('./utils/receipts.js');
