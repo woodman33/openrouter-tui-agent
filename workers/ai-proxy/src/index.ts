@@ -15,21 +15,42 @@ import { HttpError, runCode, type CodeRequest, type Executor } from './code.js';
 import { computeDailyHead, readLatestHead, writeDailyHead } from './head.js';
 import { type Env, edgeTools, toolTypes } from './tools.js';
 import { corsHeaders, parseRunsPath, validRoom } from './room-core.js';
+import { isReadAction, parseCommanderPath, validCommanderRoom } from './commander-core.js';
+import { getAgentByName } from 'agents';
+import type { Commander } from './commander.js';
 export { SlateRoom } from './room.js';
+export { Commander } from './commander.js';
 
 let windowStart = 0;
 let windowCount = 0;
 
 const json = (body: unknown, status = 200): Response => Response.json(body, { status });
 
-type RoomEnv = Env & { LOADER?: unknown; SLATE_ROOM?: DurableObjectNamespace };
+type RoomEnv = Env & { LOADER?: unknown; SLATE_ROOM?: DurableObjectNamespace; COMMANDER?: DurableObjectNamespace<Commander> };
 
 export default {
   async fetch(req: Request, env: RoomEnv): Promise<Response> {
     const url = new URL(req.url);
 
     if (url.pathname === '/health') {
-      return json({ ok: true, worker: 'timmy-ai-proxy', auth: true, code_mode: !!env.LOADER, daily_head: !!env.CUSTODY_KV, slate_room: !!env.SLATE_ROOM, tools: edgeTools().map((t) => t.name) });
+      return json({ ok: true, worker: 'timmy-ai-proxy', auth: true, code_mode: !!env.LOADER, daily_head: !!env.CUSTODY_KV, slate_room: !!env.SLATE_ROOM, commander: !!env.COMMANDER, tools: edgeTools().map((t) => t.name) });
+    }
+
+    // Commander (Agents SDK durable agent, mindship-v5c2 step 2). Reads and the
+    // WebSocket feed are public like the rooms; every command needs the caller
+    // token, except the holder's own /turn and /release which carry the hold token.
+    const cmd = parseCommanderPath(url.pathname);
+    if (cmd) {
+      if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders() });
+      if (!env.COMMANDER) return json({ ok: false, error: 'no COMMANDER binding on this deployment' }, 503);
+      if (!validCommanderRoom(cmd.room)) return json({ ok: false, error: 'bad room name' }, 400);
+      const holderRoute = cmd.action === 'turn' || cmd.action === 'release';
+      if (!isReadAction(cmd.action) && !holderRoute) {
+        const want = `Bearer ${env.TIMMY_EDGE_TOKEN ?? ''}`;
+        if (!env.TIMMY_EDGE_TOKEN || (req.headers.get('Authorization') ?? '') !== want) return json({ ok: false, error: 'unauthorized' }, 401);
+      }
+      const agent = await getAgentByName(env.COMMANDER, cmd.room);
+      return agent.fetch(req);
     }
 
     // Slate rooms (Durable Object). Reads and the WebSocket are public like
@@ -138,7 +159,7 @@ export default {
       return new Response(r.body, { status: r.status, headers: { 'Content-Type': 'application/json' } });
     }
 
-    return json({ ok: false, error: 'not found; routes: /health /head /models /chat /code /code/tools /runs/:room/{events,event,ws}' }, 404);
+    return json({ ok: false, error: 'not found; routes: /health /head /models /chat /code /code/tools /runs/:room/{events,event,ws} /commander/:room/{state,spend,turns,receipts,schedules,memory,ws,think,turn,mode,handoff,release,kill,revive,schedule,cancel,remember,cap}' }, 404);
   },
 
   // Daily cron (wrangler.toml [triggers]): walk every chain, publish the head.
