@@ -23,7 +23,7 @@
     { "label": "root chain", "value": ".timmy/receipts/runs.jsonl", "note": "every seal; event envelopes appended beside receipts (the one bus)" },
     { "label": "edge chains", "value": "CUSTODY_KV chain:<subject>", "note": "custody.tap per unit, code runs per run id" },
     { "label": "daily head", "value": "cron 5 9 * * *", "note": "walks every edge chain, publishes head:<date>; anchored as chain.anchor in root" },
-    { "label": "seal from a worktree", "value": "lanes/anchor/seal-root.mjs", "note": "cwd = main; store-pin preflight; never from a subdirectory" },
+    { "label": "seal from a worktree", "value": ".timmy/store-pin", "note": "committed pin holds the root store path; rootStoreDir walks up from any cwd, so every checkout seals into one chain" },
     { "label": "sync room", "value": "SlateRoom (SQLite DO)", "note": "runs/events contract; reads public, writes need the caller token" }
    ]
   },

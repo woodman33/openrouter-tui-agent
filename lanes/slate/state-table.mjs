@@ -41,6 +41,6 @@ if (!args.includes('--no-seal')) {
     ...table.capsules.map((c) => `${c.id}=${c.status} ${c.held}/${c.total}${c.unreceipted ? `+${c.unreceipted}u` : ''}`),
     ...table.frames.map((f) => `${f.id}=${f.status}${f.attested ? '(attested)' : ''} ${f.sealed}/${f.total}`)];
   const a = ['slate.state']; for (const m of meta) a.push('--meta', m);
-  const r = spawnSync('node', [join(ROOT, 'lanes', 'anchor', 'seal-root.mjs'), ...a], { stdio: 'inherit' });
+  const r = spawnSync('npx', ['tsx', 'src/cli.ts', 'seal', ...a], { cwd: ROOT, stdio: 'inherit' });
   if (r.status !== 0) process.exit(r.status ?? 1);
 }

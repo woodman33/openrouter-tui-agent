@@ -49,5 +49,6 @@ same way.
   per detection, each shape carrying the receipt id and hash. Slate 3D renders
   it beside the ledger's slabs (four sheets stand, the rest stay in the file).
 
-Seals go through `node lanes/anchor/seal-root.mjs <subject> --meta k=v` with the
-repo root as cwd, so the chain stays pinned to the root store.
+Seals run the canonical CLI (`npx tsx src/cli.ts seal <subject> --meta k=v`)
+with this checkout as cwd. The committed `.timmy/store-pin` resolves the root
+store from any cwd, worktrees included, so the chain stays pinned.

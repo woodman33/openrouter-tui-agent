@@ -14,5 +14,5 @@ const decisions = [...text.matchAll(/^## Decision (\d) — (.+)$/gm)].map((m) =>
 const meta = [`doc=${doc}`, `sha256=${sha256}`, `lines=${text.split('\n').length}`, ...decisions, 'order=ORD-20260906-018', 'viewer_spawns_work=false'];
 const args = ['slate.design'];
 for (const m of meta) args.push('--meta', m);
-const r = spawnSync('node', [join(ROOT, 'lanes', 'anchor', 'seal-root.mjs'), ...args], { stdio: 'inherit' });
+const r = spawnSync('npx', ['tsx', 'src/cli.ts', 'seal', ...args], { cwd: ROOT, stdio: 'inherit' });
 process.exit(r.status ?? 1);

@@ -68,7 +68,7 @@ if (!args.includes('--no-seal')) {
     ...result.shots.map((s, i) => `shot${i + 1}_sha256=${s.sha256}`), 'room_spawns_work=false'];
   const a = ['slate.room'];
   for (const m of meta) a.push('--meta', m);
-  const s = spawnSync('node', [join(ROOT, 'lanes', 'anchor', 'seal-root.mjs'), ...a], { stdio: 'inherit' });
+  const s = spawnSync('npx', ['tsx', 'src/cli.ts', 'seal', ...a], { cwd: ROOT, stdio: 'inherit' });
   if (s.status !== 0) process.exit(s.status ?? 1);
 }
 process.exit(ok ? 0 : 3);

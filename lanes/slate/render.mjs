@@ -122,6 +122,6 @@ if (!args.includes('--no-seal')) {
   ];
   const a = ['slate.render'];
   for (const m of meta) a.push('--meta', m);
-  const r = spawnSync('node', [join(ROOT, 'lanes', 'anchor', 'seal-root.mjs'), ...a], { stdio: 'inherit' });
+  const r = spawnSync('npx', ['tsx', 'src/cli.ts', 'seal', ...a], { cwd: ROOT, stdio: 'inherit' });
   if (r.status !== 0) process.exit(r.status ?? 1);
 }

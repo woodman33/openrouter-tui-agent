@@ -3,7 +3,7 @@
 // the Rive extension, builds the HTML5 bundle through the Defold build server
 // (native extensions), copies it into the custody site, hashes every input
 // and output, and seals one `defold.build` receipt in the ROOT chain via
-// seal-root.mjs (store-pin preflight applies).
+// the canonical CLI; the committed .timmy/store-pin resolves the root store from any cwd.
 //   node lanes/defold/build.mjs [--no-seal] [--skip-build]
 import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
@@ -103,5 +103,5 @@ if (!args.has('--no-seal')) {
   ];
   const a = ['defold.build'];
   for (const m of meta) a.push('--meta', m);
-  run('node', [join(ROOT, 'lanes', 'anchor', 'seal-root.mjs'), ...a]);
+  run('npx', ['tsx', 'src/cli.ts', 'seal', ...a], { cwd: ROOT });
 }

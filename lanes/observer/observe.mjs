@@ -44,7 +44,7 @@ const BOX_PROMPTS = opt('--boxes', 'banner,sign,text,rectangle,badge').split(','
 const BOX_THRESHOLD = Number(opt('--box-threshold', 0.02));
 const REPO = process.env.TIMMY_REPO ?? '/Users/williammeldman/Desktop/Code-Projects/timmy-tui';
 const BOARD = join(ROOT, 'companion', 'boards', 'observer.board.json');
-// the receipt just sealed by seal-root (last record with an id and a hash in the root store)
+// the receipt just sealed (last record with an id and a hash in the pinned root store)
 function lastReceipt() {
   const lines = readFileSync(join(REPO, '.timmy', 'receipts', 'runs.jsonl'), 'utf8').split('\n').filter(Boolean);
   for (let i = lines.length - 1; i >= 0; i--) { try { const o = JSON.parse(lines[i]); if (o && o.id && o.hash) return { id: o.id, hash: o.hash, ts: o.ts, subject: o.subject }; } catch { /* skip */ } }
@@ -55,7 +55,7 @@ const seal = (subject, meta) => {
   if (NO_SEAL) return;
   const a = [subject];
   for (const [k, v] of Object.entries(meta)) a.push('--meta', `${k}=${String(v).replace(/\n/g, ' ').slice(0, 400)}`);
-  const r = spawnSync('node', [join(ROOT, 'lanes', 'anchor', 'seal-root.mjs'), ...a], { stdio: 'inherit' });
+  const r = spawnSync('npx', ['tsx', 'src/cli.ts', 'seal', ...a], { cwd: ROOT, stdio: 'inherit' });
   if (r.status !== 0) throw new Error(`seal failed for ${subject}`);
 };
 

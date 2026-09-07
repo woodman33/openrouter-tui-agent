@@ -81,6 +81,6 @@ if (!args.includes('--no-seal')) {
     `plan_hash=${planHash ?? ''}`, `emitted=${verdict.emitted.join(',')}`, `dispatch_created=${verdict.dispatch_created}`, `launched_or_armed=${verdict.launched_or_armed}`, `never_spawned=${verdict.never_spawned}`,
     `shot_sha256=${createHash('sha256').update(readFileSync(shot)).digest('hex')}`];
   const a = ['slate.emit']; for (const m of meta) a.push('--meta', m);
-  const r = spawnSync('node', [join(ROOT, 'lanes', 'anchor', 'seal-root.mjs'), ...a], { stdio: 'inherit' });
+  const r = spawnSync('npx', ['tsx', 'src/cli.ts', 'seal', ...a], { cwd: ROOT, stdio: 'inherit' });
   if (r.status !== 0) process.exit(r.status ?? 1);
 }

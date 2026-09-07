@@ -55,7 +55,7 @@ if (!args.includes('--no-seal')) {
     `view_model=${ab.linkedViewModel} linked`, `transitions=${report.drive.steps.map((s) => `${s.set}->${s.entered.join('/')}`).join(',')}`,
     'runtime=@rive-app/canvas-advanced 2.42.0', `dest=${DEST.map((d) => d.slice(ROOT.length + 1)).join(',')}`];
   const a = ['rive.export']; for (const m of meta) a.push('--meta', m);
-  run('node', [join(ROOT, 'lanes', 'anchor', 'seal-root.mjs'), ...a]);
+  run('npx', ['tsx', 'src/cli.ts', 'seal', ...a], { cwd: ROOT });
 }
 
 // 5. companion lane build (seals defold.build) + site
