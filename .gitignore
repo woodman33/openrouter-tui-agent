@@ -52,7 +52,15 @@ outputs/
 marketing-plan/
 launch/
 README copy.md
-tools/
+tools/*
+!tools/connectors.json
+!tools/script-ledger.mjs
 
 # orders.log is the executed-orders ledger (ORD-IDs); tracked on purpose despite *.log
 !/orders.log
+
+# v6 anchor pass (2026-08-30)
+renders/
+video/
+cut/clips*/
+vo/

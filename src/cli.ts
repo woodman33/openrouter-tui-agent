@@ -13,8 +13,11 @@ import { runClipJob, replayFromEdl } from './utils/cliprunner.js';
 import { listGenerations } from './utils/generations.js';
 import { runOpenDesignGen } from './utils/designrunner.js';
 import { edlToOtio } from './utils/otio.js';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { existsSync, readFileSync, appendFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { setModel, readPolicy } from './harness/policy.js';
+import { listModelsSync, listModels, refreshModels } from './models/registry.js';
+import { runJbone } from './jbone/resolver.js';
 
 function getPackageMetadata() {
   const possiblePaths = [
@@ -56,8 +59,13 @@ Commands:
   sceneforge      Use the authenticated Cloudflare control plane via MCPorter
   events          Stream the TUI's event envelope as NDJSON (--follow, --human, --otlp)
   logs            Live web companion: event bus + receipt chain + verify (auto-pops browser; --port N)
+  vision          Roboflow visual templates, inspections, evidence and review (--port N)
   approve <hash>  Mint a single-use, 5-min approval token bound to a gated tool's plan hash
   clip list|run|replay  List · run headless + seal · replay from cut-list alone
+  model set|get         Set/get model policy (default or --scope harness:<name>)
+  models [--json]       Model registry: arch, params, throughput, notes, spend
+  do "<phrase>"         jbone resolver: fuzzy CUE template -> confirm -> lane (--yes)
+  connect <tool>        Bind a tool binary into the chain (env.lock receipt)
   design list|run       Open Design (MCP) gens: queue in GENS, execute + seal here
   doctor deps|network|hardware  Read-only posture checks (never auto-fixes)
   mcp status|inspect|probe  MCP wire visibility: mcpsnoop + mcp-probe (opt-in)
@@ -114,12 +122,19 @@ for (let i = 0; i < args.length; i++) {
   cleanArgs.push(args[i]);
 }
 
-if (cleanArgs.length === 0 || args.includes('--help') || args.includes('-h') || cleanArgs[0] === 'help') {
+if (cleanArgs.length === 0 || ((args.includes('--help') || args.includes('-h')) && cleanArgs[0] !== 'vision') || cleanArgs[0] === 'help') {
   printHelp();
   process.exit(0);
 }
 
 const command = cleanArgs[0];
+
+if (command === 'vision') {
+  const { runVisionCli } = await import('./vision/cli.js');
+  await runVisionCli(cleanArgs.slice(1));
+  if (cleanArgs[1] === 'serve' && !args.includes('--help') && !args.includes('-h')) await new Promise(() => {});
+  process.exit(process.exitCode ?? 0);
+}
 
 if (command === 'version' || args.includes('--version') || args.includes('-v')) {
   const metadata = getPackageMetadata();
@@ -129,6 +144,152 @@ if (command === 'version' || args.includes('--version') || args.includes('-v')) 
 
 if (command === 'start') {
   console.log('timmy start — PLANNED alias for npm start');
+  process.exit(0);
+}
+
+// ── CONTROL PLANE (control-plane-k3e7): model policy / registry / jbone ──
+if (command === 'model') {
+  const sub = cleanArgs[1];
+  if (sub === 'set') {
+    const id = cleanArgs[2];
+    const scopeIdx = args.indexOf('--scope');
+    const scope = scopeIdx >= 0 ? args[scopeIdx + 1] : null;
+    if (!id) { console.error('usage: timmy model set <id> [--scope harness:<name>]'); process.exit(2); }
+    const pol = setModel(id, scope);
+    console.log(`model policy: default=${pol.default ?? '-'} scopes=${JSON.stringify(pol.scopes)}`);
+    process.exit(0);
+  }
+  const pol = readPolicy();
+  console.log(JSON.stringify(pol, null, 2));
+  process.exit(0);
+}
+
+if (command === 'order') {
+  // status-r1e4: orders.log entries and order.execute receipts carry the
+  // executing model, read from the CLI's own session (never hand-typed).
+  const sub = String(args[1] ?? '');
+  const sess = (await import('./utils/session.js')).detectSession();
+  const { ordersLogPath } = await import('./utils/status.js');
+  if (sub === 'log' || sub === 'execute') {
+    const id = String(args[2] ?? `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 900) + 100}`);
+    const ti = args.indexOf('--title');
+    const ei = args.indexOf('--evidence');
+    const title = ti > 0 ? String(args[ti + 1] ?? '') : '';
+    const evidence = ei > 0 ? String(args[ei + 1] ?? '') : '';
+    const line = `${id} | ${new Date().toISOString()} | ${sess.short} | ${title} | ${evidence} | actor=${sess.actor} hands=${sess.hands}`;
+    appendFileSync(ordersLogPath(), line + '\n');
+    if (sub === 'execute') {
+      const { appendReceipt } = await import('./utils/receipts.js');
+      const rec = appendReceipt('runs', {
+        kind: 'seal',
+        subject: `order.execute · ${id} · ${title.slice(0, 60)}`,
+        policy: 'human-gated', status: 'ok',
+        sources: [{ actor: sess.actor, hands: sess.hands }],
+      });
+      console.log(`order.execute ${id} → ${rec.hash.slice(0, 16)} · actor=${sess.actor} hands=${sess.hands}`);
+    } else {
+      console.log(`logged ${id} · actor=${sess.actor} hands=${sess.hands}`);
+    }
+    process.exit(0);
+  }
+  console.error('usage: timmy order log|execute <ORD-id> --title <t> [--evidence <e>]');
+  process.exit(2);
+}
+if (command === 'status') {
+  const sess = (await import('./utils/session.js')).detectSession();
+  const st = await import('./utils/status.js');
+  const rep = st.statusReport(st.ordersLogPath());
+  if (args.includes('--json')) {
+    console.log(JSON.stringify({ printedBy: sess, ...rep }, null, 2));
+  } else if (args.includes('--board')) {
+    console.log(st.renderBoard(rep));
+  } else {
+    for (const [actor, rows] of Object.entries(rep.actors)) {
+      console.log(`== ${actor} ==`);
+      for (const r of rows) {
+        console.log(`${r.id} → ${r.title.slice(0, 48).padEnd(48)} ${r.state.padEnd(16)} last=${r.lastReceipt.slice(0, 24).padEnd(24)} next=${r.next}`);
+      }
+    }
+    if (rep.blockedOnWill.length) {
+      console.log('== blocked on will ==');
+      for (const r of rep.blockedOnWill) console.log(`${r.id} — ${r.next}`);
+    }
+  }
+  const { appendReceipt } = await import('./utils/receipts.js');
+  const rec = appendReceipt('runs', {
+    kind: 'seal', subject: `status.print · ${Object.values(rep.actors).reduce((n, r) => n + r.length, 0)} orders`,
+    policy: 'auto', status: 'ok', sources: [{ actor: sess.actor, hands: sess.hands }],
+  });
+  console.log(`sealed ${rec.hash.slice(0, 16)} · status.print`);
+  process.exit(0);
+}
+if (command === 'script') {
+  // toolchain-e2a4 close: script ledger v0 (seal/cut/ledger + sidecar)
+  const sub = String(args[1] ?? '');
+  const file = String(args[2] ?? '');
+  const sl = await import('./utils/scriptledger.js');
+  if (sub === 'seal') {
+    const r = sl.sealScript(file);
+    if (!r.ok) { console.error(`REFUSED: ${r.note}`); process.exit(2); }
+    console.log(`sealed ${file} → ${String(r.receipt).slice(0, 16)} · sidecar ${sl.sidecarPath(file)}`);
+    process.exit(0);
+  }
+  if (sub === 'cut') {
+    const r = sl.cutScript(file, String(args[3] ?? ''));
+    if (!r.ok) { console.error(`REFUSED: ${r.note}`); process.exit(2); }
+    console.log(`cut ${file} → ${args[3]} · ${r.scenes} scenes`);
+    process.exit(0);
+  }
+  if (sub === 'ledger') {
+    const t = sl.ledgerTroff(file);
+    if (!t.ok || !t.troff) { console.error(`REFUSED: ${t.note}`); process.exit(2); }
+    const pi = args.indexOf('--pdf');
+    const hi = args.indexOf('--html');
+    if (pi > 0) {
+      const pr = sl.ledgerPdf(t.troff, String(args[pi + 1] ?? ''));
+      if (!pr.ok) { console.error(pr.note); process.exit(2); }
+    }
+    if (hi > 0) sl.ledgerHtml(file, t.troff, String(args[hi + 1] ?? ''));
+    console.log(`ledger ${file} · ${t.entries} entries`);
+    process.exit(0);
+  }
+  console.error('usage: timmy script seal|cut|ledger <file> [out] [--pdf p] [--html h]');
+  process.exit(2);
+}
+if (command === 'models') {
+  // FIX 1 (close): --refresh repopulates the catalog cache (fetched-at stamped)
+  if (args.includes('--refresh')) {
+    const r = await refreshModels();
+    console.log(r.ok ? `refreshed ${r.count} models at ${r.fetchedAt}` : `refresh failed; cache from ${r.fetchedAt || 'never'}`);
+    if (!r.ok) process.exit(1);
+  }
+  const entries = await listModels();
+  const capsOf = (e: typeof entries[number]): string => {
+    const c = e.supported_parameters ?? [];
+    return `${c.includes('tools') ? 'T' : '·'}${c.includes('vision') || c.includes('image') ? 'V' : '·'}${c.includes('reasoning') ? 'R' : '·'}`;
+  };
+  if (isJson) { console.log(JSON.stringify(entries, null, 2)); }
+  else {
+    for (const e of entries) {
+      const ctx = e.ctx ? (e.ctx >= 1e6 ? `${Math.round(e.ctx / 1e6)}M` : `${Math.round(e.ctx / 1000)}k`) : '—';
+      const pi = e.price_in !== undefined && e.price_in >= 0 ? e.price_in * 1e6 : null;
+      const po = e.price_out !== undefined && e.price_out >= 0 ? e.price_out * 1e6 : null;
+      const fmn = (x: number): string => (x % 1 === 0 ? String(x) : x.toFixed(1));
+      const price = pi !== null ? `$${fmn(pi)}/$${fmn(po ?? 0)}` : '—/—';
+      console.log(`${e.pinned ? '*' : ' '} ${e.id.padEnd(34)} ${(e.role ?? '').padEnd(10)} ${ctx.padEnd(6)} ${price.padEnd(12)} ${capsOf(e)} spend=$${(e.spend_usd ?? 0).toFixed(4)}`);
+    }
+  }
+  process.exit(0);
+}
+
+if (command === 'do') {
+  const phrase = cleanArgs.slice(1).join(' ');
+  const yes = args.includes('--yes');
+  const r = runJbone(phrase, { yes });
+  if (r.status === 'no-match') { console.error('jbone: no template matched'); process.exit(2); }
+  console.log(r.confirm);
+  if (r.status === 'pending-confirm') { console.log('re-run with --yes to dispatch to lane ' + (r.template ?? '')); process.exit(0); }
+  console.log(`jbone: ${r.status} lane=${r.lane} plan=${r.plan ?? '-'}`);
   process.exit(0);
 }
 
@@ -197,9 +358,15 @@ if (command === 'seal') {
   // appends through the canonical writer, never edits chain logic.
   const meta: Record<string, string> = {};
   const subject: string[] = [];
+  const artifacts: string[] = [];
+  const cites: string[] = [];
   for (let i = 1; i < args.length; i++) {
     const a = String(args[i]);
-    if (a === '--meta') {
+    if (a === '--artifact') {
+      artifacts.push(String(args[++i] ?? ''));
+    } else if (a === '--cite') {
+      cites.push(String(args[++i] ?? ''));
+    } else if (a === '--meta') {
       const kv = String(args[++i] ?? '');
       const eq = kv.indexOf('=');
       if (eq > 0) meta[kv.slice(0, eq)] = kv.slice(eq + 1);
@@ -214,7 +381,96 @@ if (command === 'seal') {
     console.error('usage: timmy seal <subject> [--meta k=v]…');
     process.exit(2);
   }
-  const { appendReceipt } = await import('./utils/receipts.js');
+  const { appendReceipt, receiptsDir, rootStoreDir } = await import('./utils/receipts.js');
+  // STORE PIN preflight (order template line): print resolved store; STOP if not root.
+  const rd = receiptsDir();
+  const root = rootStoreDir();
+  console.log(`store: ${rd}`);
+  if (root && rd !== root) {
+    console.error('STOP: resolved store is not the pinned root store');
+    process.exit(2);
+  }
+  // DOCTRINE §14 — a seal must cite artifacts that exist at seal time.
+  // --artifact <path> must exist (its sha256 is recorded in the seal);
+  // --cite <hash|id> must resolve to a receipt already on the chain.
+  // Otherwise the tool refuses: no seal is written.
+  if (artifacts.length || cites.length) {
+    const crypto = await import('crypto');
+    const fsx = await import('fs');
+    const shas: string[] = [];
+    for (const ap of artifacts) {
+      if (!ap || !fsx.existsSync(ap)) {
+        console.error(`REFUSED (§14): cited artifact does not exist at seal time: ${ap || '(empty)'}`);
+        process.exit(2);
+      }
+      shas.push(`${ap}@sha256_${crypto.createHash('sha256').update(fsx.readFileSync(ap)).digest('hex')}`);
+    }
+    if (cites.length) {
+      const { readChain } = await import('./utils/receipts.js');
+      const chain = readChain('runs');
+      for (const c of cites) {
+        const hit = chain.some(r => r.hash === c || r.hash.endsWith(c) || r.id === c || String(r.id).includes(c));
+        if (!hit) {
+          console.error(`REFUSED (§14): cited receipt is not on the chain: ${c}`);
+          process.exit(2);
+        }
+      }
+    }
+    if (shas.length) meta.artifact_shas = shas.join(',');
+  }
+  // DOCTRINE §11 — the roster. A gate that can be forgotten is not a gate:
+  // render.cut seals only against a scorecard carrying a row for every
+  // roster gate (pass or fail, never absent); the roster itself changes
+  // only through roster.amend with a reason.
+  if (subj === 'roster.amend') {
+    if (!String(meta.reason ?? '').trim()) {
+      console.error('STOP: roster.amend requires --meta reason=…');
+      process.exit(2);
+    }
+  } else if (subj === 'roster' || subj === 'gates.roster') {
+    console.error('STOP: roster changes seal via `timmy seal roster.amend --meta reason=…` (DOCTRINE §11)');
+    process.exit(2);
+  } else if (subj === 'render.cut') {
+    const { readFileSync: readF, existsSync: hasF } = await import('node:fs');
+    const { join: pj, dirname: pd } = await import('node:path');
+    const { loadRoster, missingGates, scorecardRows } = await import('./utils/roster.js');
+    // rootStoreDir() yields the receipts store, not the project root — walk
+    // up from cwd and the store to find gates/roster.json.
+    let base: string | undefined;
+    for (const start of [process.cwd(), root]) {
+      if (!start) continue;
+      let d = start;
+      for (let i = 0; i < 5; i++) {
+        if (hasF(pj(d, 'gates', 'roster.json'))) { base = d; break; }
+        const up = pd(d);
+        if (up === d) break;
+        d = up;
+      }
+      if (base) break;
+    }
+    const roster = base ? loadRoster(base) : null;
+    if (!roster) {
+      console.error('STOP: gates/roster.json not found — render.cut refuses (DOCTRINE §11)');
+      process.exit(2);
+    }
+    const ids = roster.gates.map((g) => g.id).join(', ');
+    if (!meta.scorecard) {
+      console.error(`STOP: render.cut requires --meta scorecard=<path> with rows for: ${ids}`);
+      process.exit(2);
+    }
+    let sc: unknown;
+    try {
+      sc = JSON.parse(readF(meta.scorecard, 'utf8'));
+    } catch {
+      console.error(`STOP: scorecard unreadable: ${meta.scorecard}`);
+      process.exit(2);
+    }
+    const missing = missingGates(roster, scorecardRows(sc));
+    if (missing.length) {
+      console.error(`STOP: scorecard missing roster rows: ${missing.join(', ')} — pass or fail, never absent`);
+      process.exit(2);
+    }
+  }
   const r = appendReceipt('runs', {
     kind: 'seal', subject: subj, policy: 'auto', sources: [meta],
   } as never);
@@ -286,18 +542,9 @@ if (command === 'approve') {
 }
 
 if (command === 'map') {
-  // Mission Map: serve the tldraw instance + open it (carbonyl if present)
-  const { spawnSync, spawn } = await import('child_process');
-  const probe = spawnSync('curl', ['-s', '--max-time', '1', 'http://localhost:4321/'], { encoding: 'utf8' });
-  if (probe.status !== 0) {
-    const srv = spawn('python3', ['-m', 'http.server', '4321', '-d', 'studio/tldraw-mission-map'], { detached: true, stdio: 'ignore' });
-    srv.unref();
-  }
-  const hasCarbonyl = spawnSync('command -v carbonyl', { encoding: 'utf8', shell: true }).status === 0;
-  const opener = spawn(hasCarbonyl ? 'carbonyl' : 'open', ['http://localhost:4321'], { detached: true, stdio: 'ignore' });
-  opener.unref();
-  console.log(`mission map: http://localhost:4321 (${hasCarbonyl ? 'carbonyl' : 'browser'})`);
-  process.exit(0);
+  const { runVisionCli } = await import('./vision/cli.js');
+  await runVisionCli(['open', ...cleanArgs.slice(1)]);
+  process.exit(process.exitCode ?? 0);
 }
 
 if (command === 'q') {
@@ -349,6 +596,24 @@ if (command === 'design') {
   }
   console.error('Usage: timmy design list | timmy design run <genId>');
   process.exit(2);
+}
+
+if (command === 'connect') {
+  // SPEC §00 journey step 2: bind a tool binary into the chain as an env.lock
+  // receipt. Real check (PATH resolve), local, no spend; HOME ladder reads it.
+  const tool = args[1];
+  if (!tool) { console.error('Usage: timmy connect <tool>'); process.exit(2); }
+  const w = spawnSync('bash', ['-lc', `command -v ${JSON.stringify(tool)}`], { encoding: 'utf8', timeout: 5000 });
+  const bin = (w.stdout ?? '').trim().split('\n')[0] || '';
+  const { appendReceipt } = await import('./utils/receipts.js');
+  const rec = appendReceipt('runs', {
+    kind: 'env.lock',
+    subject: `connect.${tool} · ${bin || 'not found on PATH'}`,
+    policy: 'human-gated',
+    status: bin ? 'ok' : 'failed'
+  });
+  console.log(`${bin ? '✓' : '✕'} connect.${tool} · ${bin || 'not found'} · ${rec.hash.slice(0, 16)}`);
+  process.exit(bin ? 0 : 1);
 }
 
 if (command === 'export') {
