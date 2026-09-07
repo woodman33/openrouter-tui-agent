@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { spawn, spawnSync } from 'child_process';
 import { readdirSync, existsSync, writeFileSync } from 'fs';
@@ -17,7 +17,7 @@ import { dropRoot, SHIPPED_RULES } from '../../drop/index.js';
 import { listEscrows, lockEscrow, cancelEscrow, type Escrow } from '../../utils/escrow-engine.js';
 import { journeyRows, journeyDoneCount } from '../journey.js';
 import * as warroom from '../../harness/warroom.js';
-import { CommanderClient, type CommanderEvent } from '../../harness/commander.js';
+import { CommanderClient, edgeToken, type CommanderEvent } from '../../harness/commander.js';
 import { Card } from '../ui/Card.js';
 import { useAgent } from '../hooks/useAgent.js';
 import type { Agent } from '../../agent/core.js';
@@ -96,6 +96,9 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
   const [profile, setProfile] = useState<warroom.WarProfile>(() => warroom.defaultProfile());
   const [cmdEvents, setCmdEvents] = useState<CommanderEvent[]>([]);
   const [commanderOnline, setCommanderOnline] = useState(false);
+  const ccRef = useRef<CommanderClient | null>(null);
+  // chat turns handed to the durable commander, keyed by ws command id
+  const pendingChat = useRef<Map<string, string>>(new Map());
   const [warPanes, setWarPanes] = useState<warroom.WarPane[]>([]);
   const [spend, setSpend] = useState(0);
   const [handoff, setHandoff] = useState<{ harness: string; model: string } | null>(null);
@@ -154,6 +157,23 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
       if (e.kind === 'receipt.sealed' || e.hash) refresh();
     }, { tail: 12 });
     const cc = new CommanderClient(profile.commander.ws, e => {
+      // a think reply IS the chat turn: seal chat.turn citing the commander
+      const rep = e as CommanderEvent & { type?: string; cmd?: string; id?: string; ok?: boolean; answer?: string; usd?: number; error?: string };
+      if (rep.type === 'commander.reply' && rep.cmd === 'think') {
+        const asked = pendingChat.current.get(String(rep.id)) ?? '';
+        pendingChat.current.delete(String(rep.id));
+        if (rep.ok) {
+          appendReceipt('runs', {
+            kind: 'chat', subject: `chat.turn · commander`, policy: 'human-gated', status: 'ok',
+            cost_usd: Number(rep.usd ?? 0), model_resolved: String(profile.commander.model),
+            sources: [{ role: 'user', text: asked }, { role: 'answer', text: String(rep.answer ?? '').slice(0, 400) }],
+          });
+          refresh();
+        } else {
+          setFlash(`commander think refused: ${rep.error ?? 'unknown'}`);
+        }
+        return;
+      }
       setCmdEvents(prev => [e, ...prev].slice(0, 40));
       if (e.model) setProfile(pr => ({ ...pr, commander: { ...pr.commander, model: e.model as string } }));
       if (e.spend !== undefined) setSpend(Number(e.spend));
@@ -161,6 +181,7 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
       if (h) setProfile(pr => warroom.setActivity(pr, h, e.kind === 'thinking' ? 'thinking' : e.kind === 'responding' ? 'responding' : 'idle'));
     });
     cc.connect();
+    ccRef.current = cc;
     const poll = setInterval(() => {
       setCommanderOnline(cc.online);
       setWarPanes(warroom.panes());
@@ -169,7 +190,7 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
         setSpend(readChain('runs').filter(r => String(r.ts).slice(0, 10) === day).reduce((n, r) => n + (r.cost_usd ?? 0), 0));
       } catch { /* chain unreadable */ }
     }, 2000);
-    return () => { h.stop(); clearInterval(poll); cc.close(); };
+    return () => { h.stop(); clearInterval(poll); cc.close(); ccRef.current = null; };
   }, []);
 
   // docker is a capability, not a danger: off renders dim ○, never red
@@ -286,6 +307,22 @@ export function ShellV2({ width = 120, agent, config }: { width?: number; agent?
       // SPEC §08: each chat exchange seals as chat.turn citing model + cost.
       // The agent's own legacy writes reach the bus through the eventbus shim.
       if (a === 'chat-send' && chatText.trim()) {
+        // warroom fixes: with the durable commander connected AND an operator
+        // token present, the turn runs THERE (think over the ws); the reply
+        // seals chat.turn. Without a token the sovereign local path runs.
+        const text0 = chatText.trim();
+        const token = edgeToken();
+        if (ccRef.current?.online && token) {
+          const id = `chat-${Date.now().toString(36)}`;
+          pendingChat.current.set(id, text0);
+          setFlash(`chat → commander ${profile.commander.model}`);
+          ccRef.current.send({ cmd: 'think', id, token, body: { task: text0, mode: 'generate' } });
+          const nxt = { ...sRef.current, input: '' };
+          sRef.current = nxt;
+          setS(nxt);
+          return;
+        }
+        if (ccRef.current?.online && !token) setFlash('commander online · no TIMMY_EDGE_TOKEN — local sovereign');
         // BOOT: the agent graph lazy-loads on first chat send
         if (!effectiveAgent && config) {
           const text = chatText.trim();
