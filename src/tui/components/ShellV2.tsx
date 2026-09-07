@@ -847,17 +847,24 @@ function ModelsPane(props: {
   const WIN = 16;
   const selIdx = props.selected;
   const modelIdx = props.view.map((r, i) => (r.m ? i : -1)).filter(i => i >= 0);
-  const pos = modelIdx.indexOf(selIdx);
+  const selectedViewIdx = modelIdx[selIdx] ?? -1;
+  const pos = selectedViewIdx >= 0 ? selIdx : 0;
   const from = Math.max(0, (pos < 0 ? 0 : pos) - (WIN - 4));
   const winSet = new Set(modelIdx.slice(from, from + WIN));
-  const shown = props.view.map((row, g) => ({ row, g })).filter(x => !x.row.m || winSet.has(x.g));
+  const shown = props.view.map((row, g) => ({ row, g })).filter(x => {
+    if (x.row.m) return winSet.has(x.g);
+    for (let i = x.g + 1; i < props.view.length && !props.view[i]?.role; i += 1) {
+      if (winSet.has(i)) return true;
+    }
+    return false;
+  });
   return (
     <Box flexDirection="column">
       <Card title="MODELS" purpose={props.compact ? undefined : `from models.registry · ${props.filter ? `/ ${props.filter}` : '[/] fuzzy filter'} · ${props.view.length} models`} flexGrow={1}>
         {shown.length === 0 ? <Text color={PAL.textMuted}>no models match</Text> : shown.map(({ row, g }, i) => {
           if (row.role) return <Text key={`r${i}`} color={PAL.textMuted}>{`role: ${row.role} ▾`}</Text>;
           const m = row.m as ModelEntry;
-          const sel = g === props.selected;
+          const sel = g === selectedViewIdx;
           // FIX 1 (director): row budget inside the 71-col panel —
           // model 30 · ctx 5 · $in/$out 10 · caps 9 · spend 6, single-space
           // gutters, role ONLY in the group header, no ellipsis in any cell.

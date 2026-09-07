@@ -4,8 +4,7 @@
 // TIMMY through these tools; every call lands in the receipt chain.
 // Raw stdio JSON-RPC, no SDK dep. Line-delimited messages.
 import { captureEnvLock } from '../utils/envlock.js';
-import { readEvents } from '../utils/eventbus.js';
-import { publish as appendEvent } from '../bus/index.js';
+import { readEvents, appendEvent } from '../utils/eventbus.js';
 import { verifyChain, appendReceipt } from '../utils/receipts.js';
 import { replayFromEdl, } from '../utils/cliprunner.js';
 import { listGenerations, recordGeneration, updateGeneration, extractArtifactFromLog } from '../utils/generations.js';
