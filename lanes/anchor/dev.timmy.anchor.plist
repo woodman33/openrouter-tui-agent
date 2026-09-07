@@ -5,13 +5,16 @@
   <!-- Daily edge-chain → root-chain anchor. The worker cron publishes the head at
        09:05 UTC; this runs at 09:30 local and seals chain.anchor into the root chain.
        Install: launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.timmy.anchor.plist
-       Remove:  launchctl bootout   gui/$(id -u)/dev.timmy.anchor -->
+       Remove:  launchctl bootout   gui/$(id -u)/dev.timmy.anchor
+       Runs from the MAIN checkout, not a worktree: worktrees come and go, and a
+       daily job that seals into the chain must not vanish with one. The seal
+       itself resolves the store from the committed .timmy/store-pin. -->
   <key>Label</key>
   <string>dev.timmy.anchor</string>
   <key>ProgramArguments</key>
   <array>
     <string>/opt/homebrew/bin/node</string>
-    <string>/Users/williammeldman/Desktop/Code-Projects/timmy-tui/.claude/worktrees/vault-custody/lanes/anchor/anchor-edge-head.mjs</string>
+    <string>/Users/williammeldman/Desktop/Code-Projects/timmy-tui/lanes/anchor/anchor-edge-head.mjs</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
