@@ -1,55 +1,117 @@
 [
-  {
-    "id": "houdini-sceneforge",
-    "rank": 1,
-    "forms": ["mcp", "sdk", "api", "cli"],
-    "detect": { "cmd": "mcporter" },
-    "note": "Houdini/SceneForge control plane on your Cloudflare worker"
+ {
+  "id": "houdini-sceneforge",
+  "rank": 1,
+  "forms": [
+   "mcp",
+   "sdk",
+   "api",
+   "cli"
+  ],
+  "detect": {
+   "cmd": "mcporter"
   },
-  {
-    "id": "roboflow",
-    "rank": 2,
-    "forms": ["mcp", "sdk", "api", "cli"],
-    "detect": { "cmd": "roboflow" },
-    "note": "train models on REAL logs/frames — pip install roboflow · roboflow MCP server"
+  "note": "Houdini/SceneForge control plane on your Cloudflare worker"
+ },
+ {
+  "id": "roboflow",
+  "rank": 2,
+  "forms": [
+   "mcp",
+   "sdk",
+   "api",
+   "cli"
+  ],
+  "detect": {
+   "cmd": "roboflow"
   },
-  {
-    "id": "rive",
-    "rank": 3,
-    "forms": ["mcp"],
-    "detect": { "url": "http://127.0.0.1:9791/mcp" },
-    "lane": "rive-pro recipes via mcporter; receipts carry the gatekeeper report + exported .riv sha256; export is manual",
-    "note": "Rive desktop bridge (Rive Early Access, MCP add-on)"
+  "note": "train models on REAL logs/frames — pip install roboflow · roboflow MCP server"
+ },
+ {
+  "id": "rive",
+  "rank": 3,
+  "forms": [
+   "mcp"
+  ],
+  "detect": {
+   "url": "http://127.0.0.1:9791/mcp"
   },
-  {
-    "id": "defold",
-    "rank": 4,
-    "forms": ["cli", "api"],
-    "detect": { "cmd": "/Applications/Defold.app/Contents/Resources/packages/jdk-25+36/bin/java" },
-    "lane": "lanes/defold/build.mjs — bob.jar pinned to the installed engine sha, Defold JDK, build server for native extensions, defold.build receipt with bob/JDK/engine/input/output/.riv hashes",
-    "note": "Defold 1.13.1 · HTML5 Custody Companion (companion/custody-companion) served at /companion/"
+  "lane": "rive-pro recipes via mcporter; receipts carry the gatekeeper report + exported .riv sha256; export is manual",
+  "note": "Rive desktop bridge (Rive Early Access, MCP add-on)"
+ },
+ {
+  "id": "defold",
+  "rank": 4,
+  "forms": [
+   "cli",
+   "api"
+  ],
+  "detect": {
+   "cmd": "/Applications/Defold.app/Contents/Resources/packages/jdk-25+36/bin/java"
   },
-  {
-    "id": "comfyui",
-    "rank": 5,
-    "forms": ["api", "cli"],
-    "detect": { "url": "http://127.0.0.1:8188" },
-    "note": "isolated Docker ComfyUI (lab/comfy) — never system python"
+  "lane": "lanes/defold/build.mjs — bob.jar pinned to the installed engine sha, Defold JDK, build server for native extensions, defold.build receipt with bob/JDK/engine/input/output/.riv hashes",
+  "note": "Defold 1.13.1 · HTML5 Custody Companion (companion/custody-companion) served at /companion/"
+ },
+ {
+  "id": "comfyui",
+  "rank": 5,
+  "forms": [
+   "api",
+   "cli"
+  ],
+  "detect": {
+   "url": "http://127.0.0.1:8188"
   },
-  {
-    "id": "tripo",
-    "rank": 7,
-    "forms": ["api", "sdk", "mcp"],
-    "detect": { "url": "https://api.tripo3d.ai/v2/openapi/task" },
-    "lane": "none yet — detect only (mindship-v5c2 step 6). Usable when TRIPO_API_KEY is set; the Houdini bridge already carries tripo_text_to_model / tripo_image_to_model / tripo_texture / tripo_poll as MCP tools. A ship.v0 asset lane would seal tripo.generate with the task id + output sha.",
-    "note": "Tripo 3D (text/image → mesh, texture, rig) · api.tripo3d.ai · reachable = network only, not a key"
+  "note": "isolated Docker ComfyUI (lab/comfy) — never system python"
+ },
+ {
+  "id": "tripo",
+  "rank": 7,
+  "forms": [
+   "api",
+   "sdk",
+   "mcp"
+  ],
+  "detect": {
+   "url": "https://api.tripo3d.ai/v2/openapi/task"
   },
-  {
-    "id": "local-judges",
-    "rank": 6,
-    "forms": ["api"],
-    "detect": { "url": "http://localhost:11434/api/tags" },
-    "lane": "fleet rank for the fusion judge chain: local judges if present, else the OpenRouter cheap tier; receipts record judge_tier. Will-only benefit (Sparks); not a product feature",
-    "note": "planned (item 6 in the order of build)"
-  }
+  "lane": "none yet — detect only (mindship-v5c2 step 6). Usable when TRIPO_API_KEY is set; the Houdini bridge already carries tripo_text_to_model / tripo_image_to_model / tripo_texture / tripo_poll as MCP tools. A ship.v0 asset lane would seal tripo.generate with the task id + output sha.",
+  "note": "Tripo 3D (text/image → mesh, texture, rig) · api.tripo3d.ai · reachable = network only, not a key"
+ },
+ {
+  "id": "local-judges",
+  "rank": 6,
+  "forms": [
+   "api"
+  ],
+  "detect": {
+   "url": "http://localhost:11434/api/tags"
+  },
+  "lane": "fleet rank for the fusion judge chain: local judges if present, else the OpenRouter cheap tier; receipts record judge_tier. Will-only benefit (Sparks); not a product feature",
+  "note": "planned (item 6 in the order of build)"
+ },
+ {
+  "id": "openrouter-mcp",
+  "rank": 8,
+  "forms": [
+   "mcp"
+  ],
+  "detect": {
+   "url": "https://mcp.openrouter.ai/mcp"
+  },
+  "lane": "none yet — detect only (swarm-b3k7 step 6, mcp-server). OpenRouter's own MCP server; the commander handoff and the Timmy Durable Objects already speak MCP, so a harness that holds the commander can mount it beside timmy.",
+  "note": "OpenRouter MCP server · mcp.openrouter.ai · reachable = network only, not a key"
+ },
+ {
+  "id": "openrouter-openapi",
+  "rank": 9,
+  "forms": [
+   "api"
+  ],
+  "detect": {
+   "url": "https://openrouter.ai/openapi.json"
+  },
+  "lane": "the OpenAPI lane (src/mcp/server.ts timmy_oapi_run, spec_url) pointed at OpenRouter's published spec: every endpoint becomes a receipted oapi.call (swarm-b3k7 step 6, openapi-and-versioning)",
+  "note": "OpenRouter OpenAPI spec · versioned at openrouter.ai/openapi.json"
+ }
 ]
