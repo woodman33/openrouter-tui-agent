@@ -227,8 +227,13 @@ export class Governor {
     if (reason && !l.exhausted) l.exhausted = reason;
     return reason;
   }
-  record(c: MemberCall): void {
-    this.ledger.calls += 1;
+  reserve(): string | null {
+    const reason = this.allow();
+    if (!reason) this.ledger.calls += 1;
+    return reason;
+  }
+  record(c: MemberCall, countCall = true): void {
+    if (countCall) this.ledger.calls += 1;
     this.ledger.spent = Math.round((this.ledger.spent + c.usd) * 1e6) / 1e6;
     this.ledger.ms = this.now() - this.started;
   }
@@ -329,26 +334,26 @@ export async function runSwarm(spec: SwarmSpec, task: string, deps: SwarmDeps): 
   const run_id = newSwarmRunId(started);
 
   const call = async (m: SwarmMember, messages: ChatMessage[], phase: string, json = false, round?: number): Promise<MemberCall> => {
-    const why = gov.allow();
+    const why = gov.reserve();
     let c: MemberCall;
     if (why) { gov.kill(m.id, phase, why); c = killedCall(m, phase, why, round); }
     else {
       c = await deps.exec(m, messages, { maxTokens, signal: deps.signal, json, phase, round });
       c = { ...c, member: m.id, kind: m.kind, phase, ...(round != null ? { round } : {}) };
-      gov.record(c);
+      gov.record(c, false);
     }
     calls.push(c);
     return c;
   };
   const judgeMember: SwarmMember = { id: 'judge', kind: 'model', node: spec.judge.tier === 'edge' ? 'edge' : 'mac', sandbox: 'none', weight: 1, model: spec.judge.model, provider: spec.judge.tier === 'edge' ? 'openrouter' : 'ollama:mac' };
   const judge = async (messages: ChatMessage[], phase: string, json = false, round?: number): Promise<MemberCall> => {
-    const why = gov.allow();
+    const why = gov.reserve();
     let c: MemberCall;
     if (why) { gov.kill('judge', phase, why); c = killedCall(judgeMember, phase, why, round); }
     else {
       c = await deps.judge(messages, { maxTokens, signal: deps.signal, json, phase, round });
       c = { ...c, member: 'judge', kind: 'model', crew_role: 'judge', phase, ...(round != null ? { round } : {}) };
-      gov.record(c);
+      gov.record(c, false);
     }
     calls.push(c);
     return c;

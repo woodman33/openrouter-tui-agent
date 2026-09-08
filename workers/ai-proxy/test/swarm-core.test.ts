@@ -181,6 +181,15 @@ describe('cost governor', () => {
     expect(r2.budget.exhausted).toContain('killed: kill switch');
   });
 
+  it('reserves max_calls before parallel members start', async () => {
+    const f = fake({ a: 'A', b: 'B' });
+    const r = await runSwarm(spec({ budget: { usd: 1, max_calls: 1 } }), 'task', f);
+    expect(f.seen.map((c) => c.member)).toEqual(['a']);
+    expect(r.calls).toHaveLength(2);
+    expect(r.calls.find((c) => c.member === 'b')).toMatchObject({ killed: true });
+    expect(r.budget.calls).toBe(1);
+  });
+
   it('a zero-usd budget (local slots) counts calls and time only', () => {
     const g = new Governor(spec({ budget: { usd: 0, max_calls: 3 } }), () => 0);
     expect(g.allow()).toBeNull();

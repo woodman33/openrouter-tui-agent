@@ -333,6 +333,12 @@ export async function runHandsClosed(script, opts = {}) {
     return { ok: false, result: null, exception, stdout: stdoutOf(e?.context), ms, denied: exception.message === DENIAL, timed_out: timedOut };
   }
   const ctx = outcome.ctx;
+  if (ctx?._exception) {
+    const ex = ctx._exception;
+    const exception = { scope: ex.scope ?? 'vm', message: ex.message ?? String(ex) };
+    const timedOut = /timed out/i.test(exception.message);
+    return { ok: false, result: null, exception, stdout: stdoutOf(ctx), ms, denied: exception.message === DENIAL, timed_out: timedOut };
+  }
   return { ok: true, result: ctx?._result ?? null, exception: null, stdout: stdoutOf(ctx), ms, denied: false, timed_out: false };
 }
 
@@ -470,9 +476,10 @@ export function summarizeExport(doc, egressRe = EGRESS_TOOL_RE, fallbackToolsLis
  * server is up, close it, export the session with `mcpsnoop export`, and
  * summarise the wire. Returns the summary plus session_file / trace_file.
  */
-export async function snoopSession(name, runFn, opts = {}) {
+export async function snoopSession(name, runFn, opts) {
   if (typeof runFn === 'object' && runFn !== null && opts === undefined) { opts = runFn; runFn = undefined; }
   if (runFn != null && typeof runFn !== 'function') throw new TypeError('airgap: runFn must be a function');
+  opts ??= {};
   const root = resolveRoot(opts);
   const tsx = opts.tsx ?? resolveTsx(root);
   const cli = opts.cli ?? join(root, 'src', 'cli.ts');
